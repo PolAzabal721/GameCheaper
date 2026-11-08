@@ -60,7 +60,7 @@
   "formatos": [
    "digital"
   ],
-  "busqueda": "https://www.g2a.com/es/search?query={q}&gtag=5ce8dfe406"
+  "busqueda": "https://www.g2a.com/es/search?query={q}&gname=reflink-5ce8dfe406&utm_campaign=goldmine&utm_medium=goldmine"
  },
  {
   "id": "mediamarkt",
