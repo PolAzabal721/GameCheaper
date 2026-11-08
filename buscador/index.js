@@ -29,9 +29,11 @@ async function pedir(url, opciones = {}) {
 }
 
 // Todas las palabras buscadas tienen que aparecer en el título
+const EDICIONES = /\b(deluxe|ultimate|gold|premium|collector|coleccionista|definitive|definitiva|goty|game of the year|complete edition|edicion completa|special edition|edicion especial|super deluxe|digital deluxe|vault)\b/;
 function encaja(q, titulo) {
   const t = " " + limpiar(titulo) + " ";
   if (EXTRAS.test(t) && !EXTRAS.test(limpiar(q))) return false;
+  if (EDICIONES.test(t) && !EDICIONES.test(limpiar(q))) return false;
   return limpiar(q).split(" ").every((p) => t.includes(" " + p + " ") || (p.length >= 4 && t.includes(" " + p)));
 }
 

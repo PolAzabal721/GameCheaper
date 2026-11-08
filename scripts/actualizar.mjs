@@ -64,10 +64,13 @@ export const clave = (titulo) => limpiar(titulo).replace(SOBRANTE, " ").replace(
 const tituloBonito = (t) => html2txt(t).replace(/[™®©]/g, "").replace(/\s*[–-]\s*Nintendo Switch 2 Edition$/i, "").replace(/\s+/g, " ").trim();
 // Palabras que indican que NO es un juego completo
 const EXTRAS = /\b(dlc|pack|pase|season pass|expansion|soundtrack|banda sonora|bundle|lote|monedas|coins|points|puntos|vbucks|upgrade|mejora|demo|trial|prueba|artbook|wallpaper|paquete|music|musica|costume|traje|skin|skins|cosmetico|ost)\b/;
+// Ediciones especiales: si buscamos el juego normal, no valen (cuestan más y confundirían la comparación)
+const EDICIONES = /\b(deluxe|ultimate|gold|premium|collector|coleccionista|definitive|definitiva|goty|game of the year|complete edition|edicion completa|special edition|edicion especial|super deluxe|digital deluxe|vault)\b/;
 function parecido(buscado, encontrado) {
   const a = limpiar(buscado), b = limpiar(encontrado);
   if (!a || !b) return 0;
   if (EXTRAS.test(b) && !EXTRAS.test(a)) return 0;
+  if (EDICIONES.test(b) && !EDICIONES.test(a)) return 0;
   if (a === b) return 1;
   const pa = new Set(a.split(" ")), pb = b.split(" ");
   if (pb.filter((p) => pa.has(p)).length < pa.size) return 0;
@@ -319,7 +322,7 @@ async function game(j) {
     const plat = PLAT_GAME[limpiar(it.allPlatforms || "")];
     if (!plat || (consolas.length && !consolas.includes(plat))) continue;
     const t = " " + limpiar(it.title) + " ";
-    if (!palabras.every((p) => t.includes(" " + p + " ")) || EXTRAS.test(t)) continue;
+    if (!palabras.every((p) => t.includes(" " + p + " ")) || EXTRAS.test(t) || (EDICIONES.test(t) && !EDICIONES.test(limpiar(j.titulo)))) continue;
     const precio = Number(it.pricing?.current);
     if (!(precio > 0)) continue;
     const usado = (it.tag || []).some((x) => /seminuevo/i.test(x?.text || ""));
@@ -560,6 +563,21 @@ async function main() {
     const usado = o.estado === "usado";
     ofertar(j, { formato: usado ? "fisico" : "digital", estado: usado ? "usado" : "nuevo", ...o, fuente: "manual" });
   }
+
+  // Productos que no son el juego (mejoras, DLC…): su precio NORMAL es muy inferior al del resto de tiendas.
+  // Las rebajas reales conservan un precio normal alto, así que no se ven afectadas.
+  // (PlayStation Store no da precio normal, solo el actual, así que no la juzgamos por esto.)
+  let descartadas = 0;
+  for (const j of juegos.values()) {
+    const nuevas = j.ofertas.filter((o) => o.estado !== "usado" && o.tienda !== "psstore");
+    if (nuevas.length < 2) continue;
+    const reg = nuevas.map((o) => o.regular || o.precio).sort((a, b) => a - b);
+    const mediana = reg[Math.floor((reg.length - 1) / 2)];
+    const antes = j.ofertas.length;
+    j.ofertas = j.ofertas.filter((o) => o.estado === "usado" || o.tienda === "psstore" || (o.regular || o.precio) >= mediana / 3);
+    descartadas += antes - j.ofertas.length;
+  }
+  console.log(`Ofertas descartadas por no ser el juego (precio normal muy bajo): ${descartadas}`);
 
   // PVP: la mediana del precio sin descuento de las tiendas (el máximo se disparaba con ediciones de lujo)
   for (const j of juegos.values()) {
