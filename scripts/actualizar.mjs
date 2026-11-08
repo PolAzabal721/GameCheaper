@@ -5,6 +5,7 @@
 //   - Steam: los más vendidos (STEAM_PAGINAS × 100 juegos), con precio y descuento.
 //   - Nintendo eShop: los juegos más populares del catálogo (ESHOP_MAX), con precio de la eShop española.
 //   - PlayStation Store: los juegos de config/seguimiento.json que tienen "psConcept".
+//   - GAME: disco nuevo y seminuevo de los juegos de consola más populares (GAME_MAX).
 //   - eBay (segunda mano): si existen EBAY_CLIENT_ID y EBAY_CLIENT_SECRET, busca anuncios de usados
 //     para los juegos de consola más populares (EBAY_MAX).
 //   - IsThereAnyDeal (opcional): más tiendas de PC si existe ITAD_KEY.
@@ -22,6 +23,7 @@ const ENV = process.env;
 const STEAM_PAGINAS = +(ENV.STEAM_PAGINAS || 10);
 const ESHOP_MAX = +(ENV.ESHOP_MAX || 2500);
 const EBAY_MAX = +(ENV.EBAY_MAX || 150);
+const GAME_MAX = +(ENV.GAME_MAX || 200);
 
 const leer = async (ruta, porDefecto) => {
   try { return JSON.parse(await readFile(join(RAIZ, ruta), "utf8")); }
@@ -80,7 +82,8 @@ function ofertar(j, o) {
   // Una sola oferta por tienda + plataforma + estado: la más barata
   const igual = j.ofertas.find((x) => x.tienda === o.tienda && x.plataforma === o.plataforma && (x.estado || "nuevo") === (o.estado || "nuevo"));
   const nueva = { estado: "nuevo", stock: true, formato: "digital", ...o, precio: redondear(o.precio) };
-  if (igual) { if (nueva.precio < igual.precio) Object.assign(igual, nueva); }
+  // Preferimos lo que hay en stock; a igualdad, lo más barato
+  if (igual) { if ((nueva.stock && !igual.stock) || (nueva.stock === igual.stock && nueva.precio < igual.precio)) Object.assign(igual, nueva); }
   else j.ofertas.push(nueva);
   if (o.plataforma) j.plataformas.add(o.plataforma);
   if (o.regular > j.pvp) j.pvp = redondear(o.regular);
@@ -251,6 +254,48 @@ async function ebay(j) {
   return n;
 }
 
+// ---------- GAME (nuevo y seminuevo, en disco) ----------
+// La página de resultados de game.es incluye los productos como datos estructurados (initialResult).
+const PLAT_GAME = { "playstation 5": "PS5", "playstation 4": "PS4", "nintendo switch 2": "Switch 2", "nintendo switch": "Switch", "xbox series x": "Xbox Series", "xbox series": "Xbox Series" };
+function bloqueJSON(texto, desde) {
+  let i = texto.indexOf("{", desde), prof = 0, enCad = false;
+  for (let k = i; k < texto.length; k++) {
+    const c = texto[k];
+    if (enCad) { if (c === "\\") k++; else if (c === '"') enCad = false; continue; }
+    if (c === '"') enCad = true; else if (c === "{") prof++; else if (c === "}" && --prof === 0) return texto.slice(i, k + 1);
+  }
+  return null;
+}
+async function game(j) {
+  // Si solo lo conocemos de PC (Steam), aceptamos cualquier consola que tenga GAME
+  const consolas = [...j.plataformas].filter((p) => p !== "PC");
+  const html = await (await pedir("https://www.game.es/resultados?search=" + encodeURIComponent(j.titulo))).text();
+  const flight = [...html.matchAll(/self\.__next_f\.push\(\[1,"((?:\\.|[^"\\])*)"\]\)/g)].map((m) => { try { return JSON.parse('"' + m[1] + '"'); } catch { return ""; } }).join("");
+  const i = flight.indexOf('"initialResult":');
+  if (i < 0) throw new Error("la página de resultados ya no trae datos (puede que GAME haya cambiado su web)");
+  const items = JSON.parse(bloqueJSON(flight, i)).items || [];
+  const palabras = clave(j.titulo).split(" ");
+  let n = 0;
+  for (const it of items) {
+    if (it.category !== "SOFTWARE" || it.isPack) continue;
+    const plat = PLAT_GAME[limpiar(it.allPlatforms || "")];
+    if (!plat || (consolas.length && !consolas.includes(plat))) continue;
+    const t = " " + limpiar(it.title) + " ";
+    if (!palabras.every((p) => t.includes(" " + p + " ")) || EXTRAS.test(t)) continue;
+    const precio = Number(it.pricing?.current);
+    if (!(precio > 0)) continue;
+    const usado = (it.tag || []).some((x) => /seminuevo/i.test(x?.text || ""));
+    const antes = j.ofertas.length;
+    ofertar(j, {
+      tienda: usado ? "gameseminuevos" : "game", plataforma: plat, formato: "fisico", estado: usado ? "usado" : "nuevo",
+      precio, regular: usado ? 0 : Number(it.pricing?.recommended) || precio, stock: it.availability === "available",
+      url: "https://www.game.es" + it.url, fuente: "game",
+    });
+    if (j.ofertas.length > antes) n++;
+  }
+  return n;
+}
+
 // ---------- IsThereAnyDeal (opcional) ----------
 const ITAD = "https://api.isthereanydeal.com";
 async function itad(lista, tiendas) {
@@ -319,15 +364,18 @@ async function main() {
     await esperar(300);
   }
 
-  // 3. eBay para los juegos de consola más populares
-  if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) {
-    const deConsola = [...juegos.values()].filter((j) => [...j.plataformas].some((p) => p !== "PC")).sort((a, b) => a.pop - b.pop).slice(0, EBAY_MAX);
-    let fallosEbay = 0;
-    for (const j of deConsola) {
-      if (!(await intentar("ebay", () => ebay(j)))) { if (++fallosEbay >= 5) { avisos.push("ebay: demasiados fallos, paro"); caidas.add("ebay"); break; } }
-      await esperar(250);
+  // 3. GAME y eBay (disco nuevo y segunda mano) para los juegos de consola más populares
+  const populares = (max) => [...juegos.values()].sort((a, b) => a.pop - b.pop).slice(0, max);
+  const consolaPopulares = (max) => [...juegos.values()].filter((j) => [...j.plataformas].some((p) => p !== "PC")).sort((a, b) => a.pop - b.pop).slice(0, max);
+  const recorrerFuente = async (nombre, lista, fn, pausa) => {
+    let fallos = 0;
+    for (const j of lista) {
+      if (!(await intentar(nombre, () => fn(j))) && ++fallos >= 5) { avisos.push(`${nombre}: demasiados fallos, paro`); caidas.add(nombre); break; }
+      await esperar(pausa);
     }
-  }
+  };
+  await recorrerFuente("game", populares(GAME_MAX), game, 700);
+  if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) await recorrerFuente("ebay", consolaPopulares(EBAY_MAX), ebay, 250);
 
   // 4. IsThereAnyDeal para los juegos de PC más populares
   if (ENV.ITAD_KEY) {
