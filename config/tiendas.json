@@ -141,7 +141,7 @@
   "formatos": [
    "fisico"
   ],
-  "busqueda": "https://es.wallapop.com/app/search?keywords={q}"
+  "busqueda": "https://es.wallapop.com/search?keywords={q}"
  },
  {
   "id": "ebay",
