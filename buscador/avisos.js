@@ -120,7 +120,8 @@ async function historialITAD(titulo, env) {
   const key = encodeURIComponent(env.ITAD_KEY.trim());
   const l = await (await fetch(`https://api.isthereanydeal.com/games/lookup/v1?key=${key}&title=${encodeURIComponent(titulo)}`)).json();
   if (!l.found || !l.game?.id || limpiar(l.game.title) !== limpiar(titulo)) return { puntos: [] };
-  const r = await fetch(`https://api.isthereanydeal.com/games/history/v2?key=${key}&id=${l.game.id}&country=ES`);
+  const since = new Date(Date.now() - 3 * 365 * 86400000).toISOString().replace(/\.\d+Z$/, "Z");
+  const r = await fetch(`https://api.isthereanydeal.com/games/history/v2?key=${key}&id=${l.game.id}&country=ES&since=${encodeURIComponent(since)}`);
   if (!r.ok) return { puntos: [], error: `ITAD ${r.status}` };
   const eventos = (await r.json()).filter((x) => x.deal?.price?.currency === "EUR").sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
   // Precio vigente de cada tienda; un punto por cada día con cambios
@@ -162,7 +163,7 @@ export async function rutasAvisos(req, env, ctx, url) {
   if (url.pathname === "/historial") {
     const titulo = (url.searchParams.get("titulo") || "").slice(0, 120);
     if (limpiar(titulo).length < 2) return json({ puntos: [] });
-    const cacheKey = new Request(`${origen}/historial?t=${encodeURIComponent(limpiar(titulo))}`);
+    const cacheKey = new Request(`${origen}/historial?v=2&t=${encodeURIComponent(limpiar(titulo))}`);
     const enCache = await caches.default.match(cacheKey);
     if (enCache) return enCache;
     const resp = new Response(JSON.stringify(await historialITAD(titulo, env)), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=43200", ...CORS } });
