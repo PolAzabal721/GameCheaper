@@ -571,6 +571,8 @@ button { cursor: pointer; }
         .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
         .then(function (d) {
           if (f.q.trim() !== qTxt) return;
+          // tiendas nuevas que trae la búsqueda en vivo (GOG, Epic…)
+          (d.tiendas || []).forEach(function (t) { if (t && t.id && !tiendaPorId[t.id]) tiendaPorId[t.id] = { id: t.id, nombre: t.nombre || t.id, tipo: TIPOS[t.tipo] ? t.tipo : "tienda" }; });
           var v = validar({ juegos: d.juegos || [], tiendas: [] });
           v.juegos.forEach(function (j) { j._vivo = true; });
           vivo = { q: qTxt, juegos: v.juegos, cargando: false, error: "" }; pintar();

@@ -67,11 +67,18 @@ jobs:
           EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
         run: |
           if [ -n "$EBAY_CLIENT_ID" ] && [ -n "$EBAY_CLIENT_SECRET" ]; then
-            echo "$EBAY_CLIENT_ID" | npx --yes wrangler@4 secret put EBAY_CLIENT_ID
-            echo "$EBAY_CLIENT_SECRET" | npx --yes wrangler@4 secret put EBAY_CLIENT_SECRET
+            printf '%s' "$EBAY_CLIENT_ID" | tr -d '[:space:]' | npx --yes wrangler@4 secret put EBAY_CLIENT_ID
+            printf '%s' "$EBAY_CLIENT_SECRET" | tr -d '[:space:]' | npx --yes wrangler@4 secret put EBAY_CLIENT_SECRET
           else
             echo "Sin claves de eBay: el buscador funcionará con Steam y Nintendo eShop."
           fi
+
+      - name: Clave de IsThereAnyDeal (si existe)
+        working-directory: buscador
+        env:
+          ITAD_KEY: ${{ secrets.ITAD_KEY }}
+        run: |
+          if [ -n "$ITAD_KEY" ]; then printf '%s' "$ITAD_KEY" | tr -d '[:space:]' | npx --yes wrangler@4 secret put ITAD_KEY; else echo "Sin clave de IsThereAnyDeal."; fi
 
       - name: Probar y guardar la dirección del buscador
         run: |

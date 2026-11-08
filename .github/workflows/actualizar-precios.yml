@@ -21,7 +21,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: node scripts/actualizar.mjs
+      - run: |
+          # quita espacios o saltos de línea que se cuelan al pegar claves
+          export ITAD_KEY=$(printf '%s' "$ITAD_KEY" | tr -d '[:space:]') EBAY_CLIENT_ID=$(printf '%s' "$EBAY_CLIENT_ID" | tr -d '[:space:]') EBAY_CLIENT_SECRET=$(printf '%s' "$EBAY_CLIENT_SECRET" | tr -d '[:space:]')
+          node scripts/actualizar.mjs
         env:
           ITAD_KEY: ${{ secrets.ITAD_KEY }}
           EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}

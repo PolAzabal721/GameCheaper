@@ -36,7 +36,7 @@ function encaja(q, titulo) {
 }
 
 class Resultado {
-  constructor() { this.mapa = new Map(); }
+  constructor() { this.mapa = new Map(); this.tiendas = {}; }
   juego(titulo, relevancia) {
     const k = clave(titulo);
     let j = this.mapa.get(k);
@@ -114,15 +114,39 @@ async function ebay(q, res, env) {
   }
 }
 
+// IsThereAnyDeal: más tiendas de PC (GOG, Epic, Fanatical…) para los 2 mejores resultados de PC
+async function itad(q, res, env) {
+  if (!env.ITAD_KEY) return;
+  const dePC = [...res.mapa.values()].filter((j) => j.plataformas.includes("PC")).sort((a, b) => a._rel - b._rel).slice(0, 2);
+  for (const j of dePC) {
+    const l = await (await pedir(`https://api.isthereanydeal.com/games/lookup/v1?key=${env.ITAD_KEY}&title=${encodeURIComponent(j.titulo)}`)).json();
+    if (!l.found || !l.game?.id) continue;
+    const r = await (await pedir(`https://api.isthereanydeal.com/games/prices/v3?key=${env.ITAD_KEY}&country=ES`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify([l.game.id]),
+    })).json();
+    for (const x of r[0]?.deals || []) {
+      if (x.price?.currency !== "EUR") continue;
+      const nombre = x.shop?.name || x.shop?.title || String(x.shop?.id);
+      const id = "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
+      if (id === "itad-steam") continue;
+      res.ofertar(j, { tienda: id, plataforma: "PC", formato: "digital", estado: "nuevo", stock: true, precio: x.price.amount, regular: x.regular?.amount, url: x.url });
+      res.tiendas[id] = { id, nombre, tipo: /^(gog|epic|microsoft|ea app|ubisoft|battle\.net|blizzard|rockstar)/i.test(nombre) ? "oficial" : "revendedor", formatos: ["digital"] };
+    }
+  }
+}
+
 async function buscar(q, env, ctx) {
   const res = new Resultado(), avisos = [];
   await Promise.all([steam(q, res), eshop(q, res)].map((p) => p.catch((e) => avisos.push(e.message))));
-  await ebay(q, res, env).catch((e) => avisos.push("ebay: " + e.message));
+  await Promise.all([
+    ebay(q, res, env).catch((e) => avisos.push("ebay: " + e.message)),
+    itad(q, res, env).catch((e) => avisos.push("itad: " + e.message)),
+  ]);
   const juegos = res.lista();
   // Guardamos el mejor resultado para que el actualizador lo siga a partir de ahora
   if (env.PILLAO) ctx.waitUntil(Promise.all(juegos.slice(0, 1).map((j) =>
     env.PILLAO.put("a:" + j.id, "", { metadata: { titulo: j.titulo, plataformas: j.plataformas }, expirationTtl: 90 * 86400 }))));
-  return { q, actualizado: new Date().toISOString(), juegos, avisos };
+  return { q, actualizado: new Date().toISOString(), juegos, tiendas: Object.values(res.tiendas), avisos };
 }
 
 export default {

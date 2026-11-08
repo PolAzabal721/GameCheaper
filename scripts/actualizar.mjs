@@ -298,6 +298,15 @@ async function game(j) {
 
 // ---------- IsThereAnyDeal (opcional) ----------
 const ITAD = "https://api.isthereanydeal.com";
+// Tiendas de PC que son de los propios fabricantes o plataformas (no revendedores)
+const OFICIALES_PC = /^(gog|epic|microsoft|ea app|origin|ubisoft|battle\.net|blizzard|rockstar|bethesda|square enix|nintendo)/i;
+const BUSQUEDA_PC = {
+  "itad-gog": "https://www.gog.com/es/games?query={q}",
+  "itad-epicgamestore": "https://store.epicgames.com/es-ES/browse?q={q}",
+  "itad-fanatical": "https://www.fanatical.com/es/search?search={q}",
+  "itad-humblestore": "https://www.humblebundle.com/store/search?search={q}",
+  "itad-greenmangaming": "https://www.greenmangaming.com/es/search/?query={q}",
+};
 async function itad(lista, tiendas) {
   const key = ENV.ITAD_KEY;
   const ids = {};
@@ -314,9 +323,10 @@ async function itad(lista, tiendas) {
       const j = ids[g.id]; if (!j) continue;
       for (const x of g.deals || []) {
         if (x.price?.currency !== "EUR") continue;
-        const id = "itad-" + String(x.shop?.name || x.shop?.id).toLowerCase().replace(/[^a-z0-9]+/g, "");
+        const nombre = x.shop?.name || x.shop?.title || String(x.shop?.id);
+        const id = "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
         if (id === "itad-steam") continue;
-        if (!tiendas.some((t) => t.id === id)) tiendas.push({ id, nombre: x.shop?.name || id, tipo: "revendedor", formatos: ["digital"] });
+        if (!tiendas.some((t) => t.id === id)) tiendas.push({ id, nombre, tipo: OFICIALES_PC.test(nombre) ? "oficial" : "revendedor", formatos: ["digital"], busqueda: BUSQUEDA_PC[id] });
         ofertar(j, { tienda: id, plataforma: "PC", precio: x.price.amount, regular: x.regular?.amount, url: x.url, fuente: "itad" });
         n++;
       }
