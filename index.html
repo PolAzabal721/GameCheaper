@@ -145,6 +145,11 @@ button { cursor: pointer; }
 .ofertas { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
 .of { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .of:last-child { border-bottom: 0; }
+.of.sub { padding: 7px 0 7px 18px; background: var(--surface-2); border-bottom-style: dashed; font-size: 14px; }
+.of.sub .of-t span:first-child { font-weight: 600; }
+.of.sub .of-p b { font-size: 15px; }
+.desp { border: 1px solid var(--line); background: var(--surface-2); color: var(--accent); font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+.desp[aria-expanded="true"] { background: var(--accent-soft); border-color: var(--accent); }
 .of-t { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
 .of-t strong { font-weight: 600; }
 .badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 2px 6px; border-radius: 4px; }
@@ -293,7 +298,7 @@ button { cursor: pointer; }
 (function () {
   "use strict";
   var REFRESCO_MS = 5 * 60 * 1000;          // vuelve a leer precios.json cada 5 minutos
-  var VISIBLES = 4;                          // ofertas visibles antes de "ver todas"
+  var VISIBLES = 5;                          // tiendas visibles antes de "ver todas"
   var TIPOS = { oficial: "Oficial", revendedor: "Revendedor", marketplace: "Marketplace", tienda: "Tienda", segundamano: "2ª mano", particulares: "Particulares" };
   var ORDEN_TIPOS = ["oficial", "revendedor", "marketplace", "tienda", "segundamano", "particulares"];
   var TITULOS_TIPO = { oficial: "Oficiales", revendedor: "Revendedores de claves", marketplace: "Marketplaces de claves", tienda: "Tiendas físicas", segundamano: "Tiendas de segunda mano", particulares: "Entre particulares" };
@@ -302,7 +307,7 @@ button { cursor: pointer; }
   var eur = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
   var $ = function (id) { return document.getElementById(id); };
 
-  var datos = null, origen = "servidor", tiendaPorId = {}, abiertos = {};
+  var datos = null, origen = "servidor", tiendaPorId = {}, abiertos = {}, desplegados = {};
   var f = cargarFiltros();
 
   function cargarFiltros() {
@@ -492,8 +497,16 @@ button { cursor: pointer; }
 
   function tarjeta(r) {
     var j = r.j, m = r.mejor, tm = tiendaPorId[m.tienda] || { nombre: m.tienda };
+    // Agrupamos por tienda: una fila por tienda (su precio más barato) y un desplegable con cada plataforma
+    var grupos = [], porTienda = {};
+    r.ofs.forEach(function (o) {
+      var g = porTienda[o.tienda];
+      if (!g) { g = porTienda[o.tienda] = { id: o.tienda, t: tiendaPorId[o.tienda] || { nombre: o.tienda, tipo: "tienda" }, ofs: [] }; grupos.push(g); }
+      g.ofs.push(o);
+    });
+    grupos.sort(function (a, b) { return (ORDEN_TIPOS.indexOf(a.t.tipo) - ORDEN_TIPOS.indexOf(b.t.tipo)) || (total(a.ofs[0]) - total(b.ofs[0])); });
     var todas = abiertos[j.id];
-    var vis = todas ? r.ofs : r.ofs.slice(0, VISIBLES);
+    var vis = todas ? grupos : grupos.slice(0, VISIBLES);
     var otras = otrasTiendas(j);
     var enMinimo = j.minimo && total(m) <= j.minimo + 0.005;
     return '<article class="juego"><div class="j-cab"><div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") +
@@ -507,18 +520,33 @@ button { cursor: pointer; }
       '<div class="etiqueta">' + (r.dto >= 5 ? '<span class="ahorro">−' + r.dto + "%</span>" : "") +
       '<span class="lbl">Mejor precio' + (m.envio ? " con envío" : "") + '</span><span class="precio">' + eur.format(total(m)) + '</span><span class="donde">' +
       esc(tm.nombre) + " · " + esc(m.plataforma || "") + " · " + (m.estado === "usado" ? "2ª mano" : m.formato === "fisico" ? "Disco" : "Digital") + "</span></div></div>" +
-      '<ol class="ofertas">' + vis.map(function (o) {
-        var t = tiendaPorId[o.tienda] || { nombre: o.tienda, tipo: "tienda" };
-        var url = enlace(o, j), dif = total(o) - total(m);
-        return '<li class="of' + (o === m ? " mejor" : "") + '"><div class="of-t"><strong>' + esc(t.nombre) + '</strong><span class="badge b-' + t.tipo + '">' + TIPOS[t.tipo] + "</span>" + (o.estado === "usado" ? '<span class="usado">Usado</span>' : "") + "</div>" +
-          '<div class="of-d"><span>' + esc(o.plataforma || "—") + "</span><span>·</span><span>" + (o.formato === "fisico" ? "En disco" : "Digital") + "</span>" +
-          (o.condicion ? "<span>·</span><span>" + esc(o.condicion) + "</span>" : "") +
-          (o.envio ? "<span>·</span><span>" + eur.format(o.precio) + " + " + eur.format(o.envio) + " envío</span>" : "") +
-          (o.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
+      '<ol class="ofertas">' + vis.map(function (g) {
+        var o = g.ofs[0], t = g.t, url = enlace(o, j), dif = total(o) - total(m);
+        var clave = j.id + "|" + g.id, abierto = desplegados[clave], n = g.ofs.length;
+        var plats = []; g.ofs.forEach(function (x) { if (x.plataforma && plats.indexOf(x.plataforma) < 0) plats.push(x.plataforma); });
+        var detalle = n > 1
+          ? "<span>Desde · " + esc(plats.join(", ")) + "</span>"
+          : "<span>" + esc(o.plataforma || "—") + "</span><span>·</span><span>" + (o.formato === "fisico" ? "En disco" : "Digital") + "</span>" +
+            (o.condicion ? "<span>·</span><span>" + esc(o.condicion) + "</span>" : "") +
+            (o.envio ? "<span>·</span><span>" + eur.format(o.precio) + " + " + eur.format(o.envio) + " envío</span>" : "") +
+            (o.stock ? "" : '<span class="agotado">· Agotado</span>');
+        var fila = '<li class="of' + (g.ofs.indexOf(m) >= 0 ? " mejor" : "") + '"><div class="of-t"><strong>' + esc(t.nombre) + '</strong><span class="badge b-' + t.tipo + '">' + TIPOS[t.tipo] + "</span>" +
+          (n === 1 && o.estado === "usado" ? '<span class="usado">Usado</span>' : "") +
+          (n > 1 ? '<button type="button" class="desp" data-grupo="' + esc(clave) + '" aria-expanded="' + !!abierto + '">' + (abierto ? "▴ " : "▾ ") + n + (plats.length === n ? " plataformas" : " opciones") + "</button>" : "") + "</div>" +
+          '<div class="of-d">' + detalle + "</div>" +
           '<div class="of-p"><b>' + eur.format(total(o)) + "</b>" + (dif > 0.004 ? "<small>+" + eur.format(dif) + "</small>" : "<small>el más barato</small>") + "</div>" +
           (url ? '<a class="ir" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + (o.url ? "Ver oferta" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
+        if (n > 1 && abierto) fila += g.ofs.map(function (x) {
+          var u = enlace(x, j);
+          return '<li class="of sub' + (x === m ? " mejor" : "") + '"><div class="of-t"><span>' + esc(x.plataforma || "—") + "</span>" + (x.estado === "usado" ? '<span class="usado">Usado</span>' : "") + "</div>" +
+            '<div class="of-d"><span>' + (x.formato === "fisico" ? "En disco" : "Digital") + "</span>" + (x.condicion ? "<span>·</span><span>" + esc(x.condicion) + "</span>" : "") +
+            (x.envio ? "<span>·</span><span>+ " + eur.format(x.envio) + " envío</span>" : "") + (x.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
+            '<div class="of-p"><b>' + eur.format(total(x)) + "</b></div>" +
+            (u ? '<a class="ir" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + (x.url ? "Ver" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
+        }).join("");
+        return fila;
       }).join("") + "</ol>" +
-      (r.ofs.length > VISIBLES ? '<button type="button" class="mas" data-mas="' + esc(j.id) + '">' + (todas ? "Ver menos" : "Ver las " + r.ofs.length + " ofertas") + "</button>" : "") +
+      (grupos.length > VISIBLES ? '<button type="button" class="mas" data-mas="' + esc(j.id) + '">' + (todas ? "Ver menos" : "Ver las " + grupos.length + " tiendas") + "</button>" : "") +
       (otras.length ? '<div class="otras"><span>Sin precio automático. Búscalo en:</span>' + otras.map(function (t) {
         return '<a href="' + esc(t.busqueda.replace("{q}", encodeURIComponent(j.titulo))) + '" target="_blank" rel="noopener noreferrer">' + esc(t.nombre) + " ↗</a>";
       }).join("") + "</div>" : "") +
@@ -626,6 +654,8 @@ button { cursor: pointer; }
   $("lista").addEventListener("click", function (e) {
     var b = e.target.closest("[data-mas]");
     if (b) { abiertos[b.dataset.mas] = !abiertos[b.dataset.mas]; pintar(); return; }
+    var d = e.target.closest("[data-grupo]");
+    if (d) { desplegados[d.dataset.grupo] = !desplegados[d.dataset.grupo]; pintar(); return; }
     if (e.target.closest("[data-mas-juegos]")) { mostrar += PAGINA; pintar(); return; }
     if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], mkt: true, part: true, stock: false, pmax: null, orden: f.orden }; pintarControles(); cambio(); }
   });

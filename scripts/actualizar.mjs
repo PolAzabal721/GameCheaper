@@ -5,6 +5,7 @@
 //   - Steam: los más vendidos (STEAM_PAGINAS × 100 juegos), con precio y descuento.
 //   - Nintendo eShop: los juegos más populares del catálogo (ESHOP_MAX), con precio de la eShop española.
 //   - PlayStation Store: los juegos de config/seguimiento.json que tienen "psConcept".
+//   - Instant Gaming: la clave más barata, con stock y válida en España, por plataforma (IG_MAX juegos).
 //   - GAME: disco nuevo y seminuevo de los juegos de consola más populares (GAME_MAX).
 //   - eBay (segunda mano): si existen EBAY_CLIENT_ID y EBAY_CLIENT_SECRET, busca anuncios de usados
 //     para los juegos de consola más populares (EBAY_MAX).
@@ -24,6 +25,7 @@ const STEAM_PAGINAS = +(ENV.STEAM_PAGINAS || 10);
 const ESHOP_MAX = +(ENV.ESHOP_MAX || 2500);
 const EBAY_MAX = +(ENV.EBAY_MAX || 150);
 const GAME_MAX = +(ENV.GAME_MAX || 200);
+const IG_MAX = +(ENV.IG_MAX || 250);
 
 const leer = async (ruta, porDefecto) => {
   try { return JSON.parse(await readFile(join(RAIZ, ruta), "utf8")); }
@@ -300,6 +302,44 @@ async function game(j) {
   return n;
 }
 
+// ---------- Instant Gaming (claves) ----------
+// La búsqueda de instant-gaming.com incluye los resultados como datos (window.searchResults).
+// Por plataforma nos quedamos con la clave más barata que: tenga stock, no sea DLC y valga en España.
+const PLAT_IG = { "pc": "PC", "playstation 5": "PS5", "playstation 4": "PS4", "xbox series x s": "Xbox Series", "xbox series x|s": "Xbox Series", "nintendo switch 2": "Switch 2", "nintendo switch": "Switch" };
+const REGIONES_OK = /^(worldwide|global|europe|eu|emea|es|spain|espana|españa)$/i;
+function valeEnEspana(h) {
+  const bl = [].concat(h.country_blacklist || []).map(String);
+  if (bl.some((c) => /^(es|spain|europe|eu)$/i.test(c))) return false;
+  const wl = [].concat(h.country_whitelist || []).map(String);
+  if (wl.length) return wl.some((c) => REGIONES_OK.test(c));
+  return REGIONES_OK.test(String(h.region || "").trim());
+}
+async function instantGaming(j) {
+  const html = await (await pedir("https://www.instant-gaming.com/es/busquedas/?query=" + encodeURIComponent(j.titulo))).text();
+  const i = html.indexOf("window.searchResults = ");
+  if (i < 0) throw new Error("la búsqueda ya no trae datos (puede que Instant Gaming haya cambiado su web)");
+  const datos = JSON.parse(bloqueJSON(html, i));
+  let n = 0;
+  for (const h of datos.hits || []) {
+    if (h.is_dlc || !h.has_stock || h.is_prepaid || h.is_subscription || h.preorder) continue;
+    const precio = parseFloat(h.price_eur);
+    if (!(precio > 0) || !valeEnEspana(h)) continue;
+    if (parecido(j.titulo, h.name) <= 0.5) continue; // el juego base, no ediciones ni otros
+    for (const nombre of h.platform_names || []) {
+      const plat = PLAT_IG[limpiar(nombre)] || PLAT_IG[String(nombre).toLowerCase()];
+      if (!plat) continue;
+      const antes = j.ofertas.length;
+      ofertar(j, {
+        tienda: "instantgaming", plataforma: plat, precio, regular: parseFloat(h.default_retail) || undefined,
+        condicion: `Clave ${h.type || ""} · ${h.region_fulltext || h.region || "Worldwide"}`.replace(/\s+·/, " ·"),
+        url: `https://www.instant-gaming.com/es/${h.prod_id}-comprar-${h.seo_name}/`, fuente: "instantgaming",
+      });
+      if (j.ofertas.length > antes) n++;
+    }
+  }
+  return n;
+}
+
 // ---------- IsThereAnyDeal (opcional) ----------
 const ITAD = "https://api.isthereanydeal.com";
 // Tiendas de PC que son de los propios fabricantes o plataformas (no revendedores)
@@ -398,6 +438,7 @@ async function main() {
     }
   };
   await recorrerFuente("game", populares(GAME_MAX), game, 700);
+  await recorrerFuente("instantgaming", populares(IG_MAX), instantGaming, 900);
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) await recorrerFuente("ebay", consolaPopulares(EBAY_MAX), ebay, 250);
 
   // 4. IsThereAnyDeal para los juegos de PC más populares
