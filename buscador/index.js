@@ -114,23 +114,29 @@ async function ebay(q, res, env) {
   }
 }
 
-// IsThereAnyDeal: más tiendas de PC (GOG, Epic, Fanatical…) para los 2 mejores resultados de PC
+// IsThereAnyDeal: tiendas oficiales de PC (Epic, GOG, Ubisoft, Blizzard, EA, Microsoft…).
+// Busca los 2 mejores resultados de PC y, si no hay ninguno (exclusivos que no están en Steam), busca lo que escribiste.
+const OFICIALES_PC = /^(gog|epic|microsoft|ea app|ea store|origin|ubisoft|battle\.net|blizzard|rockstar|bethesda|square enix)/i;
 async function itad(q, res, env) {
   if (!env.ITAD_KEY) return;
-  const dePC = [...res.mapa.values()].filter((j) => j.plataformas.includes("PC")).sort((a, b) => a._rel - b._rel).slice(0, 2);
-  for (const j of dePC) {
-    const l = await (await pedir(`https://api.isthereanydeal.com/games/lookup/v1?key=${env.ITAD_KEY}&title=${encodeURIComponent(j.titulo)}`)).json();
+  const key = encodeURIComponent(env.ITAD_KEY.trim());
+  let dePC = [...res.mapa.values()].filter((j) => j.plataformas.includes("PC")).sort((a, b) => a._rel - b._rel).slice(0, 2).map((j) => ({ j, titulo: j.titulo }));
+  if (!dePC.length) dePC = [{ j: null, titulo: q }];
+  for (const c of dePC) {
+    const l = await (await pedir(`https://api.isthereanydeal.com/games/lookup/v1?key=${key}&title=${encodeURIComponent(c.titulo)}`)).json();
     if (!l.found || !l.game?.id) continue;
-    const r = await (await pedir(`https://api.isthereanydeal.com/games/prices/v3?key=${env.ITAD_KEY}&country=ES`, {
+    if (!c.j && !encaja(q, l.game.title || "")) continue;
+    const j = c.j || res.juego(l.game.title, 0);
+    const r = await (await pedir(`https://api.isthereanydeal.com/games/prices/v3?key=${key}&country=ES`, {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify([l.game.id]),
     })).json();
     for (const x of r[0]?.deals || []) {
-      if (x.price?.currency !== "EUR") continue;
       const nombre = x.shop?.name || x.shop?.title || String(x.shop?.id);
-      const id = "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
-      if (id === "itad-steam") continue;
-      res.ofertar(j, { tienda: id, plataforma: "PC", formato: "digital", estado: "nuevo", stock: true, precio: x.price.amount, regular: x.regular?.amount, url: x.url });
-      res.tiendas[id] = { id, nombre, tipo: /^(gog|epic|microsoft|ea app|ubisoft|battle\.net|blizzard|rockstar)/i.test(nombre) ? "oficial" : "revendedor", formatos: ["digital"] };
+      if (x.price?.currency !== "EUR" || !OFICIALES_PC.test(nombre) || /^steam$/i.test(nombre)) continue;
+      // Microsoft Store es la misma tienda que la de su catálogo oficial
+      const id = /^microsoft/i.test(nombre) ? "xbox" : "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
+      res.ofertar(j, { tienda: id, plataforma: "PC", formato: "digital", estado: "nuevo", stock: true, precio: x.price.amount, regular: x.regular?.amount, url: x.url || undefined });
+      if (id !== "xbox") res.tiendas[id] = { id, nombre, tipo: "oficial", formatos: ["digital"] };
     }
   }
 }

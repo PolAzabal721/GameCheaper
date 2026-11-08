@@ -22,7 +22,7 @@ import { dirname, join } from "node:path";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ENV = process.env;
-const STEAM_PAGINAS = +(ENV.STEAM_PAGINAS || 10);
+const STEAM_PAGINAS = +(ENV.STEAM_PAGINAS || 20);
 const ESHOP_MAX = +(ENV.ESHOP_MAX || 2500);
 const EBAY_MAX = +(ENV.EBAY_MAX || 150);
 const GAME_MAX = +(ENV.GAME_MAX || 200);
@@ -508,7 +508,7 @@ async function main() {
 
   // 4. IsThereAnyDeal para los juegos de PC más populares
   if (ENV.ITAD_KEY) {
-    const dePC = [...juegos.values()].filter((j) => j.plataformas.has("PC")).sort((a, b) => a.pop - b.pop).slice(0, +(ENV.ITAD_MAX || 1500));
+    const dePC = [...juegos.values()].filter((j) => j.plataformas.has("PC")).sort((a, b) => a.pop - b.pop).slice(0, +(ENV.ITAD_MAX || 3000));
     if (!(await intentar("itad", () => itad(dePC, tiendas)))) caidas.add("itad");
   }
 
