@@ -97,6 +97,9 @@ async function eshop(juego) {
     const p = precios.find((x) => String(x.title_id) === String(c.nsuid));
     const valor = parseFloat(p?.discount_price?.raw_value ?? p?.regular_price?.raw_value);
     if (!p || !isFinite(valor) || p.regular_price?.currency !== "EUR") return null;
+    // La "Nintendo Switch 2 Edition" a veces solo es el pack de mejora (~10 €), no el juego completo
+    const regular = parseFloat(p.regular_price?.raw_value);
+    if (c.plat === "Switch 2" && /switch 2 edition/i.test(c.doc.title || "") && regular < (juego.pvp || 60) * 0.4) return null;
     return {
       tienda: "eshop", plataforma: c.plat, formato: "digital", precio: valor,
       url: c.doc.url ? "https://www.nintendo.com" + c.doc.url : "https://www.nintendo.com/es-es/",
@@ -105,35 +108,29 @@ async function eshop(juego) {
 }
 
 // ---------- Fuente: PlayStation Store ----------
-// La página de búsqueda trae los productos en un bloque JSON (__NEXT_DATA__). Lo recorremos buscando
-// objetos con nombre + precio. Si Sony cambia su web, esta fuente avisará y se conservarán los últimos precios.
-function recorrer(nodo, encontrar, visto = new Set()) {
-  if (!nodo || typeof nodo !== "object" || visto.has(nodo)) return;
-  visto.add(nodo);
-  encontrar(nodo);
-  for (const v of Object.values(nodo)) recorrer(v, encontrar, visto);
-}
+// La búsqueda de la PS Store carga con JavaScript y no trae precios, pero la ficha de cada juego
+// ("concept") incluye un bloque estándar JSON-LD con el precio actual en euros.
+// Cada juego necesita "psConcept": el número de su URL store.playstation.com/es-es/concept/XXXXX
+// (puede ser una lista si hay varias fichas; se usa la primera que funcione).
 async function psstore(juego) {
-  const plats = juego.plataformas.filter((p) => p === "PS5" || p === "PS4");
-  if (!plats.length) return [];
-  const html = await (await pedir(`https://store.playstation.com/es-es/search/${encodeURIComponent(juego.titulo)}`)).text();
-  const bloques = [...html.matchAll(/<script[^>]*(?:id="__NEXT_DATA__"|type="application\/json")[^>]*>([\s\S]*?)<\/script>/g)];
-  const productos = [];
-  for (const [, crudo] of bloques) {
-    let json; try { json = JSON.parse(crudo); } catch { continue; }
-    recorrer(json, (o) => {
-      const precio = o.price?.discountedPrice ?? o.price?.basePrice;
-      if (typeof o.name === "string" && precio && !o.price?.isFree && o.id) productos.push({ id: o.id, nombre: o.name, precio: euros(precio), plataformas: o.platforms || [] });
-    });
+  const plat = juego.plataformas.find((p) => p === "PS5" || p === "PS4");
+  if (!plat || !juego.psConcept) return [];
+  const conceptos = [].concat(juego.psConcept);
+  let ultimoError = null;
+  for (const id of conceptos) {
+    const url = `https://store.playstation.com/es-es/concept/${id}`;
+    const html = await (await pedir(url)).text();
+    const m = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/);
+    if (!m) { ultimoError = "la ficha no trae el bloque de precio"; continue; }
+    let ld; try { ld = JSON.parse(m[1]); } catch { ultimoError = "bloque de precio ilegible"; continue; }
+    const oferta = [].concat(ld.offers || [])[0];
+    // Comprobamos que la ficha es de este juego: tienen que aparecer todas las palabras del título
+    const palabras = limpiar(juego.titulo).split(" "), nombre = " " + limpiar(ld.name || "") + " ";
+    if (!palabras.every((p) => nombre.includes(" " + p + " "))) { ultimoError = `la ficha ${id} es de «${ld.name}»`; continue; }
+    if (!oferta || oferta.priceCurrency !== "EUR" || !(oferta.price > 0)) { ultimoError = "sin precio en euros"; continue; }
+    return [{ tienda: "psstore", plataforma: plat, formato: "digital", precio: Number(oferta.price), url }];
   }
-  if (!bloques.length || !productos.length) throw new Error("no encontré productos en la página (puede que Sony haya cambiado su web)");
-  const salida = [];
-  for (const plat of plats) {
-    const deEsta = productos.filter((p) => !p.plataformas.length || p.plataformas.includes(plat));
-    const p = mejorCoincidencia(juego.titulo, deEsta, (x) => x.nombre.replace(/\b(PS4|PS5)\b/g, ""));
-    if (p && isFinite(p.precio)) salida.push({ tienda: "psstore", plataforma: plat, formato: "digital", precio: p.precio, url: `https://store.playstation.com/es-es/product/${p.id}` });
-  }
-  return salida;
+  throw new Error(ultimoError || "sin datos");
 }
 
 // ---------- Fuente: IsThereAnyDeal (opcional) ----------
