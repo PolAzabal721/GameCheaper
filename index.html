@@ -677,7 +677,8 @@ button { cursor: pointer; }
       var primera = tiendaPorId[ofsClaves[0].tienda] || { nombre: ofsClaves[0].tienda };
       grupos.push({ id: "claves", claves: true, nTiendas: deClaves.length, t: { nombre: primera.nombre, tipo: "revendedor" }, ofs: ofsClaves });
     }
-    grupos.sort(function (a, b) { return (ORDEN_TIPOS.indexOf(a.t.tipo) - ORDEN_TIPOS.indexOf(b.t.tipo)) || (total(a.ofs[0]) - total(b.ofs[0])); });
+    // La opción más barata siempre arriba, sea la tienda que sea (las agotadas al final)
+    grupos.sort(function (a, b) { return (b.ofs[0].stock - a.ofs[0].stock) || (total(a.ofs[0]) - total(b.ofs[0])); });
     var todas = abiertos[j.id];
     var vis = todas ? grupos : grupos.slice(0, VISIBLES);
     var otras = otrasTiendas(j);
@@ -702,7 +703,7 @@ button { cursor: pointer; }
         var detalle = g.claves
           ? "<span>La clave más barata de " + g.nTiendas + " tiendas · " + esc(o.plataforma || "") + (o.condicion ? " · " + esc(o.condicion) : "") + "</span>"
           : n > 1
-          ? "<span>Desde · " + esc(plats.join(", ")) + "</span>"
+          ? "<span>Desde · " + esc(plats.join(", ")) + "</span>" + (o.stock ? "" : '<span class="agotado">· Agotado</span>')
           : "<span>" + esc(o.plataforma || "—") + "</span><span>·</span><span>" + (o.formato === "fisico" ? "En disco" : "Digital") + "</span>" +
             (o.condicion ? "<span>·</span><span>" + esc(o.condicion) + "</span>" : "") +
             (o.envio ? "<span>·</span><span>" + eur.format(o.precio) + " + " + eur.format(o.envio) + " envío</span>" : "") +
