@@ -1,0 +1,7 @@
+[
+  { "juego": "yotei", "tienda": "mediamarkt", "plataforma": "PS5", "formato": "fisico", "precio": 64.99, "stock": true },
+  { "juego": "yotei", "tienda": "eneba", "plataforma": "PS5", "formato": "digital", "precio": 52.40, "url": "https://www.eneba.com/es/" },
+  { "juego": "mkworld", "tienda": "fnac", "plataforma": "Switch 2", "formato": "fisico", "precio": 74.99, "stock": false },
+  { "juego": "mkworld", "tienda": "wallapop", "plataforma": "Switch 2", "estado": "usado", "condicion": "Como nuevo", "precio": 55, "envio": 3.49, "url": "https://es.wallapop.com/" },
+  { "juego": "yotei", "tienda": "cex", "plataforma": "PS5", "estado": "usado", "condicion": "Bueno", "precio": 49 }
+]

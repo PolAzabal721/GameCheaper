@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Pillao</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Compara precios de videojuegos digitales y físicos en tiendas españolas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Lineal de tienda: barra de búsqueda fija, filtros rápidos en chips, cada juego es una balda con su etiqueta de precio amarilla */
+:root {
+  --bg: #eef0f5;
+  --surface: #ffffff;
+  --surface-2: #f6f7fb;
+  --ink: #141a2e;
+  --muted: #5a6280;
+  --line: #d9dce8;
+  --accent: #2741d6;
+  --accent-soft: #e4e8ff;
+  --tag: #ffd23f;
+  --tag-ink: #1d1600;
+  --good: #11804a;
+  --good-soft: #dff3e8;
+  --warn: #a85400;
+  --warn-soft: #fdeedd;
+  --danger: #b4233a;
+  --shadow: 0 1px 2px rgba(20,26,46,.06), 0 4px 16px rgba(20,26,46,.05);
+  --f-display: "Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1120; --surface: #161a2c; --surface-2: #1c2136; --ink: #e8ebf6; --muted: #98a0bf;
+    --line: #2a3150; --accent: #8fa0ff; --accent-soft: #232a52; --tag: #ffd23f; --tag-ink: #1d1600;
+    --good: #4fd18b; --good-soft: #15301f; --warn: #f2a654; --warn-soft: #33240f; --danger: #ff7d8f;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1120; --surface: #161a2c; --surface-2: #1c2136; --ink: #e8ebf6; --muted: #98a0bf;
+  --line: #2a3150; --accent: #8fa0ff; --accent-soft: #232a52; --tag: #ffd23f; --tag-ink: #1d1600;
+  --good: #4fd18b; --good-soft: #15301f; --warn: #f2a654; --warn-soft: #33240f; --danger: #ff7d8f;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Cabecera */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
+.top-row { display: flex; align-items: center; gap: 12px; padding-block: 12px; }
+.logo { font-family: var(--f-display); font-weight: 800; font-size: 26px; letter-spacing: -.02em; line-height: 1; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.logo i { font-style: normal; background: var(--tag); color: var(--tag-ink); padding: 2px 6px 3px; border-radius: 5px; transform: rotate(-4deg); display: inline-block; font-size: 15px; }
+.search { flex: 1; min-width: 0; position: relative; }
+.search input { width: 100%; height: 42px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 10px; padding: 0 12px 0 38px; }
+.search input::placeholder { color: var(--muted); }
+.search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.btn-filtros { display: none; height: 42px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); font-weight: 600; align-items: center; gap: 6px; flex-shrink: 0; }
+.btn-filtros .n { background: var(--accent); color: var(--surface); border-radius: 99px; font-size: 12px; min-width: 20px; height: 20px; display: inline-grid; place-items: center; padding: 0 5px; }
+.estado { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); flex-shrink: 0; }
+.estado .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+.estado.viejo .dot { background: var(--warn); }
+.estado.error .dot { background: var(--danger); }
+.icon-btn { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); }
+
+.quick { display: flex; gap: 10px; align-items: center; padding-bottom: 12px; overflow-x: auto; scrollbar-width: none; }
+.quick::-webkit-scrollbar { display: none; }
+.seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 3px; flex-shrink: 0; }
+.seg button { border: 0; background: transparent; padding: 6px 12px; border-radius: 7px; font-weight: 600; font-size: 14px; color: var(--muted); white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.sep { width: 1px; height: 24px; background: var(--line); flex-shrink: 0; }
+.chip { border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; border-radius: 99px; font-size: 14px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+.aviso { margin-top: 14px; padding: 10px 14px; border-radius: 10px; background: var(--warn-soft); color: var(--warn); font-size: 14px; display: flex; gap: 10px; align-items: flex-start; }
+.aviso b { font-weight: 700; }
+
+/* Distribución */
+.layout { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 24px; padding-block: 20px 48px; align-items: start; }
+.panel { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 128px); display: flex; flex-direction: column; gap: 22px; max-height: calc(100vh - 150px); overflow-y: auto; padding-right: 4px; }
+.panel-head { display: none; }
+.grupo { display: flex; flex-direction: column; gap: 10px; }
+.grupo h3 { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; display: flex; justify-content: space-between; align-items: baseline; }
+.grupo h3 button { border: 0; background: none; color: var(--accent); font-size: 12px; text-transform: none; letter-spacing: 0; font-weight: 600; padding: 0; }
+.tiendas { display: flex; flex-direction: column; gap: 14px; }
+.tipo-t { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips .chip { font-size: 13px; padding: 5px 10px; }
+.switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; cursor: pointer; }
+.switch small { display: block; color: var(--muted); font-size: 12.5px; }
+.switch input { appearance: none; width: 40px; height: 24px; border-radius: 99px; background: var(--line); position: relative; flex-shrink: 0; cursor: pointer; transition: background .15s; margin: 0; }
+.switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--surface); transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+.switch input:checked { background: var(--accent); }
+.switch input:checked::after { transform: translateX(16px); }
+.rango { display: flex; flex-direction: column; gap: 6px; }
+.rango output { font-family: var(--f-mono); font-weight: 700; font-size: 15px; }
+.rango input { width: 100%; accent-color: var(--accent); }
+.rango .ext { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-family: var(--f-mono); }
+.mis-datos { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; }
+.mis-datos p { margin: 0; color: var(--muted); }
+.mis-datos textarea { width: 100%; min-height: 90px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); padding: 8px; font-family: var(--f-mono); font-size: 12px; resize: vertical; }
+.fila-btn { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 7px 12px; font-weight: 600; font-size: 13.5px; }
+.btn.prim { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.btn-archivo { position: relative; overflow: hidden; }
+.btn-archivo input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.msg { font-size: 13px; }
+.msg.ok { color: var(--good); }
+.msg.err { color: var(--danger); }
+
+/* Resultados */
+.res-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.res-head h1 { font-family: var(--f-display); font-size: 22px; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.res-head h1 span { color: var(--muted); font-weight: 700; }
+.orden { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+.orden select { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 10px; color: var(--ink); font-weight: 600; }
+.lista { display: flex; flex-direction: column; gap: 14px; }
+.juego { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.j-cab { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+.j-info { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.j-info h2 { font-family: var(--f-display); font-weight: 800; font-size: 21px; line-height: 1.15; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.plats { display: flex; gap: 6px; flex-wrap: wrap; }
+.plat { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 5px; background: var(--surface-2); border: 1px solid var(--line); color: var(--muted); }
+.pvp { font-size: 13px; color: var(--muted); }
+.pvp s { font-family: var(--f-mono); }
+.etiqueta { flex-shrink: 0; background: var(--tag); color: var(--tag-ink); border-radius: 8px; padding: 10px 14px 10px 22px; transform: rotate(-1.5deg); position: relative; display: flex; flex-direction: column; align-items: flex-end; min-width: 150px; box-shadow: 0 2px 0 rgba(0,0,0,.12); }
+.etiqueta::before { content: ""; position: absolute; left: 9px; top: 50%; width: 7px; height: 7px; border-radius: 50%; background: var(--surface); transform: translateY(-50%); box-shadow: inset 0 0 0 1.5px rgba(0,0,0,.15); }
+.etiqueta .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; opacity: .75; }
+.etiqueta .precio { font-family: var(--f-mono); font-weight: 700; font-size: 28px; line-height: 1.1; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.etiqueta .donde { font-size: 12.5px; font-weight: 600; text-align: right; }
+.etiqueta .ahorro { position: absolute; top: -10px; right: -8px; background: var(--ink); color: var(--surface); font-family: var(--f-mono); font-size: 12px; font-weight: 700; padding: 3px 7px; border-radius: 6px; transform: rotate(4deg); }
+
+.ofertas { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.of { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.of:last-child { border-bottom: 0; }
+.of-t { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
+.of-t strong { font-weight: 600; }
+.badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 2px 6px; border-radius: 4px; }
+.b-oficial { background: var(--good-soft); color: var(--good); }
+.b-revendedor { background: var(--accent-soft); color: var(--accent); }
+.b-marketplace { background: var(--warn-soft); color: var(--warn); }
+.b-tienda { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+.b-segundamano { background: var(--accent-soft); color: var(--accent); }
+.b-particulares { background: var(--warn-soft); color: var(--warn); }
+.usado { font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--ink); color: var(--surface); text-transform: uppercase; letter-spacing: .05em; }
+.resumen { display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 13.5px; color: var(--muted); }
+.resumen b { color: var(--ink); font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.of-d { font-size: 13.5px; color: var(--muted); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.of-d .agotado { color: var(--danger); font-weight: 600; }
+.of-p { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; display: flex; flex-direction: column; align-items: flex-end; }
+.of-p b { font-size: 16px; }
+.of-p small { font-size: 11.5px; color: var(--muted); }
+.of.mejor .of-p b { color: var(--good); }
+.ir { font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; white-space: nowrap; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); }
+.ir:hover { background: var(--accent-soft); }
+.mas { align-self: flex-start; border: 0; background: none; color: var(--accent); font-weight: 600; padding: 0; font-size: 14px; }
+.vacio { background: var(--surface); border: 1px dashed var(--line); border-radius: var(--r); padding: 32px 20px; text-align: center; color: var(--muted); }
+.vacio b { display: block; color: var(--ink); font-family: var(--f-display); font-size: 20px; margin-bottom: 6px; }
+.fondo { display: none; }
+
+/* Móvil */
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .btn-filtros { display: inline-flex; }
+  .estado .txt { display: none; }
+  .panel { position: fixed; left: 0; right: 0; bottom: 0; top: auto; max-height: 82vh; z-index: 50; background: var(--bg); border-radius: 18px 18px 0 0; padding: 0 max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); transform: translateY(105%); transition: transform .22s ease; box-shadow: 0 -8px 30px rgba(0,0,0,.2); }
+  .panel.abierto { transform: none; }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg); padding: 16px 0 10px; z-index: 1; }
+  .panel-head b { font-family: var(--f-display); font-size: 20px; }
+  .fondo.ver { display: block; position: fixed; inset: 0; background: rgba(8,10,20,.45); z-index: 40; }
+}
+@media (max-width: 560px) {
+  .logo span { display: none; }
+  .logo i { font-size: 16px; }
+  .j-cab { flex-direction: column-reverse; }
+  .etiqueta { align-self: stretch; align-items: flex-start; padding-left: 26px; transform: rotate(-.8deg); }
+  .etiqueta .donde { text-align: left; }
+  .of { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+  .of-d { grid-column: 1; grid-row: 2; }
+  .of-p { grid-column: 2; grid-row: 1 / span 2; }
+  .of .ir { grid-column: 1 / -1; grid-row: 3; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="logo" aria-label="Pillao"><span>Pillao</span><i>€</i></div>
+      <label class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Busca un juego…" autocomplete="off" aria-label="Buscar juego">
+      </label>
+      <button class="btn-filtros" id="abrir" type="button" aria-controls="panel">Filtros <span class="n" id="nfiltros" hidden>0</span></button>
+      <div class="estado" id="estado" aria-live="polite"><span class="dot"></span><span class="txt" id="estado-txt">Cargando…</span>
+        <button class="icon-btn" id="recargar" type="button" title="Buscar precios nuevos" aria-label="Buscar precios nuevos"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
+      </div>
+    </div>
+    <div class="quick" role="toolbar" aria-label="Filtros rápidos">
+      <div class="seg" id="formato" role="group" aria-label="Formato">
+        <button type="button" data-v="todos" aria-pressed="true">Todo</button>
+        <button type="button" data-v="digital" aria-pressed="false">Digital</button>
+        <button type="button" data-v="fisico" aria-pressed="false">En disco</button>
+      </div>
+      <div class="seg" id="estado-f" role="group" aria-label="Estado">
+        <button type="button" data-v="todos" aria-pressed="true">Nuevo y usado</button>
+        <button type="button" data-v="nuevo" aria-pressed="false">Nuevo</button>
+        <button type="button" data-v="usado" aria-pressed="false">Segunda mano</button>
+      </div>
+      <span class="sep"></span>
+      <div id="plataformas" style="display:flex;gap:6px" role="group" aria-label="Plataforma"></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="aviso" id="aviso" hidden><span>⚠</span><span><b>Precios de ejemplo.</b> Estos números son inventados para probar la web. Cuando ejecutes el actualizador o cargues tu propio JSON, aquí verás precios reales.</span></div>
+  <div class="layout">
+    <aside class="panel" id="panel" aria-label="Más filtros">
+      <div class="panel-head"><b>Filtros</b><button class="btn" id="cerrar" type="button">Listo</button></div>
+      <div class="grupo">
+        <h3>Tiendas <button type="button" id="todas-t">Marcar todas</button></h3>
+        <div class="tiendas" id="tiendas"></div>
+      </div>
+      <div class="grupo">
+        <h3>Confianza</h3>
+        <label class="switch"><span>Incluir marketplaces<small>Claves vendidas por terceros (G2A, Eneba)</small></span><input type="checkbox" id="mkt" checked></label>
+        <label class="switch"><span>Incluir particulares<small>Segunda mano entre personas (Wallapop, eBay). Paga siempre por el envío protegido de la web.</small></span><input type="checkbox" id="part" checked></label>
+        <label class="switch"><span>Solo con stock</span><input type="checkbox" id="stock"></label>
+      </div>
+      <div class="grupo">
+        <h3>Precio máximo</h3>
+        <div class="rango"><output id="pmax-out" for="pmax">Sin límite</output><input type="range" id="pmax" min="5" max="100" step="1" value="100"><div class="ext"><span>5 €</span><span id="pmax-top">100 €</span></div></div>
+      </div>
+      <div class="grupo">
+        <h3>Tus datos</h3>
+        <div class="mis-datos">
+          <p>La web lee <code>precios.json</code>. Puedes probar con tu propio JSON: súbelo o pégalo aquí.</p>
+          <textarea id="json-in" spellcheck="false" placeholder='{"juegos":[{"titulo":"…","ofertas":[{"tienda":"steam","precio":19.99}]}]}'></textarea>
+          <div class="fila-btn">
+            <button class="btn prim" id="json-aplicar" type="button">Usar este JSON</button>
+            <span class="btn btn-archivo">Subir archivo<input type="file" id="json-file" accept=".json,application/json"></span>
+            <button class="btn" id="json-ver" type="button">Ver el actual</button>
+          </div>
+          <button class="btn" id="json-reset" type="button" hidden>Volver a los precios del servidor</button>
+          <div class="msg" id="json-msg" role="status"></div>
+        </div>
+      </div>
+    </aside>
+    <div class="fondo" id="fondo"></div>
+    <section aria-live="polite">
+      <div class="res-head">
+        <h1 id="titulo-res">Juegos</h1>
+        <label class="orden">Ordenar
+          <select id="orden">
+            <option value="barato">Más barato</option>
+            <option value="descuento">Mayor descuento</option>
+            <option value="az">A–Z</option>
+          </select>
+        </label>
+      </div>
+      <div class="lista" id="lista"></div>
+    </section>
+  </div>
+</div>
+
+<script type="application/json" id="datos-incrustados">{"actualizado":"2026-11-08T16:40:00+01:00","ejemplo":true,"tiendas":[{"id":"steam","nombre":"Steam","tipo":"oficial","formatos":["digital"],"busqueda":"https://store.steampowered.com/search/?term={q}"},{"id":"psstore","nombre":"PlayStation Store","tipo":"oficial","formatos":["digital"],"busqueda":"https://store.playstation.com/es-es/search/{q}"},{"id":"xbox","nombre":"Microsoft Store","tipo":"oficial","formatos":["digital"],"busqueda":"https://www.xbox.com/es-ES/search?q={q}"},{"id":"eshop","nombre":"Nintendo eShop","tipo":"oficial","formatos":["digital"],"busqueda":"https://www.nintendo.com/es-es/"},{"id":"instantgaming","nombre":"Instant Gaming","tipo":"revendedor","formatos":["digital"],"busqueda":"https://www.instant-gaming.com/es/busquedas/?query={q}"},{"id":"eneba","nombre":"Eneba","tipo":"marketplace","formatos":["digital"],"busqueda":"https://www.eneba.com/es/store/all?text={q}"},{"id":"g2a","nombre":"G2A","tipo":"marketplace","formatos":["digital"],"busqueda":"https://www.g2a.com/es/search?query={q}"},{"id":"mediamarkt","nombre":"MediaMarkt","tipo":"tienda","formatos":["fisico"],"busqueda":"https://www.mediamarkt.es/es/search.html?query={q}"},{"id":"fnac","nombre":"Fnac","tipo":"tienda","formatos":["fisico"],"busqueda":"https://www.fnac.es/SearchResult/ResultList.aspx?Search={q}"},{"id":"amazon","nombre":"Amazon","tipo":"tienda","formatos":["fisico"],"busqueda":"https://www.amazon.es/s?k={q}"},{"id":"game","nombre":"GAME","tipo":"tienda","formatos":["fisico"],"busqueda":"https://www.game.es/buscar/{q}"},{"id":"elcorteingles","nombre":"El Corte Inglés","tipo":"tienda","formatos":["fisico"],"busqueda":"https://www.elcorteingles.es/"},{"id":"cex","nombre":"CeX","tipo":"segundamano","formatos":["fisico"],"busqueda":"https://es.webuy.com/search?stext={q}"},{"id":"gameseminuevos","nombre":"GAME Seminuevos","tipo":"segundamano","formatos":["fisico"],"busqueda":"https://www.game.es/buscar/{q}"},{"id":"amazonsegunda","nombre":"Amazon Segunda Mano","tipo":"segundamano","formatos":["fisico"],"busqueda":"https://www.amazon.es/s?k={q}&i=warehouse-deals"},{"id":"wallapop","nombre":"Wallapop","tipo":"particulares","formatos":["fisico"],"busqueda":"https://es.wallapop.com/app/search?keywords={q}"},{"id":"ebay","nombre":"eBay","tipo":"particulares","formatos":["fisico"],"busqueda":"https://www.ebay.es/sch/i.html?_nkw={q}&LH_ItemCondition=3000"}],"juegos":[{"id":"fc26","titulo":"EA Sports FC 26","plataformas":["PC","PS5","Xbox Series","Switch 2"],"pvp":79.99,"ofertas":[{"tienda":"steam","plataforma":"PC","formato":"digital","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"PC","formato":"digital","precio":51.56,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"PC","formato":"digital","precio":55.05,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"PC","formato":"digital","precio":58.98,"stock":true,"estado":"nuevo"},{"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"PS5","formato":"digital","precio":48.73,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"PS5","formato":"digital","precio":52.85,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"PS5","formato":"digital","precio":62.96,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"PS5","formato":"fisico","precio":60.99,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"PS5","formato":"fisico","precio":61.99,"stock":false,"estado":"nuevo"},{"tienda":"amazon","plataforma":"PS5","formato":"fisico","precio":74.99,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"PS5","formato":"fisico","precio":66.49,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"PS5","formato":"fisico","precio":70.99,"stock":true,"estado":"nuevo"},{"tienda":"xbox","plataforma":"Xbox Series","formato":"digital","precio":63.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"Xbox Series","formato":"digital","precio":58.98,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"Xbox Series","formato":"digital","precio":45.09,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"Xbox Series","formato":"fisico","precio":73.99,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Xbox Series","formato":"fisico","precio":78.49,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"Xbox Series","formato":"fisico","precio":65.99,"stock":true,"estado":"nuevo"},{"tienda":"eshop","plataforma":"Switch 2","formato":"digital","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"Switch 2","formato":"digital","precio":54.19,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"Switch 2","formato":"digital","precio":59.36,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"Switch 2","formato":"fisico","precio":69.49,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"Switch 2","formato":"fisico","precio":56.99,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"Switch 2","formato":"fisico","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Switch 2","formato":"fisico","precio":60.49,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"Switch 2","formato":"fisico","precio":79.99,"stock":false,"estado":"nuevo"},{"tienda":"cex","plataforma":"PS5","formato":"fisico","estado":"usado","precio":46.95,"stock":true,"condicion":"Con caja"},{"tienda":"amazonsegunda","plataforma":"PS5","formato":"fisico","estado":"usado","precio":62.0,"stock":true},{"tienda":"wallapop","plataforma":"PS5","formato":"fisico","estado":"usado","precio":35,"stock":true,"envio":2.49,"condicion":"Como nuevo"},{"tienda":"cex","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":52.95,"stock":true,"condicion":"Con caja"},{"tienda":"gameseminuevos","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":54.95,"stock":true},{"tienda":"amazonsegunda","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":66.0,"stock":true},{"tienda":"wallapop","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":36,"stock":true,"envio":4.49,"condicion":"Muy bueno"},{"tienda":"ebay","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":49,"stock":true,"envio":0,"condicion":"Bueno"},{"tienda":"cex","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":52.95,"stock":true,"condicion":"Sin manual"},{"tienda":"amazonsegunda","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":59.0,"stock":true},{"tienda":"wallapop","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":40,"stock":true,"envio":4.49,"condicion":"Muy bueno"},{"tienda":"ebay","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":44,"stock":true,"envio":3.9,"condicion":"Bueno"}]},{"id":"yotei","titulo":"Ghost of Yōtei","plataformas":["PS5"],"pvp":79.99,"ofertas":[{"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"PS5","formato":"digital","precio":50.88,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"PS5","formato":"digital","precio":61.73,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"PS5","formato":"digital","precio":61.04,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"PS5","formato":"fisico","precio":76.49,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"PS5","formato":"fisico","precio":58.49,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"PS5","formato":"fisico","precio":59.99,"stock":true,"estado":"nuevo"},{"tienda":"cex","plataforma":"PS5","formato":"fisico","estado":"usado","precio":52.95,"stock":false,"condicion":"Sin manual"},{"tienda":"gameseminuevos","plataforma":"PS5","formato":"fisico","estado":"usado","precio":53.95,"stock":true},{"tienda":"amazonsegunda","plataforma":"PS5","formato":"fisico","estado":"usado","precio":67.0,"stock":false},{"tienda":"wallapop","plataforma":"PS5","formato":"fisico","estado":"usado","precio":50,"stock":true,"envio":3.49,"condicion":"Bueno"}]},{"id":"mkworld","titulo":"Mario Kart World","plataformas":["Switch 2"],"pvp":89.99,"ofertas":[{"tienda":"eshop","plataforma":"Switch 2","formato":"digital","precio":89.99,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"Switch 2","formato":"fisico","precio":72.99,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"Switch 2","formato":"fisico","precio":74.49,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"Switch 2","formato":"fisico","precio":87.99,"stock":false,"estado":"nuevo"},{"tienda":"game","plataforma":"Switch 2","formato":"fisico","precio":65.99,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Switch 2","formato":"fisico","precio":89.99,"stock":true,"estado":"nuevo"},{"tienda":"cex","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":56.95,"stock":true,"condicion":"Sin manual"},{"tienda":"gameseminuevos","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":65.95,"stock":false},{"tienda":"wallapop","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":61,"stock":true,"envio":3.49,"condicion":"Aceptable"}]},{"id":"dkbananza","titulo":"Donkey Kong Bananza","plataformas":["Switch 2"],"pvp":79.99,"ofertas":[{"tienda":"eshop","plataforma":"Switch 2","formato":"digital","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"Switch 2","formato":"digital","precio":50.88,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"Switch 2","formato":"digital","precio":42.83,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"Switch 2","formato":"digital","precio":53.62,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Switch 2","formato":"fisico","precio":56.99,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"Switch 2","formato":"fisico","precio":74.49,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"Switch 2","formato":"fisico","precio":73.99,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"Switch 2","formato":"fisico","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"cex","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":57.95,"stock":true,"condicion":"Con caja"},{"tienda":"gameseminuevos","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":51.95,"stock":true},{"tienda":"wallapop","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":53,"stock":true,"envio":2.49,"condicion":"Aceptable"},{"tienda":"ebay","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":44,"stock":true,"envio":3.9,"condicion":"Bueno"}]},{"id":"silksong","titulo":"Hollow Knight: Silksong","plataformas":["PC","PS5","Xbox Series","Switch"],"pvp":19.5,"ofertas":[{"tienda":"steam","plataforma":"PC","formato":"digital","precio":19.5,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"PC","formato":"digital","precio":11.91,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"PC","formato":"digital","precio":15.32,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"PC","formato":"digital","precio":10.44,"stock":true,"estado":"nuevo"},{"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":19.5,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"PS5","formato":"digital","precio":13.02,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"PS5","formato":"digital","precio":11.41,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"PS5","formato":"digital","precio":11.52,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"PS5","formato":"fisico","precio":14.99,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"PS5","formato":"fisico","precio":13.99,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"PS5","formato":"fisico","precio":19.5,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"PS5","formato":"fisico","precio":19.5,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"PS5","formato":"fisico","precio":15.49,"stock":true,"estado":"nuevo"},{"tienda":"xbox","plataforma":"Xbox Series","formato":"digital","precio":19.5,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"Xbox Series","formato":"digital","precio":14.67,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"Xbox Series","formato":"digital","precio":12.3,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Xbox Series","formato":"fisico","precio":16.99,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"Xbox Series","formato":"fisico","precio":14.99,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"Xbox Series","formato":"fisico","precio":17.99,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"Xbox Series","formato":"fisico","precio":19.5,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"Xbox Series","formato":"fisico","precio":17.99,"stock":true,"estado":"nuevo"},{"tienda":"eshop","plataforma":"Switch","formato":"digital","precio":14.49,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"Switch","formato":"digital","precio":12.4,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"Switch","formato":"digital","precio":13.41,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"Switch","formato":"digital","precio":14.62,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"Switch","formato":"fisico","precio":19.5,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"Switch","formato":"fisico","precio":18.99,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Switch","formato":"fisico","precio":18.99,"stock":true,"estado":"nuevo"},{"tienda":"cex","plataforma":"PS5","formato":"fisico","estado":"usado","precio":12.95,"stock":true,"condicion":"Sin manual"},{"tienda":"amazonsegunda","plataforma":"PS5","formato":"fisico","estado":"usado","precio":14.0,"stock":true},{"tienda":"wallapop","plataforma":"PS5","formato":"fisico","estado":"usado","precio":11,"stock":true,"envio":3.49,"condicion":"Bueno"},{"tienda":"ebay","plataforma":"PS5","formato":"fisico","estado":"usado","precio":11,"stock":true,"envio":4.95,"condicion":"Muy bueno"},{"tienda":"wallapop","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":12,"stock":false,"envio":4.49,"condicion":"Aceptable"},{"tienda":"ebay","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":11,"stock":true,"envio":3.9,"condicion":"Como nuevo"},{"tienda":"cex","plataforma":"Switch","formato":"fisico","estado":"usado","precio":14.95,"stock":true,"condicion":"Con caja"},{"tienda":"gameseminuevos","plataforma":"Switch","formato":"fisico","estado":"usado","precio":12.95,"stock":false},{"tienda":"amazonsegunda","plataforma":"Switch","formato":"fisico","estado":"usado","precio":14.0,"stock":true},{"tienda":"wallapop","plataforma":"Switch","formato":"fisico","estado":"usado","precio":13,"stock":true,"envio":2.49,"condicion":"Bueno"}]},{"id":"bf6","titulo":"Battlefield 6","plataformas":["PC","PS5","Xbox Series"],"pvp":79.99,"ofertas":[{"tienda":"steam","plataforma":"PC","formato":"digital","precio":49.49,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"PC","formato":"digital","precio":61.72,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"PC","formato":"digital","precio":50.5,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"PC","formato":"digital","precio":62.89,"stock":true,"estado":"nuevo"},{"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"PS5","formato":"digital","precio":57.34,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"PS5","formato":"fisico","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"PS5","formato":"fisico","precio":75.49,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"PS5","formato":"fisico","precio":63.49,"stock":true,"estado":"nuevo"},{"tienda":"xbox","plataforma":"Xbox Series","formato":"digital","precio":61.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"Xbox Series","formato":"digital","precio":60.98,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"Xbox Series","formato":"digital","precio":49.81,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"Xbox Series","formato":"digital","precio":53.08,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"Xbox Series","formato":"fisico","precio":56.99,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"Xbox Series","formato":"fisico","precio":59.99,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Xbox Series","formato":"fisico","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"Xbox Series","formato":"fisico","precio":57.99,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"Xbox Series","formato":"fisico","precio":64.99,"stock":true,"estado":"nuevo"},{"tienda":"cex","plataforma":"PS5","formato":"fisico","estado":"usado","precio":50.95,"stock":true,"condicion":"Sin manual"},{"tienda":"amazonsegunda","plataforma":"PS5","formato":"fisico","estado":"usado","precio":61.0,"stock":false},{"tienda":"wallapop","plataforma":"PS5","formato":"fisico","estado":"usado","precio":41,"stock":true,"envio":4.49,"condicion":"Muy bueno"},{"tienda":"cex","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":57.95,"stock":true,"condicion":"Con caja"},{"tienda":"amazonsegunda","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":63.0,"stock":false},{"tienda":"wallapop","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":44,"stock":true,"envio":3.49,"condicion":"Muy bueno"}]},{"id":"bo7","titulo":"Call of Duty: Black Ops 7","plataformas":["PC","PS5","Xbox Series"],"pvp":79.99,"ofertas":[{"tienda":"steam","plataforma":"PC","formato":"digital","precio":58.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"PC","formato":"digital","precio":50.65,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"PC","formato":"digital","precio":49.53,"stock":true,"estado":"nuevo"},{"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"PS5","formato":"digital","precio":49.83,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"PS5","formato":"digital","precio":61.44,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"PS5","formato":"digital","precio":49.06,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"PS5","formato":"fisico","precio":72.49,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"PS5","formato":"fisico","precio":74.99,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"PS5","formato":"fisico","precio":66.99,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"PS5","formato":"fisico","precio":79.99,"stock":false,"estado":"nuevo"},{"tienda":"xbox","plataforma":"Xbox Series","formato":"digital","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"Xbox Series","formato":"digital","precio":65.32,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"Xbox Series","formato":"digital","precio":56.62,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"Xbox Series","formato":"fisico","precio":57.49,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Xbox Series","formato":"fisico","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"Xbox Series","formato":"fisico","precio":74.49,"stock":true,"estado":"nuevo"},{"tienda":"cex","plataforma":"PS5","formato":"fisico","estado":"usado","precio":48.95,"stock":true,"condicion":"Con caja"},{"tienda":"wallapop","plataforma":"PS5","formato":"fisico","estado":"usado","precio":38,"stock":true,"envio":3.49,"condicion":"Como nuevo"},{"tienda":"cex","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":50.95,"stock":true,"condicion":"Sin manual"},{"tienda":"gameseminuevos","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":61.95,"stock":true},{"tienda":"wallapop","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":38,"stock":true,"envio":2.49,"condicion":"Bueno"},{"tienda":"ebay","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":50,"stock":true,"envio":0,"condicion":"Muy bueno"}]},{"id":"plza","titulo":"Leyendas Pokémon: Z-A","plataformas":["Switch 2","Switch"],"pvp":69.99,"ofertas":[{"tienda":"eshop","plataforma":"Switch 2","formato":"digital","precio":52.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"Switch 2","formato":"digital","precio":44.52,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"Switch 2","formato":"digital","precio":49.48,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"Switch 2","formato":"digital","precio":40.35,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"Switch 2","formato":"fisico","precio":55.99,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"Switch 2","formato":"fisico","precio":68.99,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"Switch 2","formato":"fisico","precio":64.99,"stock":false,"estado":"nuevo"},{"tienda":"eshop","plataforma":"Switch","formato":"digital","precio":50.99,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"Switch","formato":"fisico","precio":69.99,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"Switch","formato":"fisico","precio":54.99,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Switch","formato":"fisico","precio":69.99,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"Switch","formato":"fisico","precio":51.99,"stock":true,"estado":"nuevo"},{"tienda":"gameseminuevos","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":50.95,"stock":true},{"tienda":"amazonsegunda","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":52.0,"stock":true},{"tienda":"wallapop","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":46,"stock":true,"envio":4.49,"condicion":"Bueno"},{"tienda":"ebay","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":49,"stock":true,"envio":3.9,"condicion":"Muy bueno"},{"tienda":"cex","plataforma":"Switch","formato":"fisico","estado":"usado","precio":40.95,"stock":true,"condicion":"Con caja"},{"tienda":"gameseminuevos","plataforma":"Switch","formato":"fisico","estado":"usado","precio":49.95,"stock":true},{"tienda":"wallapop","plataforma":"Switch","formato":"fisico","estado":"usado","precio":40,"stock":true,"envio":3.49,"condicion":"Muy bueno"}]},{"id":"e33","titulo":"Clair Obscur: Expedition 33","plataformas":["PC","PS5","Xbox Series"],"pvp":49.99,"ofertas":[{"tienda":"steam","plataforma":"PC","formato":"digital","precio":37.49,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"PC","formato":"digital","precio":39.33,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"PC","formato":"digital","precio":32.98,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"PC","formato":"digital","precio":31.84,"stock":true,"estado":"nuevo"},{"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":49.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"PS5","formato":"digital","precio":32.43,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"PS5","formato":"digital","precio":33.61,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"PS5","formato":"digital","precio":30.1,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"PS5","formato":"fisico","precio":36.99,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"PS5","formato":"fisico","precio":43.99,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"PS5","formato":"fisico","precio":37.99,"stock":false,"estado":"nuevo"},{"tienda":"xbox","plataforma":"Xbox Series","formato":"digital","precio":36.49,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"Xbox Series","formato":"digital","precio":36.01,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"Xbox Series","formato":"digital","precio":33.26,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"Xbox Series","formato":"digital","precio":28.56,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"Xbox Series","formato":"fisico","precio":48.49,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"Xbox Series","formato":"fisico","precio":46.99,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"Xbox Series","formato":"fisico","precio":49.99,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"Xbox Series","formato":"fisico","precio":43.99,"stock":false,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Xbox Series","formato":"fisico","precio":41.99,"stock":true,"estado":"nuevo"},{"tienda":"cex","plataforma":"PS5","formato":"fisico","estado":"usado","precio":28.95,"stock":true,"condicion":"Con caja"},{"tienda":"gameseminuevos","plataforma":"PS5","formato":"fisico","estado":"usado","precio":38.95,"stock":true},{"tienda":"wallapop","plataforma":"PS5","formato":"fisico","estado":"usado","precio":24,"stock":true,"envio":3.49,"condicion":"Muy bueno"},{"tienda":"cex","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":32.95,"stock":true,"condicion":"Con caja"},{"tienda":"amazonsegunda","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":38.0,"stock":true},{"tienda":"wallapop","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":26,"stock":true,"envio":4.49,"condicion":"Muy bueno"}]},{"id":"nightreign","titulo":"Elden Ring Nightreign","plataformas":["PC","PS5","Xbox Series"],"pvp":39.99,"ofertas":[{"tienda":"steam","plataforma":"PC","formato":"digital","precio":39.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"PC","formato":"digital","precio":29.65,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"PC","formato":"digital","precio":29.5,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"PC","formato":"digital","precio":24.86,"stock":true,"estado":"nuevo"},{"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":39.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"PS5","formato":"digital","precio":25.11,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"PS5","formato":"digital","precio":28.41,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"PS5","formato":"digital","precio":24.88,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"PS5","formato":"fisico","precio":34.49,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"PS5","formato":"fisico","precio":39.99,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"PS5","formato":"fisico","precio":39.99,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"PS5","formato":"fisico","precio":35.99,"stock":true,"estado":"nuevo"},{"tienda":"xbox","plataforma":"Xbox Series","formato":"digital","precio":39.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"Xbox Series","formato":"digital","precio":31.78,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"Xbox Series","formato":"fisico","precio":37.99,"stock":false,"estado":"nuevo"},{"tienda":"amazon","plataforma":"Xbox Series","formato":"fisico","precio":35.49,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"Xbox Series","formato":"fisico","precio":39.99,"stock":false,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Xbox Series","formato":"fisico","precio":32.99,"stock":false,"estado":"nuevo"},{"tienda":"cex","plataforma":"PS5","formato":"fisico","estado":"usado","precio":22.95,"stock":true,"condicion":"Con caja"},{"tienda":"wallapop","plataforma":"PS5","formato":"fisico","estado":"usado","precio":18,"stock":true,"envio":2.49,"condicion":"Como nuevo"},{"tienda":"ebay","plataforma":"PS5","formato":"fisico","estado":"usado","precio":24,"stock":true,"envio":0,"condicion":"Bueno"},{"tienda":"cex","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":23.95,"stock":false,"condicion":"Con caja"},{"tienda":"gameseminuevos","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":28.95,"stock":true},{"tienda":"wallapop","plataforma":"Xbox Series","formato":"fisico","estado":"usado","precio":23,"stock":true,"envio":4.49,"condicion":"Muy bueno"}]},{"id":"airriders","titulo":"Kirby Air Riders","plataformas":["Switch 2"],"pvp":79.99,"ofertas":[{"tienda":"eshop","plataforma":"Switch 2","formato":"digital","precio":50.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"Switch 2","formato":"digital","precio":48.35,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"Switch 2","formato":"digital","precio":60.26,"stock":true,"estado":"nuevo"},{"tienda":"g2a","plataforma":"Switch 2","formato":"digital","precio":47.82,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"Switch 2","formato":"fisico","precio":63.49,"stock":true,"estado":"nuevo"},{"tienda":"game","plataforma":"Switch 2","formato":"fisico","precio":79.99,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Switch 2","formato":"fisico","precio":70.49,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"Switch 2","formato":"fisico","precio":70.99,"stock":true,"estado":"nuevo"},{"tienda":"cex","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":51.95,"stock":true,"condicion":"Con caja"},{"tienda":"wallapop","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":39,"stock":true,"envio":2.49,"condicion":"Aceptable"},{"tienda":"ebay","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":41,"stock":true,"envio":0,"condicion":"Bueno"}]},{"id":"metroid4","titulo":"Metroid Prime 4: Beyond","plataformas":["Switch 2","Switch"],"pvp":69.99,"ofertas":[{"tienda":"eshop","plataforma":"Switch 2","formato":"digital","precio":45.49,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"Switch 2","formato":"fisico","precio":69.99,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Switch 2","formato":"fisico","precio":59.99,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"Switch 2","formato":"fisico","precio":58.49,"stock":true,"estado":"nuevo"},{"tienda":"eshop","plataforma":"Switch","formato":"digital","precio":69.99,"stock":true,"estado":"nuevo"},{"tienda":"instantgaming","plataforma":"Switch","formato":"digital","precio":56.83,"stock":true,"estado":"nuevo"},{"tienda":"eneba","plataforma":"Switch","formato":"digital","precio":39.13,"stock":true,"estado":"nuevo"},{"tienda":"elcorteingles","plataforma":"Switch","formato":"fisico","precio":50.49,"stock":true,"estado":"nuevo"},{"tienda":"fnac","plataforma":"Switch","formato":"fisico","precio":66.49,"stock":true,"estado":"nuevo"},{"tienda":"amazon","plataforma":"Switch","formato":"fisico","precio":55.49,"stock":true,"estado":"nuevo"},{"tienda":"mediamarkt","plataforma":"Switch","formato":"fisico","precio":69.99,"stock":true,"estado":"nuevo"},{"tienda":"cex","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":39.95,"stock":true,"condicion":"Con caja"},{"tienda":"amazonsegunda","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":56.0,"stock":true},{"tienda":"wallapop","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":45,"stock":true,"envio":2.49,"condicion":"Como nuevo"},{"tienda":"ebay","plataforma":"Switch 2","formato":"fisico","estado":"usado","precio":42,"stock":true,"envio":0,"condicion":"Como nuevo"},{"tienda":"cex","plataforma":"Switch","formato":"fisico","estado":"usado","precio":50.95,"stock":true,"condicion":"Sin manual"},{"tienda":"gameseminuevos","plataforma":"Switch","formato":"fisico","estado":"usado","precio":46.95,"stock":true},{"tienda":"amazonsegunda","plataforma":"Switch","formato":"fisico","estado":"usado","precio":54.0,"stock":true},{"tienda":"wallapop","plataforma":"Switch","formato":"fisico","estado":"usado","precio":35,"stock":true,"envio":4.49,"condicion":"Como nuevo"},{"tienda":"ebay","plataforma":"Switch","formato":"fisico","estado":"usado","precio":49,"stock":true,"envio":0,"condicion":"Como nuevo"}]}]}</script>
+<script>
+(function () {
+  "use strict";
+  var REFRESCO_MS = 5 * 60 * 1000;          // vuelve a leer precios.json cada 5 minutos
+  var VISIBLES = 4;                          // ofertas visibles antes de "ver todas"
+  var TIPOS = { oficial: "Oficial", revendedor: "Revendedor", marketplace: "Marketplace", tienda: "Tienda", segundamano: "2ª mano", particulares: "Particulares" };
+  var ORDEN_TIPOS = ["oficial", "revendedor", "marketplace", "tienda", "segundamano", "particulares"];
+  var TITULOS_TIPO = { oficial: "Oficiales", revendedor: "Revendedores de claves", marketplace: "Marketplaces de claves", tienda: "Tiendas físicas", segundamano: "Tiendas de segunda mano", particulares: "Entre particulares" };
+  // Precio que pagas de verdad: producto + envío
+  function total(o) { return o.precio + (o.envio || 0); }
+  var eur = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
+  var $ = function (id) { return document.getElementById(id); };
+
+  var datos = null, origen = "servidor", tiendaPorId = {}, abiertos = {};
+  var f = cargarFiltros();
+
+  function cargarFiltros() {
+    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], mkt: true, part: true, stock: false, pmax: null, orden: "barato" };
+    try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g) base[k] = g[k]; } catch (e) {}
+    return base;
+  }
+  function guardarFiltros() { try { localStorage.setItem("pillao-filtros", JSON.stringify(f)); } catch (e) {} }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function norm(s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+
+  // ---------- Validación del JSON ----------
+  function validar(d) {
+    if (!d || typeof d !== "object") throw new Error("El JSON tiene que ser un objeto con una lista \"juegos\".");
+    if (!Array.isArray(d.juegos)) throw new Error("Falta la lista \"juegos\".");
+    var avisos = 0;
+    d.tiendas = Array.isArray(d.tiendas) ? d.tiendas : [];
+    d.juegos = d.juegos.filter(function (j, i) {
+      if (!j || !j.titulo || !Array.isArray(j.ofertas)) { avisos++; return false; }
+      j.id = j.id || "j" + i;
+      j.plataformas = Array.isArray(j.plataformas) ? j.plataformas : [];
+      j.ofertas = j.ofertas.filter(function (o) {
+        var ok = o && o.tienda && typeof o.precio === "number" && isFinite(o.precio);
+        if (!ok) avisos++;
+        if (ok) {
+          o.formato = o.formato === "fisico" ? "fisico" : "digital";
+          o.stock = o.stock !== false;
+          o.estado = o.estado === "usado" ? "usado" : "nuevo";
+          if (o.estado === "usado") o.formato = "fisico";
+          o.envio = typeof o.envio === "number" && o.envio > 0 ? o.envio : 0;
+        }
+        return ok;
+      });
+      j.ofertas.forEach(function (o) { if (o.plataforma && j.plataformas.indexOf(o.plataforma) < 0) j.plataformas.push(o.plataforma); });
+      return true;
+    });
+    var conocidas = {};
+    d.tiendas.forEach(function (t) { if (t && t.id) { t.tipo = TIPOS[t.tipo] ? t.tipo : "tienda"; t.nombre = t.nombre || t.id; conocidas[t.id] = t; } });
+    d.juegos.forEach(function (j) { j.ofertas.forEach(function (o) { if (!conocidas[o.tienda]) { conocidas[o.tienda] = { id: o.tienda, nombre: o.tienda, tipo: "tienda" }; d.tiendas.push(conocidas[o.tienda]); } }); });
+    d._avisos = avisos;
+    return d;
+  }
+
+  function usarDatos(d, de) {
+    datos = validar(d);
+    origen = de;
+    tiendaPorId = {};
+    datos.tiendas.forEach(function (t) { tiendaPorId[t.id] = t; });
+    $("aviso").hidden = !datos.ejemplo;
+    $("json-reset").hidden = de !== "propio";
+    pintarControles();
+    pintar();
+    pintarEstado();
+  }
+
+  // ---------- Carga y refresco ----------
+  function leerServidor(manual) {
+    if (origen === "propio" && !manual) return;
+    var est = $("estado"); est.className = "estado"; $("estado-txt").textContent = "Buscando precios…";
+    fetch("precios.json?t=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (d) { usarDatos(d, "servidor"); })
+      .catch(function () {
+        if (!datos) {
+          try { usarDatos(JSON.parse($("datos-incrustados").textContent), "incrustado"); }
+          catch (e) { est.className = "estado error"; $("estado-txt").textContent = "No hay datos"; pintar(); }
+        } else { est.className = "estado error"; $("estado-txt").textContent = "Sin conexión, mostrando lo último"; }
+      });
+  }
+  function hace(iso) {
+    var t = Date.parse(iso); if (!t) return null;
+    var m = Math.round((Date.now() - t) / 60000);
+    if (m < 1) return "ahora mismo";
+    if (m < 60) return "hace " + m + " min";
+    var h = Math.round(m / 60); if (h < 24) return "hace " + h + " h";
+    return "el " + new Date(t).toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+  }
+  function pintarEstado() {
+    if (!datos) return;
+    var est = $("estado"), txt = $("estado-txt");
+    if (origen === "propio") { est.className = "estado"; txt.textContent = "Tus datos"; return; }
+    var h = hace(datos.actualizado);
+    var viejo = Date.now() - Date.parse(datos.actualizado) > 24 * 3600 * 1000;
+    est.className = "estado" + (viejo ? " viejo" : "");
+    txt.textContent = h ? "Precios de " + h : "Sin fecha";
+    est.title = datos.actualizado ? "Actualizado: " + new Date(datos.actualizado).toLocaleString("es-ES") : "";
+  }
+
+  // ---------- Filtros ----------
+  function ofertasFiltradas(j) {
+    return j.ofertas.filter(function (o) {
+      var t = tiendaPorId[o.tienda] || { tipo: "tienda" };
+      if (f.formato !== "todos" && o.formato !== f.formato) return false;
+      if (f.estado !== "todos" && o.estado !== f.estado) return false;
+      if (f.plats.length && f.plats.indexOf(o.plataforma) < 0) return false;
+      if (f.fuera.indexOf(o.tienda) >= 0) return false;
+      if (!f.mkt && t.tipo === "marketplace") return false;
+      if (!f.part && t.tipo === "particulares") return false;
+      if (f.stock && !o.stock) return false;
+      if (f.pmax != null && total(o) > f.pmax) return false;
+      return true;
+    }).sort(function (a, b) { return (b.stock - a.stock) || (total(a) - total(b)); });
+  }
+  function nActivos() {
+    return (f.formato !== "todos") + (f.estado !== "todos") + (f.plats.length > 0) + (f.fuera.length > 0) + (!f.mkt) + (!f.part) + f.stock + (f.pmax != null);
+  }
+
+  function pintarControles() {
+    // plataformas
+    var plats = [];
+    datos.juegos.forEach(function (j) { j.plataformas.forEach(function (p) { if (plats.indexOf(p) < 0) plats.push(p); }); });
+    var orden = ["PC", "PS5", "PS4", "Xbox Series", "Xbox One", "Switch 2", "Switch"];
+    plats.sort(function (a, b) { var ia = orden.indexOf(a), ib = orden.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b); });
+    f.plats = f.plats.filter(function (p) { return plats.indexOf(p) >= 0; });
+    $("plataformas").innerHTML = plats.map(function (p) {
+      return '<button type="button" class="chip" data-p="' + esc(p) + '" aria-pressed="' + (f.plats.indexOf(p) >= 0) + '">' + esc(p) + "</button>";
+    }).join("");
+    // tiendas agrupadas por tipo
+    $("tiendas").innerHTML = ORDEN_TIPOS.map(function (tipo) {
+      var ts = datos.tiendas.filter(function (t) { return t.tipo === tipo; });
+      if (!ts.length) return "";
+      var titulo = TITULOS_TIPO[tipo];
+      return '<div><div class="tipo-t">' + titulo + '</div><div class="chips">' + ts.map(function (t) {
+        return '<button type="button" class="chip" data-t="' + esc(t.id) + '" aria-pressed="' + (f.fuera.indexOf(t.id) < 0) + '">' + esc(t.nombre) + "</button>";
+      }).join("") + "</div></div>";
+    }).join("");
+    // precio
+    var max = 10;
+    datos.juegos.forEach(function (j) { j.ofertas.forEach(function (o) { if (total(o) > max) max = total(o); }); });
+    max = Math.ceil(max / 5) * 5;
+    var r = $("pmax"); r.max = max; $("pmax-top").textContent = max + " €";
+    if (f.pmax != null && f.pmax >= max) f.pmax = null;
+    r.value = f.pmax == null ? max : f.pmax;
+    $("pmax-out").textContent = f.pmax == null ? "Sin límite" : "Hasta " + eur.format(f.pmax);
+    // resto
+    $("q").value = f.q;
+    $("mkt").checked = f.mkt; $("part").checked = f.part; $("stock").checked = f.stock; $("orden").value = f.orden;
+    [].forEach.call($("formato").children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === f.formato); });
+    [].forEach.call($("estado-f").children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === f.estado); });
+  }
+
+  function enlace(o, j) {
+    if (o.url) return o.url;
+    var t = tiendaPorId[o.tienda];
+    if (!t || !t.busqueda) return null;
+    return t.busqueda.replace("{q}", encodeURIComponent(j.titulo));
+  }
+
+  function pintar() {
+    var lista = $("lista");
+    var n = nActivos(); var nb = $("nfiltros"); nb.hidden = !n; nb.textContent = n;
+    if (!datos) { lista.innerHTML = '<div class="vacio"><b>No hay precios cargados</b>Sube un JSON desde «Tus datos» o ejecuta el actualizador.</div>'; return; }
+    var q = norm(f.q.trim());
+    var filas = datos.juegos.map(function (j) {
+      if (q && norm(j.titulo).indexOf(q) < 0) return null;
+      var ofs = ofertasFiltradas(j);
+      if (!ofs.length) return null;
+      var conStock = ofs.filter(function (o) { return o.stock; });
+      var mejor = conStock[0] || ofs[0];
+      var minDe = function (est) { var x = (conStock.length ? conStock : ofs).filter(function (o) { return o.estado === est; })[0]; return x ? total(x) : null; };
+      var ref = j.pvp || Math.max.apply(null, j.ofertas.map(total));
+      return { j: j, ofs: ofs, mejor: mejor, nuevo: minDe("nuevo"), usado: minDe("usado"), dto: ref > 0 ? Math.max(0, Math.round((1 - total(mejor) / ref) * 100)) : 0 };
+    }).filter(Boolean);
+    filas.sort(function (a, b) {
+      if (f.orden === "descuento") return b.dto - a.dto;
+      if (f.orden === "az") return a.j.titulo.localeCompare(b.j.titulo, "es");
+      return total(a.mejor) - total(b.mejor);
+    });
+    $("titulo-res").innerHTML = filas.length + " juego" + (filas.length === 1 ? "" : "s") + ' <span>· ' + filas.reduce(function (s, r) { return s + r.ofs.length; }, 0) + " ofertas</span>";
+    if (!filas.length) {
+      lista.innerHTML = '<div class="vacio"><b>Nada con estos filtros</b>Prueba a quitar alguno.<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button></div>';
+      return;
+    }
+    lista.innerHTML = filas.map(function (r) {
+      var j = r.j, m = r.mejor, tm = tiendaPorId[m.tienda] || { nombre: m.tienda };
+      var todas = abiertos[j.id];
+      var vis = todas ? r.ofs : r.ofs.slice(0, VISIBLES);
+      var h = '<article class="juego"><div class="j-cab"><div class="j-info"><h2>' + esc(j.titulo) + '</h2><div class="plats">' +
+        j.plataformas.map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
+        (r.nuevo != null || r.usado != null || j.pvp ? '<div class="resumen">' +
+          (j.pvp ? '<span>PVP <s>' + eur.format(j.pvp) + "</s></span>" : "") +
+          (r.nuevo != null ? "<span>Nuevo desde <b>" + eur.format(r.nuevo) + "</b></span>" : "") +
+          (r.usado != null ? "<span>2ª mano desde <b>" + eur.format(r.usado) + "</b></span>" : "") + "</div>" : "") + "</div>" +
+        '<div class="etiqueta">' + (r.dto >= 5 ? '<span class="ahorro">−' + r.dto + "%</span>" : "") +
+        '<span class="lbl">Mejor precio' + (m.envio ? " con envío" : "") + '</span><span class="precio">' + eur.format(total(m)) + '</span><span class="donde">' +
+        esc(tm.nombre) + " · " + esc(m.plataforma || "") + " · " + (m.estado === "usado" ? "2ª mano" : m.formato === "fisico" ? "Disco" : "Digital") + "</span></div></div>" +
+        '<ol class="ofertas">' + vis.map(function (o) {
+          var t = tiendaPorId[o.tienda] || { nombre: o.tienda, tipo: "tienda" };
+          var url = enlace(o, j), dif = total(o) - total(m);
+          return '<li class="of' + (o === m ? " mejor" : "") + '"><div class="of-t"><strong>' + esc(t.nombre) + '</strong><span class="badge b-' + t.tipo + '">' + TIPOS[t.tipo] + "</span>" + (o.estado === "usado" ? '<span class="usado">Usado</span>' : "") + "</div>" +
+            '<div class="of-d"><span>' + esc(o.plataforma || "—") + "</span><span>·</span><span>" + (o.formato === "fisico" ? "En disco" : "Digital") + "</span>" +
+            (o.condicion ? "<span>·</span><span>" + esc(o.condicion) + "</span>" : "") +
+            (o.envio ? "<span>·</span><span>" + eur.format(o.precio) + " + " + eur.format(o.envio) + " envío</span>" : "") +
+            (o.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
+            '<div class="of-p"><b>' + eur.format(total(o)) + "</b>" + (dif > 0.004 ? "<small>+" + eur.format(dif) + "</small>" : "<small>el más barato</small>") + "</div>" +
+            (url ? '<a class="ir" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + (o.url ? "Ver oferta" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
+        }).join("") + "</ol>" +
+        (r.ofs.length > VISIBLES ? '<button type="button" class="mas" data-mas="' + esc(j.id) + '">' + (todas ? "Ver menos" : "Ver las " + r.ofs.length + " ofertas") + "</button>" : "") +
+        "</article>";
+      return h;
+    }).join("");
+  }
+
+  function cambio() { guardarFiltros(); pintar(); }
+
+  // ---------- Eventos ----------
+  $("q").addEventListener("input", function (e) { f.q = e.target.value; cambio(); });
+  $("formato").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    f.formato = b.dataset.v;
+    if (f.formato === "digital" && f.estado === "usado") f.estado = "todos";
+    pintarControles(); cambio();
+  });
+  $("estado-f").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    f.estado = b.dataset.v;
+    // la segunda mano solo existe en disco
+    if (f.estado === "usado" && f.formato === "digital") f.formato = "todos";
+    pintarControles(); cambio();
+  });
+  $("part").addEventListener("change", function (e) { f.part = e.target.checked; cambio(); });
+  $("plataformas").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var p = b.dataset.p, i = f.plats.indexOf(p);
+    if (i >= 0) f.plats.splice(i, 1); else f.plats.push(p);
+    b.setAttribute("aria-pressed", i < 0); cambio();
+  });
+  $("tiendas").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var t = b.dataset.t, i = f.fuera.indexOf(t);
+    if (i >= 0) f.fuera.splice(i, 1); else f.fuera.push(t);
+    b.setAttribute("aria-pressed", i >= 0); cambio();
+  });
+  $("todas-t").addEventListener("click", function () { f.fuera = []; pintarControles(); cambio(); });
+  $("mkt").addEventListener("change", function (e) { f.mkt = e.target.checked; cambio(); });
+  $("stock").addEventListener("change", function (e) { f.stock = e.target.checked; cambio(); });
+  $("pmax").addEventListener("input", function (e) {
+    var v = +e.target.value; f.pmax = v >= +e.target.max ? null : v;
+    $("pmax-out").textContent = f.pmax == null ? "Sin límite" : "Hasta " + eur.format(f.pmax); cambio();
+  });
+  $("orden").addEventListener("change", function (e) { f.orden = e.target.value; cambio(); });
+  $("lista").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-mas]");
+    if (b) { abiertos[b.dataset.mas] = !abiertos[b.dataset.mas]; pintar(); return; }
+    if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], mkt: true, part: true, stock: false, pmax: null, orden: f.orden }; pintarControles(); cambio(); }
+  });
+  $("recargar").addEventListener("click", function () { leerServidor(true); });
+
+  // panel en móvil
+  function panel(abrir) { $("panel").classList.toggle("abierto", abrir); $("fondo").classList.toggle("ver", abrir); }
+  $("abrir").addEventListener("click", function () { panel(true); });
+  $("cerrar").addEventListener("click", function () { panel(false); });
+  $("fondo").addEventListener("click", function () { panel(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") panel(false); });
+
+  // JSON propio
+  function msg(t, ok) { var m = $("json-msg"); m.textContent = t; m.className = "msg " + (ok ? "ok" : "err"); }
+  function aplicarTexto(txt) {
+    try {
+      var d = JSON.parse(txt);
+      usarDatos(d, "propio");
+      var n = datos.juegos.length;
+      msg("Cargado: " + n + " juego" + (n === 1 ? "" : "s") + (datos._avisos ? ". Se ignoraron " + datos._avisos + " entradas incompletas." : "."), true);
+    } catch (e) {
+      msg(e instanceof SyntaxError ? "El JSON no es válido: " + e.message : e.message, false);
+    }
+  }
+  $("json-aplicar").addEventListener("click", function () { var t = $("json-in").value.trim(); if (t) aplicarTexto(t); else msg("Pega un JSON primero.", false); });
+  $("json-file").addEventListener("change", function (e) {
+    var file = e.target.files[0]; if (!file) return;
+    var r = new FileReader(); r.onload = function () { $("json-in").value = r.result; aplicarTexto(r.result); }; r.readAsText(file);
+    e.target.value = "";
+  });
+  $("json-ver").addEventListener("click", function () {
+    if (!datos) return;
+    var limpio = JSON.parse(JSON.stringify(datos)); delete limpio._avisos;
+    $("json-in").value = JSON.stringify(limpio, null, 2); msg("Este es el JSON que estás viendo. Edítalo y pulsa «Usar este JSON».", true);
+  });
+  $("json-reset").addEventListener("click", function () { origen = "servidor"; msg("", true); leerServidor(true); });
+
+  leerServidor(false);
+  setInterval(function () { leerServidor(false); }, REFRESCO_MS);
+  setInterval(pintarEstado, 60 * 1000);
+})();
+</script>
+
+</body>
+</html>

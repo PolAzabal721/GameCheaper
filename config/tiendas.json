@@ -1,0 +1,155 @@
+[
+ {
+  "id": "steam",
+  "nombre": "Steam",
+  "tipo": "oficial",
+  "formatos": [
+   "digital"
+  ],
+  "busqueda": "https://store.steampowered.com/search/?term={q}"
+ },
+ {
+  "id": "psstore",
+  "nombre": "PlayStation Store",
+  "tipo": "oficial",
+  "formatos": [
+   "digital"
+  ],
+  "busqueda": "https://store.playstation.com/es-es/search/{q}"
+ },
+ {
+  "id": "xbox",
+  "nombre": "Microsoft Store",
+  "tipo": "oficial",
+  "formatos": [
+   "digital"
+  ],
+  "busqueda": "https://www.xbox.com/es-ES/search?q={q}"
+ },
+ {
+  "id": "eshop",
+  "nombre": "Nintendo eShop",
+  "tipo": "oficial",
+  "formatos": [
+   "digital"
+  ],
+  "busqueda": "https://www.nintendo.com/es-es/"
+ },
+ {
+  "id": "instantgaming",
+  "nombre": "Instant Gaming",
+  "tipo": "revendedor",
+  "formatos": [
+   "digital"
+  ],
+  "busqueda": "https://www.instant-gaming.com/es/busquedas/?query={q}"
+ },
+ {
+  "id": "eneba",
+  "nombre": "Eneba",
+  "tipo": "marketplace",
+  "formatos": [
+   "digital"
+  ],
+  "busqueda": "https://www.eneba.com/es/store/all?text={q}"
+ },
+ {
+  "id": "g2a",
+  "nombre": "G2A",
+  "tipo": "marketplace",
+  "formatos": [
+   "digital"
+  ],
+  "busqueda": "https://www.g2a.com/es/search?query={q}"
+ },
+ {
+  "id": "mediamarkt",
+  "nombre": "MediaMarkt",
+  "tipo": "tienda",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://www.mediamarkt.es/es/search.html?query={q}"
+ },
+ {
+  "id": "fnac",
+  "nombre": "Fnac",
+  "tipo": "tienda",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://www.fnac.es/SearchResult/ResultList.aspx?Search={q}"
+ },
+ {
+  "id": "amazon",
+  "nombre": "Amazon",
+  "tipo": "tienda",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://www.amazon.es/s?k={q}"
+ },
+ {
+  "id": "game",
+  "nombre": "GAME",
+  "tipo": "tienda",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://www.game.es/buscar/{q}"
+ },
+ {
+  "id": "elcorteingles",
+  "nombre": "El Corte Inglés",
+  "tipo": "tienda",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://www.elcorteingles.es/"
+ },
+ {
+  "id": "cex",
+  "nombre": "CeX",
+  "tipo": "segundamano",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://es.webuy.com/search?stext={q}"
+ },
+ {
+  "id": "gameseminuevos",
+  "nombre": "GAME Seminuevos",
+  "tipo": "segundamano",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://www.game.es/buscar/{q}"
+ },
+ {
+  "id": "amazonsegunda",
+  "nombre": "Amazon Segunda Mano",
+  "tipo": "segundamano",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://www.amazon.es/s?k={q}&i=warehouse-deals"
+ },
+ {
+  "id": "wallapop",
+  "nombre": "Wallapop",
+  "tipo": "particulares",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://es.wallapop.com/app/search?keywords={q}"
+ },
+ {
+  "id": "ebay",
+  "nombre": "eBay",
+  "tipo": "particulares",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://www.ebay.es/sch/i.html?_nkw={q}&LH_ItemCondition=3000"
+ }
+]
