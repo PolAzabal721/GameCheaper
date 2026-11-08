@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-08T16:26:11.420Z",
+ "actualizado": "2026-11-08T16:27:23.404Z",
  "ejemplo": false,
  "tiendas": [
   {
@@ -354,6 +354,16 @@
      "precio": 79.99,
      "url": "https://store.steampowered.com/app/3606480/",
      "fuente": "steam"
+    },
+    {
+     "estado": "nuevo",
+     "stock": true,
+     "tienda": "psstore",
+     "plataforma": "PS5",
+     "formato": "digital",
+     "precio": 79.99,
+     "url": "https://store.playstation.com/es-es/product/EP0002-PPSA07950_00-CODBO7CROSSGEN01",
+     "fuente": "psstore"
     }
    ]
   },
