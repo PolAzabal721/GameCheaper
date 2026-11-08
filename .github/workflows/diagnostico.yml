@@ -1,0 +1,9 @@
+name: Diagnóstico avisos
+on: workflow_dispatch
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          U=https://pillao-buscador.pillao-bb5842.workers.dev
+          echo "Con email no válido (no envía nada):"; curl -s -X POST -H "Content-Type: application/json" -d '{"juego":"hades","titulo":"Hades","precio":10,"email":"no-valido"}' $U/avisos; echo
