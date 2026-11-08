@@ -32,6 +32,13 @@ Necesita Node 18 o superior. Sin dependencias.
 - **IsThereAnyDeal** (opcional): añade muchas tiendas digitales autorizadas de PC. Pide una clave gratuita y ejecútalo con `ITAD_KEY=tuclave node scripts/actualizar.mjs`. Si algo falla, revisa su documentación: los endpoints pueden cambiar.
 - **Todo lo demás** (MediaMarkt, Fnac, Amazon, GAME, Eneba, G2A, PS Store, eShop…): estas tiendas no tienen una API pública de precios. Las opciones legales son sus **programas de afiliados**, que dan feeds de productos con precio (Amazon tiene su API de afiliados; Eneba, G2A, MediaMarkt o Fnac trabajan con plataformas de afiliación). Hasta tenerlos, mete esas ofertas en `config/manual.json`. Hacer scraping de sus webs suele ir contra sus condiciones y se rompe a menudo.
 
+## Catálogo y búsqueda en vivo
+
+- El actualizador junta automáticamente los más vendidos de Steam, el catálogo de la eShop y los juegos de `config/seguimiento.json`, y busca precios de disco nuevo y seminuevo en GAME para los más populares.
+- **Buscador en vivo** (`buscador/`, un Cloudflare Worker): si alguien busca un juego que no está, lo consulta al momento en Steam y la eShop (y en eBay si hay claves) y lo añade al catálogo para siempre.
+- Se despliega solo con el workflow «Desplegar buscador» usando los secretos `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`.
+- eBay se activa al añadir los secretos `EBAY_CLIENT_ID` y `EBAY_CLIENT_SECRET` (y volver a desplegar el buscador).
+
 ## Publicarlo con actualización automática
 
 1. Sube esta carpeta a un repositorio de GitHub.

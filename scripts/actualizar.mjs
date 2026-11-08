@@ -50,7 +50,7 @@ const SOBRANTE = /\b(nintendo switch 2 edition|nintendo switch 2|nintendo switch
 export const clave = (titulo) => limpiar(titulo).replace(SOBRANTE, " ").replace(/\s+/g, " ").trim();
 const tituloBonito = (t) => html2txt(t).replace(/[™®©]/g, "").replace(/\s*[–-]\s*Nintendo Switch 2 Edition$/i, "").replace(/\s+/g, " ").trim();
 // Palabras que indican que NO es un juego completo
-const EXTRAS = /\b(dlc|pack|pase|season pass|expansion|soundtrack|banda sonora|bundle|lote|monedas|coins|points|puntos|vbucks|upgrade|mejora|demo|trial|prueba|artbook|wallpaper)\b/;
+const EXTRAS = /\b(dlc|pack|pase|season pass|expansion|soundtrack|banda sonora|bundle|lote|monedas|coins|points|puntos|vbucks|upgrade|mejora|demo|trial|prueba|artbook|wallpaper|paquete|music|musica|costume|traje|skin|skins|cosmetico|ost)\b/;
 function parecido(buscado, encontrado) {
   const a = limpiar(buscado), b = limpiar(encontrado);
   if (!a || !b) return 0;

@@ -16,7 +16,7 @@ const limpiar = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]
 const SOBRANTE = /\b(nintendo switch 2 edition|nintendo switch 2|nintendo switch|switch 2|ps4 (y|and) ps5|ps5|ps4|edicion estandar|standard edition|edicion standard)\b/g;
 const clave = (t) => limpiar(t).replace(SOBRANTE, " ").replace(/\s+/g, " ").trim();
 const bonito = (t) => String(t).replace(/[™®©]/g, "").replace(/\s*[–-]\s*Nintendo Switch 2 Edition$/i, "").replace(/\s+/g, " ").trim();
-const EXTRAS = /\b(dlc|pack|pase|season pass|expansion|soundtrack|banda sonora|bundle|lote|monedas|coins|points|puntos|vbucks|upgrade|mejora|demo|trial|prueba|artbook|wallpaper)\b/;
+const EXTRAS = /\b(dlc|pack|pase|season pass|expansion|soundtrack|banda sonora|bundle|lote|monedas|coins|points|puntos|vbucks|upgrade|mejora|demo|trial|prueba|artbook|wallpaper|paquete|music|musica|costume|traje|skin|skins|cosmetico|ost)\b/;
 const r2 = (n) => Math.round(n * 100) / 100;
 
 function json(datos, estado = 200, extra = {}) {
@@ -119,8 +119,8 @@ async function buscar(q, env, ctx) {
   await Promise.all([steam(q, res), eshop(q, res)].map((p) => p.catch((e) => avisos.push(e.message))));
   await ebay(q, res, env).catch((e) => avisos.push("ebay: " + e.message));
   const juegos = res.lista();
-  // Guardamos los 3 primeros para que el actualizador los siga a partir de ahora
-  if (env.PILLAO) ctx.waitUntil(Promise.all(juegos.slice(0, 3).map((j) =>
+  // Guardamos el mejor resultado para que el actualizador lo siga a partir de ahora
+  if (env.PILLAO) ctx.waitUntil(Promise.all(juegos.slice(0, 1).map((j) =>
     env.PILLAO.put("a:" + j.id, "", { metadata: { titulo: j.titulo, plataformas: j.plataformas }, expirationTtl: 90 * 86400 }))));
   return { q, actualizado: new Date().toISOString(), juegos, avisos };
 }
