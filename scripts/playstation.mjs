@@ -14,7 +14,7 @@ import { dirname, join } from "node:path";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ENV = process.env;
-const DESCUBRIR = +(ENV.PS_DESCUBRIR || 100);   // juegos nuevos a buscar en cada ejecución
+const DESCUBRIR = +(ENV.PS_DESCUBRIR || 150);   // juegos nuevos a buscar en cada ejecución
 const PRECIOS = +(ENV.PS_PRECIOS || 300);       // fichas a las que se actualiza el precio en cada ejecución
 const REINTENTAR_DIAS = 30;                      // si no encontramos un juego, volvemos a probar al mes
 const CABECERAS = { "User-Agent": "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)", "Accept-Language": "es-ES,es;q=0.9" };
@@ -31,8 +31,14 @@ async function texto(url) {
 
 // 1. Página del juego en playstation.com → números de ficha de la tienda
 async function descubrir(titulo) {
-  const slug = limpiar(titulo).replace(/ /g, "-");
-  const html = await texto(`https://www.playstation.com/es-es/games/${slug}/`);
+  // Primero el título completo; si no existe, sin el subtítulo («Juego: Subtítulo» → «Juego»)
+  const opciones = [titulo, titulo.split(/[:–-]\s/)[0]].map((t) => limpiar(t).replace(/ /g, "-")).filter((s, i, a) => s && a.indexOf(s) === i);
+  let html = null;
+  for (const slug of opciones) {
+    html = await texto(`https://www.playstation.com/es-es/games/${slug}/`);
+    if (html) break;
+    if (opciones.length > 1) await esperar(5000);
+  }
   if (!html) return [];
   const ids = new Set();
   for (const m of html.matchAll(/store\.playstation\.com\/(?:[a-z]{2}-[a-z]{2}\/)?concept\/(\d+)/g)) ids.add(m[1]);
