@@ -171,6 +171,7 @@ button { cursor: pointer; }
 .otras a:hover { background: var(--accent-soft); }
 .mas-juegos { align-self: center; padding: 10px 18px; font-size: 14.5px; }
 .mas-juegos span { color: var(--muted); font-weight: 500; }
+.minimo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--tag-ink); background: var(--tag); padding: 2px 7px; border-radius: 4px; }
 .vivo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--good); background: var(--good-soft); padding: 2px 7px; border-radius: 4px; }
 .busca-vivo { font-size: 14px; color: var(--muted); padding: 10px 14px; background: var(--surface); border: 1px dashed var(--line); border-radius: var(--r); }
 .busca-vivo.err { color: var(--warn); }
@@ -494,12 +495,15 @@ button { cursor: pointer; }
     var todas = abiertos[j.id];
     var vis = todas ? r.ofs : r.ofs.slice(0, VISIBLES);
     var otras = otrasTiendas(j);
-    return '<article class="juego"><div class="j-cab"><div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") + "<h2>" + esc(j.titulo) + '</h2><div class="plats">' +
+    var enMinimo = j.minimo && total(m) <= j.minimo + 0.005;
+    return '<article class="juego"><div class="j-cab"><div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") +
+      (enMinimo ? '<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>' : "") + "<h2>" + esc(j.titulo) + '</h2><div class="plats">' +
       j.plataformas.map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
       (r.nuevo != null || r.usado != null || j.pvp ? '<div class="resumen">' +
         (j.pvp && j.pvp > total(m) + 0.004 ? "<span>PVP <s>" + eur.format(j.pvp) + "</s></span>" : "") +
         (r.nuevo != null ? "<span>Nuevo desde <b>" + eur.format(r.nuevo) + "</b></span>" : "") +
-        (r.usado != null ? "<span>2ª mano desde <b>" + eur.format(r.usado) + "</b></span>" : "") + "</div>" : "") + "</div>" +
+        (r.usado != null ? "<span>2ª mano desde <b>" + eur.format(r.usado) + "</b></span>" : "") +
+        (j.minimo && !enMinimo ? "<span>Mínimo histórico <b>" + eur.format(j.minimo) + "</b></span>" : "") + "</div>" : "") + "</div>" +
       '<div class="etiqueta">' + (r.dto >= 5 ? '<span class="ahorro">−' + r.dto + "%</span>" : "") +
       '<span class="lbl">Mejor precio' + (m.envio ? " con envío" : "") + '</span><span class="precio">' + eur.format(total(m)) + '</span><span class="donde">' +
       esc(tm.nombre) + " · " + esc(m.plataforma || "") + " · " + (m.estado === "usado" ? "2ª mano" : m.formato === "fisico" ? "Disco" : "Digital") + "</span></div></div>" +

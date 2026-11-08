@@ -308,29 +308,37 @@ const BUSQUEDA_PC = {
   "itad-greenmangaming": "https://www.greenmangaming.com/es/search/?query={q}",
 };
 async function itad(lista, tiendas) {
-  const key = ENV.ITAD_KEY;
+  const key = encodeURIComponent(ENV.ITAD_KEY.trim());
+  const json = { "Content-Type": "application/json" };
+  // 1. IDs de ITAD por título, en bloques (una llamada para muchos juegos)
   const ids = {};
-  for (const j of lista) {
-    const d = await (await pedir(`${ITAD}/games/lookup/v1?key=${key}&title=${encodeURIComponent(j.titulo)}`)).json();
-    if (d.found && d.game?.id) ids[d.game.id] = j;
-    await esperar(250);
+  for (let i = 0; i < lista.length; i += 200) {
+    const trozo = lista.slice(i, i + 200);
+    const r = await pedir(`${ITAD}/lookup/id/title/v1?key=${key}`, { method: "POST", headers: json, body: JSON.stringify(trozo.map((j) => j.titulo)) });
+    const mapa = await r.json();
+    for (const j of trozo) if (mapa[j.titulo]) ids[mapa[j.titulo]] = j;
+    await esperar(300);
   }
+  // 2. Precios actuales en España + mínimo histórico
   const claves = Object.keys(ids);
   let n = 0;
-  for (let i = 0; i < claves.length; i += 100) {
-    const r = await pedir(`${ITAD}/games/prices/v3?key=${key}&country=ES`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(claves.slice(i, i + 100)) });
+  for (let i = 0; i < claves.length; i += 200) {
+    const r = await pedir(`${ITAD}/games/prices/v3?key=${key}&country=ES`, { method: "POST", headers: json, body: JSON.stringify(claves.slice(i, i + 200)) });
     for (const g of await r.json()) {
       const j = ids[g.id]; if (!j) continue;
+      const min = g.historyLow?.all;
+      if (min?.currency === "EUR" && min.amount > 0) j.minimo = redondear(min.amount);
       for (const x of g.deals || []) {
         if (x.price?.currency !== "EUR") continue;
         const nombre = x.shop?.name || x.shop?.title || String(x.shop?.id);
         const id = "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
         if (id === "itad-steam") continue;
         if (!tiendas.some((t) => t.id === id)) tiendas.push({ id, nombre, tipo: OFICIALES_PC.test(nombre) ? "oficial" : "revendedor", formatos: ["digital"], busqueda: BUSQUEDA_PC[id] });
-        ofertar(j, { tienda: id, plataforma: "PC", precio: x.price.amount, regular: x.regular?.amount, url: x.url, fuente: "itad" });
+        ofertar(j, { tienda: id, plataforma: "PC", precio: x.price.amount, regular: x.regular?.amount, url: x.url || undefined, fuente: "itad" });
         n++;
       }
     }
+    await esperar(300);
   }
   return n;
 }
@@ -390,7 +398,7 @@ async function main() {
 
   // 4. IsThereAnyDeal para los juegos de PC más populares
   if (ENV.ITAD_KEY) {
-    const dePC = [...juegos.values()].filter((j) => j.plataformas.has("PC")).sort((a, b) => a.pop - b.pop).slice(0, 300);
+    const dePC = [...juegos.values()].filter((j) => j.plataformas.has("PC")).sort((a, b) => a.pop - b.pop).slice(0, +(ENV.ITAD_MAX || 1500));
     if (!(await intentar("itad", () => itad(dePC, tiendas)))) caidas.add("itad");
   }
 
