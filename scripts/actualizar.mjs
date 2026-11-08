@@ -617,6 +617,42 @@ async function itad(lista, tiendas) {
 
 // ---------- Programa ----------
 async function main() {
+  // Diagnóstico: versiones de Instant Gaming descartadas por región (PRUEBA_IG=n juegos)
+  if (ENV.PRUEBA_IG) {
+    const cat = JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8")).juegos.slice(0, +ENV.PRUEBA_IG);
+    const regiones = {}, descartadas = [];
+    let sinIG = 0;
+    for (const j of cat) {
+      const html = await (await pedir("https://www.instant-gaming.com/es/busquedas/?query=" + encodeURIComponent(j.titulo))).text();
+      const i = html.indexOf("window.searchResults = ");
+      const hits = i < 0 ? [] : JSON.parse(bloqueJSON(html, i)).hits || [];
+      let valida = false;
+      for (const h of hits) {
+        if (h.is_prepaid || h.is_subscription) continue;
+        const mismo = parecido(j.titulo, h.name) > 0.5 || clave(j.titulo).split(" ").every((p) => (" " + limpiar(h.name) + " ").includes(" " + p + " "));
+        if (!mismo) continue;
+        const k = `${h.region} | ${h.region_fulltext} | wl:${[].concat(h.country_whitelist || []).slice(0, 6).join(",")} | bl:${[].concat(h.country_blacklist || []).slice(0, 6).join(",")}`;
+        const ok = valeEnEspana(h);
+        regiones[k] = regiones[k] || { ok, n: 0, ej: h.name };
+        regiones[k].n++;
+        if (ok) valida = true; else descartadas.push({ j: j.titulo, h: h.name, r: h.region, id: `${h.prod_id}-comprar-${h.seo_name}`, st: h.has_stock });
+      }
+      if (!valida && j.ofertas.some((o) => o.tienda === "instantgaming") === false) sinIG++;
+      await esperar(700);
+    }
+    console.log("REGIONES (de hits del mismo juego):");
+    Object.entries(regiones).sort((a, b) => b[1].n - a[1].n).forEach(([k, v]) => console.log(`REG ${v.ok ? "OK " : "NO "} ${v.n}x ${k} — ej: ${v.ej}`));
+    console.log(`DESCARTADAS ${descartadas.length}; juegos sin ninguna versión válida en IG: ${sinIG}`);
+    descartadas.slice(0, 40).forEach((d) => console.log("DESC", d.j, "→", d.h, "|", d.r, d.st ? "" : "(sin stock)"));
+    // Selector de país/región en algunas fichas descartadas
+    for (const d of descartadas.filter((d) => d.st).slice(0, 6)) {
+      const html = await (await pedir("https://www.instant-gaming.com/es/" + d.id + "/")).text();
+      console.log(`FICHA ${d.h} (${d.r})`);
+      for (const m of html.matchAll(/<option value="(\d+)"(\s+selected)?[^>]*data-href="[^"]*\/es\/\d+-comprar-([a-z0-9-]+)\/"[^>]*>\s*([^<]*?)\s*<\/option>/g)) console.log("   OPT", m[1], m[2] ? "*" : " ", m[4], "→", m[3].slice(-60));
+      await esperar(900);
+    }
+    return;
+  }
   // Prueba rápida: solo tarjetas regalo, sin tocar precios.json (PRUEBA_TARJETAS=1)
   if (ENV.PRUEBA_TARJETAS) {
     await tarjetasRegalo(() => {});
