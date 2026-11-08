@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-08T16:22:36.359Z",
+ "actualizado": "2026-11-08T16:26:11.420Z",
  "ejemplo": false,
  "tiendas": [
   {
@@ -187,6 +187,16 @@
      "precio": 69.99,
      "url": "https://www.nintendo.com/es-es/Juegos/Juegos-de-Nintendo-Switch-2/EA-SPORTS-FC-26-2873781.html",
      "fuente": "eshop"
+    },
+    {
+     "estado": "nuevo",
+     "stock": true,
+     "tienda": "psstore",
+     "plataforma": "PS5",
+     "formato": "digital",
+     "precio": 79.99,
+     "url": "https://store.playstation.com/es-es/concept/10011898",
+     "fuente": "psstore"
     }
    ]
   },
@@ -197,7 +207,18 @@
     "PS5"
    ],
    "pvp": 79.99,
-   "ofertas": []
+   "ofertas": [
+    {
+     "estado": "nuevo",
+     "stock": true,
+     "tienda": "psstore",
+     "plataforma": "PS5",
+     "formato": "digital",
+     "precio": 79.99,
+     "url": "https://store.playstation.com/es-es/concept/10003923",
+     "fuente": "psstore"
+    }
+   ]
   },
   {
    "id": "mkworld",
@@ -269,6 +290,16 @@
      "precio": 19.5,
      "url": "https://www.nintendo.com/es-es/Juegos/Programas-descargables-Nintendo-Switch/Hollow-Knight-Silksong-1575920.html",
      "fuente": "eshop"
+    },
+    {
+     "estado": "nuevo",
+     "stock": true,
+     "tienda": "psstore",
+     "plataforma": "PS5",
+     "formato": "digital",
+     "precio": 19.99,
+     "url": "https://store.playstation.com/es-es/concept/10005908",
+     "fuente": "psstore"
     }
    ]
   },
@@ -291,6 +322,16 @@
      "precio": 69.99,
      "url": "https://store.steampowered.com/app/2807960/",
      "fuente": "steam"
+    },
+    {
+     "estado": "nuevo",
+     "stock": true,
+     "tienda": "psstore",
+     "plataforma": "PS5",
+     "formato": "digital",
+     "precio": 79.99,
+     "url": "https://store.playstation.com/es-es/concept/10009568",
+     "fuente": "psstore"
     }
    ]
   },
@@ -329,16 +370,6 @@
      "estado": "nuevo",
      "stock": true,
      "tienda": "eshop",
-     "plataforma": "Switch 2",
-     "formato": "digital",
-     "precio": 9.99,
-     "url": "https://www.nintendo.com/es-es/Juegos/Nintendo-Switch-2-Edition/Leyendas-Pokemon-Z-A-Nintendo-Switch-2-Edition-2827849.html",
-     "fuente": "eshop"
-    },
-    {
-     "estado": "nuevo",
-     "stock": true,
-     "tienda": "eshop",
      "plataforma": "Switch",
      "formato": "digital",
      "precio": 59.99,
@@ -366,6 +397,16 @@
      "precio": 39.99,
      "url": "https://store.steampowered.com/app/1903340/",
      "fuente": "steam"
+    },
+    {
+     "estado": "nuevo",
+     "stock": true,
+     "tienda": "psstore",
+     "plataforma": "PS5",
+     "formato": "digital",
+     "precio": 49.99,
+     "url": "https://store.playstation.com/es-es/concept/10008503",
+     "fuente": "psstore"
     }
    ]
   },
@@ -388,6 +429,16 @@
      "precio": 39.99,
      "url": "https://store.steampowered.com/app/2622380/",
      "fuente": "steam"
+    },
+    {
+     "estado": "nuevo",
+     "stock": true,
+     "tienda": "psstore",
+     "plataforma": "PS5",
+     "formato": "digital",
+     "precio": 39.99,
+     "url": "https://store.playstation.com/es-es/concept/10010877",
+     "fuente": "psstore"
     }
    ]
   },
@@ -420,16 +471,6 @@
    ],
    "pvp": 69.99,
    "ofertas": [
-    {
-     "estado": "nuevo",
-     "stock": true,
-     "tienda": "eshop",
-     "plataforma": "Switch 2",
-     "formato": "digital",
-     "precio": 9.99,
-     "url": "https://www.nintendo.com/es-es/Juegos/Nintendo-Switch-2-Edition/Metroid-Prime-4-Beyond-Nintendo-Switch-2-Edition-2790001.html",
-     "fuente": "eshop"
-    },
     {
      "estado": "nuevo",
      "stock": true,
