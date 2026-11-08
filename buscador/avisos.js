@@ -100,7 +100,10 @@ async function crear(req, env, origen) {
     }
   } catch (e) {
     await env.PILLAO.delete("av:" + id);
-    return json({ error: "No hemos podido mandar el correo. Prueba otra vez más tarde." }, 502);
+    // El motivo de Brevo ayuda a ver si falta verificar el remitente o la clave no vale
+    const motivo = /sender|remitente/i.test(e.message) ? " (el remitente no está verificado en Brevo)" : /key|unauthori[sz]ed|permission/i.test(e.message) ? " (problema con la clave de Brevo)" : "";
+    console.log("Brevo: " + e.message);
+    return json({ error: "No hemos podido mandar el correo" + motivo + ". Prueba otra vez más tarde.", detalle: e.message.slice(0, 160) }, 502);
   }
   return json({ id, estado: yaConfirmado ? "activo" : "pendiente" });
 }
