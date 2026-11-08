@@ -81,6 +81,7 @@ jobs:
           printf '{ "url": "%s" }\n' "$URL" > config/buscador.json
           git config user.name "pillao-bot"
           git config user.email "pillao-bot@users.noreply.github.com"
+          git checkout -- buscador/wrangler.toml
           git add config/buscador.json
           git diff --cached --quiet && exit 0
           git commit -m "Dirección del buscador en vivo"
