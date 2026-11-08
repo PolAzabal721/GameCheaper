@@ -101,6 +101,7 @@ button { cursor: pointer; }
 .chip-grupo.abierto .chip-caret { background: var(--accent-soft); border-color: var(--accent); }
 .sub-panel { margin-top: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); display: flex; flex-direction: column; gap: 8px; }
 .sub-cab { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.sub-tit small { font-weight: 500; }
 .sub-tit { font-size: 12.5px; color: var(--muted); font-weight: 600; }
 .sub-panel .chip span { color: var(--muted); font-weight: 500; font-size: 11.5px; }
 .bloque { display: flex; flex-direction: column; gap: 8px; }
@@ -389,7 +390,7 @@ button { cursor: pointer; }
   var f = cargarFiltros();
 
   function cargarFiltros() {
-    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], mkt: true, part: true, stock: false, pmax: null, orden: "populares" };
+    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], mkt: true, part: true, stock: false, pmax: null, orden: "populares" };
     if (!prefsOk()) return base;
     try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g) base[k] = g[k]; } catch (e) {}
     return base;
@@ -518,6 +519,7 @@ button { cursor: pointer; }
       if (f.estado !== "todos" && o.estado !== f.estado) return false;
       if (f.plats.length && f.plats.indexOf(o.plataforma) < 0) return false;
       if (f.fuera.indexOf(o.tienda) >= 0) return false;
+      if (t.tipo === "revendedor" && o.tienda !== "instantgaming" && f.revOn.indexOf(o.tienda) < 0) return false;
       if (!f.mkt && t.tipo === "marketplace") return false;
       if (!f.part && t.tipo === "particulares") return false;
       if (f.stock && !o.stock) return false;
@@ -526,7 +528,7 @@ button { cursor: pointer; }
     }).sort(function (a, b) { return (b.stock - a.stock) || (total(a) - total(b)); });
   }
   function nActivos() {
-    return (f.formato !== "todos") + (f.estado !== "todos") + (f.plats.length > 0) + (f.fuera.length > 0) + (!f.mkt) + (!f.part) + f.stock + (f.pmax != null);
+    return (f.formato !== "todos") + (f.estado !== "todos") + (f.plats.length > 0) + (f.fuera.length > 0) + (f.revOn.length > 0) + (!f.mkt) + (!f.part) + f.stock + (f.pmax != null);
   }
 
   function pintarControles() {
@@ -555,18 +557,19 @@ button { cursor: pointer; }
       if (!ts.length) return "";
       ts.sort(function (a, b) { return (b.id === "instantgaming") - (a.id === "instantgaming") || conOfertas[b.id] - conOfertas[a.id] || a.nombre.localeCompare(b.nombre); });
       var chip = function (t) { return '<button type="button" class="chip" data-t="' + esc(t.id) + '" aria-pressed="' + (f.fuera.indexOf(t.id) < 0) + '">' + esc(t.nombre) + "</button>"; };
+      var chipRev = function (t) { return '<button type="button" class="chip" data-rev="' + esc(t.id) + '" aria-pressed="' + (f.revOn.indexOf(t.id) >= 0) + '">' + esc(t.nombre) + "</button>"; };
       var ig = ts[0].id === "instantgaming" ? ts[0] : null, otros = ig ? ts.slice(1) : ts;
       // Revendedores de claves: Instant Gaming a la vista y el resto dentro de su desplegable
       if (bl.id !== "claves" || !ig || !otros.length)
         return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + ts.map(chip).join("") + "</div></div>";
       var abierto = !!bloquesAbiertos.claves;
-      var marcados = otros.filter(function (t) { return f.fuera.indexOf(t.id) < 0; }).length;
+      var marcados = otros.filter(function (t) { return f.revOn.indexOf(t.id) >= 0; }).length;
       return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips"><span class="chip-grupo' + (abierto ? " abierto" : "") + '">' + chip(ig) +
         '<button type="button" class="chip-caret" data-sub-abrir="claves" aria-expanded="' + abierto + '" aria-label="Más revendedores">' +
-        "+" + (marcados === otros.length ? otros.length : marcados + "/" + otros.length) + " " + (abierto ? "▴" : "▾") + "</button></span></div>" +
-        (abierto ? '<div class="sub-panel"><div class="sub-cab"><span class="sub-tit">Más revendedores</span>' +
+        "+" + (marcados ? marcados + "/" + otros.length : otros.length) + " " + (abierto ? "▴" : "▾") + "</button></span></div>" +
+        (abierto ? '<div class="sub-panel"><div class="sub-cab"><span class="sub-tit">Más revendedores <small>(desmarcados por defecto)</small></span>' +
           '<button type="button" class="chip mini" data-todos="claves-otros">' + (marcados === otros.length ? "Quitar todos" : "Marcar todos") + "</button></div>" +
-          '<div class="chips">' + otros.map(chip).join("") + "</div></div>" : "") + "</div>";
+          '<div class="chips">' + otros.map(chipRev).join("") + "</div></div>" : "") + "</div>";
     }).join("");
     tiendasDeBloque = function (id) {
       var bl = BLOQUES.filter(function (x) { return x.id === id; })[0];
@@ -818,9 +821,19 @@ button { cursor: pointer; }
   $("tiendas").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     if (b.dataset.subAbrir) { bloquesAbiertos[b.dataset.subAbrir] = !bloquesAbiertos[b.dataset.subAbrir]; pintarControles(); return; }
+    if (b.dataset.rev) {
+      var ir = f.revOn.indexOf(b.dataset.rev);
+      if (ir >= 0) f.revOn.splice(ir, 1); else f.revOn.push(b.dataset.rev);
+      pintarControles(); cambio(); return;
+    }
     if (b.dataset.todos) {
-      var ids = tiendasDeBloque(b.dataset.todos === "claves-otros" ? "claves" : b.dataset.todos);
-      if (b.dataset.todos === "claves-otros") ids = ids.filter(function (id) { return id !== "instantgaming"; });
+      if (b.dataset.todos === "claves-otros") {
+        var otrosIds = tiendasDeBloque("claves").filter(function (id) { return id !== "instantgaming"; });
+        var todosOn = otrosIds.every(function (id) { return f.revOn.indexOf(id) >= 0; });
+        f.revOn = todosOn ? [] : otrosIds.slice();
+        pintarControles(); cambio(); return;
+      }
+      var ids = tiendasDeBloque(b.dataset.todos);
       var todasMarcadas = ids.every(function (id) { return f.fuera.indexOf(id) < 0; });
       f.fuera = f.fuera.filter(function (id) { return ids.indexOf(id) < 0; });
       if (todasMarcadas) f.fuera = f.fuera.concat(ids);
@@ -844,7 +857,7 @@ button { cursor: pointer; }
     var d = e.target.closest("[data-grupo]");
     if (d) { desplegados[d.dataset.grupo] = !desplegados[d.dataset.grupo]; pintar(); return; }
     if (e.target.closest("[data-mas-juegos]")) { mostrar += PAGINA; pintar(); return; }
-    if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], mkt: true, part: true, stock: false, pmax: null, orden: f.orden }; pintarControles(); cambio(); }
+    if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], mkt: true, part: true, stock: false, pmax: null, orden: f.orden }; pintarControles(); cambio(); }
   });
   $("recargar").addEventListener("click", function () { leerServidor(true); });
 

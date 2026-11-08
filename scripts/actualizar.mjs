@@ -445,8 +445,6 @@ async function itad(lista, tiendas) {
       for (const x of g.deals || []) {
         if (x.price?.currency !== "EUR") continue;
         const nombre = x.shop?.name || x.shop?.title || String(x.shop?.id);
-        // Solo tiendas oficiales: los revendedores de claves los cubre Instant Gaming
-        if (!OFICIALES_PC.test(nombre)) continue;
         const id = "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
         if (id === "itad-steam") continue;
         // Microsoft Store ya tiene su propia fuente: se guarda con el mismo nombre de tienda para no duplicarla
