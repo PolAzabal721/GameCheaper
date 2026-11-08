@@ -504,6 +504,16 @@ button { cursor: pointer; }
       if (!g) { g = porTienda[o.tienda] = { id: o.tienda, t: tiendaPorId[o.tienda] || { nombre: o.tienda, tipo: "tienda" }, ofs: [] }; grupos.push(g); }
       g.ofs.push(o);
     });
+    // Todos los revendedores de claves en una sola fila: el más barato delante y el resto en el desplegable
+    var deClaves = grupos.filter(function (g) { return g.t.tipo === "revendedor" || g.t.tipo === "marketplace"; });
+    if (deClaves.length > 1) {
+      var ofsClaves = [];
+      deClaves.forEach(function (g) { ofsClaves.push.apply(ofsClaves, g.ofs); });
+      ofsClaves.sort(function (a, b) { return (b.stock - a.stock) || (total(a) - total(b)); });
+      grupos = grupos.filter(function (g) { return deClaves.indexOf(g) < 0; });
+      var primera = tiendaPorId[ofsClaves[0].tienda] || { nombre: ofsClaves[0].tienda };
+      grupos.push({ id: "claves", claves: true, nTiendas: deClaves.length, t: { nombre: primera.nombre, tipo: "revendedor" }, ofs: ofsClaves });
+    }
     grupos.sort(function (a, b) { return (ORDEN_TIPOS.indexOf(a.t.tipo) - ORDEN_TIPOS.indexOf(b.t.tipo)) || (total(a.ofs[0]) - total(b.ofs[0])); });
     var todas = abiertos[j.id];
     var vis = todas ? grupos : grupos.slice(0, VISIBLES);
@@ -524,22 +534,25 @@ button { cursor: pointer; }
         var o = g.ofs[0], t = g.t, url = enlace(o, j), dif = total(o) - total(m);
         var clave = j.id + "|" + g.id, abierto = desplegados[clave], n = g.ofs.length;
         var plats = []; g.ofs.forEach(function (x) { if (x.plataforma && plats.indexOf(x.plataforma) < 0) plats.push(x.plataforma); });
-        var detalle = n > 1
+        var detalle = g.claves
+          ? "<span>La clave más barata de " + g.nTiendas + " tiendas · " + esc(o.plataforma || "") + (o.condicion ? " · " + esc(o.condicion) : "") + "</span>"
+          : n > 1
           ? "<span>Desde · " + esc(plats.join(", ")) + "</span>"
           : "<span>" + esc(o.plataforma || "—") + "</span><span>·</span><span>" + (o.formato === "fisico" ? "En disco" : "Digital") + "</span>" +
             (o.condicion ? "<span>·</span><span>" + esc(o.condicion) + "</span>" : "") +
             (o.envio ? "<span>·</span><span>" + eur.format(o.precio) + " + " + eur.format(o.envio) + " envío</span>" : "") +
             (o.stock ? "" : '<span class="agotado">· Agotado</span>');
-        var fila = '<li class="of' + (g.ofs.indexOf(m) >= 0 ? " mejor" : "") + '"><div class="of-t"><strong>' + esc(t.nombre) + '</strong><span class="badge b-' + t.tipo + '">' + TIPOS[t.tipo] + "</span>" +
+        var fila = '<li class="of' + (g.ofs.indexOf(m) >= 0 ? " mejor" : "") + '"><div class="of-t"><strong>' + esc(t.nombre) + '</strong><span class="badge b-' + t.tipo + '">' + (g.claves ? "Claves" : TIPOS[t.tipo]) + "</span>" +
           (n === 1 && o.estado === "usado" ? '<span class="usado">Usado</span>' : "") +
-          (n > 1 ? '<button type="button" class="desp" data-grupo="' + esc(clave) + '" aria-expanded="' + !!abierto + '">' + (abierto ? "▴ " : "▾ ") + n + (plats.length === n ? " plataformas" : " opciones") + "</button>" : "") + "</div>" +
+          (n > 1 ? '<button type="button" class="desp" data-grupo="' + esc(clave) + '" aria-expanded="' + !!abierto + '">' + (abierto ? "▴ " : "▾ ") + (g.claves ? n + " ofertas de " + g.nTiendas + " tiendas" : n + (plats.length === n ? " plataformas" : " opciones")) + "</button>" : "") + "</div>" +
           '<div class="of-d">' + detalle + "</div>" +
           '<div class="of-p"><b>' + eur.format(total(o)) + "</b>" + (dif > 0.004 ? "<small>+" + eur.format(dif) + "</small>" : "<small>el más barato</small>") + "</div>" +
           (url ? '<a class="ir" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + (o.url ? "Ver oferta" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
         if (n > 1 && abierto) fila += g.ofs.map(function (x) {
           var u = enlace(x, j);
-          return '<li class="of sub' + (x === m ? " mejor" : "") + '"><div class="of-t"><span>' + esc(x.plataforma || "—") + "</span>" + (x.estado === "usado" ? '<span class="usado">Usado</span>' : "") + "</div>" +
-            '<div class="of-d"><span>' + (x.formato === "fisico" ? "En disco" : "Digital") + "</span>" + (x.condicion ? "<span>·</span><span>" + esc(x.condicion) + "</span>" : "") +
+          var tx = tiendaPorId[x.tienda] || { nombre: x.tienda };
+          return '<li class="of sub' + (x === m ? " mejor" : "") + '"><div class="of-t"><span>' + esc(g.claves ? tx.nombre : (x.plataforma || "—")) + "</span>" + (x.estado === "usado" ? '<span class="usado">Usado</span>' : "") + "</div>" +
+            '<div class="of-d"><span>' + (g.claves ? esc(x.plataforma || "—") : (x.formato === "fisico" ? "En disco" : "Digital")) + "</span>" + (x.condicion ? "<span>·</span><span>" + esc(x.condicion) + "</span>" : "") +
             (x.envio ? "<span>·</span><span>+ " + eur.format(x.envio) + " envío</span>" : "") + (x.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
             '<div class="of-p"><b>' + eur.format(total(x)) + "</b></div>" +
             (u ? '<a class="ir" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + (x.url ? "Ver" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";

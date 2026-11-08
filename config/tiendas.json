@@ -42,7 +42,7 @@
   "formatos": [
    "digital"
   ],
-  "busqueda": "https://www.instant-gaming.com/es/busquedas/?query={q}"
+  "busqueda": "https://www.instant-gaming.com/es/busquedas/?query={q}&igr=gamer-681806"
  },
  {
   "id": "eneba",
@@ -60,7 +60,7 @@
   "formatos": [
    "digital"
   ],
-  "busqueda": "https://www.g2a.com/es/search?query={q}"
+  "busqueda": "https://www.g2a.com/es/search?query={q}&gtag=5ce8dfe406"
  },
  {
   "id": "mediamarkt",

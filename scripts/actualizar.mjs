@@ -26,6 +26,8 @@ const ESHOP_MAX = +(ENV.ESHOP_MAX || 2500);
 const EBAY_MAX = +(ENV.EBAY_MAX || 150);
 const GAME_MAX = +(ENV.GAME_MAX || 200);
 const IG_MAX = +(ENV.IG_MAX || 250);
+// Enlaces de afiliado (los enlaces de búsqueda de G2A e Instant Gaming están en config/tiendas.json)
+const AFILIADO_IG = "gamer-681806";
 
 const leer = async (ruta, porDefecto) => {
   try { return JSON.parse(await readFile(join(RAIZ, ruta), "utf8")); }
@@ -332,7 +334,7 @@ async function instantGaming(j) {
       ofertar(j, {
         tienda: "instantgaming", plataforma: plat, precio, regular: parseFloat(h.default_retail) || undefined,
         condicion: `Clave ${h.type || ""} · ${h.region_fulltext || h.region || "Worldwide"}`.replace(/\s+·/, " ·"),
-        url: `https://www.instant-gaming.com/es/${h.prod_id}-comprar-${h.seo_name}/`, fuente: "instantgaming",
+        url: `https://www.instant-gaming.com/es/${h.prod_id}-comprar-${h.seo_name}/?igr=${AFILIADO_IG}`, fuente: "instantgaming",
       });
       if (j.ofertas.length > antes) n++;
     }
