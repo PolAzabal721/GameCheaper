@@ -604,6 +604,10 @@ button { cursor: pointer; }
     // Tiendas que ya tienen precio (por identificador y por nombre, por si llegan de dos fuentes distintas)
     var tiene = {}; j.ofertas.forEach(function (o) { tiene[o.tienda] = 1; var t = tiendaPorId[o.tienda]; if (t) tiene["n:" + norm(t.nombre)] = 1; });
     var consola = j.plataformas.some(function (p) { return p !== "PC"; });
+    // Indicios de que el juego existe en disco o como clave de revendedor
+    var fisicoVisto = j.ofertas.some(function (o) { return o.formato === "fisico"; });
+    var clavesVisto = j.ofertas.some(function (o) { var t = tiendaPorId[o.tienda]; return t && (t.tipo === "revendedor" || t.tipo === "marketplace"); });
+    var popular = function (n) { return (j.pop || 99999) <= n; };
     return datos.tiendas.filter(function (t) {
       if (!t.busqueda || tiene[t.id] || tiene["n:" + norm(t.nombre)] || f.fuera.indexOf(t.id) >= 0) return false;
       if (!f.part && t.tipo === "particulares") return false;
@@ -615,6 +619,13 @@ button { cursor: pointer; }
       if (f.estado === "usado" && !usada) return false;
       if (f.estado === "nuevo" && usada) return false;
       if (fisica && !consola) return false;
+      // Tiendas que ya revisamos automáticamente para este juego: si no hay precio, es que no lo tienen
+      if ((j.revisado || []).indexOf(t.id) >= 0) return false;
+      // Las tiendas de PC de IsThereAnyDeal se consultan todas a la vez: sin precio = no lo tienen
+      if (t.id.indexOf("itad-") === 0) return false;
+      // Tiendas que no podemos revisar: solo si es muy probable que lo tengan
+      if (fisica && !(fisicoVisto || (consola && popular(300)))) return false;
+      if ((t.tipo === "marketplace" || t.tipo === "revendedor") && !(clavesVisto || popular(500))) return false;
       var ps = PLATS_TIENDA[t.id];
       if (ps && !ps.some(function (p) { return j.plataformas.indexOf(p) >= 0; })) return false;
       return true;

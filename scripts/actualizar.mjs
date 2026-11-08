@@ -85,7 +85,7 @@ function juego(titulo, { pop = 99999, prioridad = false } = {}) {
   const k = clave(titulo);
   if (!k) return null;
   let j = juegos.get(k);
-  if (!j) { j = { id: k.replace(/ /g, "-").slice(0, 80), titulo: tituloBonito(titulo), plataformas: new Set(), pop, pvp: 0, ofertas: [] }; juegos.set(k, j); }
+  if (!j) { j = { id: k.replace(/ /g, "-").slice(0, 80), titulo: tituloBonito(titulo), plataformas: new Set(), revisado: new Set(), pop, pvp: 0, ofertas: [] }; juegos.set(k, j); }
   if (prioridad) j.titulo = tituloBonito(titulo);
   j.pop = Math.min(j.pop, pop);
   return j;
@@ -119,18 +119,40 @@ function leerFilasSteam(html) {
   return filas;
 }
 async function steamMasVendidos() {
-  let puesto = 0, n = 0;
+  let puesto = 0;
+  const filas = [];
   for (let p = 0; p < STEAM_PAGINAS; p++) {
     const url = `https://store.steampowered.com/search/results/?query&start=${p * 100}&count=100&filter=topsellers&cc=es&l=spanish&infinite=1`;
     const d = await (await pedir(url)).json();
     for (const f of leerFilasSteam(d.results_html || "")) {
       puesto++;
-      if (EXTRAS.test(limpiar(f.titulo))) continue;
-      ofertar(juego(f.titulo, { pop: puesto }), { tienda: "steam", plataforma: "PC", precio: f.precio, regular: f.regular, url: `https://store.steampowered.com/app/${f.appid}/`, fuente: "steam" });
-      n++;
+      if (!EXTRAS.test(limpiar(f.titulo))) filas.push({ ...f, puesto });
     }
     await esperar(800);
   }
+  // El listado a veces enseña el precio de una mejora de pago de un juego gratuito (p. ej. Counter-Strike 2 «Prime»).
+  // Confirmamos cada precio con la ficha oficial de Steam (100 juegos por consulta) y descartamos los gratuitos.
+  const oficial = new Map();
+  for (let i = 0; i < filas.length; i += 100) {
+    const ids = filas.slice(i, i + 100).map((f) => f.appid).join(",");
+    try {
+      const d = await (await pedir(`https://store.steampowered.com/api/appdetails?appids=${ids}&cc=es&filters=price_overview`)).json();
+      for (const [id, v] of Object.entries(d)) if (v?.success) oficial.set(id, v.data?.price_overview || null);
+    } catch (e) { /* si falla, nos quedamos con el precio del listado */ }
+    await esperar(1500);
+  }
+  let n = 0, gratis = 0;
+  for (const f of filas) {
+    let precio = f.precio, regular = f.regular;
+    if (oficial.has(f.appid)) {
+      const po = oficial.get(f.appid);
+      if (!po || po.currency !== "EUR" || !(po.final > 0)) { gratis++; continue; } // gratuito o sin precio en euros
+      precio = po.final / 100; regular = po.initial / 100;
+    }
+    ofertar(juego(f.titulo, { pop: f.puesto }), { tienda: "steam", plataforma: "PC", precio, regular, url: `https://store.steampowered.com/app/${f.appid}/`, fuente: "steam" });
+    n++;
+  }
+  console.log(`Steam: ${n} juegos de pago, ${gratis} gratuitos descartados`);
   return n;
 }
 async function steamUno(j, extra) {
@@ -478,7 +500,7 @@ async function main() {
   const ps = await leer("data/playstation.json", { juegos: {} });
   let nPs = 0;
   for (const [id, e] of Object.entries(ps.juegos || {})) {
-    if (!e.ofertas?.length) continue;
+    if (!e.ofertas?.length) { const jx = [...juegos.values()].find((x) => x.id === id); if (jx && e.buscado) jx.revisado.add("psstore"); continue; }
     const j = [...juegos.values()].find((x) => x.id === id) || juego(e.titulo);
     for (const o of e.ofertas) { ofertar(j, o); nPs++; }
   }
@@ -487,10 +509,13 @@ async function main() {
   // 3. GAME y eBay (disco nuevo y segunda mano) para los juegos de consola más populares
   const populares = (max) => [...juegos.values()].sort((a, b) => a.pop - b.pop).slice(0, max);
   const consolaPopulares = (max) => [...juegos.values()].filter((j) => [...j.plataformas].some((p) => p !== "PC")).sort((a, b) => a.pop - b.pop).slice(0, max);
+  // Qué tiendas quedan comprobadas cuando una fuente revisa un juego (si no hay precio, es que no lo tienen)
+  const REVISA = { game: ["game", "gameseminuevos"], xbox: ["xbox"], instantgaming: ["instantgaming"], ebay: [] };
   const recorrerFuente = async (nombre, lista, fn, pausa) => {
     let fallos = 0;
     for (const j of lista) {
-      if (!(await intentar(nombre, () => fn(j))) && ++fallos >= 5) { avisos.push(`${nombre}: demasiados fallos, paro`); caidas.add(nombre); break; }
+      if (await intentar(nombre, () => fn(j))) (REVISA[nombre] || [nombre]).forEach((t) => j.revisado.add(t));
+      else if (++fallos >= 5) { avisos.push(`${nombre}: demasiados fallos, paro`); caidas.add(nombre); break; }
       await esperar(pausa);
     }
   };
@@ -512,6 +537,10 @@ async function main() {
     if (!(await intentar("itad", () => itad(dePC, tiendas)))) caidas.add("itad");
   }
 
+  // 4b. Lo revisado en ejecuciones anteriores se conserva (GAME va rotando por bloques)
+  const porId = new Map([...juegos.values()].map((j) => [j.id, j]));
+  for (const viejo of anterior.juegos || []) { const j = porId.get(viejo.id); if (j) (viejo.revisado || []).forEach((t) => j.revisado.add(t)); }
+
   // 5. Si una fuente entera ha caído, recuperamos sus ofertas anteriores
   for (const viejo of anterior.juegos || []) {
     for (const o of viejo.ofertas || []) {
@@ -531,7 +560,7 @@ async function main() {
   }
 
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
-    .map(({ _buscarEn, plataformas, ...j }) => ({ ...j, plataformas: [...plataformas], pvp: j.pvp || undefined }));
+    .map(({ _buscarEn, plataformas, revisado, ...j }) => ({ ...j, plataformas: [...plataformas], pvp: j.pvp || undefined, revisado: revisado.size ? [...revisado] : undefined }));
   const total = lista.reduce((s, j) => s + j.ofertas.length, 0);
   console.log("Ofertas por fuente:", JSON.stringify(cuenta));
   console.log("Primeros del catálogo:", lista.slice(0, 15).map((j) => j.titulo).join(" | "));

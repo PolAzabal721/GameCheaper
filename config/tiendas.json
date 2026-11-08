@@ -32,8 +32,7 @@
   "tipo": "oficial",
   "formatos": [
    "digital"
-  ],
-  "busqueda": "https://www.nintendo.com/es-es/"
+  ]
  },
  {
   "id": "instantgaming",
@@ -104,8 +103,7 @@
   "tipo": "tienda",
   "formatos": [
    "fisico"
-  ],
-  "busqueda": "https://www.elcorteingles.es/"
+  ]
  },
  {
   "id": "cex",
