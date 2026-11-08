@@ -5,7 +5,7 @@
   {"id": "dkbananza", "titulo": "Donkey Kong Bananza", "plataformas": ["Switch 2"], "pvp": 79.99},
   {"id": "silksong", "titulo": "Hollow Knight: Silksong", "plataformas": ["PC", "PS5", "Xbox Series", "Switch"], "pvp": 19.5, "steamAppId": 1030300, "psConcept": "10005908"},
   {"id": "bf6", "titulo": "Battlefield 6", "plataformas": ["PC", "PS5", "Xbox Series"], "pvp": 79.99, "steamAppId": 2807960, "psConcept": "10009568"},
-  {"id": "bo7", "titulo": "Call of Duty: Black Ops 7", "plataformas": ["PC", "PS5", "Xbox Series"], "pvp": 79.99, "psConcept": "10001130"},
+  {"id": "bo7", "titulo": "Call of Duty: Black Ops 7", "plataformas": ["PC", "PS5", "Xbox Series"], "pvp": 79.99, "psConcept": ["EP0002-PPSA07950_00-CODBO7CROSSGEN01", "10001130"]},
   {"id": "plza", "titulo": "Leyendas Pokémon: Z-A", "plataformas": ["Switch 2", "Switch"], "pvp": 69.99},
   {"id": "e33", "titulo": "Clair Obscur: Expedition 33", "plataformas": ["PC", "PS5", "Xbox Series"], "pvp": 49.99, "steamAppId": 1903340, "psConcept": ["10008503", "10015068"]},
   {"id": "nightreign", "titulo": "Elden Ring Nightreign", "plataformas": ["PC", "PS5", "Xbox Series"], "pvp": 39.99, "steamAppId": 2622380, "psConcept": "10010877"},

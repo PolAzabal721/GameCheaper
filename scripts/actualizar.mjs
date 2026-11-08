@@ -110,16 +110,19 @@ async function eshop(juego) {
 // ---------- Fuente: PlayStation Store ----------
 // La búsqueda de la PS Store carga con JavaScript y no trae precios, pero la ficha de cada juego
 // ("concept") incluye un bloque estándar JSON-LD con el precio actual en euros.
-// Cada juego necesita "psConcept": el número de su URL store.playstation.com/es-es/concept/XXXXX
-// (puede ser una lista si hay varias fichas; se usa la primera que funcione).
+// Cada juego necesita "psConcept": el número de su URL store.playstation.com/es-es/concept/XXXXX,
+// o el código de producto de store.playstation.com/es-es/product/XXXXX. Puede ser una lista;
+// se usa la primera ficha que funcione y cuyo nombre coincida con el juego.
 async function psstore(juego) {
   const plat = juego.plataformas.find((p) => p === "PS5" || p === "PS4");
   if (!plat || !juego.psConcept) return [];
   const conceptos = [].concat(juego.psConcept);
   let ultimoError = null;
   for (const id of conceptos) {
-    const url = `https://store.playstation.com/es-es/concept/${id}`;
-    const html = await (await pedir(url)).text();
+    // Un número es una ficha "concept"; algo como EP0002-PPSA07950_00-XXXX es una ficha de producto
+    const url = `https://store.playstation.com/es-es/${/^\d+$/.test(id) ? "concept" : "product"}/${id}`;
+    let html;
+    try { html = await (await pedir(url)).text(); } catch (e) { ultimoError = e.message; continue; }
     const m = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/);
     if (!m) { ultimoError = "la ficha no trae el bloque de precio"; continue; }
     let ld; try { ld = JSON.parse(m[1]); } catch { ultimoError = "bloque de precio ilegible"; continue; }
