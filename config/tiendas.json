@@ -24,7 +24,7 @@
   "formatos": [
    "digital"
   ],
-  "busqueda": "https://www.xbox.com/es-ES/search?q={q}"
+  "busqueda": "https://www.xbox.com/es-ES/search/results?q={q}"
  },
  {
   "id": "eshop",
