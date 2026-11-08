@@ -28,9 +28,9 @@ node scripts/actualizar.mjs
 ```
 Necesita Node 18 o superior. Sin dependencias.
 
-- **Steam**: automático, precio en euros para España. Añade `steamAppId` al juego (es el número de la URL de Steam).
-- **IsThereAnyDeal** (opcional): añade muchas tiendas digitales autorizadas de PC. Pide una clave gratuita y ejecútalo con `ITAD_KEY=tuclave node scripts/actualizar.mjs`. Si algo falla, revisa su documentación: los endpoints pueden cambiar.
-- **Todo lo demás** (MediaMarkt, Fnac, Amazon, GAME, Eneba, G2A, PS Store, eShop…): estas tiendas no tienen una API pública de precios. Las opciones legales son sus **programas de afiliados**, que dan feeds de productos con precio (Amazon tiene su API de afiliados; Eneba, G2A, MediaMarkt o Fnac trabajan con plataformas de afiliación). Hasta tenerlos, mete esas ofertas en `config/manual.json`. Hacer scraping de sus webs suele ir contra sus condiciones y se rompe a menudo.
+Fuentes con precio real y automático: **Steam**, **Nintendo eShop**, **PlayStation Store** (juegos con `psConcept` en `config/seguimiento.json`), **GAME** (nuevo y seminuevo), **eBay** (con claves) e **IsThereAnyDeal** (opcional, secreto `ITAD_KEY`).
+
+Sin precio automático: MediaMarkt, Fnac, Amazon, El Corte Inglés, Eneba, G2A, Instant Gaming, CeX y Wallapop. No tienen API pública y bloquean la lectura automática; la web muestra enlaces para buscar el juego en ellas. La vía legal para tener sus precios son sus programas de afiliados. Mientras, se pueden añadir ofertas a mano en `config/manual.json`.
 
 ## Catálogo y búsqueda en vivo
 
