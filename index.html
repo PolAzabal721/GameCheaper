@@ -443,7 +443,7 @@ button { cursor: pointer; }
       j.id = j.id || "j" + i;
       j.plataformas = Array.isArray(j.plataformas) ? j.plataformas : [];
       j.ofertas = j.ofertas.filter(function (o) {
-        var ok = o && o.tienda && typeof o.precio === "number" && isFinite(o.precio);
+        var ok = o && o.tienda && typeof o.precio === "number" && isFinite(o.precio) && o.precio > 0 && o.precio <= 400;
         if (!ok) avisos++;
         if (ok) {
           o.formato = o.formato === "fisico" ? "fisico" : "digital";
@@ -639,6 +639,8 @@ button { cursor: pointer; }
     var mejor = conStock[0] || ofs[0];
     var minDe = function (est) { var x = (conStock.length ? conStock : ofs).filter(function (o) { return o.estado === est; })[0]; return x ? total(x) : null; };
     var ref = j.pvp || Math.max.apply(null, j.ofertas.map(total));
+    // Un PVP más de 4 veces por encima del mejor precio es un dato erróneo: no lo usamos
+    if (ref > total(mejor) * 4) { ref = 0; }
     return { j: j, ofs: ofs, mejor: mejor, nuevo: minDe("nuevo"), usado: minDe("usado"), dto: ref > 0 ? Math.max(0, Math.round((1 - total(mejor) / ref) * 100)) : 0 };
   }
 
@@ -670,7 +672,7 @@ button { cursor: pointer; }
       (enMinimo ? '<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>' : "") + "<h2>" + esc(j.titulo) + '</h2><div class="plats">' +
       j.plataformas.map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
       (r.nuevo != null || r.usado != null || j.pvp ? '<div class="resumen">' +
-        (j.pvp && j.pvp > total(m) + 0.004 ? "<span>PVP <s>" + eur.format(j.pvp) + "</s></span>" : "") +
+        (j.pvp && j.pvp > total(m) + 0.004 && j.pvp <= total(m) * 4 ? "<span>PVP <s>" + eur.format(j.pvp) + "</s></span>" : "") +
         (r.nuevo != null ? "<span>Nuevo desde <b>" + eur.format(r.nuevo) + "</b></span>" : "") +
         (r.usado != null ? "<span>2ª mano desde <b>" + eur.format(r.usado) + "</b></span>" : "") +
         (j.minimo && !enMinimo ? "<span>Mínimo histórico <b>" + eur.format(j.minimo) + "</b></span>" : "") + "</div>" : "") + "</div>" +

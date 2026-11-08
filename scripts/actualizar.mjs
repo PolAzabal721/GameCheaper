@@ -90,8 +90,10 @@ function juego(titulo, { pop = 99999, prioridad = false } = {}) {
   j.pop = Math.min(j.pop, pop);
   return j;
 }
+const PRECIO_MAX = 400; // ningún juego cuesta más; por encima son datos de relleno (p. ej. 99.999 €) o hardware
 function ofertar(j, o) {
-  if (!j || !(o.precio > 0)) return;
+  if (!j || !(o.precio > 0) || o.precio > PRECIO_MAX) return;
+  if (!(o.regular >= o.precio && o.regular <= PRECIO_MAX)) o = { ...o, regular: o.precio };
   // Una sola oferta por tienda + plataforma + estado: la más barata
   // (y por tipo de clave, para poder filtrar "solo claves de Steam" en Instant Gaming)
   const igual = j.ofertas.find((x) => x.tienda === o.tienda && x.plataforma === o.plataforma && (x.estado || "nuevo") === (o.estado || "nuevo") && (x.drm || "") === (o.drm || ""));
@@ -487,7 +489,7 @@ async function main() {
   for (const e of extras) {
     const j = juego(e.titulo, { prioridad: e.prioridad, pop: e.prioridad ? 50 : 99999 });
     if (!j) continue;
-    if (e.pvp) j.pvp = Math.max(j.pvp, e.pvp);
+    if (e.pvp) { j.pvp = e.pvp; j._pvpFijo = true; } // PVP indicado a mano en seguimiento.json
     j._buscarEn = e.plataformas || [];
     (e.plataformas || []).forEach((p) => j.plataformas.add(p));
     if (!e.plataformas?.length || e.plataformas.includes("PC")) await intentar("steam", () => steamUno(j, e));
@@ -559,8 +561,15 @@ async function main() {
     ofertar(j, { formato: usado ? "fisico" : "digital", estado: usado ? "usado" : "nuevo", ...o, fuente: "manual" });
   }
 
+  // PVP: la mediana del precio sin descuento de las tiendas (el máximo se disparaba con ediciones de lujo)
+  for (const j of juegos.values()) {
+    if (j._pvpFijo) continue;
+    const r = j.ofertas.filter((o) => o.estado !== "usado").map((o) => o.regular || o.precio).sort((a, b) => a - b);
+    j.pvp = r.length ? redondear(r[Math.floor((r.length - 1) / 2)]) : 0;
+  }
+
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
-    .map(({ _buscarEn, plataformas, revisado, ...j }) => ({ ...j, plataformas: [...plataformas], pvp: j.pvp || undefined, revisado: revisado.size ? [...revisado] : undefined }));
+    .map(({ _buscarEn, _pvpFijo, plataformas, revisado, ...j }) => ({ ...j, plataformas: [...plataformas], pvp: j.pvp || undefined, revisado: revisado.size ? [...revisado] : undefined }));
   const total = lista.reduce((s, j) => s + j.ofertas.length, 0);
   console.log("Ofertas por fuente:", JSON.stringify(cuenta));
   console.log("Primeros del catálogo:", lista.slice(0, 15).map((j) => j.titulo).join(" | "));
