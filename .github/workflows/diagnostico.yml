@@ -9,4 +9,4 @@ jobs:
         with: { node-version: 20 }
       - run: node scripts/actualizar.mjs
         env:
-          PRUEBA_IG: "40"
+          PRUEBA_TARJETAS: "1"

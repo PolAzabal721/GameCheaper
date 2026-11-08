@@ -465,9 +465,23 @@ const BUSQUEDAS_IG = ["nintendo eshop", "tarjeta playstation", "playstation plus
   "fallout 76 atomos", "elder scrolls online coronas", "guild wars gemas", "amazon", "google play", "apple", "spotify", "netflix", "tarjeta regalo"];
 const valorEuros = (txt) => { const m = String(txt).match(/(\d+(?:[.,]\d+)?)\s*(€|eur\b|euros?\b)/i); return m ? parseFloat(m[1].replace(",", ".")) : 0; };
 // Tarjeta de saldo de una tienda (p. ej. «Tarjeta regalo PlayStation 50 €»): una ficha por marca y valor
+// En qué plataformas se usa el saldo de cada marca (para el filtro de plataformas de la web)
+const PLATS_MARCA = { PlayStation: ["PS5", "PS4"], "Nintendo eShop": ["Switch 2", "Switch"], Xbox: ["Xbox Series"], Steam: ["PC"],
+  Amazon: ["PC"], Apple: ["PC"], "Google Play": ["PC"], Spotify: ["PC"], Netflix: ["PC"] };
+// Plataformas de un producto de Instant Gaming (las monedas de Xbox One valen en Series)
+function platsIG(h) {
+  const ps = new Set();
+  for (const n of h.platform_names || []) {
+    const l = limpiar(n);
+    const p = PLAT_IG[l] || PLAT_IG[String(n).toLowerCase()] || (/xbox/.test(l) ? "Xbox Series" : /playstation 5/.test(l) ? "PS5" : /playstation 4/.test(l) ? "PS4" : /switch 2/.test(l) ? "Switch 2" : /switch/.test(l) ? "Switch" : /^(pc|mac|windows|geforce now)/.test(l) ? "PC" : null);
+    if (p) ps.add(p);
+  }
+  return [...ps];
+}
 function fichaSaldo(marca, valor, pop) {
   const j = juego(`Tarjeta regalo ${marca} ${valor} €`, { pop, tipo: "tarjeta" });
   j._pvpFijo = true; j.pvp = valor; j.marca = marca; j.valor = valor;
+  (PLATS_MARCA[marca] || []).forEach((p) => j.plataformas.add(p));
   return j;
 }
 // Recorre fichas de Instant Gaming siguiendo sus enlaces a otras versiones (importe y país) y se queda con las de España
@@ -499,8 +513,10 @@ async function tarjetasEspanaIG(semillas, marca, visitar, maxFichas = +(ENV.IG_T
     const stock = /itemprop="availability"[^>]*InStock/.test(html);
     const valor = valorEuros(titulo) || +((ruta.match(/-(\d+)eur-/) || [])[1] || 0), m = marca(titulo);
     const j = m && valor > 0 ? fichaSaldo(m, valor, 1500) : juego(titulo, { pop: 1600, tipo: "tarjeta" });
+    if (m) (PLATS_MARCA[m] || []).forEach((p) => j.plataformas.add(p));
     visitar(j);
-    ofertar(j, { tienda: "instantgaming", plataforma: "Tarjeta regalo", precio, regular: m && valor > 0 ? valor : undefined, stock,
+    const antes = parseFloat((html.match(/class="retail"[^>]*>\s*([\d.,]+)/) || [])[1]?.replace(",", "."));
+    ofertar(j, { tienda: "instantgaming", plataforma: "Tarjeta regalo", precio, regular: m && valor > 0 ? valor : (antes > precio ? antes : undefined), stock,
       condicion: "Código digital · España", url: `${BASE}${ruta}/?igr=${AFILIADO_IG}`, fuente: "tarjetas" });
     n++;
   }
@@ -531,7 +547,11 @@ async function tarjetasRegalo(visitar) {
       if (m && !valor && /(tarjeta|gift card)/.test(limpiar(nombre)) && !h.is_subscription) continue; // saldo de otra moneda (USD…)
       const j = esSaldo ? fichaSaldo(m, valor, 1500) : juego(nombre, { pop: 1600, tipo: "tarjeta" });
       visitar(j);
-      ofertar(j, { tienda: "instantgaming", plataforma: "Tarjeta regalo", precio, regular: esSaldo ? valor : undefined, stock: !!h.has_stock,
+      // Monedas y suscripciones: una oferta por plataforma (las tarjetas tiburón de PC y de PlayStation no son la misma)
+      const plats = esSaldo ? ["Tarjeta regalo"] : (platsIG(h).length ? platsIG(h) : (PLATS_MARCA[m] || ["Tarjeta regalo"]));
+      if (!esSaldo && m) (PLATS_MARCA[m] || []).forEach((p) => j.plataformas.add(p));
+      for (const plataforma of plats) ofertar(j, { tienda: "instantgaming", plataforma, precio,
+        regular: esSaldo ? valor : (parseFloat(h.default_retail) || undefined), stock: !!h.has_stock,
         condicion: `${h.is_subscription ? "Suscripción" : "Código digital"} · ${h.region_fulltext || h.region || "Worldwide"}`,
         url: `https://www.instant-gaming.com/es/${h.prod_id}-comprar-${h.seo_name}/?igr=${AFILIADO_IG}`, fuente: "tarjetas" });
       n++;
@@ -664,7 +684,16 @@ async function main() {
   // Prueba rápida: solo tarjetas regalo, sin tocar precios.json (PRUEBA_TARJETAS=1)
   if (ENV.PRUEBA_TARJETAS) {
     await tarjetasRegalo(() => {});
-    for (const j of juegos.values()) console.log("TARJETA", j.titulo, "|", j.ofertas.map((o) => `${o.tienda} ${o.precio}${o.stock ? "" : " (agotado)"} ${o.condicion || ""}`).join(" ; "));
+    for (const j of juegos.values()) console.log("TARJETA", j.titulo, "[" + [...j.plataformas].join(",") + "] |", j.ofertas.map((o) => `${o.tienda} ${o.plataforma} ${o.precio}${o.regular > o.precio ? " antes " + o.regular : ""}${o.stock ? "" : " (agotado)"}`).join(" ; "));
+    // Cómo dice una ficha de juego su región (para seguir versiones que la búsqueda no trae)
+    for (const id of ["22210-comprar-the-legend-of-zelda-ocarina-of-time-switch-2-nintendo-eshop", "7072-comprar-hogwarts-legacy-pc-juego-steam-europe-us-canada", "24209-comprar-the-legend-of-zelda-ocarina-of-time-switch-2-nintendo-eshop"]) {
+      const html = await (await pedir("https://www.instant-gaming.com/es/" + id + "/")).text();
+      console.log("REGION", id.slice(0, 60), "| h1:", ((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+        "| avail:", /InStock/.test((html.match(/itemprop="availability"[^>]*/) || [""])[0]), "| precio:", (html.match(/data-price-eur="([\d.]+)"/) || [])[1]);
+      for (const re of [/[Rr]egi[oó]n[^<]{0,20}<[^>]*>[^<]{0,80}/g, /(Europa|Europe|Worldwide|Global|Estados Unidos|United States)[^<]{0,60}/g, /country_?(white|black)list[^\]]{0,120}/g, /data-region[^>]{0,80}/g])
+        [...html.matchAll(re)].slice(0, 4).forEach((m) => console.log("   ", String(re).slice(1, 14), "→", m[0].replace(/\s+/g, " ").slice(0, 160)));
+      await esperar(900);
+    }
     return;
   }
   const tiendas = await leer("config/tiendas.json");

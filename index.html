@@ -271,6 +271,7 @@ button { cursor: pointer; }
   .graf { height: 200px; }
   .av-precio input { width: 110px; }
 }
+.of-p s.antes { color: var(--muted); text-decoration-thickness: 1.5px; }
 .minimo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--tag-ink); background: var(--tag); padding: 2px 7px; border-radius: 4px; }
 .tipo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
 .tipo-tag.t-tarjeta { background: var(--good-soft); color: var(--good); }
@@ -609,7 +610,11 @@ button { cursor: pointer; }
       var t = tiendaPorId[o.tienda] || { tipo: "tienda" };
       if (f.formato !== "todos" && o.formato !== f.formato) return false;
       if (f.estado !== "todos" && o.estado !== f.estado) return false;
-      if (f.plats.length && f.plats.indexOf(o.plataforma) < 0) return false;
+      if (f.plats.length) {
+        // Una tarjeta de saldo (p. ej. PlayStation) vale en las plataformas del producto (PS5 y PS4)
+        var ps = o.plataforma === "Tarjeta regalo" ? j.plataformas : [o.plataforma];
+        if (!ps.some(function (p) { return f.plats.indexOf(p) >= 0; })) return false;
+      }
       if (f.fuera.indexOf(o.tienda) >= 0) return false;
       if (t.tipo === "revendedor" && o.tienda !== "instantgaming" && f.revOn.indexOf(o.tienda) < 0) return false;
       if (!f.mkt && t.tipo === "marketplace") return false;
@@ -741,6 +746,12 @@ button { cursor: pointer; }
     return { j: j, ofs: ofs, mejor: mejor, nuevo: minDe("nuevo"), usado: minDe("usado"), dto: ref > 0 ? Math.max(0, Math.round((1 - total(mejor) / ref) * 100)) : 0 };
   }
 
+  // Precio sin rebaja de la tienda, tachado (no en tarjetas de saldo: ya enseñan su valor)
+  function antes(o, j) {
+    if (j.valor || o.estado === "usado" || !(o.regular > o.precio + 0.01)) return "";
+    return '<s class="antes">' + eur.format(o.regular + (o.envio || 0)) + "</s> · ";
+  }
+
   function tarjeta(r) {
     var j = r.j, m = r.mejor, tm = tiendaPorId[m.tienda] || { nombre: m.tienda };
     // Agrupamos por tienda: una fila por tienda (su precio más barato) y un desplegable con cada plataforma
@@ -772,7 +783,7 @@ button { cursor: pointer; }
       j.plataformas.filter(function (p) { return p !== "Tarjeta regalo"; }).map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
       (r.nuevo != null || r.usado != null || j.pvp ? '<div class="resumen">' +
         (j.tipo === "tarjeta" && j.valor ? "<span>Valor <b>" + eur.format(j.valor) + "</b></span>" + (j.valor > total(m) ? "<span>Te ahorras <b>" + eur.format(j.valor - total(m)) + "</b></span>" : "") :
-          j.pvp && j.pvp > total(m) + 0.004 && j.pvp <= total(m) * 4 ? "<span>PVP <s>" + eur.format(j.pvp) + "</s></span>" : "") +
+          j.pvp && j.pvp > total(m) + 0.004 && j.pvp <= total(m) * 4 ? "<span>" + (j.tipo === "tarjeta" ? "Antes" : "PVP") + " <s>" + eur.format(j.pvp) + "</s></span>" : "") +
         (r.nuevo != null ? "<span>Nuevo desde <b>" + eur.format(r.nuevo) + "</b></span>" : "") +
         (r.usado != null ? "<span>2ª mano desde <b>" + eur.format(r.usado) + "</b></span>" : "") +
         (j.minimo && !enMinimo ? "<span>Mínimo histórico <b>" + eur.format(j.minimo) + "</b></span>" : "") + "</div>" : "") + "</div>" +
@@ -795,7 +806,7 @@ button { cursor: pointer; }
           (n === 1 && o.estado === "usado" ? '<span class="usado">Usado</span>' : "") +
           (n > 1 ? '<button type="button" class="desp" data-grupo="' + esc(clave) + '" aria-expanded="' + !!abierto + '">' + (abierto ? "▴ " : "▾ ") + (g.claves ? n + " ofertas de " + g.nTiendas + " tiendas" : n + (plats.length === n ? " plataformas" : " opciones")) + "</button>" : "") + "</div>" +
           '<div class="of-d">' + detalle + "</div>" +
-          '<div class="of-p"><b>' + eur.format(total(o)) + "</b>" + (dif > 0.004 ? "<small>+" + eur.format(dif) + "</small>" : "<small>el más barato</small>") + "</div>" +
+          '<div class="of-p"><b>' + eur.format(total(o)) + "</b><small>" + antes(o, j) + (dif > 0.004 ? "+" + eur.format(dif) : "el más barato") + "</small></div>" +
           (url ? '<a class="ir" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + (o.url ? "Ver oferta" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
         if (n > 1 && abierto) fila += g.ofs.map(function (x) {
           var u = enlace(x, j);
@@ -803,7 +814,7 @@ button { cursor: pointer; }
           return '<li class="of sub' + (x === m ? " mejor" : "") + '"><div class="of-t"><span>' + esc(g.claves ? tx.nombre : (x.plataforma || "—")) + "</span>" + (x.estado === "usado" ? '<span class="usado">Usado</span>' : "") + "</div>" +
             '<div class="of-d"><span>' + (g.claves ? esc(x.plataforma || "—") : (x.formato === "fisico" ? "En disco" : "Digital")) + "</span>" + (x.condicion ? "<span>·</span><span>" + esc(x.condicion) + "</span>" : "") +
             (x.envio ? "<span>·</span><span>+ " + eur.format(x.envio) + " envío</span>" : "") + (x.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
-            '<div class="of-p"><b>' + eur.format(total(x)) + "</b></div>" +
+            '<div class="of-p"><b>' + eur.format(total(x)) + "</b>" + (antes(x, j) ? "<small>" + antes(x, j).replace(/ · $/, "") + "</small>" : "") + "</div>" +
             (u ? '<a class="ir" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + (x.url ? "Ver" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
         }).join("");
         return fila;
