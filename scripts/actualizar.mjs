@@ -422,6 +422,8 @@ async function itad(lista, tiendas) {
         if (!OFICIALES_PC.test(nombre)) continue;
         const id = "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
         if (id === "itad-steam") continue;
+        // Microsoft Store ya tiene su propia fuente: se guarda con el mismo nombre de tienda para no duplicarla
+        if (id === "itad-microsoftstore") { ofertar(j, { tienda: "xbox", plataforma: "PC", precio: x.price.amount, regular: x.regular?.amount, url: x.url || undefined, fuente: "itad" }); n++; continue; }
         if (!tiendas.some((t) => t.id === id)) tiendas.push({ id, nombre, tipo: OFICIALES_PC.test(nombre) ? "oficial" : "revendedor", formatos: ["digital"], busqueda: BUSQUEDA_PC[id] });
         ofertar(j, { tienda: id, plataforma: "PC", precio: x.price.amount, regular: x.regular?.amount, url: x.url || undefined, fuente: "itad" });
         n++;

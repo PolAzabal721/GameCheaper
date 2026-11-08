@@ -601,10 +601,11 @@ button { cursor: pointer; }
 
   // Tiendas sin precio para este juego donde merece la pena buscar a mano
   function otrasTiendas(j) {
-    var tiene = {}; j.ofertas.forEach(function (o) { tiene[o.tienda] = 1; });
+    // Tiendas que ya tienen precio (por identificador y por nombre, por si llegan de dos fuentes distintas)
+    var tiene = {}; j.ofertas.forEach(function (o) { tiene[o.tienda] = 1; var t = tiendaPorId[o.tienda]; if (t) tiene["n:" + norm(t.nombre)] = 1; });
     var consola = j.plataformas.some(function (p) { return p !== "PC"; });
     return datos.tiendas.filter(function (t) {
-      if (!t.busqueda || tiene[t.id] || f.fuera.indexOf(t.id) >= 0) return false;
+      if (!t.busqueda || tiene[t.id] || tiene["n:" + norm(t.nombre)] || f.fuera.indexOf(t.id) >= 0) return false;
       if (!f.part && t.tipo === "particulares") return false;
       if (!f.mkt && t.tipo === "marketplace") return false;
       var fisica = (t.formatos || []).indexOf("fisico") >= 0 && (t.formatos || []).indexOf("digital") < 0;
