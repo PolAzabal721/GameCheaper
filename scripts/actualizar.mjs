@@ -36,7 +36,11 @@ const CABECERAS = {
 };
 async function pedir(url, opciones = {}) {
   const r = await fetch(url, { ...opciones, headers: { ...CABECERAS, ...(opciones.headers || {}) } });
-  if (!r.ok) throw new Error(`HTTP ${r.status} en ${new URL(url).host}`);
+  if (!r.ok) {
+    // El motivo que da el servidor (sin repetir la URL, que puede llevar claves)
+    let motivo = ""; try { motivo = (await r.text()).replace(/\s+/g, " ").slice(0, 160); } catch {}
+    throw new Error(`HTTP ${r.status} en ${new URL(url).host}${new URL(url).pathname}${motivo ? " → " + motivo : ""}`);
+  }
   return r;
 }
 const html2txt = (s) => String(s).replace(/&amp;/g, "&").replace(/&#0?39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").trim();
