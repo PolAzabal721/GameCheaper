@@ -470,14 +470,59 @@ function fichaSaldo(marca, valor, pop) {
   j._pvpFijo = true; j.pvp = valor; j.marca = marca; j.valor = valor;
   return j;
 }
+// Recorre fichas de Instant Gaming siguiendo sus enlaces a otras versiones (importe y país) y se queda con las de España
+async function tarjetasEspanaIG(semillas, marca, visitar, maxFichas = +(ENV.IG_TARJETAS_FICHAS || 120)) {
+  const BASE = "https://www.instant-gaming.com/es/";
+  const vistas = new Set(), cola = [...semillas], hechas = new Set();
+  let n = 0, fichas = 0;
+  const esCandidata = (slug) => /-espana$/.test(slug) || (!/-juego-/.test(slug) && /\d+eur/.test(slug));
+  while (cola.length && fichas < maxFichas) {
+    const ruta = cola.shift();
+    const id = ruta.split("-")[0];
+    if (vistas.has(id)) continue;
+    vistas.add(id);
+    let html;
+    try { html = await (await pedir(BASE + ruta + "/")).text(); } catch { continue; }
+    fichas++;
+    await esperar(900);
+    // Enlaces a otras versiones: seguimos las de España y las que no dicen país (se comprueba al abrirlas)
+    for (const m of html.matchAll(/instant-gaming\.com\/es\/(\d+)-comprar-([a-z0-9-]+)\//g))
+      if (!vistas.has(m[1]) && esCandidata(m[2])) cola.push(`${m[1]}-comprar-${m[2]}`);
+    // ¿Es la versión de España? (país elegido en su selector)
+    const elegidos = [...html.matchAll(/<option value="\d+"\s+selected[^>]*>\s*([^<]+?)\s*<\/option>/g)].map((x) => limpiar(x[1]));
+    if (!/-espana$/.test(ruta) && !elegidos.includes("espana")) continue;
+    if (hechas.has(id)) continue;
+    hechas.add(id);
+    const titulo = html2txt(((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ")).replace(/\s*\([^)]*\)\s*$/, "").trim();
+    const precio = parseFloat((html.match(/itemprop="price"[^>]*data-price-eur="([\d.]+)"/) || [])[1]);
+    if (!titulo || !(precio > 0)) continue;
+    const stock = /itemprop="availability"[^>]*InStock/.test(html);
+    const valor = valorEuros(titulo) || +((ruta.match(/-(\d+)eur-/) || [])[1] || 0), m = marca(titulo);
+    const j = m && valor > 0 ? fichaSaldo(m, valor, 1500) : juego(titulo, { pop: 1600, tipo: "tarjeta" });
+    visitar(j);
+    ofertar(j, { tienda: "instantgaming", plataforma: "Tarjeta regalo", precio, regular: m && valor > 0 ? valor : undefined, stock,
+      condicion: "Código digital · España", url: `${BASE}${ruta}/?igr=${AFILIADO_IG}`, fuente: "tarjetas" });
+    n++;
+  }
+  console.log(`Instant Gaming, tarjetas de España: ${n} (de ${fichas} fichas revisadas)`);
+  return n;
+}
+
 async function tarjetasRegalo(visitar) {
   let n = 0;
   const marca = (txt) => (MARCAS_SALDO.find(([, re]) => re.test(limpiar(txt))) || [])[0];
   // 1. Instant Gaming
+  // La búsqueda solo devuelve una versión de cada tarjeta (muchas veces la de EE. UU.); la de España es otra ficha
+  // a la que se llega desde el selector de país. Esas fichas «semilla» se recorren en el paso 1b.
+  const semillas = new Map();
   for (const q of BUSQUEDAS_IG) {
     const html = await (await pedir("https://www.instant-gaming.com/es/busquedas/?query=" + encodeURIComponent(q))).text();
     const i = html.indexOf("window.searchResults = ");
     if (i >= 0) for (const h of JSON.parse(bloqueJSON(html, i)).hits || []) {
+      if ((h.is_prepaid || h.is_subscription) && !valeEnEspana(h)) {
+        const familia = limpiar(String(h.name).replace(/[\d$€£.,]+/g, " "));
+        if (!semillas.has(familia)) semillas.set(familia, `${h.prod_id}-comprar-${h.seo_name}`);
+      }
       if (!(h.is_prepaid || h.is_subscription) || !valeEnEspana(h)) continue;
       const precio = parseFloat(h.price_eur);
       if (!(precio > 0)) continue;
@@ -493,6 +538,8 @@ async function tarjetasRegalo(visitar) {
     }
     await esperar(900);
   }
+  // 1b. Instant Gaming: versiones de España de las tarjetas que la búsqueda solo enseña de otro país
+  n += await tarjetasEspanaIG([...semillas.values()], marca, visitar);
   // 2. GAME (tarjetas PlayStation y códigos Nintendo eShop, a su precio oficial)
   for (const q of ["psn", "nintendo eshop", "prepago", "tarjeta regalo", "xbox prepago", "steam prepago"]) {
     const html = await (await pedir("https://www.game.es/resultados?search=" + encodeURIComponent(q))).text();
@@ -570,6 +617,12 @@ async function itad(lista, tiendas) {
 
 // ---------- Programa ----------
 async function main() {
+  // Prueba rápida: solo tarjetas regalo, sin tocar precios.json (PRUEBA_TARJETAS=1)
+  if (ENV.PRUEBA_TARJETAS) {
+    await tarjetasRegalo(() => {});
+    for (const j of juegos.values()) console.log("TARJETA", j.titulo, "|", j.ofertas.map((o) => `${o.tienda} ${o.precio}${o.stock ? "" : " (agotado)"} ${o.condicion || ""}`).join(" ; "));
+    return;
+  }
   const tiendas = await leer("config/tiendas.json");
   const seguimiento = await leer("config/seguimiento.json", []);
   const manual = await leer("config/manual.json", []);
