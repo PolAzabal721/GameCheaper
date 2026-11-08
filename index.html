@@ -953,13 +953,15 @@ button { cursor: pointer; }
     var Y = function (v) { return arr + (1 - (v - lo) / (hi - lo)) * h; };
     var out = "";
     for (var y = lo; y <= hi + 1e-9; y += paso) out += '<line class="rejilla" x1="' + izq + '" x2="' + (izq + w) + '" y1="' + Y(y).toFixed(1) + '" y2="' + Y(y).toFixed(1) + '"/><text class="eje" x="' + (izq - 6) + '" y="' + (Y(y) + 4).toFixed(1) + '" text-anchor="end">' + (paso < 1 ? y.toFixed(2).replace(".", ",") : Math.round(y)) + " €</text>";
-    var largo = (t1 - t0) > 200 * 86400000;
-    for (var k = 0; k <= 3; k++) {
-      var tt = t0 + (t1 - t0) * k / 3, xx = izq + w * k / 3;
-      out += '<text class="eje" x="' + xx.toFixed(1) + '" y="' + (alto - 6) + '" text-anchor="' + (k === 0 ? "start" : k === 3 ? "end" : "middle") + '">' + (largo ? mesAno : fechaCorta).format(new Date(tt)) + "</text>";
+    var largo = (t1 - t0) > 200 * 86400000, vistas = {};
+    var nTicks = Math.max(1, Math.min(3, Math.floor((t1 - t0) / 86400000)));
+    for (var k = 0; k <= nTicks; k++) {
+      var tt = t0 + (t1 - t0) * k / nTicks, xx = izq + w * k / nTicks, txt = (largo ? mesAno : fechaCorta).format(new Date(tt));
+      if (vistas[txt]) continue; vistas[txt] = 1;
+      out += '<text class="eje" x="' + xx.toFixed(1) + '" y="' + (alto - 6) + '" text-anchor="' + (k === 0 ? "start" : k === nTicks ? "end" : "middle") + '">' + txt + "</text>";
     }
     var xHoy = izq + w;
-    activas.forEach(function (s) {
+    activas.slice().reverse().forEach(function (s) {
       var d = "", ult = null;
       pts.forEach(function (p) {
         var v = p.v[s.i]; if (v == null) return;
@@ -1024,7 +1026,7 @@ button { cursor: pointer; }
       if (modal.form && lista.length < MAX_AVISOS) {
         var sugerido = ahora ? Math.max(0.5, Math.floor(ahora * 0.8)) : "";
         html += '<form class="av-form" id="av-form" novalidate><div class="av-campos">' +
-          '<label>Avísame cuando baje de<span class="av-precio"><input type="number" id="av-precio" inputmode="decimal" min="0.5" max="1000" step="0.01" placeholder="' + sugerido + '" required></span></label>' +
+          '<label>Precio<span class="av-precio"><input type="number" id="av-precio" inputmode="decimal" min="1" max="1000" step="1" placeholder="' + sugerido + '" required></span></label>' +
           '<label class="av-email">Tu email<input type="email" id="av-email" autocomplete="email" placeholder="tu@email.com" value="' + esc(emailGuardado) + '" required></label>' +
           '<button type="submit" class="btn prim"' + (modal.enviando ? " disabled" : "") + ">" + (modal.enviando ? "Guardando…" : "Confirmar") + "</button></div>" +
           '<label class="av-ok"><input type="checkbox" id="av-acepto" required><span>Acepto que Pillao guarde mi email para avisarme de este precio. Puedo borrarlo cuando quiera. <a href="legal.html#privacidad" target="_blank">Privacidad</a></span></label>' +
@@ -1048,8 +1050,7 @@ button { cursor: pointer; }
     var g = $("h-graf"); if (!g) return;
     if (!SERIES.some(function (s) { return vista.series[s.id]; })) { g.innerHTML = '<div class="vacia">Elige al menos un precio para ver la gráfica.</div>'; return; }
     if (!pts.length) { g.innerHTML = '<div class="vacia">Todavía no tenemos historial de este juego. Lo guardamos cada día: vuelve en unos días y verás cómo evoluciona.</div>'; return; }
-    g.innerHTML = svgGrafica(pts, Math.max(280, g.clientWidth), g.clientHeight) + '<div class="h-tip" id="h-tip" hidden></div>' +
-      (pts.length === 1 ? '<div class="vacia" style="inset:auto 0 0 auto;border:0;padding:4px 8px;font-size:12.5px">Empezamos a guardar este juego el ' + fechaLarga.format(aFecha(pts[0].d)) + "</div>" : "");
+    g.innerHTML = svgGrafica(pts, Math.max(280, g.clientWidth), g.clientHeight) + '<div class="h-tip" id="h-tip" hidden></div>';
     var zona = $("h-zona"), cruz = $("h-cruz"), tip = $("h-tip"), c = svgGrafica.ctx;
     var mover = function (ev) {
       var r = g.getBoundingClientRect(), escala = (Math.max(280, g.clientWidth)) / r.width;
