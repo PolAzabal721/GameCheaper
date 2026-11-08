@@ -470,6 +470,16 @@ async function main() {
     await esperar(300);
   }
 
+  // 2b. PlayStation Store (lo descubre y actualiza scripts/playstation.mjs en su propia ejecución)
+  const ps = await leer("data/playstation.json", { juegos: {} });
+  let nPs = 0;
+  for (const [id, e] of Object.entries(ps.juegos || {})) {
+    if (!e.ofertas?.length) continue;
+    const j = [...juegos.values()].find((x) => x.id === id) || juego(e.titulo);
+    for (const o of e.ofertas) { ofertar(j, o); nPs++; }
+  }
+  cuenta["psstore (catálogo)"] = nPs;
+
   // 3. GAME y eBay (disco nuevo y segunda mano) para los juegos de consola más populares
   const populares = (max) => [...juegos.values()].sort((a, b) => a.pop - b.pop).slice(0, max);
   const consolaPopulares = (max) => [...juegos.values()].filter((j) => [...j.plataformas].some((p) => p !== "PC")).sort((a, b) => a.pop - b.pop).slice(0, max);
