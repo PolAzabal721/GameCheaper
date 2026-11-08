@@ -271,7 +271,6 @@ button { cursor: pointer; }
       <div class="seg" id="tipo-f" role="group" aria-label="Tipo de producto">
         <button type="button" data-v="todos" aria-pressed="true">Todo</button>
         <button type="button" data-v="juego" aria-pressed="false">Juegos</button>
-        <button type="button" data-v="edicion" aria-pressed="false">Ediciones</button>
         <button type="button" data-v="dlc" aria-pressed="false">DLC</button>
         <button type="button" data-v="tarjeta" aria-pressed="false">Tarjetas regalo</button>
       </div>
@@ -742,7 +741,8 @@ button { cursor: pointer; }
     var coincide = function (j) { var t = j._norm || (j._norm = norm(j.titulo)); return palabras.every(function (p) { return t.indexOf(p) >= 0; }); };
     if (vivo.q === qTxt) vivo.juegos.forEach(function (j) { var r = fila(j); if (r) { filas.push(r); vistos[norm(j.titulo)] = 1; } });
     datos.juegos.forEach(function (j) {
-      if (f.tipo && f.tipo !== "todos" && (j.tipo || "juego") !== f.tipo) return;
+      var tipoJ = (j.tipo === "edicion" ? "juego" : j.tipo) || "juego"; // las ediciones especiales son juegos
+      if (f.tipo && f.tipo !== "todos" && f.tipo !== "edicion" && tipoJ !== f.tipo) return;
       if (palabras.length && !coincide(j)) return;
       if (vistos[j._norm || norm(j.titulo)]) return;
       var r = fila(j); if (r) filas.push(r);
@@ -755,7 +755,7 @@ button { cursor: pointer; }
       return (a.j.pop || 99999) - (b.j.pop || 99999);
     });
     var nf = filas.length.toLocaleString("es-ES");
-    var nombreTipo = { juego: ["juego", "juegos"], edicion: ["edición", "ediciones"], dlc: ["DLC", "DLC"], tarjeta: ["tarjeta regalo", "tarjetas regalo"] }[f.tipo] || ["resultado", "resultados"];
+    var nombreTipo = { juego: ["juego", "juegos"], dlc: ["DLC", "DLC"], tarjeta: ["tarjeta regalo", "tarjetas regalo"] }[f.tipo] || ["resultado", "resultados"];
     $("titulo-res").innerHTML = nf + " " + nombreTipo[filas.length === 1 ? 0 : 1] + ' <span>· ' + filas.reduce(function (s, r) { return s + r.ofs.length; }, 0).toLocaleString("es-ES") + " ofertas</span>";
     var estadoVivo = "";
     if (datos.buscador && q.length >= 3) {
