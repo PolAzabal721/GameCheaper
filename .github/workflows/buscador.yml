@@ -32,9 +32,14 @@ jobs:
         run: |
           API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID"
           H="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
-          ID=$(curl -s -H "$H" "$API/storage/kv/namespaces?per_page=100" | jq -r '.result[]? | select(.title=="pillao-anadidos") | .id')
+          echo "Comprobando token:"; curl -s -H "$H" "$API/tokens/verify" | jq -c '{success, errors, estado: .result.status}'
+          LISTA=$(curl -s -H "$H" "$API/storage/kv/namespaces?per_page=100")
+          echo "Listar KV:"; echo "$LISTA" | jq -c '{success, errors, n: (.result | length?)}'
+          ID=$(echo "$LISTA" | jq -r '.result[]? | select(.title=="pillao-anadidos") | .id')
           if [ -z "$ID" ]; then
-            ID=$(curl -s -X POST -H "$H" -H "Content-Type: application/json" -d '{"title":"pillao-anadidos"}' "$API/storage/kv/namespaces" | jq -r '.result.id')
+            CREAR=$(curl -s -X POST -H "$H" -H "Content-Type: application/json" -d '{"title":"pillao-anadidos"}' "$API/storage/kv/namespaces")
+            echo "Crear KV:"; echo "$CREAR" | jq -c '{success, errors}'
+            ID=$(echo "$CREAR" | jq -r '.result.id')
           fi
           [ -n "$ID" ] && [ "$ID" != "null" ] || { echo "::error::No pude crear el espacio KV"; exit 1; }
           sed -i "s/__KV_ID__/$ID/" buscador/wrangler.toml
