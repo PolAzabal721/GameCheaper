@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20
 
@@ -58,7 +58,7 @@ jobs:
 
       - name: Desplegar
         working-directory: buscador
-        run: npx --yes wrangler@4 deploy
+        run: npx --yes wrangler@4.86.0 deploy
 
       - name: Claves de eBay (si existen)
         working-directory: buscador
@@ -67,8 +67,8 @@ jobs:
           EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
         run: |
           if [ -n "$EBAY_CLIENT_ID" ] && [ -n "$EBAY_CLIENT_SECRET" ]; then
-            printf '%s' "$EBAY_CLIENT_ID" | tr -d '[:space:]' | npx --yes wrangler@4 secret put EBAY_CLIENT_ID
-            printf '%s' "$EBAY_CLIENT_SECRET" | tr -d '[:space:]' | npx --yes wrangler@4 secret put EBAY_CLIENT_SECRET
+            printf '%s' "$EBAY_CLIENT_ID" | tr -d '[:space:]' | npx --yes wrangler@4.86.0 secret put EBAY_CLIENT_ID
+            printf '%s' "$EBAY_CLIENT_SECRET" | tr -d '[:space:]' | npx --yes wrangler@4.86.0 secret put EBAY_CLIENT_SECRET
           else
             echo "Sin claves de eBay: el buscador funcionará con Steam y Nintendo eShop."
           fi
@@ -78,7 +78,7 @@ jobs:
         env:
           ITAD_KEY: ${{ secrets.ITAD_KEY }}
         run: |
-          if [ -n "$ITAD_KEY" ]; then printf '%s' "$ITAD_KEY" | tr -d '[:space:]' | npx --yes wrangler@4 secret put ITAD_KEY; else echo "Sin clave de IsThereAnyDeal."; fi
+          if [ -n "$ITAD_KEY" ]; then printf '%s' "$ITAD_KEY" | tr -d '[:space:]' | npx --yes wrangler@4.86.0 secret put ITAD_KEY; else echo "Sin clave de IsThereAnyDeal."; fi
 
       - name: Avisos por email con Brevo (si existe la clave)
         working-directory: buscador
@@ -87,8 +87,8 @@ jobs:
           AVISOS_REMITENTE: ${{ secrets.AVISOS_REMITENTE }}
         run: |
           if [ -n "$BREVO_API_KEY" ] && [ -n "$AVISOS_REMITENTE" ]; then
-            printf '%s' "$BREVO_API_KEY" | tr -d '[:space:]' | npx --yes wrangler@4 secret put BREVO_API_KEY
-            printf '%s' "$AVISOS_REMITENTE" | tr -d '[:space:]' | npx --yes wrangler@4 secret put AVISOS_REMITENTE
+            printf '%s' "$BREVO_API_KEY" | tr -d '[:space:]' | npx --yes wrangler@4.86.0 secret put BREVO_API_KEY
+            printf '%s' "$AVISOS_REMITENTE" | tr -d '[:space:]' | npx --yes wrangler@4.86.0 secret put AVISOS_REMITENTE
           else
             echo "Sin BREVO_API_KEY / AVISOS_REMITENTE: la web enseñará la gráfica, pero los avisos por email quedan desactivados."
           fi

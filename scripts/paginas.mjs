@@ -8,6 +8,7 @@ import { readFile, writeFile, mkdir, cp, rm, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { createHash } from "node:crypto";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SALIDA = join(RAIZ, "_site");
@@ -17,6 +18,20 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 const eur = (n) => new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n);
 const total = (o) => o.precio + (o.envio || 0);
 const TIPO = { dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo" };
+
+// Política de seguridad (CSP): el navegador solo ejecuta los scripts de Pillao (por su huella exacta),
+// solo se conecta con la propia web y con el buscador, y no deja que otra web meta Pillao dentro ni envíe formularios fuera.
+function proteger(html, buscador) {
+  const huellas = [...html.matchAll(/<script(?![^>]*\bsrc=)(?![^>]*type="application\/(?:ld\+)?json")[^>]*>([\s\S]*?)<\/script>/g)]
+    .map((m) => `'sha256-${createHash("sha256").update(m[1], "utf8").digest("base64")}'`);
+  const csp = [
+    "default-src 'self'", `script-src 'self' ${huellas.join(" ")}`.trim(), "style-src 'self' 'unsafe-inline'", "img-src 'self' data:",
+    "font-src 'self'", `connect-src 'self'${buscador ? " " + new URL(buscador).origin : ""}`, "object-src 'none'", "base-uri 'self'",
+    "form-action 'self'", "upgrade-insecure-requests",
+  ].join("; ");
+  const metas = `<meta http-equiv="Content-Security-Policy" content="${csp}"><meta name="referrer" content="strict-origin-when-cross-origin">`;
+  return html.replace(/<meta charset="utf-8">/i, (m) => m + metas);
+}
 
 function estilos() {
   return `:root{--bg:#eef0f5;--surface:#fff;--surface-2:#f6f7fb;--ink:#141a2e;--muted:#5a6280;--line:#d9dce8;--accent:#2741d6;--tag:#ffd23f;--tag-ink:#1d1600;--good:#11804a}
@@ -50,7 +65,7 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;paddin
 }
 
 function plantilla({ titulo, descripcion, canonica, raiz, cuerpo, jsonld }) {
-  return `<!doctype html>
+  return proteger(`<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(titulo)}</title><meta name="description" content="${esc(descripcion)}">
 <link rel="canonical" href="${canonica}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(titulo)}">
@@ -62,7 +77,7 @@ ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(
 <footer><div class="wrap">Pillao compara precios de videojuegos y no vende productos. Los precios son orientativos: el válido es siempre el de cada tienda. Algunos enlaces son de afiliado: si compras tras pulsarlos, la tienda puede pagarnos una comisión, sin coste para ti.
 <nav><a href="${raiz}legal.html#aviso-legal">Aviso legal</a><a href="${raiz}legal.html#condiciones">Condiciones de uso</a><a href="${raiz}legal.html#privacidad">Privacidad</a><a href="${raiz}legal.html#cookies">Cookies</a></nav></div></footer>
 </body></html>
-`;
+`);
 }
 
 function enlaceOferta(o, j, tiendaPorId) {
@@ -137,7 +152,10 @@ async function main() {
   await mkdir(SALIDA, { recursive: true });
 
   // 1. La web de siempre
-  for (const f of await readdir(RAIZ)) if (/\.(html|txt)$/.test(f) || f === "minimos.json") await cp(join(RAIZ, f), join(SALIDA, f));
+  for (const f of await readdir(RAIZ)) {
+    if (/^(index|legal)\.html$/.test(f)) await writeFile(join(SALIDA, f), proteger(await readFile(join(RAIZ, f), "utf8"), datos.buscador));
+    else if (/\.(html|txt)$/.test(f) || f === "minimos.json") await cp(join(RAIZ, f), join(SALIDA, f));
+  }
   for (const d of ["fonts", "data/historial"]) if (existsSync(join(RAIZ, d))) await cp(join(RAIZ, d), join(SALIDA, d), { recursive: true });
   await writeFile(join(SALIDA, "precios.json"), JSON.stringify({ ...datos, paginas: true }) + "\n");
   await writeFile(join(SALIDA, ".nojekyll"), "");

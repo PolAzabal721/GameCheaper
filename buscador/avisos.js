@@ -36,7 +36,10 @@ function pagina(titulo, texto, estado = 200, boton = `<a class="b" href="${WEB}"
 main{background:#fff;border-radius:14px;padding:28px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.08)}h1{margin:0 0 8px;font-size:22px}p{color:#5a6280;line-height:1.5}
 a.b,button.b{display:inline-block;border:0;font:inherit;cursor:pointer;margin-top:8px;background:#141a2e;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600}
 @media(prefers-color-scheme:dark){body{background:#0e1120;color:#e8ebf6}main{background:#161a2c}p{color:#98a0bf}a.b,button.b{background:#e8ebf6;color:#141a2e}}</style></head>
-<body><main><h1>${esc(titulo)}</h1><p>${texto}</p>${boton}</main></body></html>`, { status: estado, headers: { "Content-Type": "text/html; charset=utf-8" } });
+<body><main><h1>${esc(titulo)}</h1><p>${texto}</p>${boton}</main></body></html>`, { status: estado, headers: { "Content-Type": "text/html; charset=utf-8",
+    // Estas páginas no ejecutan nada, no se pueden meter dentro de otra web y sus botones solo envían a este mismo sitio
+    "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
+    "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" } });
 }
 
 async function mandarEmail(env, para, asunto, html) {
