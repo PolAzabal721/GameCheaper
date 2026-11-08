@@ -641,7 +641,7 @@ button { cursor: pointer; }
       var ps = PLATS_TIENDA[t.id];
       if (ps && !ps.some(function (p) { return j.plataformas.indexOf(p) >= 0; })) return false;
       return true;
-    }).slice(0, 12);
+    });
   }
 
   function fila(j) {
