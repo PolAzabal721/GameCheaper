@@ -97,6 +97,13 @@ button { cursor: pointer; }
 .tiendas { display: flex; flex-direction: column; gap: 14px; }
 .tipo-t { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip-grupo { display: inline-flex; align-items: stretch; }
+.chip-grupo .chip { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.chip-caret { border: 1px solid var(--line); border-left: 0; background: var(--surface); color: var(--accent); font-size: 12px; font-weight: 600; padding: 0 9px; border-radius: 0 99px 99px 0; }
+.chip-grupo.abierto .chip-caret { background: var(--accent-soft); border-color: var(--accent); }
+.sub-panel { margin-top: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); display: flex; flex-direction: column; gap: 8px; }
+.sub-tit { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.sub-panel .chip span { color: var(--muted); font-weight: 500; font-size: 11.5px; }
 .bloque { display: flex; flex-direction: column; gap: 8px; }
 .bloque-cab { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .abrir-t { border: 0; background: none; padding: 0; font-size: 13px; font-weight: 600; color: var(--ink); text-align: left; }
@@ -310,14 +317,20 @@ button { cursor: pointer; }
   var TITULOS_TIPO = { oficial: "Oficiales", revendedor: "Revendedores de claves", marketplace: "Marketplaces de claves", tienda: "Tiendas físicas", segundamano: "Tiendas de segunda mano", particulares: "Entre particulares" };
   // Precio que pagas de verdad: producto + envío
   function total(o) { return o.precio + (o.envio || 0); }
+  // Tipo de clave de una oferta de revendedor ("Steam", "EA App"…), si lo sabemos
+  function subtipo(o) {
+    if (o.drm) return "Clave " + o.drm;
+    var m = /^Clave (.+?) ·/.exec(o.condicion || "");
+    return m ? "Clave " + m[1].trim() : null;
+  }
   var eur = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
   var $ = function (id) { return document.getElementById(id); };
 
-  var datos = null, origen = "servidor", tiendaPorId = {}, abiertos = {}, desplegados = {}, bloquesAbiertos = {}, tiendasDeBloque = function () { return []; };
+  var datos = null, origen = "servidor", tiendaPorId = {}, abiertos = {}, desplegados = {}, bloquesAbiertos = {}, subtipos = {}, tiendasDeBloque = function () { return []; };
   var f = cargarFiltros();
 
   function cargarFiltros() {
-    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], mkt: true, part: true, stock: false, pmax: null, orden: "populares" };
+    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], mkt: true, part: true, stock: false, pmax: null, orden: "populares" };
     try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g) base[k] = g[k]; } catch (e) {}
     return base;
   }
@@ -411,6 +424,7 @@ button { cursor: pointer; }
       if (f.estado !== "todos" && o.estado !== f.estado) return false;
       if (f.plats.length && f.plats.indexOf(o.plataforma) < 0) return false;
       if (f.fuera.indexOf(o.tienda) >= 0) return false;
+      if (f.fueraSub.length && f.fueraSub.indexOf(o.tienda + "|" + subtipo(o)) >= 0) return false;
       if (!f.mkt && t.tipo === "marketplace") return false;
       if (!f.part && t.tipo === "particulares") return false;
       if (f.stock && !o.stock) return false;
@@ -419,7 +433,7 @@ button { cursor: pointer; }
     }).sort(function (a, b) { return (b.stock - a.stock) || (total(a) - total(b)); });
   }
   function nActivos() {
-    return (f.formato !== "todos") + (f.estado !== "todos") + (f.plats.length > 0) + (f.fuera.length > 0) + (!f.mkt) + (!f.part) + f.stock + (f.pmax != null);
+    return (f.formato !== "todos") + (f.estado !== "todos") + (f.plats.length > 0) + (f.fuera.length > 0 || f.fueraSub.length > 0) + (!f.mkt) + (!f.part) + f.stock + (f.pmax != null);
   }
 
   function pintarControles() {
@@ -443,24 +457,34 @@ button { cursor: pointer; }
       { id: "segundamano", titulo: "Tiendas de segunda mano", tipos: ["segundamano"] },
       { id: "particulares", titulo: "Entre particulares", tipos: ["particulares"] },
     ];
+    // Opciones dentro de cada tienda (p. ej. tipo de clave en Instant Gaming): si hay 2 o más, la tienda lleva desplegable
+    subtipos = {};
+    datos.juegos.forEach(function (j) { j.ofertas.forEach(function (o) {
+      var s = subtipo(o); if (!s) return;
+      (subtipos[o.tienda] = subtipos[o.tienda] || {})[s] = (subtipos[o.tienda][s] || 0) + 1;
+    }); });
     $("tiendas").innerHTML = BLOQUES.map(function (bl) {
       var ts = datos.tiendas.filter(function (t) { return bl.tipos.indexOf(t.tipo) >= 0 && conOfertas[t.id]; });
       if (!ts.length) return "";
-      // Instant Gaming primero; luego las que más precios aportan
       ts.sort(function (a, b) { return (b.id === "instantgaming") - (a.id === "instantgaming") || conOfertas[b.id] - conOfertas[a.id] || a.nombre.localeCompare(b.nombre); });
-      var chips = '<div class="chips">' + ts.map(function (t) {
-        return '<button type="button" class="chip" data-t="' + esc(t.id) + '" aria-pressed="' + (f.fuera.indexOf(t.id) < 0) + '">' + esc(t.nombre) + "</button>";
-      }).join("") + "</div>";
-      if (!(bl.plegable || ts.length > 6)) return '<div><div class="tipo-t">' + bl.titulo + "</div>" + chips + "</div>";
-      var marcadas = ts.filter(function (t) { return f.fuera.indexOf(t.id) < 0; });
-      var abierto = !!bloquesAbiertos[bl.id];
-      var resumen = marcadas.length === ts.length ? "Todas marcadas"
-        : marcadas.length === 0 ? "Ninguna marcada" : marcadas.length + " de " + ts.length + " marcadas";
-      var nombres = marcadas.slice(0, 3).map(function (t) { return t.nombre; }).join(", ") + (marcadas.length > 3 ? " y " + (marcadas.length - 3) + " más" : "");
-      return '<div class="bloque"><div class="bloque-cab">' +
-        '<button type="button" class="abrir-t" data-bloque="' + bl.id + '" aria-expanded="' + abierto + '">' + (abierto ? "▴ " : "▾ ") + bl.titulo + " <span>(" + ts.length + ")</span></button>" +
-        '<button type="button" class="chip mini" data-todos="' + bl.id + '" aria-pressed="' + (marcadas.length === ts.length) + '">' + (marcadas.length === ts.length ? "Quitar todas" : "Marcar todas") + "</button></div>" +
-        (abierto ? chips : '<div class="resumen-t">' + resumen + (nombres ? " · " + esc(nombres) : "") + "</div>") + "</div>";
+      var extra = "";
+      var chips = ts.map(function (t) {
+        var subs = Object.keys(subtipos[t.id] || {});
+        var chip = '<button type="button" class="chip" data-t="' + esc(t.id) + '" aria-pressed="' + (f.fuera.indexOf(t.id) < 0) + '">' + esc(t.nombre) + "</button>";
+        if (subs.length < 2) return chip;
+        var abierto = !!bloquesAbiertos[t.id];
+        var quitadas = subs.filter(function (s) { return f.fueraSub.indexOf(t.id + "|" + s) >= 0; }).length;
+        if (abierto) {
+          subs.sort(function (a, b) { return subtipos[t.id][b] - subtipos[t.id][a]; });
+          extra += '<div class="sub-panel"><div class="sub-tit">' + esc(t.nombre) + ': tipos de clave</div><div class="chips">' + subs.map(function (s) {
+            return '<button type="button" class="chip" data-sub="' + esc(t.id + "|" + s) + '" aria-pressed="' + (f.fueraSub.indexOf(t.id + "|" + s) < 0) + '">' + esc(s) + " <span>" + subtipos[t.id][s] + "</span></button>";
+          }).join("") + "</div></div>";
+        }
+        return '<span class="chip-grupo' + (abierto ? " abierto" : "") + '">' + chip +
+          '<button type="button" class="chip-caret" data-sub-abrir="' + esc(t.id) + '" aria-expanded="' + abierto + '" aria-label="Opciones de ' + esc(t.nombre) + '">' +
+          (quitadas ? subs.length - quitadas + "/" + subs.length + " " : "") + (abierto ? "▴" : "▾") + "</button></span>";
+      }).join("");
+      return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + chips + "</div>" + extra + "</div>";
     }).join("");
     tiendasDeBloque = function (id) {
       var bl = BLOQUES.filter(function (x) { return x.id === id; })[0];
@@ -681,7 +705,12 @@ button { cursor: pointer; }
   });
   $("tiendas").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
-    if (b.dataset.bloque) { bloquesAbiertos[b.dataset.bloque] = !bloquesAbiertos[b.dataset.bloque]; pintarControles(); return; }
+    if (b.dataset.subAbrir) { bloquesAbiertos[b.dataset.subAbrir] = !bloquesAbiertos[b.dataset.subAbrir]; pintarControles(); return; }
+    if (b.dataset.sub) {
+      var k = b.dataset.sub, ix = f.fueraSub.indexOf(k);
+      if (ix >= 0) f.fueraSub.splice(ix, 1); else f.fueraSub.push(k);
+      pintarControles(); cambio(); return;
+    }
     if (b.dataset.todos) {
       var ids = tiendasDeBloque(b.dataset.todos);
       var todasMarcadas = ids.every(function (id) { return f.fuera.indexOf(id) < 0; });
@@ -693,7 +722,7 @@ button { cursor: pointer; }
     if (i >= 0) f.fuera.splice(i, 1); else f.fuera.push(t);
     b.setAttribute("aria-pressed", i >= 0); cambio();
   });
-  $("todas-t").addEventListener("click", function () { f.fuera = []; pintarControles(); cambio(); });
+  $("todas-t").addEventListener("click", function () { f.fuera = []; f.fueraSub = []; pintarControles(); cambio(); });
   $("mkt").addEventListener("change", function (e) { f.mkt = e.target.checked; cambio(); });
   $("stock").addEventListener("change", function (e) { f.stock = e.target.checked; cambio(); });
   $("pmax").addEventListener("input", function (e) {
@@ -707,7 +736,7 @@ button { cursor: pointer; }
     var d = e.target.closest("[data-grupo]");
     if (d) { desplegados[d.dataset.grupo] = !desplegados[d.dataset.grupo]; pintar(); return; }
     if (e.target.closest("[data-mas-juegos]")) { mostrar += PAGINA; pintar(); return; }
-    if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], mkt: true, part: true, stock: false, pmax: null, orden: f.orden }; pintarControles(); cambio(); }
+    if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], mkt: true, part: true, stock: false, pmax: null, orden: f.orden }; pintarControles(); cambio(); }
   });
   $("recargar").addEventListener("click", function () { leerServidor(true); });
 

@@ -88,7 +88,8 @@ function juego(titulo, { pop = 99999, prioridad = false } = {}) {
 function ofertar(j, o) {
   if (!j || !(o.precio > 0)) return;
   // Una sola oferta por tienda + plataforma + estado: la más barata
-  const igual = j.ofertas.find((x) => x.tienda === o.tienda && x.plataforma === o.plataforma && (x.estado || "nuevo") === (o.estado || "nuevo"));
+  // (y por tipo de clave, para poder filtrar "solo claves de Steam" en Instant Gaming)
+  const igual = j.ofertas.find((x) => x.tienda === o.tienda && x.plataforma === o.plataforma && (x.estado || "nuevo") === (o.estado || "nuevo") && (x.drm || "") === (o.drm || ""));
   const nueva = { estado: "nuevo", stock: true, formato: "digital", ...o, precio: redondear(o.precio) };
   // Preferimos lo que hay en stock; a igualdad, lo más barato
   if (igual) { if ((nueva.stock && !igual.stock) || (nueva.stock === igual.stock && nueva.precio < igual.precio)) Object.assign(igual, nueva); }
@@ -332,7 +333,7 @@ async function instantGaming(j) {
       if (!plat) continue;
       const antes = j.ofertas.length;
       ofertar(j, {
-        tienda: "instantgaming", plataforma: plat, precio, regular: parseFloat(h.default_retail) || undefined,
+        tienda: "instantgaming", plataforma: plat, precio, regular: parseFloat(h.default_retail) || undefined, drm: h.type || undefined,
         condicion: `Clave ${h.type || ""} · ${h.region_fulltext || h.region || "Worldwide"}`.replace(/\s+·/, " ·"),
         url: `https://www.instant-gaming.com/es/${h.prod_id}-comprar-${h.seo_name}/?igr=${AFILIADO_IG}`, fuente: "instantgaming",
       });
