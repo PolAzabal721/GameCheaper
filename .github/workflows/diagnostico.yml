@@ -13,4 +13,5 @@ jobs:
           R=$(printf '%s' "$AVISOS_REMITENTE" | tr -d '[:space:]')
           echo "Clave: empieza por ${K:0:7}… (${#K} caracteres)"
           echo "--- Cuenta:"; curl -s -H "api-key: $K" -H "Accept: application/json" https://api.brevo.com/v3/account | jq -c '{code, message, plan: [.plan[]? | {type, credits}]}'
+          echo "--- Permiso de envío (petición vacía a propósito: no envía nada):"; curl -s -X POST -H "api-key: $K" -H "Content-Type: application/json" -d '{}' https://api.brevo.com/v3/smtp/email; echo
           echo "--- Remitentes:"; curl -s -H "api-key: $K" -H "Accept: application/json" https://api.brevo.com/v3/senders | jq -c --arg r "$R" '.code, .message, (.senders[]? | {coincide_con_el_secreto: (.email == $r), name, active})'
