@@ -106,6 +106,42 @@
   ]
  },
  {
+  "id": "xtralife",
+  "nombre": "xtralife",
+  "tipo": "tienda",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://www.xtralife.com/buscar/{q}"
+ },
+ {
+  "id": "pccomponentes",
+  "nombre": "PcComponentes",
+  "tipo": "tienda",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://www.pccomponentes.com/search/?query={q}"
+ },
+ {
+  "id": "carrefour",
+  "nombre": "Carrefour",
+  "tipo": "tienda",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://www.carrefour.es/?query={q}"
+ },
+ {
+  "id": "alcampo",
+  "nombre": "Alcampo",
+  "tipo": "tienda",
+  "formatos": [
+   "fisico"
+  ],
+  "busqueda": "https://www.compraonline.alcampo.es/search?q={q}"
+ },
+ {
   "id": "cex",
   "nombre": "CeX",
   "tipo": "segundamano",
