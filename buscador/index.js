@@ -5,11 +5,14 @@
 //                         Los juegos encontrados se guardan para que el actualizador los siga.
 // GET /anadidos        -> lista de juegos añadidos desde búsquedas (la usa el actualizador).
 //
+// Avisos por email e historial de PC: ver avisos.js.
 // Necesita un espacio KV enlazado como PILLAO. eBay es opcional (EBAY_CLIENT_ID / EBAY_CLIENT_SECRET).
+
+import { rutasAvisos, revisarAvisos } from "./avisos.js";
 
 const CACHE_SEG = 3 * 3600;      // una misma búsqueda se reutiliza 3 horas
 const MAX_JUEGOS = 8;
-const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, OPTIONS" };
+const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" };
 
 const limpiar = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
   .replace(/[™®©]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -162,6 +165,8 @@ export default {
     if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
     const url = new URL(req.url);
     try {
+      const av = await rutasAvisos(req, env, ctx, url);
+      if (av) return av;
       if (url.pathname === "/buscar") {
         const q = (url.searchParams.get("q") || "").replace(/\s+/g, " ").trim().slice(0, 80);
         if (limpiar(q).length < 3) return json({ error: "Escribe al menos 3 letras." }, 400);
@@ -187,5 +192,9 @@ export default {
     } catch (e) {
       return json({ error: "La búsqueda ha fallado: " + e.message }, 502);
     }
+  },
+  // Cada hora: mandar los avisos de precio que se han cumplido
+  async scheduled(evento, env, ctx) {
+    ctx.waitUntil(revisarAvisos(env, "https://pillao-buscador." + (env.SUBDOMINIO || "pillao-bb5842") + ".workers.dev").catch((e) => console.log("Avisos: " + e.message)));
   },
 };

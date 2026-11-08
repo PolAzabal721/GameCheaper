@@ -6,3 +6,7 @@ workers_dev = true
 [[kv_namespaces]]
 binding = "PILLAO"
 id = "__KV_ID__"
+
+# Cada hora se revisan los avisos de precio por email
+[triggers]
+crons = ["41 * * * *"]

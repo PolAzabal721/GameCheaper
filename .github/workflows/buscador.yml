@@ -80,11 +80,26 @@ jobs:
         run: |
           if [ -n "$ITAD_KEY" ]; then printf '%s' "$ITAD_KEY" | tr -d '[:space:]' | npx --yes wrangler@4 secret put ITAD_KEY; else echo "Sin clave de IsThereAnyDeal."; fi
 
+      - name: Avisos por email con Brevo (si existe la clave)
+        working-directory: buscador
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          AVISOS_REMITENTE: ${{ secrets.AVISOS_REMITENTE }}
+        run: |
+          if [ -n "$BREVO_API_KEY" ] && [ -n "$AVISOS_REMITENTE" ]; then
+            printf '%s' "$BREVO_API_KEY" | tr -d '[:space:]' | npx --yes wrangler@4 secret put BREVO_API_KEY
+            printf '%s' "$AVISOS_REMITENTE" | tr -d '[:space:]' | npx --yes wrangler@4 secret put AVISOS_REMITENTE
+          else
+            echo "Sin BREVO_API_KEY / AVISOS_REMITENTE: la web enseñará la gráfica, pero los avisos por email quedan desactivados."
+          fi
+
       - name: Probar y guardar la dirección del buscador
         run: |
           URL="https://pillao-buscador.$SUB.workers.dev"
           sleep 10
           curl -s "$URL/buscar?q=hollow%20knight" | head -c 600; echo
+          echo "Historial de PC:"; curl -s "$URL/historial?titulo=Hades" | head -c 400; echo
+          echo "Avisos:"; curl -s "$URL/avisos/estado?ids=x"; echo
           printf '{ "url": "%s" }\n' "$URL" > config/buscador.json
           git config user.name "pillao-bot"
           git config user.email "pillao-bot@users.noreply.github.com"

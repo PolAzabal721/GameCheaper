@@ -191,6 +191,86 @@ button { cursor: pointer; }
 .otras a:hover { background: var(--accent-soft); }
 .mas-juegos { align-self: center; padding: 10px 18px; font-size: 14.5px; }
 .mas-juegos span { color: var(--muted); font-weight: 500; }
+/* Campana de avisos y ventana de historial */
+.j-tit { display: flex; align-items: flex-start; gap: 10px; }
+.j-tit h2 { flex: 1; min-width: 0; }
+.j-tit h2 a { color: inherit; text-decoration: none; }
+.j-tit h2 a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.campana { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); display: grid; place-items: center; padding: 0; position: relative; }
+.campana:hover { color: var(--ink); border-color: var(--muted); }
+.campana svg { width: 19px; height: 19px; }
+.campana.con { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.campana .n { position: absolute; top: -5px; right: -5px; min-width: 17px; height: 17px; border-radius: 99px; background: var(--accent); color: var(--surface); font-size: 10.5px; font-weight: 700; display: grid; place-items: center; padding: 0 4px; }
+.modal { position: fixed; inset: 0; z-index: 80; background: rgba(8,10,20,.55); display: grid; place-items: center; padding: 16px; }
+.modal-in { background: var(--surface); color: var(--ink); width: 100%; max-width: 760px; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.35); padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.modal-in > * { flex-shrink: 0; }
+.m-cab { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
+.m-cab h2 { margin: 0; font-family: var(--f-display); font-size: 22px; line-height: 1.15; letter-spacing: -.01em; }
+.m-cab p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.m-cerrar { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface-2); font-size: 20px; line-height: 1; padding: 0; }
+.h-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.h-stats div { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+.h-stats span { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.h-stats b { font-family: var(--f-mono); font-size: 17px; font-variant-numeric: tabular-nums; }
+.h-ctrl { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: center; }
+.h-ctrl .chips { gap: 6px; }
+.chip .sw { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; background: currentColor; }
+.chip .sw.disc { background: none; border-top: 2px dashed currentColor; height: 0; }
+.graf { position: relative; height: 240px; touch-action: pan-y; }
+.graf svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.graf .eje { font-size: 11px; fill: var(--muted); font-family: var(--f-body); }
+.graf .rejilla { stroke: var(--line); stroke-width: 1; }
+.graf .serie { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.graf .cruz { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.graf .punto { stroke: var(--surface); stroke-width: 2; }
+.graf .vacia { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--muted); font-size: 14px; padding: 0 24px; border: 1px dashed var(--line); border-radius: 10px; }
+.h-tip { position: absolute; top: 0; pointer-events: none; background: var(--ink); color: var(--surface); border-radius: 8px; padding: 7px 10px; font-size: 12.5px; line-height: 1.5; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,.2); z-index: 2; }
+.h-tip b { font-family: var(--f-mono); }
+.h-tip i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+.h-nota { margin: -6px 0 0; font-size: 12.5px; color: var(--muted); }
+:root { --s-barato: #0f8a5f; --s-medio: #2741d6; --s-caro: #c2410c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --s-barato: #22a86d; --s-medio: #6f82ff; --s-caro: #d9712e; } }
+:root[data-theme="dark"] { --s-barato: #22a86d; --s-medio: #6f82ff; --s-caro: #d9712e; }
+.av { border-top: 1px solid var(--line); padding-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+.av h3 { margin: 0; font-size: 16px; font-family: var(--f-display); display: flex; align-items: center; gap: 8px; }
+.av h3 svg { width: 18px; height: 18px; color: var(--accent); }
+.av-lista { border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+.av-lista summary { cursor: pointer; padding: 10px 12px; font-weight: 600; font-size: 14px; }
+.av-lista ul { list-style: none; margin: 0; padding: 0 12px 10px; display: flex; flex-direction: column; gap: 6px; }
+.av-lista li { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 14px; }
+.av-lista li .q { flex: 1; min-width: 160px; }
+.av-lista li .q b { font-family: var(--f-mono); }
+.av-lista li small { display: block; color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
+.av-est { font-size: 11.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+.av-est.activo { background: var(--good-soft); color: var(--good); border-color: transparent; }
+.av-est.pendiente { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.av-est.enviado { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.av-acc { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; }
+.av-form { display: flex; flex-direction: column; gap: 10px; }
+.av-campos { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.av-campos label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.av-campos input { height: 42px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); padding: 0 12px; font-size: 15px; color: var(--ink); }
+.av-precio { position: relative; display: block; align-self: flex-start; }
+.av-precio input { width: 130px; padding-right: 28px; font-family: var(--f-mono); font-weight: 700; }
+.av-precio::after { content: "€"; position: absolute; right: 12px; bottom: 11px; color: var(--muted); font-weight: 700; }
+.av-campos .av-email { flex: 1; min-width: 200px; }
+.av-campos .av-email input { width: 100%; }
+.av-campos .btn { height: 42px; padding: 0 18px; }
+.av-ok { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--muted); }
+.av-ok input { margin-top: 2px; }
+.av-msg { font-size: 14px; padding: 8px 12px; border-radius: 8px; }
+.av-msg.ok { background: var(--good-soft); color: var(--good); }
+.av-msg.err { background: var(--warn-soft); color: var(--warn); }
+.av-msg:empty { display: none; }
+.av-pista { margin: 0; font-size: 13px; color: var(--muted); }
+.btn.peligro { color: var(--danger); }
+@media (max-width: 560px) {
+  .modal { padding: 0; place-items: end stretch; }
+  .modal-in { border-radius: 16px 16px 0 0; max-height: 94vh; max-height: 94dvh; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+  .h-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .graf { height: 200px; }
+  .av-precio input { width: 110px; }
+}
 .minimo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--tag-ink); background: var(--tag); padding: 2px 7px; border-radius: 4px; }
 .tipo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
 .tipo-tag.t-tarjeta { background: var(--good-soft); color: var(--good); }
@@ -348,11 +428,11 @@ button { cursor: pointer; }
   <div class="cookies-in">
     <div class="cookies-txt">
       <strong id="cookies-tit">Tu privacidad</strong>
-      <p>Pillao no usa cookies de publicidad ni de analítica. Solo te pedimos permiso para recordar <b>tus filtros y tus últimas búsquedas</b> en este navegador. Nada de eso sale de tu dispositivo. <a href="legal.html#cookies">Más información</a></p>
+      <p>Pillao no usa cookies de publicidad ni de analítica. Solo te pedimos permiso para recordar <b>tus filtros, tus últimas búsquedas y tus avisos de precio</b> en este navegador. <a href="legal.html#cookies">Más información</a></p>
     </div>
     <div class="cookies-conf" id="cookies-conf" hidden>
       <label class="switch"><span>Necesarias<small>Solo guardan tu elección sobre cookies. Siempre activas.</small></span><input type="checkbox" checked disabled></label>
-      <label class="switch"><span>Preferencias<small>Recuerdan tus filtros y tus búsquedas recientes.</small></span><input type="checkbox" id="c-pref"></label>
+      <label class="switch"><span>Preferencias<small>Recuerdan tus filtros, tus búsquedas recientes y tus avisos de precio.</small></span><input type="checkbox" id="c-pref"></label>
     </div>
     <div class="cookies-btns">
       <button type="button" class="btn fuerte" id="c-rechazar">Rechazar todo</button>
@@ -361,6 +441,10 @@ button { cursor: pointer; }
       <button type="button" class="btn fuerte" id="c-aceptar">Aceptar todo</button>
     </div>
   </div>
+</div>
+
+<div class="modal" id="modal-av" role="dialog" aria-modal="true" aria-labelledby="av-tit" hidden>
+  <div class="modal-in" id="modal-in"></div>
 </div>
 
 <script type="application/json" id="datos-incrustados"></script>
@@ -425,7 +509,8 @@ button { cursor: pointer; }
     consent = { v: 1, preferencias: !!preferencias, fecha: new Date().toISOString() };
     try {
       localStorage.setItem(CLAVE_CONS, JSON.stringify(consent));
-      if (!preferencias) { localStorage.removeItem("pillao-filtros"); localStorage.removeItem("pillao-recientes"); }
+      if (!preferencias) { ["pillao-filtros", "pillao-recientes", "pillao-avisos", "pillao-email"].forEach(function (k) { localStorage.removeItem(k); }); }
+      else guardarAvisos();
     } catch (e) {}
     if (preferencias) { guardarFiltros(); anadirReciente(f.q); }
     pintarRecientes();
@@ -683,7 +768,7 @@ button { cursor: pointer; }
     var enMinimo = j.minimo && total(m) <= j.minimo + 0.005;
     return '<article class="juego"><div class="j-cab"><div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") +
       (enMinimo ? '<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>' : "") +
-      (j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo" }[j.tipo] || "") + "</span>" : "") + "<h2>" + esc(j.titulo) + '</h2><div class="plats">' +
+      (j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo" }[j.tipo] || "") + "</span>" : "") + campanaTitulo(j) + '<div class="plats">' +
       j.plataformas.filter(function (p) { return p !== "Tarjeta regalo"; }).map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
       (r.nuevo != null || r.usado != null || j.pvp ? '<div class="resumen">' +
         (j.tipo === "tarjeta" && j.valor ? "<span>Valor <b>" + eur.format(j.valor) + "</b></span>" + (j.valor > total(m) ? "<span>Te ahorras <b>" + eur.format(j.valor - total(m)) + "</b></span>" : "") :
@@ -730,10 +815,339 @@ button { cursor: pointer; }
       "</article>";
   }
 
+  // ---------- Historial de precios y avisos por email (campana de cada juego) ----------
+  var ICONO_CAMPANA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>';
+  var CAMPANA_MAS = ICONO_CAMPANA + '<path d="M19 2v6M16 5h6" stroke-width="2.2"/></svg>';
+  var CAMPANA_OK = ICONO_CAMPANA + '<path d="M15.5 4.5l2 2 4-4" stroke-width="2.2"/></svg>';
+  var CAMPANA = ICONO_CAMPANA + "</svg>";
+  var MAX_AVISOS = 5, TROZOS = 128;
+  var SERIES = [
+    { id: "barato", nombre: "Más barato", i: 1, color: "var(--s-barato)" },
+    { id: "medio", nombre: "Precio medio", i: 3, color: "var(--s-medio)", disc: true },
+    { id: "caro", nombre: "Más caro", i: 2, color: "var(--s-caro)" },
+  ];
+  var PERIODOS = [["1m", "1 mes", 31], ["3m", "3 meses", 92], ["1a", "1 año", 366], ["todo", "Todo", 0]];
+  var vista = { series: { barato: true, medio: true, caro: true }, periodo: "todo" };
+  var modal = { j: null, puntos: null, itad: null, estados: {}, form: false, msg: "", msgOk: true, enviando: false, origen: null };
+  var trozos = {}, itadCache = {};
+
+  // Avisos guardados en este navegador: { idJuego: [{ id, precio, email, c }] }
+  var avisos = (function () {
+    if (!prefsOk()) return {};
+    try { var a = JSON.parse(localStorage.getItem("pillao-avisos") || "{}"); return a && typeof a === "object" ? a : {}; } catch (e) { return {}; }
+  })();
+  var emailGuardado = (function () { if (!prefsOk()) return ""; try { return localStorage.getItem("pillao-email") || ""; } catch (e) { return ""; } })();
+  function guardarAvisos() {
+    if (!prefsOk()) return;
+    try {
+      localStorage.setItem("pillao-avisos", JSON.stringify(avisos));
+      if (emailGuardado) localStorage.setItem("pillao-email", emailGuardado);
+    } catch (e) {}
+  }
+  function avisosDe(id) { return avisos[id] || []; }
+
+  // Mismo reparto que scripts/historial.mjs (trozoDe)
+  function trozoDe(id) {
+    var h = 5381;
+    for (var i = 0; i < id.length; i++) h = ((h * 33) ^ id.charCodeAt(i)) >>> 0;
+    return h % TROZOS;
+  }
+
+  function campanaTitulo(j) {
+    var n = avisosDe(j.id).length;
+    var titulo = datos && datos.paginas && !j._vivo ? '<a href="juego/' + encodeURIComponent(j.id) + '/">' + esc(j.titulo) + "</a>" : esc(j.titulo);
+    return '<div class="j-tit"><h2>' + titulo + '</h2><button type="button" class="campana' + (n ? " con" : "") + '" data-aviso="' + esc(j.id) + '" aria-label="' +
+      (n ? "Tus avisos de precio (" + n + ") e historial" : "Historial de precios y crear aviso por email") + '" title="' + (n ? "Tus avisos de precio" : "Historial y aviso de precio") + '">' +
+      (n ? CAMPANA_OK + (n > 1 ? '<span class="n">' + n + "</span>" : "") : CAMPANA_MAS) + "</button></div>";
+  }
+
+  // Lo mismo que cuenta el historial: nuevo, con stock, sin los revendedores que la web oculta de serie
+  function precioAhora(j) {
+    var ps = j.ofertas.filter(function (o) {
+      var t = tiendaPorId[o.tienda];
+      return o.stock && o.estado !== "usado" && !(t && t.tipo === "revendedor" && o.tienda !== "instantgaming");
+    }).map(total).sort(function (a, b) { return a - b; });
+    return ps.length ? ps[0] : null;
+  }
+
+  function buscarJuego(id) {
+    var l = vivo.juegos.concat(datos ? datos.juegos : []);
+    for (var i = 0; i < l.length; i++) if (l[i].id === id) return l[i];
+    return null;
+  }
+
+  function abrirAviso(j, origen) {
+    modal = { j: j, puntos: null, itad: null, estados: {}, form: !avisosDe(j.id).length, msg: "", msgOk: true, enviando: false, origen: origen };
+    $("modal-av").hidden = false;
+    document.body.style.overflow = "hidden";
+    pintarModal();
+    var c = $("modal-in").querySelector(".m-cerrar"); if (c) c.focus();
+    // Historial propio (un punto al día) …
+    var n = trozoDe(j.id);
+    var pTrozo = trozos[n] || (trozos[n] = fetch("data/historial/" + String(n).padStart(3, "0") + ".json", { cache: "no-cache" })
+      .then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { delete trozos[n]; return {}; }));
+    pTrozo.then(function (t) { if (modal.j !== j) return; modal.puntos = t[j.id] || []; pintarModal(); });
+    // … y, en juegos de PC, el historial de tiendas de PC de IsThereAnyDeal para los días de antes
+    if (datos && datos.buscador && j.plataformas.indexOf("PC") >= 0) {
+      var k = norm(j.titulo);
+      var pItad = itadCache[k] || (itadCache[k] = fetch(datos.buscador.replace(/\/$/, "") + "/historial?titulo=" + encodeURIComponent(j.titulo))
+        .then(function (r) { return r.ok ? r.json() : { puntos: [] }; }).catch(function () { delete itadCache[k]; return { puntos: [] }; }));
+      pItad.then(function (d) { if (modal.j !== j) return; modal.itad = d.puntos || []; pintarModal(); });
+    } else modal.itad = [];
+    refrescarEstados();
+  }
+  function cerrarAviso() {
+    if ($("modal-av").hidden) return;
+    $("modal-av").hidden = true;
+    document.body.style.overflow = "";
+    var o = modal.origen; modal.j = null;
+    pintar();
+    if (o && o.dataset) { var b = $("lista").querySelector('[data-aviso="' + o.dataset.aviso + '"]'); if (b) b.focus(); }
+  }
+  function refrescarEstados() {
+    var j = modal.j, l = j ? avisosDe(j.id) : [];
+    if (!l.length || !datos || !datos.buscador) return;
+    fetch(datos.buscador.replace(/\/$/, "") + "/avisos/estado?ids=" + l.map(function (a) { return a.id; }).join(","))
+      .then(function (r) { return r.json(); })
+      .then(function (e) { if (modal.j !== j) return; modal.estados = e || {}; pintarModal(); })
+      .catch(function () {});
+  }
+
+  // Puntos de la gráfica: lo de IsThereAnyDeal antes de nuestro primer día, y luego lo nuestro
+  function puntosGrafica() {
+    var propios = modal.puntos || [], itad = modal.itad || [];
+    var primero = propios.length ? propios[0][0] : "9999";
+    var pts = itad.filter(function (p) { return p[0] < primero; }).map(function (p) { return { d: p[0], v: [null, p[1], p[2], p[3]], itad: true }; })
+      .concat(propios.map(function (p) { return { d: p[0], v: p }; }));
+    var dias = (PERIODOS.filter(function (x) { return x[0] === vista.periodo; })[0] || [])[2];
+    if (dias) {
+      var desde = new Date(Date.now() - dias * 86400000).toISOString().slice(0, 10);
+      var antes = pts.filter(function (p) { return p.d < desde; }).pop();
+      pts = pts.filter(function (p) { return p.d >= desde; });
+      // el precio vigente al empezar el periodo (las líneas son escalones: el precio sigue igual hasta que cambia)
+      if (antes) pts.unshift({ d: desde, v: antes.v, itad: antes.itad });
+    }
+    return pts;
+  }
+
+  var fechaCorta = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" });
+  var fechaLarga = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short", year: "numeric" });
+  var mesAno = new Intl.DateTimeFormat("es-ES", { month: "short", year: "2-digit" });
+  function aFecha(d) { return new Date(d + "T12:00:00Z"); }
+
+  function svgGrafica(pts, ancho, alto) {
+    var activas = SERIES.filter(function (s) { return vista.series[s.id]; });
+    var vals = [];
+    pts.forEach(function (p) { activas.forEach(function (s) { if (p.v[s.i] != null) vals.push(p.v[s.i]); }); });
+    if (!vals.length) return "";
+    var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+    var pad = (hi - lo) * 0.12 || Math.max(1, hi * 0.1);
+    lo = Math.max(0, lo - pad); hi = hi + pad;
+    // marcas del eje Y redondas
+    var paso = [0.5, 1, 2, 5, 10, 20, 25, 50, 100].filter(function (x) { return (hi - lo) / x <= 5; })[0] || 100;
+    lo = Math.floor(lo / paso) * paso; hi = Math.ceil(hi / paso) * paso;
+    var izq = 46, der = 12, arr = 10, abj = 24, w = ancho - izq - der, h = alto - arr - abj;
+    var t0 = aFecha(pts[0].d).getTime(), t1 = Math.max(aFecha(pts[pts.length - 1].d).getTime(), Date.now());
+    if (t1 - t0 < 86400000) t0 = t1 - 86400000;
+    var X = function (d) { return izq + (aFecha(d).getTime() - t0) / (t1 - t0) * w; };
+    var Y = function (v) { return arr + (1 - (v - lo) / (hi - lo)) * h; };
+    var out = "";
+    for (var y = lo; y <= hi + 1e-9; y += paso) out += '<line class="rejilla" x1="' + izq + '" x2="' + (izq + w) + '" y1="' + Y(y).toFixed(1) + '" y2="' + Y(y).toFixed(1) + '"/><text class="eje" x="' + (izq - 6) + '" y="' + (Y(y) + 4).toFixed(1) + '" text-anchor="end">' + (paso < 1 ? y.toFixed(2).replace(".", ",") : Math.round(y)) + " €</text>";
+    var largo = (t1 - t0) > 200 * 86400000;
+    for (var k = 0; k <= 3; k++) {
+      var tt = t0 + (t1 - t0) * k / 3, xx = izq + w * k / 3;
+      out += '<text class="eje" x="' + xx.toFixed(1) + '" y="' + (alto - 6) + '" text-anchor="' + (k === 0 ? "start" : k === 3 ? "end" : "middle") + '">' + (largo ? mesAno : fechaCorta).format(new Date(tt)) + "</text>";
+    }
+    var xHoy = izq + w;
+    activas.forEach(function (s) {
+      var d = "", ult = null;
+      pts.forEach(function (p) {
+        var v = p.v[s.i]; if (v == null) return;
+        var x = X(p.d).toFixed(1), yv = Y(v).toFixed(1);
+        d += d ? " H" + x + " V" + yv : "M" + x + " " + yv;
+        ult = v;
+      });
+      if (ult == null) return;
+      d += " H" + xHoy.toFixed(1);
+      out += '<path class="serie" d="' + d + '" stroke="' + s.color + '"' + (s.disc ? ' stroke-dasharray="6 4"' : "") + "/>";
+    });
+    out += '<g id="h-cruz" visibility="hidden"><line class="cruz" y1="' + arr + '" y2="' + (arr + h) + '"/>' + activas.map(function (s) { return '<circle class="punto" r="5" fill="' + s.color + '" data-s="' + s.id + '"/>'; }).join("") + "</g>";
+    out += '<rect id="h-zona" x="' + izq + '" y="0" width="' + w + '" height="' + (arr + h) + '" fill="transparent"/>';
+    svgGrafica.ctx = { pts: pts, X: X, Y: Y, izq: izq, w: w, t0: t0, t1: t1, activas: activas };
+    return '<svg viewBox="0 0 ' + ancho + " " + alto + '" role="img" aria-label="Historial de precios">' + out + "</svg>";
+  }
+
+  function pintarModal() {
+    var j = modal.j; if (!j) return;
+    var ahora = precioAhora(j), lista = avisosDe(j.id), cargando = modal.puntos === null || modal.itad === null;
+    var pts = cargando ? [] : puntosGrafica();
+    var todos = cargando ? [] : (modal.puntos || []).concat((modal.itad || []).map(function (p) { return [p[0], p[1], p[2], p[3]]; }));
+    var minReg = todos.length ? Math.min.apply(null, todos.map(function (p) { return p[1]; })) : null;
+    var maxReg = todos.length ? Math.max.apply(null, todos.map(function (p) { return p[2]; })) : null;
+    var medios = todos.filter(function (p) { return p[3] != null; });
+    var medio = medios.length ? medios.reduce(function (a, p) { return a + p[3]; }, 0) / medios.length : null;
+    var minimo = j.minimo && (minReg == null || j.minimo < minReg) ? j.minimo : minReg;
+    var euro = function (v) { return v == null ? "—" : eur.format(v); };
+    var html = '<div class="m-cab"><div><h2 id="av-tit">' + esc(j.titulo) + "</h2><p>Historial de precios y avisos por email</p></div>" +
+      '<button type="button" class="m-cerrar" data-m="cerrar" aria-label="Cerrar">×</button></div>' +
+      '<div class="h-stats"><div><span>Ahora</span><b>' + euro(ahora) + "</b></div><div><span>Mínimo histórico</span><b>" + euro(minimo) + "</b></div>" +
+      "<div><span>Precio medio</span><b>" + euro(medio) + "</b></div><div><span>Más caro visto</span><b>" + euro(maxReg) + "</b></div></div>" +
+      '<div class="h-ctrl"><div class="chips" role="group" aria-label="Qué precios ver">' + SERIES.map(function (s) {
+        return '<button type="button" class="chip" data-serie="' + s.id + '" aria-pressed="' + !!vista.series[s.id] + '" style="color:' + (vista.series[s.id] ? s.color : "") + '"><span class="sw' + (s.disc ? " disc" : "") + '" style="color:' + s.color + '"></span>' + s.nombre + "</button>";
+      }).join("") + '</div><div class="chips" role="group" aria-label="Periodo">' + PERIODOS.map(function (p) {
+        return '<button type="button" class="chip mini" data-periodo="' + p[0] + '" aria-pressed="' + (vista.periodo === p[0]) + '">' + p[1] + "</button>";
+      }).join("") + "</div></div>" +
+      '<div class="graf" id="h-graf">' + (cargando ? '<div class="vacia">Cargando historial…</div>' : "") + "</div>";
+    if (!cargando) {
+      var conItad = pts.some(function (p) { return p.itad; });
+      var nota = [];
+      if (conItad) nota.push("Antes del " + fechaLarga.format(aFecha((modal.puntos[0] || [])[0] || new Date().toISOString().slice(0, 10))) + ": precios de tiendas de PC según IsThereAnyDeal.");
+      nota.push("Precios nuevos y con stock. Las líneas se mantienen hasta que el precio cambia.");
+      html += '<p class="h-nota">' + nota.join(" ") + "</p>";
+    }
+
+    // Avisos
+    html += '<section class="av" aria-labelledby="av-h3"><h3 id="av-h3">' + CAMPANA + "Avisos por email</h3>";
+    if (!datos || !datos.buscador) html += '<p class="av-pista">Los avisos por email no están disponibles ahora mismo.</p>';
+    else {
+      if (lista.length) {
+        var nombreEst = { activo: "Activo", pendiente: "Confirma en tu email", enviado: "Ya te avisamos", "no existe": "Caducado" };
+        html += '<details class="av-lista" open><summary>Tus avisos para este juego (' + lista.length + " de " + MAX_AVISOS + ")</summary><ul>" + lista.map(function (a) {
+          var e = modal.estados[a.id];
+          return '<li><div class="q">Cuando baje de <b>' + eur.format(a.precio) + "</b><small>" + esc(a.email) + "</small></div>" +
+            (e ? '<span class="av-est ' + (e === "no existe" ? "" : e) + '">' + nombreEst[e] + "</span>" : "") +
+            '<button type="button" class="btn peligro" data-m="borrar" data-id="' + esc(a.id) + '">Eliminar</button></li>';
+        }).join("") + "</ul></details>";
+        if (!modal.form) html += '<div class="av-acc">' + (lista.length < MAX_AVISOS ? '<button type="button" class="btn prim" data-m="nuevo">+ Añadir otro aviso</button>' : '<span class="av-pista">Has llegado al máximo de ' + MAX_AVISOS + " avisos para este juego.</span>") +
+          (lista.length > 1 ? '<button type="button" class="btn peligro" data-m="borrar-todos">Eliminar todos</button>' : "") + "</div>";
+      }
+      if (modal.form && lista.length < MAX_AVISOS) {
+        var sugerido = ahora ? Math.max(0.5, Math.floor(ahora * 0.8)) : "";
+        html += '<form class="av-form" id="av-form" novalidate><div class="av-campos">' +
+          '<label>Avísame cuando baje de<span class="av-precio"><input type="number" id="av-precio" inputmode="decimal" min="0.5" max="1000" step="0.01" placeholder="' + sugerido + '" required></span></label>' +
+          '<label class="av-email">Tu email<input type="email" id="av-email" autocomplete="email" placeholder="tu@email.com" value="' + esc(emailGuardado) + '" required></label>' +
+          '<button type="submit" class="btn prim"' + (modal.enviando ? " disabled" : "") + ">" + (modal.enviando ? "Guardando…" : "Confirmar") + "</button></div>" +
+          '<label class="av-ok"><input type="checkbox" id="av-acepto" required><span>Acepto que Pillao guarde mi email para avisarme de este precio. Puedo borrarlo cuando quiera. <a href="legal.html#privacidad" target="_blank">Privacidad</a></span></label>' +
+          '<p class="av-pista">' + (ahora ? "Ahora está a " + eur.format(ahora) + ". " : "") + "La primera vez te mandaremos un correo para confirmar tu email. Revisamos los precios cada pocas horas.</p>" +
+          (lista.length ? '<div><button type="button" class="btn" data-m="cancelar">Cancelar</button></div>' : "") + "</form>";
+      }
+      if (!prefsOk()) html += '<p class="av-pista">Como no has aceptado las cookies de preferencias, este navegador olvidará tus avisos al cerrar la página (los emails te llegarán igual). <a href="#cookies-config" data-m="cookies">Cambiar</a></p>';
+    }
+    html += '<div class="av-msg ' + (modal.msgOk ? "ok" : "err") + '" role="status">' + esc(modal.msg) + "</div></section>";
+
+    // Conservar lo escrito en el formulario al repintar
+    var prev = { p: $("av-precio") && $("av-precio").value, e: $("av-email") && $("av-email").value, a: $("av-acepto") && $("av-acepto").checked };
+    var dentro = document.activeElement && $("modal-in").contains(document.activeElement) ? document.activeElement.id : null;
+    $("modal-in").innerHTML = html;
+    if (prev.p != null && $("av-precio")) { $("av-precio").value = prev.p; $("av-email").value = prev.e; $("av-acepto").checked = prev.a; }
+    if (dentro && $(dentro)) $(dentro).focus();
+    if (!cargando) dibujarGrafica(pts);
+  }
+
+  function dibujarGrafica(pts) {
+    var g = $("h-graf"); if (!g) return;
+    if (!SERIES.some(function (s) { return vista.series[s.id]; })) { g.innerHTML = '<div class="vacia">Elige al menos un precio para ver la gráfica.</div>'; return; }
+    if (!pts.length) { g.innerHTML = '<div class="vacia">Todavía no tenemos historial de este juego. Lo guardamos cada día: vuelve en unos días y verás cómo evoluciona.</div>'; return; }
+    g.innerHTML = svgGrafica(pts, Math.max(280, g.clientWidth), g.clientHeight) + '<div class="h-tip" id="h-tip" hidden></div>' +
+      (pts.length === 1 ? '<div class="vacia" style="inset:auto 0 0 auto;border:0;padding:4px 8px;font-size:12.5px">Empezamos a guardar este juego el ' + fechaLarga.format(aFecha(pts[0].d)) + "</div>" : "");
+    var zona = $("h-zona"), cruz = $("h-cruz"), tip = $("h-tip"), c = svgGrafica.ctx;
+    var mover = function (ev) {
+      var r = g.getBoundingClientRect(), escala = (Math.max(280, g.clientWidth)) / r.width;
+      var x = (ev.clientX - r.left) * escala, t = c.t0 + (x - c.izq) / c.w * (c.t1 - c.t0);
+      var p = null;
+      for (var i = 0; i < c.pts.length; i++) if (aFecha(c.pts[i].d).getTime() <= t + 43200000) p = c.pts[i];
+      if (!p) p = c.pts[0];
+      var px = Math.min(c.izq + c.w, Math.max(c.izq, x));
+      cruz.setAttribute("visibility", "visible");
+      cruz.querySelector("line").setAttribute("x1", px); cruz.querySelector("line").setAttribute("x2", px);
+      [].forEach.call(cruz.querySelectorAll("circle"), function (ci) {
+        var s = SERIES.filter(function (z) { return z.id === ci.dataset.s; })[0], v = p.v[s.i];
+        ci.setAttribute("visibility", v == null ? "hidden" : "visible");
+        if (v != null) { ci.setAttribute("cx", px); ci.setAttribute("cy", c.Y(v)); }
+      });
+      tip.hidden = false;
+      tip.innerHTML = "<div>" + (p.itad ? "Desde el " : "") + fechaLarga.format(aFecha(p.d)) + (p.itad ? " · PC" : "") + "</div>" + c.activas.map(function (s) {
+        return p.v[s.i] == null ? "" : '<div><i style="background:' + s.color + '"></i>' + s.nombre + " <b>" + eur.format(p.v[s.i]) + "</b></div>";
+      }).join("");
+      var tx = px / escala + 12; if (tx + tip.offsetWidth > r.width) tx = px / escala - tip.offsetWidth - 12;
+      tip.style.left = Math.max(0, tx) + "px";
+    };
+    var salir = function () { cruz.setAttribute("visibility", "hidden"); tip.hidden = true; };
+    zona.addEventListener("pointermove", mover); zona.addEventListener("pointerdown", mover); zona.addEventListener("pointerleave", salir);
+  }
+
+  function msgAviso(t, ok) { modal.msg = t; modal.msgOk = ok; pintarModal(); }
+
+  function crearAviso() {
+    var j = modal.j, precio = parseFloat(String($("av-precio").value).replace(",", ".")), email = $("av-email").value.trim();
+    if (!(precio >= 0.5 && precio <= 1000)) { msgAviso("Escribe el precio al que quieres que te avisemos (entre 0,50 y 1.000 €).", false); $("av-precio").focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { msgAviso("Escribe un email válido.", false); $("av-email").focus(); return; }
+    if (!$("av-acepto").checked) { msgAviso("Marca la casilla para que podamos guardar tu email.", false); return; }
+    modal.enviando = true; msgAviso("", true);
+    fetch(datos.buscador.replace(/\/$/, "") + "/avisos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ juego: j.id, titulo: j.titulo, precio: precio, email: email }) })
+      .then(function (r) { return r.json().catch(function () { return { error: "Respuesta no válida del servidor." }; }); })
+      .then(function (d) {
+        if (modal.j !== j) return;
+        modal.enviando = false;
+        if (!d.id) { msgAviso(d.error || "No se ha podido crear el aviso.", false); return; }
+        (avisos[j.id] = avisosDe(j.id)).push({ id: d.id, precio: Math.round(precio * 100) / 100, email: email.toLowerCase(), c: new Date().toISOString().slice(0, 10) });
+        emailGuardado = email; guardarAvisos();
+        modal.estados[d.id] = d.estado; modal.form = false;
+        var ya = ahoraCumple(j, precio);
+        msgAviso(d.estado === "pendiente"
+          ? "¡Hecho! Te hemos mandado un correo a " + email + ": pulsa el botón para confirmar el aviso (mira también en spam)."
+          : "¡Hecho! Te escribiremos cuando baje de " + eur.format(precio) + "." + (ya ? " Ahora mismo ya está por debajo, así que te llegará en la próxima revisión." : ""), true);
+        var $f = $("av-precio"); if ($f) $f.value = "";
+      })
+      .catch(function () { modal.enviando = false; msgAviso("No hemos podido conectar. Comprueba tu conexión y vuelve a probar.", false); });
+  }
+  function ahoraCumple(j, precio) { var a = precioAhora(j); return a != null && a <= precio; }
+
+  function borrarAvisos(ids) {
+    var j = modal.j;
+    Promise.all(ids.map(function (id) {
+      return fetch(datos.buscador.replace(/\/$/, "") + "/avisos?id=" + encodeURIComponent(id), { method: "DELETE" }).then(function (r) { return r.ok; }).catch(function () { return false; });
+    })).then(function (res) {
+      if (modal.j !== j) return;
+      var fallos = 0;
+      ids.forEach(function (id, i) { if (res[i]) avisos[j.id] = avisosDe(j.id).filter(function (a) { return a.id !== id; }); else fallos++; });
+      if (!avisosDe(j.id).length) { delete avisos[j.id]; modal.form = true; }
+      guardarAvisos();
+      msgAviso(fallos ? "No hemos podido eliminar " + (fallos === 1 ? "un aviso" : fallos + " avisos") + ". Vuelve a probar." : ids.length > 1 ? "Avisos eliminados." : "Aviso eliminado.", !fallos);
+    });
+  }
+
+  $("modal-av").addEventListener("click", function (e) {
+    if (e.target === $("modal-av")) { cerrarAviso(); return; }
+    var b = e.target.closest("[data-m],[data-serie],[data-periodo]"); if (!b) return;
+    if (b.dataset.serie) { vista.series[b.dataset.serie] = !vista.series[b.dataset.serie]; pintarModal(); return; }
+    if (b.dataset.periodo) { vista.periodo = b.dataset.periodo; pintarModal(); return; }
+    var m = b.dataset.m;
+    if (m === "cerrar") cerrarAviso();
+    else if (m === "nuevo") { modal.form = true; modal.msg = ""; pintarModal(); if ($("av-precio")) $("av-precio").focus(); }
+    else if (m === "cancelar") { modal.form = false; modal.msg = ""; pintarModal(); }
+    else if (m === "borrar") borrarAvisos([b.dataset.id]);
+    else if (m === "borrar-todos") borrarAvisos(avisosDe(modal.j.id).map(function (a) { return a.id; }));
+    else if (m === "cookies") { e.preventDefault(); cerrarAviso(); abrirCookies(true); }
+  });
+  $("modal-av").addEventListener("submit", function (e) { e.preventDefault(); if (!modal.enviando) crearAviso(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !$("modal-av").hidden) { cerrarAviso(); return; }
+    // el foco no sale de la ventana mientras está abierta
+    if (e.key === "Tab" && !$("modal-av").hidden) {
+      var fs = $("modal-in").querySelectorAll("button, input, a[href], summary"); if (!fs.length) return;
+      var a = fs[0], z = fs[fs.length - 1];
+      if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); }
+      else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
+    }
+  });
+  var temporizadorGraf = null;
+  window.addEventListener("resize", function () { if (!modal.j) return; clearTimeout(temporizadorGraf); temporizadorGraf = setTimeout(pintarModal, 150); });
+
   function pintar() {
     var lista = $("lista");
     var n = nActivos(); var nb = $("nfiltros"); nb.hidden = !n; nb.textContent = n;
-    if (!datos) { lista.innerHTML = '<div class="vacio"><b>No hay precios cargados</b>Sube un JSON desde «Tus datos» o ejecuta el actualizador.</div>'; return; }
+    if (!datos) { lista.innerHTML = '<div class="vacio"><b>No hay precios cargados</b>Vuelve a probar en unos minutos.</div>'; return; }
     var qTxt = f.q.trim(), q = norm(qTxt);
     var palabras = q.split(/\s+/).filter(Boolean);
     var filas = [], vistos = {};
@@ -871,6 +1285,8 @@ button { cursor: pointer; }
   });
   $("orden").addEventListener("change", function (e) { f.orden = e.target.value; cambio(); });
   $("lista").addEventListener("click", function (e) {
+    var av = e.target.closest("[data-aviso]");
+    if (av) { var ja = buscarJuego(av.dataset.aviso); if (ja) abrirAviso(ja, av); return; }
     var b = e.target.closest("[data-mas]");
     if (b) { abiertos[b.dataset.mas] = !abiertos[b.dataset.mas]; pintar(); return; }
     var d = e.target.closest("[data-grupo]");
@@ -914,6 +1330,9 @@ button { cursor: pointer; }
   if (/[?&]datos\b/.test(location.search)) $("grupo-datos").hidden = false;
   $("json-reset").addEventListener("click", function () { origen = "servidor"; msg("", true); leerServidor(true); });
 
+  // ?q=nombre en la dirección: llega desde la página de un juego
+  var qUrl = new URLSearchParams(location.search).get("q");
+  if (qUrl) { f.q = qUrl.slice(0, 80); $("q").value = f.q; }
   leerServidor(false);
   setInterval(function () { leerServidor(false); }, REFRESCO_MS);
   setInterval(pintarEstado, 60 * 1000);

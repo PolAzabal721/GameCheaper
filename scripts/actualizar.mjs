@@ -17,6 +17,7 @@
 // Si una fuente falla, se conservan sus ofertas anteriores para no dejar huecos.
 
 import { readFile, writeFile } from "node:fs/promises";
+import { guardarHistorial } from "./historial.mjs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -712,6 +713,8 @@ async function main() {
   const salida = { actualizado: new Date().toISOString(), ejemplo: false, buscador: buscador || undefined, tiendas, juegos: lista };
   await writeFile(join(RAIZ, "precios.json"), JSON.stringify(salida) + "\n");
   console.log(`precios.json listo: ${lista.length} juegos, ${total} ofertas.`);
+  // Historial diario (gráfica de la web) y precios mínimos (avisos por email)
+  try { await guardarHistorial(RAIZ, lista, tiendas); } catch (e) { console.warn("Historial: " + e.message); }
 }
 
 main().catch((e) => { console.error(e.stack || e.message); process.exit(1); });

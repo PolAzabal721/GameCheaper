@@ -1,0 +1,43 @@
+name: Publicar web
+
+# Construye la web con una página por juego (para que Google las encuentre) y la publica en GitHub Pages.
+# Requiere: Settings → Pages → Build and deployment → Source: «GitHub Actions».
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["buscador/**", ".github/workflows/buscador.yml"]
+  workflow_run:
+    workflows: ["Actualizar precios"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Construir
+        run: node scripts/paginas.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: despliegue
+        uses: actions/deploy-pages@v4
