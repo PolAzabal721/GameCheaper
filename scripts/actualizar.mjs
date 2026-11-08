@@ -344,8 +344,9 @@ async function main() {
 
   // 2. Juegos que quieres seguro + los añadidos desde la búsqueda en vivo
   let anadidos = [];
-  if (ENV.BUSCADOR_URL) {
-    try { anadidos = await (await pedir(ENV.BUSCADOR_URL.replace(/\/$/, "") + "/anadidos")).json(); }
+  const buscador = ENV.BUSCADOR_URL || (await leer("config/buscador.json", {})).url || "";
+  if (buscador) {
+    try { anadidos = await (await pedir(buscador.replace(/\/$/, "") + "/anadidos")).json(); }
     catch (e) { avisos.push(`búsqueda en vivo: ${e.message}`); }
   }
   const extras = [
@@ -407,7 +408,7 @@ async function main() {
   console.log("Primeros del catálogo:", lista.slice(0, 15).map((j) => j.titulo).join(" | "));
   if (avisos.length) console.warn(`Avisos (${avisos.length}):\n - ` + avisos.slice(0, 40).join("\n - "));
   if (total === 0) { console.error("No se ha conseguido ningún precio. No toco precios.json."); process.exit(1); }
-  const salida = { actualizado: new Date().toISOString(), ejemplo: false, tiendas, juegos: lista };
+  const salida = { actualizado: new Date().toISOString(), ejemplo: false, buscador: buscador || undefined, tiendas, juegos: lista };
   await writeFile(join(RAIZ, "precios.json"), JSON.stringify(salida) + "\n");
   console.log(`precios.json listo: ${lista.length} juegos, ${total} ofertas.`);
 }

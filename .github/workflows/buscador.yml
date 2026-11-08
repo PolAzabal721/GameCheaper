@@ -1,0 +1,77 @@
+name: Desplegar buscador
+
+on:
+  push:
+    branches: [main]
+    paths: ["buscador/**", ".github/workflows/buscador.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  desplegar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Comprobar secretos
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Faltan los secretos CLOUDFLARE_API_TOKEN y/o CLOUDFLARE_ACCOUNT_ID"; exit 1
+          fi
+
+      - name: Preparar almacenamiento (KV) y subdominio workers.dev
+        run: |
+          API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID"
+          H="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+          ID=$(curl -s -H "$H" "$API/storage/kv/namespaces?per_page=100" | jq -r '.result[]? | select(.title=="pillao-anadidos") | .id')
+          if [ -z "$ID" ]; then
+            ID=$(curl -s -X POST -H "$H" -H "Content-Type: application/json" -d '{"title":"pillao-anadidos"}' "$API/storage/kv/namespaces" | jq -r '.result.id')
+          fi
+          [ -n "$ID" ] && [ "$ID" != "null" ] || { echo "::error::No pude crear el espacio KV"; exit 1; }
+          sed -i "s/__KV_ID__/$ID/" buscador/wrangler.toml
+          SUB=$(curl -s -H "$H" "$API/workers/subdomain" | jq -r '.result.subdomain // empty')
+          if [ -z "$SUB" ]; then
+            SUB="pillao-$(echo $CLOUDFLARE_ACCOUNT_ID | cut -c1-6)"
+            curl -s -X PUT -H "$H" -H "Content-Type: application/json" -d "{\"subdomain\":\"$SUB\"}" "$API/workers/subdomain" | jq -c '.success, .errors'
+          fi
+          echo "SUB=$SUB" >> $GITHUB_ENV
+
+      - name: Desplegar
+        working-directory: buscador
+        run: npx --yes wrangler@4 deploy
+
+      - name: Claves de eBay (si existen)
+        working-directory: buscador
+        env:
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+        run: |
+          if [ -n "$EBAY_CLIENT_ID" ] && [ -n "$EBAY_CLIENT_SECRET" ]; then
+            echo "$EBAY_CLIENT_ID" | npx --yes wrangler@4 secret put EBAY_CLIENT_ID
+            echo "$EBAY_CLIENT_SECRET" | npx --yes wrangler@4 secret put EBAY_CLIENT_SECRET
+          else
+            echo "Sin claves de eBay: el buscador funcionará con Steam y Nintendo eShop."
+          fi
+
+      - name: Probar y guardar la dirección del buscador
+        run: |
+          URL="https://pillao-buscador.$SUB.workers.dev"
+          sleep 10
+          curl -s "$URL/buscar?q=hollow%20knight" | head -c 600; echo
+          printf '{ "url": "%s" }\n' "$URL" > config/buscador.json
+          git config user.name "pillao-bot"
+          git config user.email "pillao-bot@users.noreply.github.com"
+          git add config/buscador.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Dirección del buscador en vivo"
+          git pull --rebase origin main
+          git push

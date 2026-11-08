@@ -166,6 +166,14 @@ button { cursor: pointer; }
 .ir { font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; white-space: nowrap; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); }
 .ir:hover { background: var(--accent-soft); }
 .mas { align-self: flex-start; border: 0; background: none; color: var(--accent); font-weight: 600; padding: 0; font-size: 14px; }
+.otras { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; font-size: 13px; color: var(--muted); padding-top: 4px; }
+.otras a { color: var(--accent); text-decoration: none; font-weight: 600; padding: 3px 9px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface-2); }
+.otras a:hover { background: var(--accent-soft); }
+.mas-juegos { align-self: center; padding: 10px 18px; font-size: 14.5px; }
+.mas-juegos span { color: var(--muted); font-weight: 500; }
+.vivo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--good); background: var(--good-soft); padding: 2px 7px; border-radius: 4px; }
+.busca-vivo { font-size: 14px; color: var(--muted); padding: 10px 14px; background: var(--surface); border: 1px dashed var(--line); border-radius: var(--r); }
+.busca-vivo.err { color: var(--warn); }
 .vacio { background: var(--surface); border: 1px dashed var(--line); border-radius: var(--r); padding: 32px 20px; text-align: center; color: var(--muted); }
 .vacio b { display: block; color: var(--ink); font-family: var(--f-display); font-size: 20px; margin-bottom: 6px; }
 .fondo { display: none; }
@@ -267,6 +275,7 @@ button { cursor: pointer; }
         <h1 id="titulo-res">Juegos</h1>
         <label class="orden">Ordenar
           <select id="orden">
+            <option value="populares">Populares</option>
             <option value="barato">Más barato</option>
             <option value="descuento">Mayor descuento</option>
             <option value="az">A–Z</option>
@@ -278,7 +287,7 @@ button { cursor: pointer; }
   </div>
 </div>
 
-<script type="application/json" id="datos-incrustados">{"actualizado":"2026-11-08T16:27:23.404Z","ejemplo":false,"tiendas":[{"id":"steam","nombre":"Steam","tipo":"oficial","formatos":["digital"],"busqueda":"https://store.steampowered.com/search/?term={q}"},{"id":"psstore","nombre":"PlayStation Store","tipo":"oficial","formatos":["digital"],"busqueda":"https://store.playstation.com/es-es/search/{q}"},{"id":"xbox","nombre":"Microsoft Store","tipo":"oficial","formatos":["digital"],"busqueda":"https://www.xbox.com/es-ES/search?q={q}"},{"id":"eshop","nombre":"Nintendo eShop","tipo":"oficial","formatos":["digital"],"busqueda":"https://www.nintendo.com/es-es/"},{"id":"instantgaming","nombre":"Instant Gaming","tipo":"revendedor","formatos":["digital"],"busqueda":"https://www.instant-gaming.com/es/busquedas/?query={q}"},{"id":"eneba","nombre":"Eneba","tipo":"marketplace","formatos":["digital"],"busqueda":"https://www.eneba.com/es/store/all?text={q}"},{"id":"g2a","nombre":"G2A","tipo":"marketplace","formatos":["digital"],"busqueda":"https://www.g2a.com/es/search?query={q}"},{"id":"mediamarkt","nombre":"MediaMarkt","tipo":"tienda","formatos":["fisico"],"busqueda":"https://www.mediamarkt.es/es/search.html?query={q}"},{"id":"fnac","nombre":"Fnac","tipo":"tienda","formatos":["fisico"],"busqueda":"https://www.fnac.es/SearchResult/ResultList.aspx?Search={q}"},{"id":"amazon","nombre":"Amazon","tipo":"tienda","formatos":["fisico"],"busqueda":"https://www.amazon.es/s?k={q}"},{"id":"game","nombre":"GAME","tipo":"tienda","formatos":["fisico"],"busqueda":"https://www.game.es/buscar/{q}"},{"id":"elcorteingles","nombre":"El Corte Inglés","tipo":"tienda","formatos":["fisico"],"busqueda":"https://www.elcorteingles.es/"},{"id":"cex","nombre":"CeX","tipo":"segundamano","formatos":["fisico"],"busqueda":"https://es.webuy.com/search?stext={q}"},{"id":"gameseminuevos","nombre":"GAME Seminuevos","tipo":"segundamano","formatos":["fisico"],"busqueda":"https://www.game.es/buscar/{q}"},{"id":"amazonsegunda","nombre":"Amazon Segunda Mano","tipo":"segundamano","formatos":["fisico"],"busqueda":"https://www.amazon.es/s?k={q}&i=warehouse-deals"},{"id":"wallapop","nombre":"Wallapop","tipo":"particulares","formatos":["fisico"],"busqueda":"https://es.wallapop.com/app/search?keywords={q}"},{"id":"ebay","nombre":"eBay","tipo":"particulares","formatos":["fisico"],"busqueda":"https://www.ebay.es/sch/i.html?_nkw={q}&LH_ItemCondition=3000"}],"juegos":[{"id":"fc26","titulo":"EA Sports FC 26","plataformas":["PC","PS5","Xbox Series","Switch 2"],"pvp":79.99,"ofertas":[{"estado":"nuevo","stock":true,"tienda":"steam","plataforma":"PC","formato":"digital","precio":69.99,"url":"https://store.steampowered.com/app/3405690/","fuente":"steam"},{"estado":"nuevo","stock":true,"tienda":"eshop","plataforma":"Switch 2","formato":"digital","precio":69.99,"url":"https://www.nintendo.com/es-es/Juegos/Juegos-de-Nintendo-Switch-2/EA-SPORTS-FC-26-2873781.html","fuente":"eshop"},{"estado":"nuevo","stock":true,"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":79.99,"url":"https://store.playstation.com/es-es/concept/10011898","fuente":"psstore"}]},{"id":"yotei","titulo":"Ghost of Yōtei","plataformas":["PS5"],"pvp":79.99,"ofertas":[{"estado":"nuevo","stock":true,"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":79.99,"url":"https://store.playstation.com/es-es/concept/10003923","fuente":"psstore"}]},{"id":"mkworld","titulo":"Mario Kart World","plataformas":["Switch 2"],"pvp":89.99,"ofertas":[{"estado":"nuevo","stock":true,"tienda":"eshop","plataforma":"Switch 2","formato":"digital","precio":79.99,"url":"https://www.nintendo.com/es-es/Juegos/Juegos-de-Nintendo-Switch-2/Mario-Kart-World-2790000.html","fuente":"eshop"}]},{"id":"dkbananza","titulo":"Donkey Kong Bananza","plataformas":["Switch 2"],"pvp":79.99,"ofertas":[{"estado":"nuevo","stock":true,"tienda":"eshop","plataforma":"Switch 2","formato":"digital","precio":69.99,"url":"https://www.nintendo.com/es-es/Juegos/Juegos-de-Nintendo-Switch-2/Donkey-Kong-Bananza-2785804.html","fuente":"eshop"}]},{"id":"silksong","titulo":"Hollow Knight: Silksong","plataformas":["PC","PS5","Xbox Series","Switch"],"pvp":19.5,"ofertas":[{"estado":"nuevo","stock":true,"tienda":"steam","plataforma":"PC","formato":"digital","precio":19.5,"url":"https://store.steampowered.com/app/1030300/","fuente":"steam"},{"estado":"nuevo","stock":true,"tienda":"eshop","plataforma":"Switch","formato":"digital","precio":19.5,"url":"https://www.nintendo.com/es-es/Juegos/Programas-descargables-Nintendo-Switch/Hollow-Knight-Silksong-1575920.html","fuente":"eshop"},{"estado":"nuevo","stock":true,"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":19.99,"url":"https://store.playstation.com/es-es/concept/10005908","fuente":"psstore"}]},{"id":"bf6","titulo":"Battlefield 6","plataformas":["PC","PS5","Xbox Series"],"pvp":79.99,"ofertas":[{"estado":"nuevo","stock":true,"tienda":"steam","plataforma":"PC","formato":"digital","precio":69.99,"url":"https://store.steampowered.com/app/2807960/","fuente":"steam"},{"estado":"nuevo","stock":true,"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":79.99,"url":"https://store.playstation.com/es-es/concept/10009568","fuente":"psstore"}]},{"id":"bo7","titulo":"Call of Duty: Black Ops 7","plataformas":["PC","PS5","Xbox Series"],"pvp":79.99,"ofertas":[{"estado":"nuevo","stock":true,"tienda":"steam","plataforma":"PC","formato":"digital","precio":79.99,"url":"https://store.steampowered.com/app/3606480/","fuente":"steam"},{"estado":"nuevo","stock":true,"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":79.99,"url":"https://store.playstation.com/es-es/product/EP0002-PPSA07950_00-CODBO7CROSSGEN01","fuente":"psstore"}]},{"id":"plza","titulo":"Leyendas Pokémon: Z-A","plataformas":["Switch 2","Switch"],"pvp":69.99,"ofertas":[{"estado":"nuevo","stock":true,"tienda":"eshop","plataforma":"Switch","formato":"digital","precio":59.99,"url":"https://www.nintendo.com/es-es/Juegos/Juegos-de-Nintendo-Switch/Leyendas-Pokemon-Z-A-2533423.html","fuente":"eshop"}]},{"id":"e33","titulo":"Clair Obscur: Expedition 33","plataformas":["PC","PS5","Xbox Series"],"pvp":49.99,"ofertas":[{"estado":"nuevo","stock":true,"tienda":"steam","plataforma":"PC","formato":"digital","precio":39.99,"url":"https://store.steampowered.com/app/1903340/","fuente":"steam"},{"estado":"nuevo","stock":true,"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":49.99,"url":"https://store.playstation.com/es-es/concept/10008503","fuente":"psstore"}]},{"id":"nightreign","titulo":"Elden Ring Nightreign","plataformas":["PC","PS5","Xbox Series"],"pvp":39.99,"ofertas":[{"estado":"nuevo","stock":true,"tienda":"steam","plataforma":"PC","formato":"digital","precio":39.99,"url":"https://store.steampowered.com/app/2622380/","fuente":"steam"},{"estado":"nuevo","stock":true,"tienda":"psstore","plataforma":"PS5","formato":"digital","precio":39.99,"url":"https://store.playstation.com/es-es/concept/10010877","fuente":"psstore"}]},{"id":"airriders","titulo":"Kirby Air Riders","plataformas":["Switch 2"],"pvp":79.99,"ofertas":[{"estado":"nuevo","stock":true,"tienda":"eshop","plataforma":"Switch 2","formato":"digital","precio":69.99,"url":"https://www.nintendo.com/es-es/Juegos/Juegos-de-Nintendo-Switch-2/Kirby-Air-Riders-2785805.html","fuente":"eshop"}]},{"id":"metroid4","titulo":"Metroid Prime 4: Beyond","plataformas":["Switch 2","Switch"],"pvp":69.99,"ofertas":[{"estado":"nuevo","stock":true,"tienda":"eshop","plataforma":"Switch","formato":"digital","precio":59.99,"url":"https://www.nintendo.com/es-es/Juegos/Juegos-de-Nintendo-Switch/Metroid-Prime-4-Beyond-2593922.html","fuente":"eshop"}]}]}</script>
+<script type="application/json" id="datos-incrustados"></script>
 <script>
 (function () {
   "use strict";
@@ -296,7 +305,7 @@ button { cursor: pointer; }
   var f = cargarFiltros();
 
   function cargarFiltros() {
-    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], mkt: true, part: true, stock: false, pmax: null, orden: "barato" };
+    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], mkt: true, part: true, stock: false, pmax: null, orden: "populares" };
     try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g) base[k] = g[k]; } catch (e) {}
     return base;
   }
@@ -346,6 +355,7 @@ button { cursor: pointer; }
     pintarControles();
     pintar();
     pintarEstado();
+    buscarEnVivo();
   }
 
   // ---------- Carga y refresco ----------
@@ -410,9 +420,11 @@ button { cursor: pointer; }
     $("plataformas").innerHTML = plats.map(function (p) {
       return '<button type="button" class="chip" data-p="' + esc(p) + '" aria-pressed="' + (f.plats.indexOf(p) >= 0) + '">' + esc(p) + "</button>";
     }).join("");
-    // tiendas agrupadas por tipo
+    // tiendas agrupadas por tipo (solo las que tienen algún precio)
+    conOfertas = {};
+    datos.juegos.forEach(function (j) { j.ofertas.forEach(function (o) { conOfertas[o.tienda] = 1; }); });
     $("tiendas").innerHTML = ORDEN_TIPOS.map(function (tipo) {
-      var ts = datos.tiendas.filter(function (t) { return t.tipo === tipo; });
+      var ts = datos.tiendas.filter(function (t) { return t.tipo === tipo && conOfertas[t.id]; });
       if (!ts.length) return "";
       var titulo = TITULOS_TIPO[tipo];
       return '<div><div class="tipo-t">' + titulo + '</div><div class="chips">' + ts.map(function (t) {
@@ -441,65 +453,136 @@ button { cursor: pointer; }
     return t.busqueda.replace("{q}", encodeURIComponent(j.titulo));
   }
 
+  var PAGINA = 30, mostrar = PAGINA;         // juegos que se pintan de cada vez
+  var vivo = { q: "", juegos: [], cargando: false, error: "" }, temporizador = null;
+  var PLATS_TIENDA = { steam: ["PC"], psstore: ["PS5", "PS4"], eshop: ["Switch 2", "Switch"], xbox: ["Xbox Series", "PC", "PS5", "PS4"] };
+  var conOfertas = {};                       // tiendas que tienen algún precio automático
+
+  // Tiendas sin precio para este juego donde merece la pena buscar a mano
+  function otrasTiendas(j) {
+    var tiene = {}; j.ofertas.forEach(function (o) { tiene[o.tienda] = 1; });
+    var consola = j.plataformas.some(function (p) { return p !== "PC"; });
+    return datos.tiendas.filter(function (t) {
+      if (!t.busqueda || tiene[t.id] || f.fuera.indexOf(t.id) >= 0) return false;
+      if (!f.part && t.tipo === "particulares") return false;
+      if (!f.mkt && t.tipo === "marketplace") return false;
+      var fisica = (t.formatos || []).indexOf("fisico") >= 0 && (t.formatos || []).indexOf("digital") < 0;
+      var usada = t.tipo === "segundamano" || t.tipo === "particulares";
+      if (f.formato === "digital" && fisica) return false;
+      if (f.formato === "fisico" && !fisica) return false;
+      if (f.estado === "usado" && !usada) return false;
+      if (f.estado === "nuevo" && usada) return false;
+      if (fisica && !consola) return false;
+      var ps = PLATS_TIENDA[t.id];
+      if (ps && !ps.some(function (p) { return j.plataformas.indexOf(p) >= 0; })) return false;
+      return true;
+    }).slice(0, 12);
+  }
+
+  function fila(j) {
+    var ofs = ofertasFiltradas(j);
+    if (!ofs.length) return null;
+    var conStock = ofs.filter(function (o) { return o.stock; });
+    var mejor = conStock[0] || ofs[0];
+    var minDe = function (est) { var x = (conStock.length ? conStock : ofs).filter(function (o) { return o.estado === est; })[0]; return x ? total(x) : null; };
+    var ref = j.pvp || Math.max.apply(null, j.ofertas.map(total));
+    return { j: j, ofs: ofs, mejor: mejor, nuevo: minDe("nuevo"), usado: minDe("usado"), dto: ref > 0 ? Math.max(0, Math.round((1 - total(mejor) / ref) * 100)) : 0 };
+  }
+
+  function tarjeta(r) {
+    var j = r.j, m = r.mejor, tm = tiendaPorId[m.tienda] || { nombre: m.tienda };
+    var todas = abiertos[j.id];
+    var vis = todas ? r.ofs : r.ofs.slice(0, VISIBLES);
+    var otras = otrasTiendas(j);
+    return '<article class="juego"><div class="j-cab"><div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") + "<h2>" + esc(j.titulo) + '</h2><div class="plats">' +
+      j.plataformas.map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
+      (r.nuevo != null || r.usado != null || j.pvp ? '<div class="resumen">' +
+        (j.pvp && j.pvp > total(m) + 0.004 ? "<span>PVP <s>" + eur.format(j.pvp) + "</s></span>" : "") +
+        (r.nuevo != null ? "<span>Nuevo desde <b>" + eur.format(r.nuevo) + "</b></span>" : "") +
+        (r.usado != null ? "<span>2ª mano desde <b>" + eur.format(r.usado) + "</b></span>" : "") + "</div>" : "") + "</div>" +
+      '<div class="etiqueta">' + (r.dto >= 5 ? '<span class="ahorro">−' + r.dto + "%</span>" : "") +
+      '<span class="lbl">Mejor precio' + (m.envio ? " con envío" : "") + '</span><span class="precio">' + eur.format(total(m)) + '</span><span class="donde">' +
+      esc(tm.nombre) + " · " + esc(m.plataforma || "") + " · " + (m.estado === "usado" ? "2ª mano" : m.formato === "fisico" ? "Disco" : "Digital") + "</span></div></div>" +
+      '<ol class="ofertas">' + vis.map(function (o) {
+        var t = tiendaPorId[o.tienda] || { nombre: o.tienda, tipo: "tienda" };
+        var url = enlace(o, j), dif = total(o) - total(m);
+        return '<li class="of' + (o === m ? " mejor" : "") + '"><div class="of-t"><strong>' + esc(t.nombre) + '</strong><span class="badge b-' + t.tipo + '">' + TIPOS[t.tipo] + "</span>" + (o.estado === "usado" ? '<span class="usado">Usado</span>' : "") + "</div>" +
+          '<div class="of-d"><span>' + esc(o.plataforma || "—") + "</span><span>·</span><span>" + (o.formato === "fisico" ? "En disco" : "Digital") + "</span>" +
+          (o.condicion ? "<span>·</span><span>" + esc(o.condicion) + "</span>" : "") +
+          (o.envio ? "<span>·</span><span>" + eur.format(o.precio) + " + " + eur.format(o.envio) + " envío</span>" : "") +
+          (o.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
+          '<div class="of-p"><b>' + eur.format(total(o)) + "</b>" + (dif > 0.004 ? "<small>+" + eur.format(dif) + "</small>" : "<small>el más barato</small>") + "</div>" +
+          (url ? '<a class="ir" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + (o.url ? "Ver oferta" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
+      }).join("") + "</ol>" +
+      (r.ofs.length > VISIBLES ? '<button type="button" class="mas" data-mas="' + esc(j.id) + '">' + (todas ? "Ver menos" : "Ver las " + r.ofs.length + " ofertas") + "</button>" : "") +
+      (otras.length ? '<div class="otras"><span>Sin precio automático. Búscalo en:</span>' + otras.map(function (t) {
+        return '<a href="' + esc(t.busqueda.replace("{q}", encodeURIComponent(j.titulo))) + '" target="_blank" rel="noopener noreferrer">' + esc(t.nombre) + " ↗</a>";
+      }).join("") + "</div>" : "") +
+      "</article>";
+  }
+
   function pintar() {
     var lista = $("lista");
     var n = nActivos(); var nb = $("nfiltros"); nb.hidden = !n; nb.textContent = n;
     if (!datos) { lista.innerHTML = '<div class="vacio"><b>No hay precios cargados</b>Sube un JSON desde «Tus datos» o ejecuta el actualizador.</div>'; return; }
-    var q = norm(f.q.trim());
-    var filas = datos.juegos.map(function (j) {
-      if (q && norm(j.titulo).indexOf(q) < 0) return null;
-      var ofs = ofertasFiltradas(j);
-      if (!ofs.length) return null;
-      var conStock = ofs.filter(function (o) { return o.stock; });
-      var mejor = conStock[0] || ofs[0];
-      var minDe = function (est) { var x = (conStock.length ? conStock : ofs).filter(function (o) { return o.estado === est; })[0]; return x ? total(x) : null; };
-      var ref = j.pvp || Math.max.apply(null, j.ofertas.map(total));
-      return { j: j, ofs: ofs, mejor: mejor, nuevo: minDe("nuevo"), usado: minDe("usado"), dto: ref > 0 ? Math.max(0, Math.round((1 - total(mejor) / ref) * 100)) : 0 };
-    }).filter(Boolean);
+    var qTxt = f.q.trim(), q = norm(qTxt);
+    var palabras = q.split(/\s+/).filter(Boolean);
+    var filas = [], vistos = {};
+    var coincide = function (j) { var t = j._norm || (j._norm = norm(j.titulo)); return palabras.every(function (p) { return t.indexOf(p) >= 0; }); };
+    if (vivo.q === qTxt) vivo.juegos.forEach(function (j) { var r = fila(j); if (r) { filas.push(r); vistos[norm(j.titulo)] = 1; } });
+    datos.juegos.forEach(function (j) {
+      if (palabras.length && !coincide(j)) return;
+      if (vistos[j._norm || norm(j.titulo)]) return;
+      var r = fila(j); if (r) filas.push(r);
+    });
     filas.sort(function (a, b) {
+      if (!!b.j._vivo - !!a.j._vivo) return !!b.j._vivo - !!a.j._vivo;
       if (f.orden === "descuento") return b.dto - a.dto;
       if (f.orden === "az") return a.j.titulo.localeCompare(b.j.titulo, "es");
-      return total(a.mejor) - total(b.mejor);
+      if (f.orden === "barato") return total(a.mejor) - total(b.mejor);
+      return (a.j.pop || 99999) - (b.j.pop || 99999);
     });
-    $("titulo-res").innerHTML = filas.length + " juego" + (filas.length === 1 ? "" : "s") + ' <span>· ' + filas.reduce(function (s, r) { return s + r.ofs.length; }, 0) + " ofertas</span>";
+    var nf = filas.length.toLocaleString("es-ES");
+    $("titulo-res").innerHTML = nf + " juego" + (filas.length === 1 ? "" : "s") + ' <span>· ' + filas.reduce(function (s, r) { return s + r.ofs.length; }, 0).toLocaleString("es-ES") + " ofertas</span>";
+    var estadoVivo = "";
+    if (datos.buscador && q.length >= 3) {
+      estadoVivo = vivo.cargando ? '<div class="busca-vivo">Buscando «' + esc(qTxt) + '» en las tiendas…</div>'
+        : vivo.error && vivo.q === qTxt ? '<div class="busca-vivo err">' + esc(vivo.error) + "</div>" : "";
+    }
     if (!filas.length) {
-      lista.innerHTML = '<div class="vacio"><b>Nada con estos filtros</b>Prueba a quitar alguno.<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button></div>';
+      lista.innerHTML = estadoVivo + (vivo.cargando ? "" : '<div class="vacio"><b>Nada con estos filtros</b>' +
+        (q ? "No tenemos «" + esc(qTxt) + "» con estos filtros." : "Prueba a quitar alguno.") + '<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button></div>');
       return;
     }
-    lista.innerHTML = filas.map(function (r) {
-      var j = r.j, m = r.mejor, tm = tiendaPorId[m.tienda] || { nombre: m.tienda };
-      var todas = abiertos[j.id];
-      var vis = todas ? r.ofs : r.ofs.slice(0, VISIBLES);
-      var h = '<article class="juego"><div class="j-cab"><div class="j-info"><h2>' + esc(j.titulo) + '</h2><div class="plats">' +
-        j.plataformas.map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
-        (r.nuevo != null || r.usado != null || j.pvp ? '<div class="resumen">' +
-          (j.pvp ? '<span>PVP <s>' + eur.format(j.pvp) + "</s></span>" : "") +
-          (r.nuevo != null ? "<span>Nuevo desde <b>" + eur.format(r.nuevo) + "</b></span>" : "") +
-          (r.usado != null ? "<span>2ª mano desde <b>" + eur.format(r.usado) + "</b></span>" : "") + "</div>" : "") + "</div>" +
-        '<div class="etiqueta">' + (r.dto >= 5 ? '<span class="ahorro">−' + r.dto + "%</span>" : "") +
-        '<span class="lbl">Mejor precio' + (m.envio ? " con envío" : "") + '</span><span class="precio">' + eur.format(total(m)) + '</span><span class="donde">' +
-        esc(tm.nombre) + " · " + esc(m.plataforma || "") + " · " + (m.estado === "usado" ? "2ª mano" : m.formato === "fisico" ? "Disco" : "Digital") + "</span></div></div>" +
-        '<ol class="ofertas">' + vis.map(function (o) {
-          var t = tiendaPorId[o.tienda] || { nombre: o.tienda, tipo: "tienda" };
-          var url = enlace(o, j), dif = total(o) - total(m);
-          return '<li class="of' + (o === m ? " mejor" : "") + '"><div class="of-t"><strong>' + esc(t.nombre) + '</strong><span class="badge b-' + t.tipo + '">' + TIPOS[t.tipo] + "</span>" + (o.estado === "usado" ? '<span class="usado">Usado</span>' : "") + "</div>" +
-            '<div class="of-d"><span>' + esc(o.plataforma || "—") + "</span><span>·</span><span>" + (o.formato === "fisico" ? "En disco" : "Digital") + "</span>" +
-            (o.condicion ? "<span>·</span><span>" + esc(o.condicion) + "</span>" : "") +
-            (o.envio ? "<span>·</span><span>" + eur.format(o.precio) + " + " + eur.format(o.envio) + " envío</span>" : "") +
-            (o.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
-            '<div class="of-p"><b>' + eur.format(total(o)) + "</b>" + (dif > 0.004 ? "<small>+" + eur.format(dif) + "</small>" : "<small>el más barato</small>") + "</div>" +
-            (url ? '<a class="ir" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + (o.url ? "Ver oferta" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
-        }).join("") + "</ol>" +
-        (r.ofs.length > VISIBLES ? '<button type="button" class="mas" data-mas="' + esc(j.id) + '">' + (todas ? "Ver menos" : "Ver las " + r.ofs.length + " ofertas") + "</button>" : "") +
-        "</article>";
-      return h;
-    }).join("");
+    var resto = filas.length - mostrar;
+    lista.innerHTML = estadoVivo + filas.slice(0, mostrar).map(tarjeta).join("") +
+      (resto > 0 ? '<button type="button" class="btn mas-juegos" data-mas-juegos>Ver más juegos <span>(quedan ' + resto.toLocaleString("es-ES") + ")</span></button>" : "");
   }
 
-  function cambio() { guardarFiltros(); pintar(); }
+  // Búsqueda en vivo: si hay buscador configurado, pregunta a las tiendas por lo que escribes
+  function buscarEnVivo() {
+    var qTxt = f.q.trim();
+    clearTimeout(temporizador);
+    if (!datos || !datos.buscador || qTxt.length < 3) { vivo = { q: "", juegos: [], cargando: false, error: "" }; return; }
+    if (vivo.q === qTxt && !vivo.error) return;
+    temporizador = setTimeout(function () {
+      vivo = { q: qTxt, juegos: [], cargando: true, error: "" }; pintar();
+      fetch(datos.buscador.replace(/\/$/, "") + "/buscar?q=" + encodeURIComponent(qTxt))
+        .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+        .then(function (d) {
+          if (f.q.trim() !== qTxt) return;
+          var v = validar({ juegos: d.juegos || [], tiendas: [] });
+          v.juegos.forEach(function (j) { j._vivo = true; });
+          vivo = { q: qTxt, juegos: v.juegos, cargando: false, error: "" }; pintar();
+        })
+        .catch(function () { if (f.q.trim() !== qTxt) return; vivo = { q: qTxt, juegos: [], cargando: false, error: "La búsqueda en las tiendas no ha respondido. Mostramos solo lo que ya teníamos." }; pintar(); });
+    }, 600);
+  }
+
+  function cambio() { guardarFiltros(); mostrar = PAGINA; pintar(); }
 
   // ---------- Eventos ----------
-  $("q").addEventListener("input", function (e) { f.q = e.target.value; cambio(); });
+  $("q").addEventListener("input", function (e) { f.q = e.target.value; cambio(); buscarEnVivo(); });
   $("formato").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     f.formato = b.dataset.v;
@@ -537,6 +620,7 @@ button { cursor: pointer; }
   $("lista").addEventListener("click", function (e) {
     var b = e.target.closest("[data-mas]");
     if (b) { abiertos[b.dataset.mas] = !abiertos[b.dataset.mas]; pintar(); return; }
+    if (e.target.closest("[data-mas-juegos]")) { mostrar += PAGINA; pintar(); return; }
     if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], mkt: true, part: true, stock: false, pmax: null, orden: f.orden }; pintarControles(); cambio(); }
   });
   $("recargar").addEventListener("click", function () { leerServidor(true); });
