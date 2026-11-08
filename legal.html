@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pillao · Legal</title>
+<meta name="description" content="Aviso legal, condiciones de uso, política de privacidad y política de cookies de Pillao.">
+<link rel="stylesheet" href="fonts/fuentes.css">
+<style>
+:root {
+  --bg: #eef0f5; --surface: #ffffff; --surface-2: #f6f7fb; --ink: #141a2e; --muted: #5a6280; --line: #d9dce8;
+  --accent: #2741d6; --accent-soft: #e4e8ff; --tag: #ffd23f; --tag-ink: #1d1600; --warn: #a85400; --warn-soft: #fdeedd;
+  --f-display: "Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0e1120; --surface: #161a2c; --surface-2: #1c2136; --ink: #e8ebf6; --muted: #98a0bf; --line: #2a3150; --accent: #8fa0ff; --accent-soft: #232a52; --warn: #f2a654; --warn-soft: #33240f; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0e1120; --surface: #161a2c; --surface-2: #1c2136; --ink: #e8ebf6; --muted: #98a0bf; --line: #2a3150; --accent: #8fa0ff; --accent-soft: #232a52; --warn: #f2a654; --warn-soft: #33240f; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.6; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 860px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+.cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; }
+.logo { font-family: var(--f-display); font-weight: 800; font-size: 24px; letter-spacing: -.02em; text-decoration: none; color: var(--ink); display: flex; align-items: center; gap: 6px; }
+.logo i { font-style: normal; background: var(--tag); color: var(--tag-ink); padding: 1px 6px 2px; border-radius: 5px; transform: rotate(-4deg); display: inline-block; font-size: 14px; }
+.volver { font-size: 14px; font-weight: 600; text-decoration: none; }
+nav.indice { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
+nav.indice a { white-space: nowrap; text-decoration: none; font-size: 14px; font-weight: 600; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; background: var(--surface-2); }
+nav.indice a:hover { color: var(--accent); border-color: var(--accent); }
+main { padding-block: 28px 64px; display: flex; flex-direction: column; gap: 28px; }
+section { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px 22px; scroll-margin-top: 120px; }
+h1 { font-family: var(--f-display); font-size: 30px; line-height: 1.15; margin: 0 0 6px; letter-spacing: -.01em; text-wrap: balance; }
+h2 { font-family: var(--f-display); font-size: 24px; margin: 0 0 4px; letter-spacing: -.01em; text-wrap: balance; }
+h3 { font-size: 17px; margin: 22px 0 6px; }
+p, li { max-width: 68ch; }
+ul { padding-left: 20px; }
+.fecha { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
+.intro { color: var(--muted); }
+mark.falta { background: var(--warn-soft); color: var(--warn); font-weight: 700; padding: 0 4px; border-radius: 4px; }
+.aviso-borrador { background: var(--warn-soft); color: var(--warn); border-radius: 10px; padding: 12px 14px; font-size: 14.5px; }
+.tabla { overflow-x: auto; margin-top: 10px; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 14.5px; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+code { font-size: 13.5px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+.btn { border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 8px 14px; font: inherit; font-weight: 600; font-size: 14.5px; color: var(--ink); cursor: pointer; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="cab"><a class="logo" href="./">Pillao <i>€</i></a><a class="volver" href="./">← Volver al comparador</a></div>
+    <nav class="indice" aria-label="Secciones">
+      <a href="#aviso-legal">Aviso legal</a><a href="#condiciones">Condiciones de uso</a><a href="#privacidad">Privacidad</a><a href="#cookies">Cookies</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div>
+    <h1>Marco legal de Pillao</h1>
+    <p class="fecha">Última actualización: 8 de noviembre de 2026</p>
+    <p class="intro">Pillao es un comparador de precios de videojuegos. No vendemos nada: te enseñamos dónde está más barato y te llevamos a la tienda. Aquí tienes, en lenguaje claro, quién está detrás, qué puedes esperar de la web y qué hacemos (y qué no) con tus datos.</p>
+    <p class="aviso-borrador" id="borrador">Los datos marcados en naranja están pendientes de completar por el titular de la web.</p>
+  </div>
+
+  <!-- ===================== AVISO LEGAL ===================== -->
+  <section id="aviso-legal">
+    <h2>Aviso legal</h2>
+    <p>En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), se informa de los datos del titular de este sitio web:</p>
+    <ul>
+      <li><strong>Titular:</strong> <mark class="falta">[Nombre y apellidos]</mark></li>
+      <li><strong>NIF:</strong> <mark class="falta">[NIF]</mark></li>
+      <li><strong>Domicilio:</strong> <mark class="falta">[Dirección completa]</mark></li>
+      <li><strong>Correo electrónico de contacto:</strong> <mark class="falta">[correo@ejemplo.com]</mark></li>
+      <li><strong>Sitio web:</strong> https://polazabal721.github.io/GameCheaper/ («Pillao» o «la web»)</li>
+    </ul>
+
+    <h3>Qué es Pillao</h3>
+    <p>Pillao es un servicio gratuito e informativo que recopila y compara precios de videojuegos (en formato digital, en disco y de segunda mano) publicados por tiendas de terceros. <strong>Pillao no vende productos, no gestiona pedidos ni cobros y no es parte en ninguna compra.</strong> Cuando pulsas en una oferta, sales de Pillao y la compra se realiza directamente con la tienda correspondiente, bajo sus propias condiciones.</p>
+
+    <h3>Cómo obtenemos los precios</h3>
+    <p>Los precios se obtienen de forma automática y periódica (normalmente varias veces al día) de fuentes públicas: interfaces de programación (API) ofrecidas por las tiendas o por servicios de comparación, y páginas públicas de las propias tiendas. Por eso:</p>
+    <ul>
+      <li>Los precios son <strong>orientativos</strong>. Pueden haber cambiado desde la última actualización, que se indica en la parte superior de la web.</li>
+      <li>El precio, la disponibilidad, los gastos de envío, la región de las claves y las condiciones válidas son siempre <strong>los que muestre la tienda</strong> en el momento de la compra.</li>
+      <li>Salvo que se indique lo contrario, los precios se muestran en euros con impuestos incluidos tal y como los publica cada tienda. Cuando conocemos los gastos de envío (por ejemplo, en ventas de segunda mano), los sumamos y lo indicamos.</li>
+    </ul>
+
+    <h3>Enlaces de afiliado</h3>
+    <p>Algunos enlaces a tiendas (por ejemplo, Instant Gaming o G2A) son <strong>enlaces de afiliado</strong>: si compras después de pulsarlos, la tienda puede pagar una pequeña comisión al titular de Pillao. <strong>Esto no cambia el precio que pagas</strong>, no altera los precios que mostramos y no determina qué oferta señalamos como la más barata, que se calcula siempre por precio.</p>
+
+    <h3>Marcas y propiedad intelectual</h3>
+    <p>El diseño, los textos y el código propio de Pillao pertenecen a su titular. Los nombres de videojuegos, consolas, tiendas y sus logotipos son marcas de sus respectivos propietarios y se mencionan únicamente para identificar los productos y las ofertas. <strong>Pillao no está afiliado, patrocinado ni respaldado por</strong> Sony Interactive Entertainment, Nintendo, Microsoft, Valve ni por ninguna de las tiendas mencionadas, salvo la relación de afiliación indicada en el apartado anterior.</p>
+
+    <h3>Responsabilidad</h3>
+    <p>Ponemos cuidado en que la información sea correcta, pero no podemos garantizar que esté libre de errores, que sea completa o que esté siempre actualizada, ya que depende de terceros. El titular no se hace responsable de:</p>
+    <ul>
+      <li>Diferencias entre el precio o las condiciones mostradas en Pillao y las de la tienda.</li>
+      <li>Las compras, los pagos, las entregas, las garantías, las devoluciones o cualquier incidencia con una tienda o con otro usuario: todo ello corresponde a la tienda o al vendedor.</li>
+      <li>Los contenidos, la disponibilidad o la seguridad de las webs de terceros enlazadas.</li>
+      <li>Interrupciones temporales del servicio por mantenimiento, fallos técnicos o causas ajenas.</li>
+    </ul>
+    <p>Si detectas un precio erróneo o un enlace que no funciona, escríbenos al correo de contacto y lo revisaremos.</p>
+
+    <h3>Legislación aplicable</h3>
+    <p>Este aviso legal se rige por la legislación española. Si eres consumidor, para cualquier controversia serán competentes los juzgados y tribunales de tu domicilio, conforme a la normativa de consumidores y usuarios.</p>
+  </section>
+
+  <!-- ===================== CONDICIONES DE USO ===================== -->
+  <section id="condiciones">
+    <h2>Condiciones de uso</h2>
+    <p>Al usar Pillao aceptas estas condiciones. Si no estás de acuerdo con ellas, te pedimos que no utilices la web.</p>
+
+    <h3>1. Uso gratuito y sin registro</h3>
+    <p>Pillao es gratuito y no necesitas crear una cuenta ni darnos datos personales para usarlo.</p>
+
+    <h3>2. Uso correcto de la web</h3>
+    <p>Te comprometes a usar Pillao de forma lícita y de buena fe. En particular, no está permitido:</p>
+    <ul>
+      <li>Intentar dañar, sobrecargar o inutilizar la web o el buscador, o acceder a partes no públicas de ellos.</li>
+      <li>Hacer peticiones automatizadas masivas al buscador o copiar sistemáticamente sus contenidos para ofrecer un servicio competidor.</li>
+      <li>Usar la web para fines ilícitos o contrarios a los derechos de terceros.</li>
+    </ul>
+
+    <h3>3. Las compras se hacen con la tienda</h3>
+    <p>La relación de compra es siempre entre tú y la tienda o el vendedor. Antes de comprar, comprueba en la tienda el precio final, los gastos de envío, el estado del producto y sus condiciones de devolución y garantía.</p>
+
+    <h3>4. Claves digitales de revendedores y marketplaces</h3>
+    <p>Algunas ofertas son claves vendidas por revendedores o por vendedores dentro de marketplaces. Te recomendamos:</p>
+    <ul>
+      <li>Comprobar que la <strong>región</strong> de la clave sirve para tu cuenta (en Pillao indicamos la región cuando la conocemos y descartamos las que sabemos que no valen en España).</li>
+      <li>Revisar la <strong>plataforma de activación</strong> (Steam, EA App, Microsoft Store, PlayStation…).</li>
+      <li>En los marketplaces, fijarte en la valoración del vendedor y en las protecciones que ofrezca la tienda.</li>
+    </ul>
+
+    <h3>5. Segunda mano entre particulares</h3>
+    <p>En plataformas entre particulares (como Wallapop o eBay), la venta la realiza otra persona. Usa siempre los sistemas de pago y envío protegidos de la propia plataforma y desconfía de quien te pida pagar por fuera.</p>
+
+    <h3>6. Disponibilidad y cambios</h3>
+    <p>Podemos modificar, ampliar, suspender o dejar de ofrecer Pillao, en todo o en parte, en cualquier momento. También podemos actualizar estas condiciones; la fecha de la última versión aparece al principio de esta página.</p>
+
+    <h3>7. Contacto</h3>
+    <p>Para cualquier duda o comunicación: <mark class="falta">[correo@ejemplo.com]</mark>.</p>
+  </section>
+
+  <!-- ===================== PRIVACIDAD ===================== -->
+  <section id="privacidad">
+    <h2>Política de privacidad</h2>
+    <p>Pillao está pensado para funcionar <strong>recogiendo los mínimos datos posibles</strong>: no hay registro, no hay formularios, no hay publicidad y no usamos herramientas de analítica ni de seguimiento. Esta política explica, conforme al Reglamento (UE) 2016/679 (RGPD) y a la Ley Orgánica 3/2018 (LOPDGDD), qué datos se tratan igualmente cuando visitas la web.</p>
+
+    <h3>Responsable del tratamiento</h3>
+    <p><mark class="falta">[Nombre y apellidos]</mark>, con NIF <mark class="falta">[NIF]</mark> y domicilio en <mark class="falta">[Dirección completa]</mark>. Correo de contacto: <mark class="falta">[correo@ejemplo.com]</mark>.</p>
+
+    <h3>Qué datos se tratan y para qué</h3>
+    <ul>
+      <li><strong>Datos técnicos de conexión</strong> (dirección IP, tipo de navegador, fecha y hora). Los procesa el proveedor que aloja la web, <strong>GitHub</strong> (GitHub, Inc.), cuando tu navegador descarga las páginas, con la finalidad de servirlas y mantener la seguridad del servicio. Pillao no recibe ni guarda estos datos.</li>
+      <li><strong>Lo que escribes en el buscador.</strong> Si buscas un juego que no tenemos, el texto de la búsqueda se envía a nuestro buscador, alojado en <strong>Cloudflare</strong> (Cloudflare, Inc.), que lo consulta en tiendas como Steam, Nintendo eShop o eBay. Guardamos el <strong>título del juego encontrado</strong> para incluirlo en el catálogo, pero <strong>no guardamos quién lo buscó ni su dirección IP</strong>. No escribas datos personales en el buscador.</li>
+      <li><strong>Tus preferencias</strong> (filtros y búsquedas recientes). Solo si lo aceptas, se guardan <strong>en tu propio navegador</strong> y nunca nos llegan. Más detalle en la política de cookies.</li>
+    </ul>
+
+    <h3>Base legal</h3>
+    <ul>
+      <li>Servir la web y protegerla: <strong>interés legítimo</strong> en ofrecer un servicio que funcione y sea seguro (art. 6.1.f RGPD).</li>
+      <li>Atender tu búsqueda: la <strong>prestación del servicio</strong> que tú mismo solicitas al buscar.</li>
+      <li>Guardar tus preferencias: tu <strong>consentimiento</strong> (art. 6.1.a RGPD), que puedes retirar cuando quieras.</li>
+      <li>Si nos escribes por correo: tu consentimiento y nuestro interés legítimo en responderte.</li>
+    </ul>
+
+    <h3>Proveedores y transferencias internacionales</h3>
+    <p>GitHub, Inc. y Cloudflare, Inc. son empresas con sede en Estados Unidos. Según su propia documentación, las transferencias de datos desde la Unión Europea se amparan en el Marco de Privacidad de Datos UE-EE. UU. y/o en cláusulas contractuales tipo aprobadas por la Comisión Europea. Puedes consultar sus políticas de privacidad en sus webs.</p>
+
+    <h3>Cuando sales de Pillao</h3>
+    <p>Al pulsar en una tienda pasas a su web, que tiene su propia política de privacidad y de cookies. En el caso de los enlaces de afiliado, es la tienda quien registra, en su propio dominio, que llegaste desde Pillao para poder atribuir la compra; Pillao no recibe tus datos personales ni los de tu compra.</p>
+
+    <h3>Cuánto tiempo</h3>
+    <p>Las preferencias se guardan en tu navegador hasta que las borres o retires el consentimiento. Los correos que nos envíes, el tiempo necesario para atenderte y, después, durante los plazos legales aplicables. Los registros técnicos de los proveedores se conservan según sus propias políticas.</p>
+
+    <h3>Tus derechos</h3>
+    <p>Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad escribiendo a <mark class="falta">[correo@ejemplo.com]</mark>. Si crees que no hemos atendido correctamente tu solicitud, puedes presentar una reclamación ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer">www.aepd.es</a>).</p>
+
+    <h3>Menores</h3>
+    <p>Pillao no recoge datos personales a través de formularios ni cuentas. Algunos videojuegos tienen calificación por edades (PEGI); te recomendamos respetarla.</p>
+  </section>
+
+  <!-- ===================== COOKIES ===================== -->
+  <section id="cookies">
+    <h2>Política de cookies</h2>
+    <p>Las cookies y tecnologías parecidas (como el <em>almacenamiento local</em> del navegador) permiten que una web guarde pequeños datos en tu dispositivo. Conforme al artículo 22.2 de la LSSI-CE y a la guía de la Agencia Española de Protección de Datos, te explicamos cuáles usa Pillao.</p>
+
+    <h3>Lo que usamos</h3>
+    <p><strong>Pillao no usa cookies publicitarias, de analítica ni de terceros.</strong> Solo usa el almacenamiento local de tu navegador para lo siguiente:</p>
+    <div class="tabla">
+      <table>
+        <thead><tr><th>Nombre</th><th>Tipo</th><th>Para qué sirve</th><th>Duración</th></tr></thead>
+        <tbody>
+          <tr><td><code>pillao-consentimiento</code></td><td>Técnica (necesaria)</td><td>Recordar si aceptaste o rechazaste las preferencias, para no preguntarte en cada visita.</td><td>12 meses; después te volvemos a preguntar</td></tr>
+          <tr><td><code>pillao-filtros</code></td><td>Preferencias (opcional)</td><td>Recordar los filtros que elegiste (formato, plataformas, tiendas, orden…).</td><td>Hasta que la borres o retires el consentimiento</td></tr>
+          <tr><td><code>pillao-recientes</code></td><td>Preferencias (opcional)</td><td>Recordar tus últimas búsquedas (máximo 8) para sugerírtelas al escribir.</td><td>Hasta que la borres o retires el consentimiento</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Estos datos <strong>se quedan en tu navegador</strong>: no se envían a Pillao ni a nadie más. Las tipografías de la web están alojadas en nuestro propio servidor, así que tampoco se conecta con servicios externos de fuentes.</p>
+
+    <h3>Tu elección</h3>
+    <ul>
+      <li><strong>Aceptar todo:</strong> se activan las preferencias.</li>
+      <li><strong>Rechazar todo:</strong> solo se guarda tu elección; los filtros se restablecen en cada visita y no se recuerdan tus búsquedas.</li>
+      <li><strong>Configurar:</strong> eliges tú.</li>
+    </ul>
+    <p>Puedes cambiar de opinión cuando quieras desde «Configurar cookies», en la parte inferior de la web, o con este botón: <button type="button" class="btn" id="abrir-cookies">Configurar cookies</button>. Al retirar el consentimiento borramos tus preferencias guardadas. También puedes borrar los datos de sitios desde la configuración de tu navegador.</p>
+
+    <h3>Webs de terceros</h3>
+    <p>Las tiendas a las que enlazamos usan sus propias cookies cuando entras en ellas, incluidas, en su caso, las de afiliación. Consulta sus políticas de cookies en sus webs.</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  // Si ya no queda ningún dato pendiente, ocultamos el aviso naranja
+  if (!document.querySelector("mark.falta")) { var b = document.getElementById("borrador"); if (b) b.hidden = true; }
+  // El botón lleva a la web principal con el panel de cookies abierto
+  var btn = document.getElementById("abrir-cookies");
+  if (btn) btn.addEventListener("click", function () { location.href = "./#cookies-config"; });
+})();
+</script>
+</body>
+</html>

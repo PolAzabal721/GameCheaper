@@ -1,0 +1,43 @@
+name: Descargar tipografías
+
+# Copia las tipografías (licencia SIL Open Font) a la propia web para no depender de Google Fonts.
+on: workflow_dispatch
+
+permissions:
+  contents: write
+
+jobs:
+  fuentes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar
+        run: |
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
+          mkdir -p fonts && rm -f fonts/*
+          curl -sfA "$UA" "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" -o fonts/fuentes.css
+          # Solo los juegos de caracteres latinos (español incluido)
+          python3 - <<'PY'
+          import re, urllib.request, hashlib
+          css = open("fonts/fuentes.css").read()
+          bloques = re.findall(r"/\*\s*([\w-]+)\s*\*/\s*(@font-face\s*{[^}]*})", css)
+          salida = []
+          for sub, bloque in bloques:
+              if sub not in ("latin", "latin-ext"): continue
+              url = re.search(r"url\((https://fonts\.gstatic\.com/[^)]+)\)", bloque).group(1)
+              nombre = hashlib.md5(url.encode()).hexdigest()[:12] + ".woff2"
+              urllib.request.urlretrieve(url, "fonts/" + nombre)
+              salida.append(f"/* {sub} */\n" + bloque.replace(url, nombre))
+          open("fonts/fuentes.css", "w").write("\n".join(salida) + "\n")
+          print(len(salida), "tipografías")
+          PY
+          ls -la fonts
+      - name: Guardar
+        run: |
+          git config user.name "pillao-bot"
+          git config user.email "pillao-bot@users.noreply.github.com"
+          git add fonts
+          git diff --cached --quiet && exit 0
+          git commit -m "Tipografías alojadas en la web"
+          git pull --rebase origin main
+          git push

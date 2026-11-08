@@ -386,7 +386,7 @@ async function instantGaming(j) {
 // ---------- IsThereAnyDeal (opcional) ----------
 const ITAD = "https://api.isthereanydeal.com";
 // Tiendas de PC que son de los propios fabricantes o plataformas (no revendedores)
-const OFICIALES_PC = /^(gog|epic|microsoft|ea app|origin|ubisoft|battle\.net|blizzard|rockstar|bethesda|square enix|nintendo)/i;
+const OFICIALES_PC = /^(gog|epic|microsoft|ea app|ea store|origin|ubisoft|battle\.net|blizzard|rockstar|bethesda|square enix|nintendo)/i;
 const BUSQUEDA_PC = {
   "itad-gog": "https://www.gog.com/es/games?query={q}",
   "itad-epicgamestore": "https://store.epicgames.com/es-ES/browse?q={q}",
@@ -418,6 +418,8 @@ async function itad(lista, tiendas) {
       for (const x of g.deals || []) {
         if (x.price?.currency !== "EUR") continue;
         const nombre = x.shop?.name || x.shop?.title || String(x.shop?.id);
+        // Solo tiendas oficiales: los revendedores de claves los cubre Instant Gaming
+        if (!OFICIALES_PC.test(nombre)) continue;
         const id = "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
         if (id === "itad-steam") continue;
         if (!tiendas.some((t) => t.id === id)) tiendas.push({ id, nombre, tipo: OFICIALES_PC.test(nombre) ? "oficial" : "revendedor", formatos: ["digital"], busqueda: BUSQUEDA_PC[id] });

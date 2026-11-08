@@ -7,9 +7,7 @@
 <title>Pillao</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Compara precios de videojuegos digitales y físicos en tiendas españolas.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="fonts/fuentes.css">
 <style>
 /* Lineal de tienda: barra de búsqueda fija, filtros rápidos en chips, cada juego es una balda con su etiqueta de precio amarilla */
 :root {
@@ -197,6 +195,24 @@ button { cursor: pointer; }
 .vacio { background: var(--surface); border: 1px dashed var(--line); border-radius: var(--r); padding: 32px 20px; text-align: center; color: var(--muted); }
 .vacio b { display: block; color: var(--ink); font-family: var(--f-display); font-size: 20px; margin-bottom: 6px; }
 .fondo { display: none; }
+.lado { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+.legal-link { font-size: 12px; color: var(--muted); text-decoration: none; }
+.legal-link:hover { color: var(--accent); text-decoration: underline; }
+.pie { border-top: 1px solid var(--line); background: var(--surface); }
+.pie-in { padding-block: 22px calc(22px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; color: var(--muted); }
+.pie-in p { margin: 0; max-width: 80ch; }
+.pie-in nav { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.pie-in nav a, .pie-in nav button { color: var(--ink); font-weight: 600; text-decoration: none; background: none; border: 0; padding: 0; font-size: 13.5px; cursor: pointer; }
+.pie-in nav a:hover, .pie-in nav button:hover { color: var(--accent); text-decoration: underline; }
+.cookies { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); pointer-events: none; }
+.cookies-in { pointer-events: auto; max-width: 760px; margin: 0 auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.25); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.cookies-txt strong { font-family: var(--f-display); font-size: 18px; }
+.cookies-txt p { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+.cookies-conf { display: flex; flex-direction: column; gap: 12px; padding: 12px; border-radius: 10px; background: var(--surface-2); }
+.cookies-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.cookies-btns .btn { padding: 9px 16px; font-size: 14px; }
+.btn.fuerte { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+@media (max-width: 560px) { .cookies-btns .btn { flex: 1 1 45%; } .legal-link { font-size: 11px; } }
 
 /* Móvil */
 @media (max-width: 900px) {
@@ -231,12 +247,12 @@ button { cursor: pointer; }
       <div class="logo" aria-label="Pillao"><span>Pillao</span><i>€</i></div>
       <label class="search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="q" type="search" placeholder="Busca un juego…" autocomplete="off" aria-label="Buscar juego">
+        <input id="q" type="search" placeholder="Busca un juego…" autocomplete="off" aria-label="Buscar juego" list="recientes"><datalist id="recientes"></datalist>
       </label>
       <button class="btn-filtros" id="abrir" type="button" aria-controls="panel">Filtros <span class="n" id="nfiltros" hidden>0</span></button>
-      <div class="estado" id="estado" aria-live="polite"><span class="dot"></span><span class="txt" id="estado-txt">Cargando…</span>
+      <div class="lado"><div class="estado" id="estado" aria-live="polite"><span class="dot"></span><span class="txt" id="estado-txt">Cargando…</span>
         <button class="icon-btn" id="recargar" type="button" title="Buscar precios nuevos" aria-label="Buscar precios nuevos"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
-      </div>
+      </div><a class="legal-link" href="legal.html">Legal y cookies</a></div>
     </div>
     <div class="quick" role="toolbar" aria-label="Filtros rápidos">
       <div class="seg" id="formato" role="group" aria-label="Formato">
@@ -307,6 +323,38 @@ button { cursor: pointer; }
   </div>
 </div>
 
+<footer class="pie">
+  <div class="wrap pie-in">
+    <p><strong>Pillao</strong> compara precios de videojuegos y no vende productos. Los precios son orientativos y se actualizan varias veces al día: el precio válido es siempre el de cada tienda. Algunos enlaces son de afiliado: si compras tras pulsarlos, la tienda puede pagarnos una pequeña comisión, sin coste para ti.</p>
+    <nav aria-label="Información legal">
+      <a href="legal.html#aviso-legal">Aviso legal</a>
+      <a href="legal.html#condiciones">Condiciones de uso</a>
+      <a href="legal.html#privacidad">Privacidad</a>
+      <a href="legal.html#cookies">Cookies</a>
+      <button type="button" id="pie-cookies">Configurar cookies</button>
+    </nav>
+  </div>
+</footer>
+
+<div class="cookies" id="cookies" role="dialog" aria-labelledby="cookies-tit" hidden>
+  <div class="cookies-in">
+    <div class="cookies-txt">
+      <strong id="cookies-tit">Tu privacidad</strong>
+      <p>Pillao no usa cookies de publicidad ni de analítica. Solo te pedimos permiso para recordar <b>tus filtros y tus últimas búsquedas</b> en este navegador. Nada de eso sale de tu dispositivo. <a href="legal.html#cookies">Más información</a></p>
+    </div>
+    <div class="cookies-conf" id="cookies-conf" hidden>
+      <label class="switch"><span>Necesarias<small>Solo guardan tu elección sobre cookies. Siempre activas.</small></span><input type="checkbox" checked disabled></label>
+      <label class="switch"><span>Preferencias<small>Recuerdan tus filtros y tus búsquedas recientes.</small></span><input type="checkbox" id="c-pref"></label>
+    </div>
+    <div class="cookies-btns">
+      <button type="button" class="btn fuerte" id="c-rechazar">Rechazar todo</button>
+      <button type="button" class="btn" id="c-config">Configurar</button>
+      <button type="button" class="btn" id="c-guardar" hidden>Guardar selección</button>
+      <button type="button" class="btn fuerte" id="c-aceptar">Aceptar todo</button>
+    </div>
+  </div>
+</div>
+
 <script type="application/json" id="datos-incrustados"></script>
 <script>
 (function () {
@@ -328,14 +376,59 @@ button { cursor: pointer; }
   var $ = function (id) { return document.getElementById(id); };
 
   var datos = null, origen = "servidor", tiendaPorId = {}, abiertos = {}, desplegados = {}, bloquesAbiertos = {}, subtipos = {}, tiendasDeBloque = function () { return []; };
+  // ---------- Consentimiento (cookies / almacenamiento local) ----------
+  // Necesarias: solo guardan la elección. Preferencias (opcional): filtros y búsquedas recientes.
+  var CLAVE_CONS = "pillao-consentimiento", DOCE_MESES = 365 * 86400000;
+  function leerConsent() {
+    try { var c = JSON.parse(localStorage.getItem(CLAVE_CONS) || "null"); if (c && Date.now() - Date.parse(c.fecha) < DOCE_MESES) return c; } catch (e) {}
+    return null;
+  }
+  var consent = leerConsent();
+  function prefsOk() { return !!(consent && consent.preferencias); }
+
   var f = cargarFiltros();
 
   function cargarFiltros() {
     var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], mkt: true, part: true, stock: false, pmax: null, orden: "populares" };
+    if (!prefsOk()) return base;
     try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g) base[k] = g[k]; } catch (e) {}
     return base;
   }
-  function guardarFiltros() { try { localStorage.setItem("pillao-filtros", JSON.stringify(f)); } catch (e) {} }
+  function guardarFiltros() { if (!prefsOk()) return; try { localStorage.setItem("pillao-filtros", JSON.stringify(f)); } catch (e) {} }
+
+  // Búsquedas recientes (solo con permiso de preferencias)
+  function leerRecientes() {
+    if (!prefsOk()) return [];
+    try { var l = JSON.parse(localStorage.getItem("pillao-recientes") || "[]"); return Array.isArray(l) ? l.slice(0, 8) : []; } catch (e) { return []; }
+  }
+  function pintarRecientes() {
+    $("recientes").innerHTML = leerRecientes().map(function (x) { return '<option value="' + esc(x) + '"></option>'; }).join("");
+  }
+  function anadirReciente(q) {
+    q = String(q || "").trim();
+    if (!prefsOk() || q.length < 3) return;
+    var l = leerRecientes().filter(function (x) { return norm(x) !== norm(q); });
+    l.unshift(q);
+    try { localStorage.setItem("pillao-recientes", JSON.stringify(l.slice(0, 8))); } catch (e) {}
+    pintarRecientes();
+  }
+
+  function guardarConsent(preferencias) {
+    consent = { v: 1, preferencias: !!preferencias, fecha: new Date().toISOString() };
+    try {
+      localStorage.setItem(CLAVE_CONS, JSON.stringify(consent));
+      if (!preferencias) { localStorage.removeItem("pillao-filtros"); localStorage.removeItem("pillao-recientes"); }
+    } catch (e) {}
+    if (preferencias) { guardarFiltros(); anadirReciente(f.q); }
+    pintarRecientes();
+    cerrarCookies();
+  }
+  function abrirCookies(configurar) {
+    $("cookies").hidden = false;
+    $("c-pref").checked = prefsOk();
+    $("cookies-conf").hidden = !configurar; $("c-guardar").hidden = !configurar; $("c-config").hidden = !!configurar;
+  }
+  function cerrarCookies() { $("cookies").hidden = true; if (location.hash === "#cookies-config") history.replaceState(null, "", location.pathname + location.search); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function norm(s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
 
@@ -671,7 +764,23 @@ button { cursor: pointer; }
   function cambio() { guardarFiltros(); mostrar = PAGINA; pintar(); }
 
   // ---------- Eventos ----------
-  $("q").addEventListener("input", function (e) { f.q = e.target.value; cambio(); buscarEnVivo(); });
+  var temporizadorReciente = null;
+  $("q").addEventListener("input", function (e) {
+    f.q = e.target.value; cambio(); buscarEnVivo();
+    clearTimeout(temporizadorReciente);
+    temporizadorReciente = setTimeout(function () { anadirReciente(f.q); }, 2000);
+  });
+  $("q").addEventListener("change", function (e) { anadirReciente(e.target.value); });
+
+  // Aviso de cookies
+  $("c-aceptar").addEventListener("click", function () { guardarConsent(true); });
+  $("c-rechazar").addEventListener("click", function () { guardarConsent(false); });
+  $("c-config").addEventListener("click", function () { abrirCookies(true); });
+  $("c-guardar").addEventListener("click", function () { guardarConsent($("c-pref").checked); });
+  $("pie-cookies").addEventListener("click", function () { abrirCookies(true); });
+  if (!consent) abrirCookies(false);
+  if (location.hash === "#cookies-config") abrirCookies(true);
+  pintarRecientes();
   $("formato").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     f.formato = b.dataset.v;
