@@ -73,12 +73,14 @@ button { cursor: pointer; }
 .estado.error .dot { background: var(--danger); }
 .icon-btn { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); }
 
-.quick { display: flex; gap: 10px; align-items: center; padding-bottom: 12px; overflow-x: auto; scrollbar-width: none; }
+.quick { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; padding-bottom: 12px; }
 .quick::-webkit-scrollbar { display: none; }
 .seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 3px; flex-shrink: 0; }
 .seg button { border: 0; background: transparent; padding: 6px 12px; border-radius: 7px; font-weight: 600; font-size: 14px; color: var(--muted); white-space: nowrap; }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
 .sep { width: 1px; height: 24px; background: var(--line); flex-shrink: 0; }
+#plataformas { flex-wrap: wrap; }
+@media (max-width: 700px) { .sep { display: none; } .seg button { padding: 6px 10px; } }
 .chip { border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; border-radius: 99px; font-size: 14px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
 .chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
 
@@ -259,17 +261,14 @@ button { cursor: pointer; }
     </div>
     <div class="quick" role="toolbar" aria-label="Filtros rápidos">
       <div class="seg" id="formato" role="group" aria-label="Formato">
-        <button type="button" data-v="todos" aria-pressed="true">Todo</button>
         <button type="button" data-v="digital" aria-pressed="false">Digital</button>
         <button type="button" data-v="fisico" aria-pressed="false">En disco</button>
       </div>
       <div class="seg" id="estado-f" role="group" aria-label="Estado">
-        <button type="button" data-v="todos" aria-pressed="true">Nuevo y usado</button>
         <button type="button" data-v="nuevo" aria-pressed="false">Nuevo</button>
         <button type="button" data-v="usado" aria-pressed="false">Segunda mano</button>
       </div>
       <div class="seg" id="tipo-f" role="group" aria-label="Tipo de producto">
-        <button type="button" data-v="todos" aria-pressed="true">Todo</button>
         <button type="button" data-v="juego" aria-pressed="false">Juegos</button>
         <button type="button" data-v="dlc" aria-pressed="false">DLC</button>
         <button type="button" data-v="tarjeta" aria-pressed="false">Tarjetas regalo</button>
@@ -816,13 +815,13 @@ button { cursor: pointer; }
   pintarRecientes();
   $("formato").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
-    f.formato = b.dataset.v;
+    f.formato = f.formato === b.dataset.v ? "todos" : b.dataset.v;
     if (f.formato === "digital" && f.estado === "usado") f.estado = "todos";
     pintarControles(); cambio();
   });
   $("estado-f").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
-    f.estado = b.dataset.v;
+    f.estado = f.estado === b.dataset.v ? "todos" : b.dataset.v;
     // la segunda mano solo existe en disco
     if (f.estado === "usado" && f.formato === "digital") f.formato = "todos";
     pintarControles(); cambio();
@@ -830,7 +829,7 @@ button { cursor: pointer; }
   $("part").addEventListener("change", function (e) { f.part = e.target.checked; cambio(); });
   $("tipo-f").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
-    f.tipo = b.dataset.v; pintarControles(); cambio();
+    f.tipo = f.tipo === b.dataset.v ? "todos" : b.dataset.v; pintarControles(); cambio();
   });
   $("plataformas").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
