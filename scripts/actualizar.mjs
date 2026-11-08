@@ -644,12 +644,20 @@ async function main() {
     Object.entries(regiones).sort((a, b) => b[1].n - a[1].n).forEach(([k, v]) => console.log(`REG ${v.ok ? "OK " : "NO "} ${v.n}x ${k} — ej: ${v.ej}`));
     console.log(`DESCARTADAS ${descartadas.length}; juegos sin ninguna versión válida en IG: ${sinIG}`);
     descartadas.slice(0, 40).forEach((d) => console.log("DESC", d.j, "→", d.h, "|", d.r, d.st ? "" : "(sin stock)"));
-    // Selector de país/región en algunas fichas descartadas
-    for (const d of descartadas.filter((d) => d.st).slice(0, 6)) {
+    // Cómo enlaza cada ficha descartada a sus otras versiones (región, plataforma, edición)
+    for (const d of descartadas.filter((d) => d.st).slice(0, 5)) {
       const html = await (await pedir("https://www.instant-gaming.com/es/" + d.id + "/")).text();
-      console.log(`FICHA ${d.h} (${d.r})`);
-      for (const m of html.matchAll(/<option value="(\d+)"(\s+selected)?[^>]*data-href="[^"]*\/es\/\d+-comprar-([a-z0-9-]+)\/"[^>]*>\s*([^<]*?)\s*<\/option>/g)) console.log("   OPT", m[1], m[2] ? "*" : " ", m[4], "→", m[3].slice(-60));
+      console.log(`FICHA ${d.h} (${d.r}) ${d.id.slice(0, 90)}`);
+      [...html.matchAll(/<option[^>]*data-href[^>]*>[^<]*<\/option>/g)].slice(0, 30).forEach((m) => console.log("   OPT", m[0].replace(/\s+/g, " ").replace(/https:\/\/www\.instant-gaming\.com\/es\//, "").slice(0, 200)));
+      const prop = clave(d.h).split(" ").slice(0, 2).join("-");
+      [...new Set([...html.matchAll(/instant-gaming\.com\/es\/(\d+)-comprar-([a-z0-9-]+)\//g)].map((m) => m[1] + " " + m[2]))].filter((l) => l.includes(prop)).slice(0, 25).forEach((l) => console.log("   LINK", l.slice(0, 160)));
       await esperar(900);
+    }
+    // Todos los resultados de búsqueda de un par de juegos con su región
+    for (const q of ["hogwarts legacy", "cyberpunk 2077"]) {
+      const html = await (await pedir("https://www.instant-gaming.com/es/busquedas/?query=" + encodeURIComponent(q))).text();
+      const hits = JSON.parse(bloqueJSON(html, html.indexOf("window.searchResults = "))).hits || [];
+      hits.slice(0, 30).forEach((h) => console.log("HIT", q, "|", h.name, "|", h.region, "|", (h.platform_names || []).join("/"), "|", h.type, "| stock", h.has_stock, "|", h.price_eur));
     }
     return;
   }
