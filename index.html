@@ -190,6 +190,8 @@ button { cursor: pointer; }
 .mas-juegos { align-self: center; padding: 10px 18px; font-size: 14.5px; }
 .mas-juegos span { color: var(--muted); font-weight: 500; }
 .minimo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--tag-ink); background: var(--tag); padding: 2px 7px; border-radius: 4px; }
+.tipo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
+.tipo-tag.t-tarjeta { background: var(--good-soft); color: var(--good); }
 .vivo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--good); background: var(--good-soft); padding: 2px 7px; border-radius: 4px; }
 .busca-vivo { font-size: 14px; color: var(--muted); padding: 10px 14px; background: var(--surface); border: 1px dashed var(--line); border-radius: var(--r); }
 .busca-vivo.err { color: var(--warn); }
@@ -265,6 +267,13 @@ button { cursor: pointer; }
         <button type="button" data-v="todos" aria-pressed="true">Nuevo y usado</button>
         <button type="button" data-v="nuevo" aria-pressed="false">Nuevo</button>
         <button type="button" data-v="usado" aria-pressed="false">Segunda mano</button>
+      </div>
+      <div class="seg" id="tipo-f" role="group" aria-label="Tipo de producto">
+        <button type="button" data-v="todos" aria-pressed="true">Todo</button>
+        <button type="button" data-v="juego" aria-pressed="false">Juegos</button>
+        <button type="button" data-v="edicion" aria-pressed="false">Ediciones</button>
+        <button type="button" data-v="dlc" aria-pressed="false">DLC</button>
+        <button type="button" data-v="tarjeta" aria-pressed="false">Tarjetas regalo</button>
       </div>
       <span class="sep"></span>
       <div id="plataformas" style="display:flex;gap:6px" role="group" aria-label="Plataforma"></div>
@@ -390,7 +399,7 @@ button { cursor: pointer; }
   var f = cargarFiltros();
 
   function cargarFiltros() {
-    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], mkt: true, part: true, stock: false, pmax: null, orden: "populares" };
+    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: "populares" };
     if (!prefsOk()) return base;
     try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g) base[k] = g[k]; } catch (e) {}
     return base;
@@ -528,13 +537,13 @@ button { cursor: pointer; }
     }).sort(function (a, b) { return (b.stock - a.stock) || (total(a) - total(b)); });
   }
   function nActivos() {
-    return (f.formato !== "todos") + (f.estado !== "todos") + (f.plats.length > 0) + (f.fuera.length > 0) + (f.revOn.length > 0) + (!f.mkt) + (!f.part) + f.stock + (f.pmax != null);
+    return (f.formato !== "todos") + (f.estado !== "todos") + (f.plats.length > 0) + (f.fuera.length > 0) + (f.revOn.length > 0) + ((f.tipo || "todos") !== "todos") + (!f.mkt) + (!f.part) + f.stock + (f.pmax != null);
   }
 
   function pintarControles() {
     // plataformas
     var plats = [];
-    datos.juegos.forEach(function (j) { j.plataformas.forEach(function (p) { if (plats.indexOf(p) < 0) plats.push(p); }); });
+    datos.juegos.forEach(function (j) { j.plataformas.forEach(function (p) { if (p !== "Tarjeta regalo" && plats.indexOf(p) < 0) plats.push(p); }); });
     var orden = ["PC", "PS5", "PS4", "Xbox Series", "Xbox One", "Switch 2", "Switch"];
     plats.sort(function (a, b) { var ia = orden.indexOf(a), ib = orden.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b); });
     f.plats = f.plats.filter(function (p) { return plats.indexOf(p) >= 0; });
@@ -588,6 +597,7 @@ button { cursor: pointer; }
     $("mkt").checked = f.mkt; $("part").checked = f.part; $("stock").checked = f.stock; $("orden").value = f.orden;
     [].forEach.call($("formato").children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === f.formato); });
     [].forEach.call($("estado-f").children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === f.estado); });
+    [].forEach.call($("tipo-f").children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === (f.tipo || "todos")); });
   }
 
   function enlace(o, j) {
@@ -622,6 +632,7 @@ button { cursor: pointer; }
       if (f.estado === "usado" && !usada) return false;
       if (f.estado === "nuevo" && usada) return false;
       if (fisica && !consola) return false;
+      if (fisica && (j.tipo === "dlc" || j.tipo === "tarjeta")) return false;
       // Tiendas que ya revisamos automáticamente para este juego: si no hay precio, es que no lo tienen
       if ((j.revisado || []).indexOf(t.id) >= 0) return false;
       // Las tiendas de PC de IsThereAnyDeal se consultan todas a la vez: sin precio = no lo tienen
@@ -672,10 +683,12 @@ button { cursor: pointer; }
     var otras = otrasTiendas(j);
     var enMinimo = j.minimo && total(m) <= j.minimo + 0.005;
     return '<article class="juego"><div class="j-cab"><div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") +
-      (enMinimo ? '<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>' : "") + "<h2>" + esc(j.titulo) + '</h2><div class="plats">' +
-      j.plataformas.map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
+      (enMinimo ? '<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>' : "") +
+      (j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo" }[j.tipo] || "") + "</span>" : "") + "<h2>" + esc(j.titulo) + '</h2><div class="plats">' +
+      j.plataformas.filter(function (p) { return p !== "Tarjeta regalo"; }).map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
       (r.nuevo != null || r.usado != null || j.pvp ? '<div class="resumen">' +
-        (j.pvp && j.pvp > total(m) + 0.004 && j.pvp <= total(m) * 4 ? "<span>PVP <s>" + eur.format(j.pvp) + "</s></span>" : "") +
+        (j.tipo === "tarjeta" && j.valor ? "<span>Valor <b>" + eur.format(j.valor) + "</b></span>" + (j.valor > total(m) ? "<span>Te ahorras <b>" + eur.format(j.valor - total(m)) + "</b></span>" : "") :
+          j.pvp && j.pvp > total(m) + 0.004 && j.pvp <= total(m) * 4 ? "<span>PVP <s>" + eur.format(j.pvp) + "</s></span>" : "") +
         (r.nuevo != null ? "<span>Nuevo desde <b>" + eur.format(r.nuevo) + "</b></span>" : "") +
         (r.usado != null ? "<span>2ª mano desde <b>" + eur.format(r.usado) + "</b></span>" : "") +
         (j.minimo && !enMinimo ? "<span>Mínimo histórico <b>" + eur.format(j.minimo) + "</b></span>" : "") + "</div>" : "") + "</div>" +
@@ -728,6 +741,7 @@ button { cursor: pointer; }
     var coincide = function (j) { var t = j._norm || (j._norm = norm(j.titulo)); return palabras.every(function (p) { return t.indexOf(p) >= 0; }); };
     if (vivo.q === qTxt) vivo.juegos.forEach(function (j) { var r = fila(j); if (r) { filas.push(r); vistos[norm(j.titulo)] = 1; } });
     datos.juegos.forEach(function (j) {
+      if (f.tipo && f.tipo !== "todos" && (j.tipo || "juego") !== f.tipo) return;
       if (palabras.length && !coincide(j)) return;
       if (vistos[j._norm || norm(j.titulo)]) return;
       var r = fila(j); if (r) filas.push(r);
@@ -740,7 +754,8 @@ button { cursor: pointer; }
       return (a.j.pop || 99999) - (b.j.pop || 99999);
     });
     var nf = filas.length.toLocaleString("es-ES");
-    $("titulo-res").innerHTML = nf + " juego" + (filas.length === 1 ? "" : "s") + ' <span>· ' + filas.reduce(function (s, r) { return s + r.ofs.length; }, 0).toLocaleString("es-ES") + " ofertas</span>";
+    var nombreTipo = { juego: ["juego", "juegos"], edicion: ["edición", "ediciones"], dlc: ["DLC", "DLC"], tarjeta: ["tarjeta regalo", "tarjetas regalo"] }[f.tipo] || ["resultado", "resultados"];
+    $("titulo-res").innerHTML = nf + " " + nombreTipo[filas.length === 1 ? 0 : 1] + ' <span>· ' + filas.reduce(function (s, r) { return s + r.ofs.length; }, 0).toLocaleString("es-ES") + " ofertas</span>";
     var estadoVivo = "";
     if (datos.buscador && q.length >= 3) {
       estadoVivo = vivo.cargando ? '<div class="busca-vivo">Buscando «' + esc(qTxt) + '» en las tiendas…</div>'
@@ -812,6 +827,10 @@ button { cursor: pointer; }
     pintarControles(); cambio();
   });
   $("part").addEventListener("change", function (e) { f.part = e.target.checked; cambio(); });
+  $("tipo-f").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    f.tipo = b.dataset.v; pintarControles(); cambio();
+  });
   $("plataformas").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     var p = b.dataset.p, i = f.plats.indexOf(p);
@@ -857,7 +876,7 @@ button { cursor: pointer; }
     var d = e.target.closest("[data-grupo]");
     if (d) { desplegados[d.dataset.grupo] = !desplegados[d.dataset.grupo]; pintar(); return; }
     if (e.target.closest("[data-mas-juegos]")) { mostrar += PAGINA; pintar(); return; }
-    if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], mkt: true, part: true, stock: false, pmax: null, orden: f.orden }; pintarControles(); cambio(); }
+    if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: f.orden }; pintarControles(); cambio(); }
   });
   $("recargar").addEventListener("click", function () { leerServidor(true); });
 

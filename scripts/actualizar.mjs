@@ -64,8 +64,12 @@ export const clave = (titulo) => limpiar(titulo).replace(SOBRANTE, " ").replace(
 const tituloBonito = (t) => html2txt(t).replace(/[™®©]/g, "").replace(/\s*[–-]\s*Nintendo Switch 2 Edition$/i, "").replace(/\s+/g, " ").trim();
 // Palabras que indican que NO es un juego completo
 const EXTRAS = /\b(dlc|pack|pase|season pass|expansion|soundtrack|banda sonora|bundle|lote|monedas|coins|points|puntos|vbucks|upgrade|mejora|demo|trial|prueba|artbook|wallpaper|paquete|music|musica|costume|traje|skin|skins|cosmetico|ost)\b/;
+// Tipos de producto: juego, edición especial, DLC y tarjeta regalo (cada uno es su propia ficha)
+const NO_PRODUCTO = /\b(soundtrack|banda sonora|ost|artbook|wallpaper|demo|trial|prueba|music|musica)\b/;
+const DLC_RE = /\b(dlc|pack|pase|season pass|expansion|upgrade|mejora|monedas|coins|points|puntos|vbucks|costume|traje|skin|skins|cosmetico|paquete)\b/;
 // Ediciones especiales: si buscamos el juego normal, no valen (cuestan más y confundirían la comparación)
 const EDICIONES = /\b(deluxe|ultimate|gold|premium|collector|coleccionista|definitive|definitiva|goty|game of the year|complete edition|edicion completa|special edition|edicion especial|super deluxe|digital deluxe|vault)\b/;
+const tipoDe = (titulo) => { const t = limpiar(titulo); return DLC_RE.test(t) ? "dlc" : EDICIONES.test(t) || /\b(bundle|lote|collection|coleccion|trilogy|trilogia)\b/.test(t) ? "edicion" : "juego"; };
 function parecido(buscado, encontrado) {
   const a = limpiar(buscado), b = limpiar(encontrado);
   if (!a || !b) return 0;
@@ -84,11 +88,11 @@ const mejorCoincidencia = (titulo, lista, nombreDe, minimo = 0.5) => {
 
 // ---------- Catálogo en memoria ----------
 const juegos = new Map(); // clave -> { id, titulo, plataformas:Set, pop, pvp, ofertas:[] }
-function juego(titulo, { pop = 99999, prioridad = false } = {}) {
+function juego(titulo, { pop = 99999, prioridad = false, tipo } = {}) {
   const k = clave(titulo);
   if (!k) return null;
   let j = juegos.get(k);
-  if (!j) { j = { id: k.replace(/ /g, "-").slice(0, 80), titulo: tituloBonito(titulo), plataformas: new Set(), revisado: new Set(), pop, pvp: 0, ofertas: [] }; juegos.set(k, j); }
+  if (!j) { j = { id: k.replace(/ /g, "-").slice(0, 80), titulo: tituloBonito(titulo), tipo: tipo || tipoDe(titulo), plataformas: new Set(), revisado: new Set(), pop, pvp: 0, ofertas: [] }; juegos.set(k, j); }
   if (prioridad) j.titulo = tituloBonito(titulo);
   j.pop = Math.min(j.pop, pop);
   return j;
@@ -131,7 +135,7 @@ async function steamMasVendidos() {
     const d = await (await pedir(url)).json();
     for (const f of leerFilasSteam(d.results_html || "")) {
       puesto++;
-      if (!EXTRAS.test(limpiar(f.titulo))) filas.push({ ...f, puesto });
+      if (!NO_PRODUCTO.test(limpiar(f.titulo))) filas.push({ ...f, puesto });
     }
     await esperar(800);
   }
@@ -391,21 +395,68 @@ async function instantGaming(j) {
   const datos = JSON.parse(bloqueJSON(html, i));
   let n = 0;
   for (const h of datos.hits || []) {
-    if (h.is_dlc || !h.has_stock || h.is_prepaid || h.is_subscription || h.preorder) continue;
+    if (!h.has_stock || h.is_prepaid || h.is_subscription || h.preorder) continue;
     const precio = parseFloat(h.price_eur);
     if (!(precio > 0) || !valeEnEspana(h)) continue;
-    if (parecido(j.titulo, h.name) <= 0.5) continue; // el juego base, no ediciones ni otros
+    let destino = null;
+    if (!h.is_dlc && parecido(j.titulo, h.name) > 0.5) destino = j; // el mismo juego
+    else {
+      // Un DLC o una edición especial de este juego: tiene todas sus palabras → ficha propia
+      const n = " " + limpiar(h.name) + " ";
+      const deEste = clave(j.titulo).split(" ").every((p) => n.includes(" " + p + " "));
+      const tipo = h.is_dlc ? "dlc" : tipoDe(h.name);
+      if (deEste && tipo !== "juego" && !NO_PRODUCTO.test(n)) destino = juego(h.name, { pop: j.pop + 0.5, tipo });
+    }
+    if (!destino) continue;
     for (const nombre of h.platform_names || []) {
       const plat = PLAT_IG[limpiar(nombre)] || PLAT_IG[String(nombre).toLowerCase()];
       if (!plat) continue;
-      const antes = j.ofertas.length;
-      ofertar(j, {
+      const antes = destino.ofertas.length;
+      ofertar(destino, {
         tienda: "instantgaming", plataforma: plat, precio, regular: parseFloat(h.default_retail) || undefined, drm: h.type || undefined,
         condicion: `Clave ${h.type || ""} · ${h.region_fulltext || h.region || "Worldwide"}`.replace(/\s+·/, " ·"),
         url: `https://www.instant-gaming.com/es/${h.prod_id}-comprar-${h.seo_name}/?igr=${AFILIADO_IG}`, fuente: "instantgaming",
       });
-      if (j.ofertas.length > antes) n++;
+      if (destino.ofertas.length > antes) n++;
     }
+  }
+  return n;
+}
+
+// ---------- Tarjetas regalo ----------
+// Se buscan en Instant Gaming; solo las que valen en España y tienen el valor en euros.
+const TARJETAS = [
+  { marca: "PlayStation Store", buscar: "playstation store", re: /playstation|psn/ },
+  { marca: "Nintendo eShop", buscar: "nintendo eshop", re: /nintendo/ },
+  { marca: "Xbox", buscar: "xbox tarjeta regalo", re: /xbox/ },
+  { marca: "Steam", buscar: "steam tarjeta regalo", re: /steam/ },
+  { marca: "Amazon", buscar: "amazon tarjeta regalo", re: /amazon/ },
+  { marca: "Apple", buscar: "apple tarjeta regalo", re: /apple|itunes/ },
+  { marca: "Google Play", buscar: "google play", re: /google play/ },
+  { marca: "Spotify", buscar: "spotify", re: /spotify/ },
+  { marca: "Netflix", buscar: "netflix", re: /netflix/ },
+  { marca: "Uber", buscar: "uber", re: /uber/ },
+  { marca: "Just Eat", buscar: "just eat", re: /just eat/ },
+];
+async function tarjetasRegalo() {
+  let n = 0;
+  for (const tj of TARJETAS) {
+    const html = await (await pedir("https://www.instant-gaming.com/es/busquedas/?query=" + encodeURIComponent(tj.buscar))).text();
+    const i = html.indexOf("window.searchResults = ");
+    if (i < 0) continue;
+    for (const h of JSON.parse(bloqueJSON(html, i)).hits || []) {
+      const nombre = limpiar(h.name);
+      if (!tj.re.test(nombre) || !/(tarjeta|gift|card|wallet|recarga|prepago|credito)/.test(nombre)) continue;
+      const v = String(h.name).match(/(\d+(?:[.,]\d+)?)\s*(€|eur\b)/i);
+      if (!v || !h.has_stock || !valeEnEspana(h)) continue;
+      const valor = parseFloat(v[1].replace(",", ".")), precio = parseFloat(h.price_eur);
+      if (!(precio > 0) || !(valor > 0)) continue;
+      const j = juego(`Tarjeta regalo ${tj.marca} ${valor} €`, { pop: 2000 + n, tipo: "tarjeta" });
+      j._pvpFijo = true; j.pvp = valor; j.marca = tj.marca; j.valor = valor;
+      ofertar(j, { tienda: "instantgaming", plataforma: "Tarjeta regalo", precio, regular: valor, condicion: `Código digital · ${h.region_fulltext || h.region}`, url: `https://www.instant-gaming.com/es/${h.prod_id}-comprar-${h.seo_name}/?igr=${AFILIADO_IG}`, fuente: "tarjetas" });
+      n++;
+    }
+    await esperar(900);
   }
   return n;
 }
@@ -511,7 +562,7 @@ async function main() {
 
   // 3. GAME y eBay (disco nuevo y segunda mano) para los juegos de consola más populares
   const populares = (max) => [...juegos.values()].sort((a, b) => a.pop - b.pop).slice(0, max);
-  const consolaPopulares = (max) => [...juegos.values()].filter((j) => [...j.plataformas].some((p) => p !== "PC")).sort((a, b) => a.pop - b.pop).slice(0, max);
+  const consolaPopulares = (max) => [...juegos.values()].filter((j) => j.tipo !== "tarjeta" && [...j.plataformas].some((p) => p !== "PC")).sort((a, b) => a.pop - b.pop).slice(0, max);
   // Qué tiendas quedan comprobadas cuando una fuente revisa un juego (si no hay precio, es que no lo tienen)
   const REVISA = { game: ["game", "gameseminuevos"], xbox: ["xbox"], instantgaming: ["instantgaming"], ebay: [] };
   const recorrerFuente = async (nombre, lista, fn, pausa) => {
@@ -532,6 +583,7 @@ async function main() {
   const paraMS = [...juegos.values()].filter((j) => j.plataformas.has("PC") || j.plataformas.has("Xbox Series") || j._buscarEn?.includes("Xbox Series")).sort((a, b) => a.pop - b.pop).slice(0, MS_MAX);
   await recorrerFuente("xbox", paraMS, microsoftStore, 300);
   await recorrerFuente("instantgaming", populares(IG_MAX), instantGaming, 900);
+  if (!(await intentar("tarjetas regalo", tarjetasRegalo))) caidas.add("tarjetas");
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) await recorrerFuente("ebay", consolaPopulares(EBAY_MAX), ebay, 250);
 
   // 4. IsThereAnyDeal para los juegos de PC más populares
