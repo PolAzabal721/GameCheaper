@@ -6,6 +6,7 @@
 //   - Nintendo eShop: los juegos más populares del catálogo (ESHOP_MAX), con precio de la eShop española.
 //   - PlayStation Store: los juegos de config/seguimiento.json que tienen "psConcept".
 //   - Instant Gaming: la clave más barata, con stock y válida en España, por plataforma (IG_MAX juegos).
+//   - Microsoft Store: precio oficial de Xbox/PC (MS_MAX juegos de PC o Xbox).
 //   - GAME: disco nuevo y seminuevo de los juegos de consola más populares (GAME_MAX).
 //   - eBay (segunda mano): si existen EBAY_CLIENT_ID y EBAY_CLIENT_SECRET, busca anuncios de usados
 //     para los juegos de consola más populares (EBAY_MAX).
@@ -26,6 +27,10 @@ const ESHOP_MAX = +(ENV.ESHOP_MAX || 2500);
 const EBAY_MAX = +(ENV.EBAY_MAX || 150);
 const GAME_MAX = +(ENV.GAME_MAX || 200);
 const IG_MAX = +(ENV.IG_MAX || 250);
+const MS_MAX = +(ENV.MS_MAX || 400);
+// GAME: además de los GAME_MAX más populares, en cada ejecución revisa un bloque distinto del resto (GAME_ROTA juegos),
+// así en un día y medio pasa por todo el catálogo de consola. Lo que no toca en una ejecución conserva su último precio.
+const GAME_ROTA = +(ENV.GAME_ROTA || 400);
 // Enlaces de afiliado (los enlaces de búsqueda de G2A e Instant Gaming están en config/tiendas.json)
 const AFILIADO_IG = "gamer-681806";
 
@@ -305,6 +310,41 @@ async function game(j) {
   return n;
 }
 
+// ---------- Microsoft Store (Xbox y PC) ----------
+// Catálogo público oficial de Microsoft: búsqueda por nombre (autosuggest) + ficha con precio para España.
+const sinEdicion = (t) => String(t).replace(/[:\-–]?\s*(edici[oó]n est[aá]ndar|standard edition)\s*$/i, "");
+function plataformasMS(p) {
+  const pk = JSON.stringify((p.DisplaySkuAvailabilities || []).map((s) => s.Sku?.Properties?.Packages || []));
+  const out = [];
+  if (/Windows\.Xbox/i.test(pk)) out.push("Xbox Series");
+  if (/Windows\.Desktop/i.test(pk)) out.push("PC");
+  return out;
+}
+async function microsoftStore(j) {
+  const sug = await (await pedir(`https://displaycatalog.mp.microsoft.com/v7.0/productFamilies/autosuggest?market=ES&languages=es-ES&productFamilyNames=Games&query=${encodeURIComponent(j.titulo)}`)).json();
+  const candidatos = (sug.Results || []).flatMap((r) => r.Products || []).filter((p) => parecido(j.titulo, sinEdicion(p.Title)) > 0.5).slice(0, 5);
+  if (!candidatos.length) return 0;
+  const d = await (await pedir(`https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${candidatos.map((p) => p.ProductId).join(",")}&market=ES&languages=es-es`)).json();
+  let n = 0;
+  for (const p of d.Products || []) {
+    const titulo = p.LocalizedProperties?.[0]?.ProductTitle || "";
+    if (parecido(j.titulo, sinEdicion(titulo)) <= 0.5) continue;
+    let mejor = null;
+    for (const s of p.DisplaySkuAvailabilities || []) for (const a of s.Availabilities || []) {
+      const pr = a.OrderManagementData?.Price;
+      if (!pr || pr.CurrencyCode !== "EUR" || !(pr.ListPrice > 0) || !(a.Actions || []).includes("Purchase")) continue;
+      if (!mejor || pr.ListPrice < mejor.ListPrice) mejor = pr;
+    }
+    if (!mejor) continue;
+    for (const plat of plataformasMS(p)) {
+      const antes = j.ofertas.length;
+      ofertar(j, { tienda: "xbox", plataforma: plat, precio: mejor.ListPrice, regular: mejor.MSRP, url: `https://www.xbox.com/es-ES/games/store/p/${p.ProductId}`, fuente: "xbox" });
+      if (j.ofertas.length > antes) n++;
+    }
+  }
+  return n;
+}
+
 // ---------- Instant Gaming (claves) ----------
 // La búsqueda de instant-gaming.com incluye los resultados como datos (window.searchResults).
 // Por plataforma nos quedamos con la clave más barata que: tenga stock, no sea DLC y valga en España.
@@ -440,7 +480,15 @@ async function main() {
       await esperar(pausa);
     }
   };
-  await recorrerFuente("game", populares(GAME_MAX), game, 700);
+  const restoConsola = consolaPopulares(Infinity).slice(GAME_MAX);
+  const trozos = Math.max(1, Math.ceil(restoConsola.length / GAME_ROTA));
+  const turno = Math.floor(Date.now() / (6 * 3600 * 1000)) % trozos;
+  const listaGame = [...new Set([...populares(GAME_MAX), ...restoConsola.slice(turno * GAME_ROTA, (turno + 1) * GAME_ROTA)])];
+  const visitadosGame = new Set(listaGame.map((j) => j.id));
+  console.log(`GAME: ${GAME_MAX} populares + bloque ${turno + 1} de ${trozos} (${listaGame.length} juegos en esta ejecución)`);
+  await recorrerFuente("game", listaGame, game, 700);
+  const paraMS = [...juegos.values()].filter((j) => j.plataformas.has("PC") || j.plataformas.has("Xbox Series") || j._buscarEn?.includes("Xbox Series")).sort((a, b) => a.pop - b.pop).slice(0, MS_MAX);
+  await recorrerFuente("xbox", paraMS, microsoftStore, 300);
   await recorrerFuente("instantgaming", populares(IG_MAX), instantGaming, 900);
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) await recorrerFuente("ebay", consolaPopulares(EBAY_MAX), ebay, 250);
 
@@ -453,7 +501,8 @@ async function main() {
   // 5. Si una fuente entera ha caído, recuperamos sus ofertas anteriores
   for (const viejo of anterior.juegos || []) {
     for (const o of viejo.ofertas || []) {
-      if (!(caidas.has(o.fuente) || caidas.has(`${o.fuente}:${viejo.id}`))) continue;
+      const noVisitadoGame = o.fuente === "game" && !visitadosGame.has(viejo.id);
+      if (!(caidas.has(o.fuente) || caidas.has(`${o.fuente}:${viejo.id}`) || noVisitadoGame)) continue;
       const j = juego(viejo.titulo, { pop: viejo.pop });
       ofertar(j, o);
     }
