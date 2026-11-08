@@ -22,7 +22,20 @@ import { dirname, join } from "node:path";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ENV = process.env;
-const STEAM_PAGINAS = +(ENV.STEAM_PAGINAS || 20);
+const STEAM_PAGINAS = +(ENV.STEAM_PAGINAS || 20);   // los 2.000 más vendidos, siempre
+const STEAM_ROTA = +(ENV.STEAM_ROTA || 10);         // + 1.000 más en cada ejecución, rotando…
+const STEAM_MAX_PAGINAS = +(ENV.STEAM_MAX_PAGINAS || 150); // …hasta los 15.000 más vendidos
+const ESHOP_ROTA = +(ENV.ESHOP_ROTA || 2500);       // eShop: además de los populares, un bloque nuevo cada vez
+const IG_ROTA = +(ENV.IG_ROTA || 250);
+const MS_ROTA = +(ENV.MS_ROTA || 300);
+const CONSERVAR_DIAS = 7;                            // un precio no revisado en una ejecución se conserva hasta 7 días
+const AHORA = new Date().toISOString().slice(0, 16);
+const TURNO = Math.floor(Date.now() / (6 * 3600 * 1000)); // cambia en cada ejecución programada
+// Qué juegos ha revisado cada fuente en esta ejecución (lo no revisado conserva su precio anterior)
+const VISITAS = new Map();
+const idDe = (titulo) => clave(titulo).replace(/ /g, "-").slice(0, 80);
+function visitar(fuente, j) { if (!j) return; (VISITAS.get(fuente) || VISITAS.set(fuente, new Set()).get(fuente)).add(typeof j === "string" ? j : j.id); }
+const ventana = (lista, tam) => { if (!lista.length) return []; const n = Math.ceil(lista.length / tam), k = TURNO % n; return lista.slice(k * tam, (k + 1) * tam); };
 const ESHOP_MAX = +(ENV.ESHOP_MAX || 2500);
 const EBAY_MAX = +(ENV.EBAY_MAX || 150);
 const GAME_MAX = +(ENV.GAME_MAX || 200);
@@ -104,7 +117,7 @@ function ofertar(j, o) {
   // Una sola oferta por tienda + plataforma + estado: la más barata
   // (y por tipo de clave, para poder filtrar "solo claves de Steam" en Instant Gaming)
   const igual = j.ofertas.find((x) => x.tienda === o.tienda && x.plataforma === o.plataforma && (x.estado || "nuevo") === (o.estado || "nuevo") && (x.drm || "") === (o.drm || ""));
-  const nueva = { estado: "nuevo", stock: true, formato: "digital", ...o, precio: redondear(o.precio) };
+  const nueva = { estado: "nuevo", stock: true, formato: "digital", ...o, precio: redondear(o.precio), t: o.t || AHORA };
   // Preferimos lo que hay en stock; a igualdad, lo más barato
   if (igual) { if ((nueva.stock && !igual.stock) || (nueva.stock === igual.stock && nueva.precio < igual.precio)) Object.assign(igual, nueva); }
   else j.ofertas.push(nueva);
@@ -130,7 +143,11 @@ function leerFilasSteam(html) {
 async function steamMasVendidos() {
   let puesto = 0;
   const filas = [];
-  for (let p = 0; p < STEAM_PAGINAS; p++) {
+  const paginas = [...Array(STEAM_PAGINAS).keys()];
+  const resto = [...Array(Math.max(0, STEAM_MAX_PAGINAS - STEAM_PAGINAS)).keys()].map((i) => i + STEAM_PAGINAS);
+  paginas.push(...ventana(resto, STEAM_ROTA));
+  console.log(`Steam: páginas 1-${STEAM_PAGINAS} + ${paginas.slice(STEAM_PAGINAS)[0] + 1}-${paginas.slice(-1)[0] + 1} de ${STEAM_MAX_PAGINAS}`);
+  for (const p of paginas) {
     const url = `https://store.steampowered.com/search/results/?query&start=${p * 100}&count=100&filter=topsellers&cc=es&l=spanish&infinite=1`;
     const d = await (await pedir(url)).json();
     for (const f of leerFilasSteam(d.results_html || "")) {
@@ -152,6 +169,7 @@ async function steamMasVendidos() {
   }
   let n = 0, gratis = 0;
   for (const f of filas) {
+    visitar("steam", idDe(f.titulo));
     let precio = f.precio, regular = f.regular;
     if (oficial.has(f.appid)) {
       const po = oficial.get(f.appid);
@@ -209,15 +227,25 @@ function ofertaEshop(doc, precios, opciones) {
 }
 async function eshopCatalogo() {
   const docs = [];
-  for (let inicio = 0; inicio < ESHOP_MAX; inicio += 500) {
-    const url = `https://searching.nintendo-europe.com/es/select?q=*&fq=type:GAME&fq=nsuid_txt:*&sort=popularity%20asc&rows=${Math.min(500, ESHOP_MAX - inicio)}&start=${inicio}&wt=json&fl=title,nsuid_txt,system_names_txt,url`;
-    const d = await (await pedir(url)).json();
-    docs.push(...(d.response?.docs || []));
-    await esperar(300);
-  }
+  const leerTramo = async (desde, hasta) => {
+    let total = 0;
+    for (let inicio = desde; inicio < hasta; inicio += 500) {
+      const url = `https://searching.nintendo-europe.com/es/select?q=*&fq=type:GAME&fq=nsuid_txt:*&sort=popularity%20asc&rows=${Math.min(500, hasta - inicio)}&start=${inicio}&wt=json&fl=title,nsuid_txt,system_names_txt,url`;
+      const d = await (await pedir(url)).json();
+      total = d.response?.numFound || total;
+      docs.push(...(d.response?.docs || []));
+      await esperar(300);
+    }
+    return total;
+  };
+  const totalEshop = await leerTramo(0, ESHOP_MAX);
+  const tramos = Math.max(1, Math.ceil((totalEshop - ESHOP_MAX) / ESHOP_ROTA));
+  const desde = ESHOP_MAX + (TURNO % tramos) * ESHOP_ROTA;
+  await leerTramo(desde, Math.min(totalEshop, desde + ESHOP_ROTA));
+  console.log(`eShop: ${ESHOP_MAX} populares + ${desde}-${Math.min(totalEshop, desde + ESHOP_ROTA)} de ${totalEshop}`);
   const precios = await preciosEshop(docs.map((d) => d.nsuid_txt[0]));
   let n = 0;
-  docs.forEach((d, i) => { if (ofertaEshop(d, precios, { pop: i + 1 })) n++; });
+  docs.forEach((d, i) => { visitar("eshop", idDe(d.title)); if (ofertaEshop(d, precios, { pop: i + 1 })) n++; });
   return n;
 }
 async function eshopUno(j) {
@@ -423,40 +451,69 @@ async function instantGaming(j) {
   return n;
 }
 
-// ---------- Tarjetas regalo ----------
-// Se buscan en Instant Gaming; solo las que valen en España y tienen el valor en euros.
-const TARJETAS = [
-  { marca: "PlayStation Store", buscar: "playstation store", re: /playstation|psn/ },
-  { marca: "Nintendo eShop", buscar: "nintendo eshop", re: /nintendo/ },
-  { marca: "Xbox", buscar: "xbox tarjeta regalo", re: /xbox/ },
-  { marca: "Steam", buscar: "steam tarjeta regalo", re: /steam/ },
-  { marca: "Amazon", buscar: "amazon tarjeta regalo", re: /amazon/ },
-  { marca: "Apple", buscar: "apple tarjeta regalo", re: /apple|itunes/ },
-  { marca: "Google Play", buscar: "google play", re: /google play/ },
-  { marca: "Spotify", buscar: "spotify", re: /spotify/ },
-  { marca: "Netflix", buscar: "netflix", re: /netflix/ },
-  { marca: "Uber", buscar: "uber", re: /uber/ },
-  { marca: "Just Eat", buscar: "just eat", re: /just eat/ },
+// ---------- Tarjetas regalo, monedas de juegos y suscripciones ----------
+// Fuentes: Instant Gaming (tarjetas, monedas como V-Bucks o Robux, suscripciones), GAME (tarjetas PlayStation y Nintendo)
+// y la recarga oficial de Steam. Solo lo que vale en España; las tarjetas de saldo, solo con valor en euros.
+const MARCAS_SALDO = [
+  ["PlayStation", /playstation|psn/], ["Nintendo eShop", /nintendo/], ["Xbox", /xbox|microsoft/], ["Steam", /steam/],
+  ["Amazon", /amazon/], ["Apple", /apple|itunes/], ["Google Play", /google play/], ["Spotify", /spotify/], ["Netflix", /netflix/],
 ];
-async function tarjetasRegalo() {
+const BUSQUEDAS_IG = ["nintendo eshop", "tarjeta playstation", "playstation plus", "tarjeta xbox", "xbox game pass", "steam tarjeta regalo",
+  "v-bucks", "robux", "fc points", "call of duty puntos", "apex monedas", "overwatch monedas", "minecraft minecoins", "gta online tarjeta",
+  "diablo platino", "ea play", "nintendo switch online", "valorant", "league of legends", "riot", "genshin", "pubg", "candy crush",
+  "fallout 76 atomos", "elder scrolls online coronas", "guild wars gemas", "amazon", "google play", "apple", "spotify", "netflix", "tarjeta regalo"];
+const valorEuros = (txt) => { const m = String(txt).match(/(\d+(?:[.,]\d+)?)\s*(€|eur\b|euros?\b)/i); return m ? parseFloat(m[1].replace(",", ".")) : 0; };
+// Tarjeta de saldo de una tienda (p. ej. «Tarjeta regalo PlayStation 50 €»): una ficha por marca y valor
+function fichaSaldo(marca, valor, pop) {
+  const j = juego(`Tarjeta regalo ${marca} ${valor} €`, { pop, tipo: "tarjeta" });
+  j._pvpFijo = true; j.pvp = valor; j.marca = marca; j.valor = valor;
+  return j;
+}
+async function tarjetasRegalo(visitar) {
   let n = 0;
-  for (const tj of TARJETAS) {
-    const html = await (await pedir("https://www.instant-gaming.com/es/busquedas/?query=" + encodeURIComponent(tj.buscar))).text();
+  const marca = (txt) => (MARCAS_SALDO.find(([, re]) => re.test(limpiar(txt))) || [])[0];
+  // 1. Instant Gaming
+  for (const q of BUSQUEDAS_IG) {
+    const html = await (await pedir("https://www.instant-gaming.com/es/busquedas/?query=" + encodeURIComponent(q))).text();
     const i = html.indexOf("window.searchResults = ");
-    if (i < 0) continue;
-    for (const h of JSON.parse(bloqueJSON(html, i)).hits || []) {
-      const nombre = limpiar(h.name);
-      if (!tj.re.test(nombre) || !/(tarjeta|gift|card|wallet|recarga|prepago|credito)/.test(nombre)) continue;
-      const v = String(h.name).match(/(\d+(?:[.,]\d+)?)\s*(€|eur\b)/i);
-      if (!v || !h.has_stock || !valeEnEspana(h)) continue;
-      const valor = parseFloat(v[1].replace(",", ".")), precio = parseFloat(h.price_eur);
-      if (!(precio > 0) || !(valor > 0)) continue;
-      const j = juego(`Tarjeta regalo ${tj.marca} ${valor} €`, { pop: 2000 + n, tipo: "tarjeta" });
-      j._pvpFijo = true; j.pvp = valor; j.marca = tj.marca; j.valor = valor;
-      ofertar(j, { tienda: "instantgaming", plataforma: "Tarjeta regalo", precio, regular: valor, condicion: `Código digital · ${h.region_fulltext || h.region}`, url: `https://www.instant-gaming.com/es/${h.prod_id}-comprar-${h.seo_name}/?igr=${AFILIADO_IG}`, fuente: "tarjetas" });
+    if (i >= 0) for (const h of JSON.parse(bloqueJSON(html, i)).hits || []) {
+      if (!(h.is_prepaid || h.is_subscription) || !valeEnEspana(h)) continue;
+      const precio = parseFloat(h.price_eur);
+      if (!(precio > 0)) continue;
+      const nombre = String(h.name).trim(), valor = valorEuros(nombre), m = marca(nombre);
+      const esSaldo = m && valor > 0 && /(tarjeta|gift|card|wallet|recarga|prepago|codigo|saldo)/.test(limpiar(nombre));
+      if (m && !valor && /(tarjeta|gift card)/.test(limpiar(nombre)) && !h.is_subscription) continue; // saldo de otra moneda (USD…)
+      const j = esSaldo ? fichaSaldo(m, valor, 1500) : juego(nombre, { pop: 1600, tipo: "tarjeta" });
+      visitar(j);
+      ofertar(j, { tienda: "instantgaming", plataforma: "Tarjeta regalo", precio, regular: esSaldo ? valor : undefined, stock: !!h.has_stock,
+        condicion: `${h.is_subscription ? "Suscripción" : "Código digital"} · ${h.region_fulltext || h.region || "Worldwide"}`,
+        url: `https://www.instant-gaming.com/es/${h.prod_id}-comprar-${h.seo_name}/?igr=${AFILIADO_IG}`, fuente: "tarjetas" });
       n++;
     }
     await esperar(900);
+  }
+  // 2. GAME (tarjetas PlayStation y códigos Nintendo eShop, a su precio oficial)
+  for (const q of ["psn", "nintendo eshop", "prepago", "tarjeta regalo", "xbox prepago", "steam prepago"]) {
+    const html = await (await pedir("https://www.game.es/resultados?search=" + encodeURIComponent(q))).text();
+    const flight = [...html.matchAll(/self\.__next_f\.push\(\[1,"((?:\\.|[^"\\])*)"\]\)/g)].map((x) => { try { return JSON.parse('"' + x[1] + '"'); } catch { return ""; } }).join("");
+    const k = flight.indexOf('"initialResult":');
+    for (const it of k < 0 ? [] : JSON.parse(bloqueJSON(flight, k)).items || []) {
+      if (!/PREPAGO|MONEDERO/i.test(`${it.brand} ${it.category2}`)) continue;
+      const valor = valorEuros(it.title), m = marca(`${it.title} ${it.category}`), precio = Number(it.pricing?.current);
+      if (!m || !(valor > 0) || !(precio > 0)) continue;
+      const j = fichaSaldo(m, valor, 1500);
+      visitar(j);
+      ofertar(j, { tienda: "game", plataforma: "Tarjeta regalo", precio, regular: valor, stock: it.availability === "available", condicion: "Código digital", url: "https://www.game.es" + it.url, fuente: "tarjetas" });
+      n++;
+    }
+    await esperar(900);
+  }
+  // 3. Recarga oficial de Steam: el saldo se añade a tu cuenta al mismo precio
+  for (const valor of [5, 10, 25, 50, 100]) {
+    const j = fichaSaldo("Steam", valor, 1500);
+    visitar(j);
+    ofertar(j, { tienda: "steam", plataforma: "Tarjeta regalo", precio: valor, regular: valor, condicion: "Recarga oficial en tu cuenta", url: "https://store.steampowered.com/steamaccount/addfunds", fuente: "tarjetas" });
+    n++;
   }
   return n;
 }
@@ -544,8 +601,8 @@ async function main() {
     if (e.pvp) { j.pvp = e.pvp; j._pvpFijo = true; } // PVP indicado a mano en seguimiento.json
     j._buscarEn = e.plataformas || [];
     (e.plataformas || []).forEach((p) => j.plataformas.add(p));
-    if (!e.plataformas?.length || e.plataformas.includes("PC")) await intentar("steam", () => steamUno(j, e));
-    await intentar("eshop", () => eshopUno(j));
+    if (!e.plataformas?.length || e.plataformas.includes("PC")) if (await intentar("steam", () => steamUno(j, e))) visitar("steam", j);
+    if (await intentar("eshop", () => eshopUno(j))) visitar("eshop", j);
     if (e.psConcept) { if (!(await intentar("psstore", () => psstore(j, e)))) caidas.add("psstore:" + j.id); }
     await esperar(300);
   }
@@ -568,7 +625,7 @@ async function main() {
   const recorrerFuente = async (nombre, lista, fn, pausa) => {
     let fallos = 0;
     for (const j of lista) {
-      if (await intentar(nombre, () => fn(j))) (REVISA[nombre] || [nombre]).forEach((t) => j.revisado.add(t));
+      if (await intentar(nombre, () => fn(j))) { (REVISA[nombre] || [nombre]).forEach((t) => j.revisado.add(t)); visitar(nombre, j); }
       else if (++fallos >= 5) { avisos.push(`${nombre}: demasiados fallos, paro`); caidas.add(nombre); break; }
       await esperar(pausa);
     }
@@ -577,34 +634,43 @@ async function main() {
   const trozos = Math.max(1, Math.ceil(restoConsola.length / GAME_ROTA));
   const turno = Math.floor(Date.now() / (6 * 3600 * 1000)) % trozos;
   const listaGame = [...new Set([...populares(GAME_MAX), ...restoConsola.slice(turno * GAME_ROTA, (turno + 1) * GAME_ROTA)])];
-  const visitadosGame = new Set(listaGame.map((j) => j.id));
   console.log(`GAME: ${GAME_MAX} populares + bloque ${turno + 1} de ${trozos} (${listaGame.length} juegos en esta ejecución)`);
   await recorrerFuente("game", listaGame, game, 700);
-  const paraMS = [...juegos.values()].filter((j) => j.plataformas.has("PC") || j.plataformas.has("Xbox Series") || j._buscarEn?.includes("Xbox Series")).sort((a, b) => a.pop - b.pop).slice(0, MS_MAX);
-  await recorrerFuente("xbox", paraMS, microsoftStore, 300);
-  await recorrerFuente("instantgaming", populares(IG_MAX), instantGaming, 900);
-  if (!(await intentar("tarjetas regalo", tarjetasRegalo))) caidas.add("tarjetas");
+  const candidatosMS = [...juegos.values()].filter((j) => j.tipo !== "tarjeta" && (j.plataformas.has("PC") || j.plataformas.has("Xbox Series") || j._buscarEn?.includes("Xbox Series"))).sort((a, b) => a.pop - b.pop);
+  await recorrerFuente("xbox", [...candidatosMS.slice(0, MS_MAX), ...ventana(candidatosMS.slice(MS_MAX), MS_ROTA)], microsoftStore, 300);
+  const candidatosIG = [...juegos.values()].filter((j) => j.tipo !== "tarjeta").sort((a, b) => a.pop - b.pop);
+  await recorrerFuente("instantgaming", [...candidatosIG.slice(0, IG_MAX), ...ventana(candidatosIG.slice(IG_MAX), IG_ROTA)], instantGaming, 900);
+  if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) await recorrerFuente("ebay", consolaPopulares(EBAY_MAX), ebay, 250);
 
   // 4. IsThereAnyDeal para los juegos de PC más populares
   if (ENV.ITAD_KEY) {
-    const dePC = [...juegos.values()].filter((j) => j.plataformas.has("PC")).sort((a, b) => a.pop - b.pop).slice(0, +(ENV.ITAD_MAX || 3000));
+    const dePC = [...juegos.values()].filter((j) => j.plataformas.has("PC")).sort((a, b) => a.pop - b.pop).slice(0, +(ENV.ITAD_MAX || 10000));
     if (!(await intentar("itad", () => itad(dePC, tiendas)))) caidas.add("itad");
+    else dePC.forEach((j) => visitar("itad", j));
   }
 
   // 4b. Lo revisado en ejecuciones anteriores se conserva (GAME va rotando por bloques)
   const porId = new Map([...juegos.values()].map((j) => [j.id, j]));
   for (const viejo of anterior.juegos || []) { const j = porId.get(viejo.id); if (j) (viejo.revisado || []).forEach((t) => j.revisado.add(t)); }
 
-  // 5. Si una fuente entera ha caído, recuperamos sus ofertas anteriores
+  // 5. El catálogo se acumula: los precios que no se han revisado en esta ejecución (fuera de los bloques
+  //    que tocaban, o porque una fuente ha fallado) se conservan hasta CONSERVAR_DIAS desde su última comprobación.
+  const limite = Date.now() - CONSERVAR_DIAS * 86400000;
+  let conservadas = 0;
   for (const viejo of anterior.juegos || []) {
     for (const o of viejo.ofertas || []) {
-      const noVisitadoGame = o.fuente === "game" && !visitadosGame.has(viejo.id);
-      if (!(caidas.has(o.fuente) || caidas.has(`${o.fuente}:${viejo.id}`) || noVisitadoGame)) continue;
-      const j = juego(viejo.titulo, { pop: viejo.pop });
-      ofertar(j, o);
+      if (o.fuente === "psstore" || o.fuente === "manual") continue;     // estas se recargan enteras en cada ejecución
+      if (VISITAS.get(o.fuente)?.has(viejo.id)) continue;                // revisado ahora: manda lo nuevo
+      if (Date.parse(o.t || anterior.actualizado) < limite) continue;    // demasiado antiguo
+      const j = juego(viejo.titulo, { pop: viejo.pop, tipo: viejo.tipo });
+      if (!j) continue;
+      if (viejo.tipo === "tarjeta" && viejo.valor) { j._pvpFijo = true; j.pvp = viejo.valor; j.marca = viejo.marca; j.valor = viejo.valor; }
+      if (viejo.minimo && !j.minimo) j.minimo = viejo.minimo;
+      ofertar(j, o); conservadas++;
     }
   }
+  console.log(`Precios conservados de ejecuciones anteriores: ${conservadas}`);
 
   // 6. Ofertas manuales
   for (const m of manual) {
