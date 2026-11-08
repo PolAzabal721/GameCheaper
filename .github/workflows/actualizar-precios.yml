@@ -37,5 +37,10 @@ jobs:
           git add precios.json minimos.json data/historial
           git diff --cached --quiet && exit 0
           git commit -m "Precios actualizados"
-          git pull --rebase origin main
-          git push
+          # Si mientras tanto se ha subido otra versión de los precios, manda la de esta ejecución (es la más reciente)
+          for i in 1 2 3; do
+            git pull --rebase -X theirs origin main && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep 10
+          done
+          exit 1
