@@ -40,12 +40,12 @@ const ventana = (lista, tam) => { if (!lista.length) return []; const n = Math.c
 const ESHOP_MAX = +(ENV.ESHOP_MAX || 2500);
 const EBAY_MAX = +(ENV.EBAY_MAX || 250);     // eBay: los juegos de consola más populares en cada ejecución…
 const EBAY_ROTA = +(ENV.EBAY_ROTA || 650);   // …y un bloque nuevo del resto, rotando (eBay permite unas 5.000 consultas al día)
-const GAME_MAX = +(ENV.GAME_MAX || 200);
+const GAME_MAX = +(ENV.GAME_MAX || 150);
 const IG_MAX = +(ENV.IG_MAX || 250);
 const MS_MAX = +(ENV.MS_MAX || 400);
 // GAME: además de los GAME_MAX más populares, en cada ejecución revisa un bloque distinto del resto (GAME_ROTA juegos),
 // así en un día y medio pasa por todo el catálogo de consola. Lo que no toca en una ejecución conserva su último precio.
-const GAME_ROTA = +(ENV.GAME_ROTA || 400);
+const GAME_ROTA = +(ENV.GAME_ROTA || 250);
 // Enlaces de afiliado (los enlaces de búsqueda de G2A e Instant Gaming están en config/tiendas.json)
 const AFILIADO_IG = "gamer-681806";
 
@@ -78,7 +78,7 @@ const SOBRANTE = /\b(nintendo switch 2 edition|nintendo switch 2|nintendo switch
 export const clave = (titulo) => limpiar(titulo).replace(SOBRANTE, " ").replace(/\s+/g, " ").trim();
 const tituloBonito = (t) => html2txt(t).replace(/[™®©]/g, "").replace(/\s*[–-]\s*Nintendo Switch 2 Edition$/i, "").replace(/\s+/g, " ").trim();
 // Palabras que indican que NO es un juego completo
-const EXTRAS = /\b(dlc|pack|pase|season pass|expansion|soundtrack|banda sonora|bundle|lote|monedas|coins|points|puntos|vbucks|upgrade|mejora|demo|trial|prueba|artbook|wallpaper|paquete|music|musica|costume|traje|skin|skins|cosmetico|ost)\b/;
+const EXTRAS = /\b(lite|dlc|pack|pase|season pass|expansion|soundtrack|banda sonora|bundle|lote|monedas|coins|points|puntos|vbucks|upgrade|mejora|demo|trial|prueba|artbook|wallpaper|paquete|music|musica|costume|traje|skin|skins|cosmetico|ost)\b/;
 // Tipos de producto: juego, edición especial, DLC y tarjeta regalo (cada uno es su propia ficha)
 const NO_PRODUCTO = /\b(soundtrack|banda sonora|ost|artbook|wallpaper|demo|trial|prueba|music|musica)\b/;
 const DLC_RE = /\b(dlc|pack|pase|season pass|expansion|upgrade|mejora|monedas|coins|points|puntos|vbucks|costume|traje|skin|skins|cosmetico|paquete)\b/;
@@ -414,39 +414,67 @@ function bloqueJSON(texto, desde) {
   }
   return null;
 }
-async function game(j) {
-  // Si solo lo conocemos de PC (Steam), aceptamos cualquier consola que tenga GAME
-  const consolas = [...j.plataformas].filter((p) => p !== "PC");
-  const html = await (await pedir("https://www.game.es/resultados?search=" + encodeURIComponent(j.titulo))).text();
-  const flight = [...html.matchAll(/self\.__next_f\.push\(\[1,"((?:\\.|[^"\\])*)"\]\)/g)].map((m) => { try { return JSON.parse('"' + m[1] + '"'); } catch { return ""; } }).join("");
-  const i = flight.indexOf('"initialResult":');
-  if (i < 0) throw new Error("la página de resultados ya no trae datos (puede que GAME haya cambiado su web)");
-  const items = JSON.parse(bloqueJSON(flight, i)).items || [];
-  const palabras = clave(j.titulo).split(" ");
+// GAME tiene vetado su buscador (/resultados) a programas en su robots.txt. Usamos lo que sí ofrece:
+// su mapa de productos (sitemap_productos.xml), que dice qué juegos tiene y en qué consolas,
+// y la ficha pública de cada producto, que trae el precio en un bloque JSON-LD.
+const SUFIJOS_GAME = [["nintendo-switch-2", "Switch 2"], ["nintendo-switch", "Switch"], ["ps5", "PS5"], ["ps4", "PS4"], ["xbox-series-x", "Xbox Series"]];
+const flightNext = (html) => [...html.matchAll(/self\.__next_f\.push\(\[1,"((?:\\.|[^"\\])*)"\]\)/g)].map((m) => { try { return JSON.parse('"' + m[1] + '"'); } catch { return ""; } }).join("");
+async function mapaGame() {
+  const xml = await (await pedir("https://www.game.es/sitemap/sitemap_productos.xml")).text();
+  const mapa = new Map(); // clave del juego -> [{ url, plataforma, usado }]
+  for (const m of xml.matchAll(/<loc>https:\/\/www\.game\.es\/([a-z0-9-]+)\/([a-z0-9]+)<\/loc>/g)) {
+    let slug = m[1];
+    const suf = SUFIJOS_GAME.find(([x]) => slug.endsWith("-" + x));
+    if (suf) slug = slug.slice(0, -suf[0].length - 1);
+    const usado = /-seminuev[oa](-|$)/.test(slug);
+    slug = slug.replace(/-seminuev[oa](?=-|$)/g, "").replace(/-(nsw2|nintendo-switch-2)-edition$/, "").replace(/-day-one(-edition)?$/, "");
+    const k = clave(slug.replace(/-/g, " "));
+    if (!k || NO_PRODUCTO.test(k)) continue;
+    (mapa.get(k) || mapa.set(k, []).get(k)).push({ url: `https://www.game.es/${m[1]}/${m[2]}`, plataforma: suf ? suf[1] : null, usado });
+  }
+  if (mapa.size < 500) throw new Error(`el mapa de productos de GAME trae muy pocos juegos (${mapa.size})`);
+  return mapa;
+}
+async function fichaGame(url) {
+  const html = await (await pedir(url)).text();
+  const ld = [...html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/g)]
+    .map((m) => { try { return JSON.parse(m[1]); } catch { return null; } }).find((x) => x && x["@type"] === "Product");
+  const of = [].concat(ld?.offers || [])[0];
+  if (!of || of.priceCurrency !== "EUR" || !(Number(of.price) > 0)) return null;
+  const fl = flightNext(html);
+  const m = fl.match(/"platformName":"([^"]*)"[^{}]*?"price":([\d.]+),"recommendedPrice":("?[^,"]*)/);
+  return {
+    nombre: html2txt(ld.name || ""), precio: Number(of.price), stock: /InStock|PreOrder/i.test(of.availability || ""),
+    usado: /Used/i.test(of.itemCondition || ""), plataformaTxt: m ? m[1] : "", regular: m && /^[\d.]+$/.test(m[3]) ? Number(m[3]) : 0,
+  };
+}
+// Nombre del juego a partir del de la ficha: «EA Sports FC 27 PS5», «Zelda - Seminuevo Nintendo Switch» → sin consola ni estado
+const nombreGame = (t) => t.replace(/\s*-?\s*seminuev[oa]\b/i, "").replace(/\s+(PS5|PS4|Nintendo Switch 2|Nintendo Switch|Xbox Series X\|?S?|Xbox Series X|Xbox One|PC)\s*$/i, "").trim();
+async function game(j, fichas) {
   let n = 0;
-  for (const it of items) {
-    if (it.category !== "SOFTWARE" || it.isPack) continue;
-    const plat = PLAT_GAME[limpiar(it.allPlatforms || "")];
-    if (!plat || (consolas.length && !consolas.includes(plat))) continue;
-    const t = " " + limpiar(it.title) + " ";
-    if (!palabras.every((p) => t.includes(" " + p + " ")) || EXTRAS.test(t) || (EDICIONES.test(t) && !EDICIONES.test(limpiar(j.titulo)))) continue;
-    const precio = Number(it.pricing?.current);
-    if (!(precio > 0)) continue;
-    const usado = (it.tag || []).some((x) => /seminuevo/i.test(x?.text || ""));
-    const antes = j.ofertas.length;
+  for (const f of fichas) {
+    const r = await fichaGame(f.url);
+    await esperar(500);
+    if (!r) continue;
+    const plat = f.plataforma || PLAT_GAME[limpiar(r.plataformaTxt)];
+    if (!plat) continue;
+    if (!j) j = juego(nombreGame(r.nombre));
+    if (!j) continue;
+    const usado = f.usado || r.usado, antes = j.ofertas.length;
     ofertar(j, {
       tienda: usado ? "gameseminuevos" : "game", plataforma: plat, formato: "fisico", estado: usado ? "usado" : "nuevo",
-      precio, regular: usado ? 0 : Number(it.pricing?.recommended) || precio, stock: it.availability === "available",
-      url: "https://www.game.es" + it.url, fuente: "game",
+      precio: r.precio, regular: usado ? 0 : r.regular || r.precio, stock: r.stock, url: f.url, fuente: "game",
     });
     if (j.ofertas.length > antes) n++;
   }
+  if (j) { j.revisado.add("game"); j.revisado.add("gameseminuevos"); visitar("game", j); }
   return n;
 }
 
 // ---------- Microsoft Store (Xbox y PC) ----------
 // Catálogo público oficial de Microsoft: búsqueda por nombre (autosuggest) + ficha con precio para España.
-const sinEdicion = (t) => String(t).replace(/[:\-–]?\s*(edici[oó]n est[aá]ndar|standard edition)\s*$/i, "");
+// «EA SPORTS FC™ 27 Standard Edition para Xbox One y Xbox Series X|S» → «EA SPORTS FC™ 27»
+const sinEdicion = (t) => String(t).replace(/\s+para\s+(xbox|pc|windows)\b.*$/i, "").replace(/[:\-–]?\s*(edici[oó]n est[aá]ndar|standard edition)\s*$/i, "");
 function plataformasMS(p) {
   const pk = JSON.stringify((p.DisplaySkuAvailabilities || []).map((s) => s.Sku?.Properties?.Packages || []));
   const out = [];
@@ -455,8 +483,17 @@ function plataformasMS(p) {
   return out;
 }
 async function microsoftStore(j) {
-  const sug = await (await pedir(`https://displaycatalog.mp.microsoft.com/v7.0/productFamilies/autosuggest?market=ES&languages=es-ES&productFamilyNames=Games&query=${encodeURIComponent(j.titulo)}`)).json();
-  const candidatos = (sug.Results || []).flatMap((r) => r.Products || []).filter((p) => parecido(j.titulo, sinEdicion(p.Title)) > 0.5).slice(0, 5);
+  // El buscador de Microsoft no encuentra «EA SPORTS FC 27» si en la tienda se llama «EA SPORTS FC™ 27»:
+  // si no sale nada, probamos quitando palabras del final («EA SPORTS FC»), hasta dos veces
+  const palabras = j.titulo.replace(/[™®©]/g, "").split(/\s+/).filter(Boolean);
+  let candidatos = [];
+  for (let quitar = 0; quitar <= 2 && !candidatos.length; quitar++) {
+    const q = palabras.slice(0, palabras.length - quitar).join(" ");
+    if (quitar && (palabras.length - quitar < 2 || q.length < 6)) break;
+    const sug = await (await pedir(`https://displaycatalog.mp.microsoft.com/v7.0/productFamilies/autosuggest?market=ES&languages=es-ES&productFamilyNames=Games&query=${encodeURIComponent(q)}`)).json();
+    candidatos = (sug.Results || []).flatMap((r) => r.Products || []).filter((p) => parecido(j.titulo, sinEdicion(p.Title)) > 0.5)
+      .sort((a, b) => parecido(j.titulo, sinEdicion(b.Title)) - parecido(j.titulo, sinEdicion(a.Title))).slice(0, 5);
+  }
   if (!candidatos.length) return 0;
   const d = await (await pedir(`https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${candidatos.map((p) => p.ProductId).join(",")}&market=ES&languages=es-es`)).json();
   let n = 0;
@@ -769,6 +806,20 @@ async function itad(lista, tiendas) {
 
 // ---------- Programa ----------
 async function main() {
+  // Prueba rápida de GAME y Microsoft Store con unos juegos, sin tocar precios.json (PRUEBA_GAME=1)
+  if (ENV.PRUEBA_GAME) {
+    const mapa = await mapaGame();
+    console.log("MAPA GAME:", mapa.size, "juegos");
+    for (const t of ["EA SPORTS FC 27", "EA Sports FC 27 Ultimate Edition", "The Legend of Zelda: Tears of the Kingdom", "Mario Kart World", "Hogwarts Legacy"]) {
+      const j = juego(t, {}); const f = mapa.get(clave(t)) || [];
+      console.log("FICHAS", t, JSON.stringify(f));
+      if (f.length) await game(j, f);
+      j.plataformas.add("Xbox Series");
+      try { await microsoftStore(j); } catch (e) { console.log("MS error", e.message); }
+      console.log("OFERTAS", t, j.ofertas.map((o) => `${o.tienda} ${o.plataforma} ${o.estado} ${o.precio}/${o.regular}${o.stock ? "" : " (agotado)"}`).join(" | "));
+    }
+    return;
+  }
   // Prueba rápida de Alcampo con el catálogo actual, sin tocar precios.json (PRUEBA_ALCAMPO=1)
   if (ENV.PRUEBA_ALCAMPO) {
     for (const v of JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8")).juegos) { const j = juego(v.titulo, { pop: v.pop, tipo: v.tipo }); if (j) v.plataformas.forEach((p) => j.plataformas.add(p)); }
@@ -846,12 +897,30 @@ async function main() {
       await esperar(pausa);
     }
   };
-  const restoConsola = consolaPopulares(Infinity).slice(GAME_MAX);
-  const trozos = Math.max(1, Math.ceil(restoConsola.length / GAME_ROTA));
-  const turno = Math.floor(Date.now() / (6 * 3600 * 1000)) % trozos;
-  const listaGame = [...new Set([...populares(GAME_MAX), ...restoConsola.slice(turno * GAME_ROTA, (turno + 1) * GAME_ROTA)])];
-  console.log(`GAME: ${GAME_MAX} populares + bloque ${turno + 1} de ${trozos} (${listaGame.length} juegos en esta ejecución)`);
-  await recorrerFuente("game", listaGame, game, 700);
+  // GAME: el mapa de productos dice qué juegos tiene. Los del catálogo que no están ahí quedan revisados (GAME no los vende);
+  // de los que sí, leemos la ficha de los más populares siempre y del resto por turnos. Lo que GAME vende y aún no teníamos se añade.
+  let mapa = null;
+  try { mapa = await mapaGame(); } catch (e) { avisos.push(`game: ${e.message}`); caidas.add("game"); }
+  if (mapa) {
+    const enGame = [];
+    for (const [k, j] of juegos) {
+      if (j.tipo === "tarjeta" || j.tipo === "dlc") continue;
+      const fichas = mapa.get(k);
+      if (fichas) { enGame.push({ j, fichas, pop: j.pop }); mapa.delete(k); }
+      else { j.revisado.add("game"); j.revisado.add("gameseminuevos"); }
+    }
+    // Los que GAME vende y no estaban en el catálogo (solo si los tiene nuevos: lo seminuevo suelto suele ser antiguo)
+    for (const [, fichas] of mapa) if (fichas.some((f) => !f.usado && f.plataforma)) enGame.push({ j: null, fichas, pop: 99999 });
+    enGame.sort((a, b) => a.pop - b.pop);
+    const listaGame = [...enGame.slice(0, GAME_MAX), ...ventana(enGame.slice(GAME_MAX), GAME_ROTA)];
+    console.log(`GAME: ${enGame.length} juegos en su mapa de productos (${enGame.filter((x) => !x.j).length} nuevos para el catálogo); ${listaGame.length} en esta ejecución`);
+    let fallos = 0, nGame = 0;
+    for (const x of listaGame) {
+      try { nGame += await game(x.j, x.fichas); }
+      catch (e) { if (++fallos <= 3) avisos.push(`game: ${e.message}`); if (fallos >= 8) { avisos.push("game: demasiados fallos, paro"); caidas.add("game"); break; } }
+    }
+    cuenta.game = nGame;
+  }
   const candidatosMS = [...juegos.values()].filter((j) => j.tipo !== "tarjeta" && (j.plataformas.has("PC") || j.plataformas.has("Xbox Series") || j._buscarEn?.includes("Xbox Series"))).sort((a, b) => a.pop - b.pop);
   await recorrerFuente("xbox", [...candidatosMS.slice(0, MS_MAX), ...ventana(candidatosMS.slice(MS_MAX), MS_ROTA)], microsoftStore, 300);
   const candidatosIG = [...juegos.values()].filter((j) => j.tipo !== "tarjeta").sort((a, b) => a.pop - b.pop);
@@ -875,7 +944,11 @@ async function main() {
 
   // 4b. Lo revisado en ejecuciones anteriores se conserva (GAME va rotando por bloques)
   const porId = new Map([...juegos.values()].map((j) => [j.id, j]));
-  for (const viejo of anterior.juegos || []) { const j = porId.get(viejo.id); if (j) (viejo.revisado || []).forEach((t) => j.revisado.add(t)); }
+  // (GAME se recalcula entero con su mapa de productos; lo de Microsoft anterior a la versión 2 se descarta porque
+  //  la búsqueda fallaba con los nombres que llevan ™ y marcaba como revisados juegos que sí tienen)
+  const noArrastrar = new Set(mapa ? ["game", "gameseminuevos"] : []);
+  if (anterior.revisadoV !== 2) noArrastrar.add("xbox");
+  for (const viejo of anterior.juegos || []) { const j = porId.get(viejo.id); if (j) (viejo.revisado || []).forEach((t) => { if (!noArrastrar.has(t)) j.revisado.add(t); }); }
 
   // 5. El catálogo se acumula: los precios que no se han revisado en esta ejecución (fuera de los bloques
   //    que tocaban, o porque una fuente ha fallado) se conservan hasta CONSERVAR_DIAS desde su última comprobación.
@@ -943,7 +1016,7 @@ async function main() {
   console.log("Primeros del catálogo:", lista.slice(0, 15).map((j) => j.titulo).join(" | "));
   if (avisos.length) console.warn(`Avisos (${avisos.length}):\n - ` + avisos.slice(0, 40).join("\n - "));
   if (total === 0) { console.error("No se ha conseguido ningún precio. No toco precios.json."); process.exit(1); }
-  const salida = { actualizado: new Date().toISOString(), ejemplo: false, buscador: buscador || undefined, tiendas, juegos: lista };
+  const salida = { actualizado: new Date().toISOString(), ejemplo: false, revisadoV: 2, buscador: buscador || undefined, tiendas, juegos: lista };
   await writeFile(join(RAIZ, "precios.json"), JSON.stringify(salida) + "\n");
   console.log(`precios.json listo: ${lista.length} juegos, ${total} ofertas.`);
   // Historial diario (gráfica de la web) y precios mínimos (avisos por email)
