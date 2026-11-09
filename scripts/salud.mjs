@@ -21,7 +21,8 @@ for (const j of precios.juegos) for (const o of j.ofertas) if (o.t === ahora) fr
 
 const TESTIGOS = [
   ["steam", "Hogwarts Legacy"], ["eshop", "Mario Kart World"], ["xbox", "Cyberpunk 2077"],
-  ["instantgaming", "EA SPORTS FC 27"], ["game", "EA SPORTS FC 27"], ["itad", "Hogwarts Legacy"],
+  ["instantgaming", "EA SPORTS FC 27"], ["game", "EA SPORTS FC 27"], ["itad", "Hogwarts Legacy"], ["xbox", "EA SPORTS FC 27"],
+  ["game", "Tarjeta regalo PlayStation 20 €"], ["game", "Tarjeta regalo Xbox 20 €"], ["instantgaming", "Tarjeta regalo PlayStation 20 €"],
 ];
 const problemas = [];
 for (const [tienda, titulo] of TESTIGOS) {

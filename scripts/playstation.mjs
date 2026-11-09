@@ -14,7 +14,7 @@ import { dirname, join } from "node:path";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ENV = process.env;
-const DESCUBRIR = +(ENV.PS_DESCUBRIR || 150);   // juegos nuevos a buscar en cada ejecución
+const DESCUBRIR = +(ENV.PS_DESCUBRIR || 120);   // juegos nuevos a buscar en cada ejecución
 const PRECIOS = +(ENV.PS_PRECIOS || 300);       // fichas a las que se actualiza el precio en cada ejecución
 const REINTENTAR_DIAS = 30;                      // si no encontramos un juego, volvemos a probar al mes
 const CABECERAS = { "User-Agent": "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)", "Accept-Language": "es-ES,es;q=0.9" };
@@ -42,13 +42,19 @@ async function paginasJuegos() {
 }
 async function descubrir(titulo) {
   const paginas = await paginasJuegos();
-  const slug = (t) => limpiar(t).replace(/ /g, "-");
+  // «Assassin’s Creed Shadows» → «assassins-creed-shadows» (las páginas no separan el apóstrofo)
+  const slug = (t) => limpiar(String(t).replace(/['’`´]/g, "")).replace(/ /g, "-");
   const completo = slug(titulo), corto = slug(titulo.split(/[:–-]\s/)[0]);
+  // Primero el nombre completo y sin subtítulo (aunque el mapa del sitio no los traiga: no está completo)
   const opciones = [completo, corto];
-  // Saga: el nombre quitando palabras del final (como mucho dos), si esa página existe
+  // Después, del mapa del sitio: la página que contiene todas las palabras con menos extras
+  // («hollow-knight» → «hollow-knight-voidheart-edition») o la de la saga («ea-sports-fc-27» → «ea-sports-fc»)
   const partes = completo.split("-");
-  for (let q = 1; q <= 2 && partes.length - q >= 2; q++) opciones.push(partes.slice(0, partes.length - q).join("-"));
-  const validas = opciones.filter((s, i, a) => s && a.indexOf(s) === i && (!paginas.size || paginas.has(s))).slice(0, 2);
+  const parecida = [...paginas].filter((p) => { const w = p.split("-"); return w.length - partes.length <= 3 && partes.every((x) => w.includes(x)); })
+    .sort((a, b) => a.length - b.length)[0];
+  if (parecida) opciones.push(parecida);
+  for (let q = 1; q <= 2 && partes.length - q >= 2; q++) { const s = partes.slice(0, partes.length - q).join("-"); if (paginas.has(s)) { opciones.push(s); break; } }
+  const validas = opciones.filter((s, i, a) => s && a.indexOf(s) === i).slice(0, 3);
   const ids = new Set();
   for (const s of validas) {
     const html = await texto(`https://www.playstation.com/es-es/games/${s}/`);
@@ -58,7 +64,7 @@ async function descubrir(titulo) {
     for (const m of html.matchAll(/"conceptId"\s*:\s*"?(\d+)/g)) ids.add(m[1]);
     // Fichas de producto europeas (EP…) como alternativa
     for (const m of html.matchAll(/store\.playstation\.com\/(?:[a-z]{2}-[a-z]{2}\/)?product\/(EP[A-Z0-9_-]+)/g)) ids.add(m[1]);
-    if (ids.size && s === completo) break;
+    if (ids.size) break;
   }
   return [...ids].slice(0, 8);
 }
@@ -74,8 +80,9 @@ async function precio(titulo, id) {
   const oferta = [].concat(ld.offers || [])[0];
   if (!oferta || oferta.priceCurrency !== "EUR" || !(oferta.price > 0)) return null;
   // La ficha tiene que ser de este juego: todas las palabras del título
-  const nombre = " " + limpiar(ld.name || "") + " ";
-  if (!limpiar(titulo).split(" ").every((p) => nombre.includes(" " + p + " "))) return null;
+  const sinAp = (t) => limpiar(String(t).replace(/['’`´]/g, ""));
+  const nombre = " " + sinAp(ld.name || "") + " ";
+  if (!sinAp(titulo).split(" ").every((p) => nombre.includes(" " + p + " "))) return null;
   const plats = (html.match(/"platforms"\s*:\s*\[([^\]]*)\]/) || [])[1] || "";
   const plataformas = ["PS5", "PS4"].filter((p) => plats.includes(`"${p}"`));
   return { precio: Number(oferta.price), plataformas: plataformas.length ? plataformas : ["PS5"], url };
@@ -92,7 +99,7 @@ async function main() {
   // luego los más populares. Saltamos los ya buscados (salvo los no encontrados hace más de un mes).
   const pendientes = catalogo.juegos.filter((j) => {
     const e = estado.juegos[j.id];
-    return !e || (!e.ids?.length && (e.v !== 2 || ahora - Date.parse(e.buscado || 0) > REINTENTAR_DIAS * 86400000));
+    return !e || (!e.ids?.length && (e.v !== 3 || ahora - Date.parse(e.buscado || 0) > REINTENTAR_DIAS * 86400000));
   }).sort((a, b) => {
     const pa = (a.plataformas || []).some((p) => /^PS/.test(p)) ? 0 : 1, pb = (b.plataformas || []).some((p) => /^PS/.test(p)) ? 0 : 1;
     return pa - pb || (a.pop || 99999) - (b.pop || 99999);
@@ -101,7 +108,7 @@ async function main() {
   for (const j of pendientes) {
     try {
       const ids = await descubrir(j.titulo);
-      estado.juegos[j.id] = { titulo: j.titulo, ids, v: 2, buscado: new Date().toISOString(), ofertas: estado.juegos[j.id]?.ofertas || [] };
+      estado.juegos[j.id] = { titulo: j.titulo, ids, v: 3, buscado: new Date().toISOString(), ofertas: estado.juegos[j.id]?.ofertas || [] };
       ids.length ? cuenta.descubiertos++ : cuenta.sinFicha++;
     } catch (e) { cuenta.fallos++; if (avisos.length < 10) avisos.push(`descubrir ${j.titulo}: ${e.message}`); }
   }
