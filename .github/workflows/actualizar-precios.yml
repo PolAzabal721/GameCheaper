@@ -32,11 +32,17 @@ jobs:
           BUSCADOR_URL: ${{ vars.BUSCADOR_URL }}
       - name: Revisar que todas las tiendas dan precios
         run: node scripts/salud.mjs
+      - name: Publicar chollos en Telegram
+        continue-on-error: true
+        run: node scripts/telegram.mjs
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CANAL: ${{ secrets.TELEGRAM_CANAL }}
       - name: Guardar cambios
         run: |
           git config user.name "pillao-bot"
           git config user.email "pillao-bot@users.noreply.github.com"
-          git add precios.json minimos.json data/historial data/salud.json
+          git add precios.json minimos.json data/historial data/salud.json $(ls data/telegram.json 2>/dev/null)
           git diff --cached --quiet && exit 0
           git commit -m "Precios actualizados"
           # Si mientras tanto se ha subido otra versión de los precios, manda la de esta ejecución (es la más reciente)
