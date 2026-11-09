@@ -142,6 +142,33 @@ button { cursor: pointer; }
 
 /* Resultados */
 .res-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.res-head h1 { flex: 1 1 auto; }
+.btn-vista { width: 38px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; padding: 0; flex-shrink: 0; }
+.btn-vista:hover { border-color: var(--muted); }
+.btn-vista svg { width: 18px; height: 18px; }
+/* Vista en cuadrícula */
+.lista.cuadricula { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; align-items: start; }
+.lista.cuadricula > .juego, .lista.cuadricula > .mas-juegos, .lista.cuadricula > .busca-vivo, .lista.cuadricula > .vacio { grid-column: 1 / -1; }
+.lista.cuadricula > .mas-juegos { justify-self: center; }
+.mini { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; min-height: 200px; position: relative; }
+.mini:hover { border-color: var(--accent); }
+.mini:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mini-top { display: flex; gap: 6px; align-items: flex-start; justify-content: space-between; min-height: 22px; }
+.mini-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.mini .campana { width: 32px; height: 32px; }
+.mini .campana svg { width: 16px; height: 16px; }
+.mini h2 { font-family: var(--f-display); font-weight: 800; font-size: 16.5px; line-height: 1.2; margin: 0; letter-spacing: -.01em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.mini .plats { display: flex; flex-wrap: wrap; gap: 4px; }
+.mini .plat { font-size: 11px; padding: 1px 6px; }
+.mini-precio { margin-top: auto; background: var(--tag); color: var(--tag-ink); border-radius: 8px; padding: 8px 10px; position: relative; }
+.mini-precio .precio { display: block; font-family: var(--f-mono); font-weight: 700; font-size: 22px; line-height: 1.15; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.mini-precio .donde { display: block; font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mini-precio .ahorro { position: absolute; top: -9px; right: -6px; background: var(--ink); color: var(--surface); font-family: var(--f-mono); font-size: 11.5px; font-weight: 700; padding: 2px 6px; border-radius: 6px; transform: rotate(4deg); }
+.mini-mas { font-size: 12.5px; color: var(--muted); }
+.exp-barra { display: flex; justify-content: flex-end; margin: -6px -6px -6px 0; }
+.fecha-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; background: var(--good-soft); color: var(--good); }
+.fecha-tag.prox { background: var(--warn-soft); color: var(--warn); }
+@media (max-width: 560px) { .lista.cuadricula { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .mini { padding: 11px; min-height: 180px; } .mini h2 { font-size: 15px; } .mini-precio .precio { font-size: 19px; } }
 .res-head h1 { font-family: var(--f-display); font-size: 22px; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
 .res-head h1 span { color: var(--muted); font-weight: 700; }
 .orden { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
@@ -406,11 +433,14 @@ button { cursor: pointer; }
         <label class="orden">Ordenar
           <select id="orden">
             <option value="populares">Populares</option>
+            <option value="recientes">Lanzamientos recientes</option>
+            <option value="proximos">Próximos lanzamientos</option>
             <option value="barato">Más barato</option>
             <option value="descuento">Mayor descuento</option>
             <option value="az">A–Z</option>
           </select>
         </label>
+        <button type="button" class="btn-vista" id="vista" aria-pressed="false" aria-label="Ver en cuadrícula" title="Ver en cuadrícula"></button>
       </div>
       <div class="lista" id="lista"></div>
     </section>
@@ -487,7 +517,7 @@ button { cursor: pointer; }
   var f = cargarFiltros();
 
   function cargarFiltros() {
-    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: "populares" };
+    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: "populares", vista: "lista" };
     if (!prefsOk()) return base;
     try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g) base[k] = g[k]; } catch (e) {}
     return base;
@@ -773,6 +803,45 @@ button { cursor: pointer; }
     return '<s class="antes">' + eur.format(o.regular + (o.envio || 0)) + "</s> · ";
   }
 
+  // ---------- Fechas de lanzamiento ----------
+  var HOY = new Date().toISOString().slice(0, 10);
+  var HACE_30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  var fmtDia = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" });
+  var fmtDiaAno = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short", year: "numeric" });
+  function diaBonito(f) { var d = new Date(f + "T12:00:00Z"); return (f.slice(0, 4) === HOY.slice(0, 4) ? fmtDia : fmtDiaAno).format(d); }
+  function esProximo(j) { return !!(j.reserva || (j.lanzamiento && j.lanzamiento > HOY)); }
+  function esReciente(j) { return !!(j.lanzamiento && j.lanzamiento <= HOY && j.lanzamiento >= HACE_30); }
+  function etiquetaFecha(j) {
+    if (esProximo(j)) return '<span class="fecha-tag prox">' + (j.lanzamiento && j.lanzamiento > HOY ? "Reserva · sale el " + diaBonito(j.lanzamiento) : "Reserva") + "</span>";
+    if (esReciente(j)) return '<span class="fecha-tag">Novedad · ' + diaBonito(j.lanzamiento) + "</span>";
+    return "";
+  }
+
+  // ---------- Vista en cuadrícula ----------
+  var ICONO_CUADRICULA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>';
+  var ICONO_LISTA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="6" rx="1.5"/><rect x="3.5" y="13.5" width="17" height="6" rx="1.5"/></svg>';
+  var abiertosGrid = {};
+  function pintarBotonVista() {
+    var g = f.vista === "cuadricula", b = $("vista");
+    b.innerHTML = g ? ICONO_LISTA : ICONO_CUADRICULA;
+    b.setAttribute("aria-pressed", g);
+    b.setAttribute("aria-label", g ? "Ver en lista" : "Ver en cuadrícula");
+    b.title = g ? "Ver en lista" : "Ver en cuadrícula";
+  }
+  function mini(r) {
+    var j = r.j, m = r.mejor, tm = tiendaPorId[m.tienda] || { nombre: m.tienda };
+    var tipo = j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición", tarjeta: "Tarjeta" }[j.tipo] || "") + "</span>" : "";
+    var tiendasVistas = {}; r.ofs.forEach(function (o) { tiendasVistas[o.tienda] = 1; });
+    var n = Object.keys(tiendasVistas).length;
+    return '<article class="mini" data-abrir="' + esc(j.id) + '" tabindex="0" role="button" aria-label="' + esc(j.titulo) + ': ver todas las ofertas">' +
+      '<div class="mini-top"><div class="mini-tags">' + etiquetaFecha(j) + tipo + "</div>" + botonCampana(j) + "</div>" +
+      "<h2>" + esc(j.titulo) + "</h2>" +
+      '<div class="plats">' + j.plataformas.filter(function (p) { return p !== "Tarjeta regalo"; }).map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
+      '<div class="mini-mas">' + (n > 1 ? n + " tiendas" : "1 tienda") + "</div>" +
+      '<div class="mini-precio">' + (r.dto >= 5 ? '<span class="ahorro">−' + r.dto + "%</span>" : "") + '<span class="precio">' + eur.format(total(m)) + '</span><span class="donde">' +
+      esc(tm.nombre) + (m.plataforma && m.plataforma !== "Tarjeta regalo" ? " · " + esc(m.plataforma) : "") + "</span></div></article>";
+  }
+
   function tarjeta(r) {
     var j = r.j, m = r.mejor, tm = tiendaPorId[m.tienda] || { nombre: m.tienda };
     // Agrupamos por tienda: una fila por tienda (su precio más barato) y un desplegable con cada plataforma
@@ -798,7 +867,10 @@ button { cursor: pointer; }
     var vis = todas ? grupos : grupos.slice(0, VISIBLES);
     var otras = otrasTiendas(j);
     var enMinimo = j.minimo && total(m) <= j.minimo + 0.005;
-    return '<article class="juego"><div class="j-cab"><div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") +
+    var enGrid = f.vista === "cuadricula";
+    return '<article class="juego' + (enGrid ? " expandida" : "") + '" id="j-' + esc(j.id) + '">' +
+      (enGrid ? '<div class="exp-barra"><button type="button" class="btn" data-cerrar="' + esc(j.id) + '">Ver en pequeño</button></div>' : "") +
+      '<div class="j-cab"><div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") + etiquetaFecha(j) +
       (enMinimo ? '<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>' : "") +
       (j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo" }[j.tipo] || "") + "</span>" : "") + campanaTitulo(j) + '<div class="plats">' +
       j.plataformas.filter(function (p) { return p !== "Tarjeta regalo"; }).map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
@@ -885,12 +957,15 @@ button { cursor: pointer; }
     return h % TROZOS;
   }
 
-  function campanaTitulo(j) {
+  function botonCampana(j) {
     var n = avisosDe(j.id).length;
-    var titulo = datos && datos.paginas && !j._vivo ? '<a href="juego/' + encodeURIComponent(j.id) + '/">' + esc(j.titulo) + "</a>" : esc(j.titulo);
-    return '<div class="j-tit"><h2>' + titulo + '</h2><button type="button" class="campana' + (n ? " con" : "") + '" data-aviso="' + esc(j.id) + '" aria-label="' +
+    return '<button type="button" class="campana' + (n ? " con" : "") + '" data-aviso="' + esc(j.id) + '" aria-label="' +
       (n ? "Tus avisos de precio (" + n + ") e historial" : "Historial de precios y crear aviso por email") + '" title="' + (n ? "Tus avisos de precio" : "Historial y aviso de precio") + '">' +
-      (n ? CAMPANA_OK + (n > 1 ? '<span class="n">' + n + "</span>" : "") : CAMPANA_MAS) + "</button></div>";
+      (n ? CAMPANA_OK + (n > 1 ? '<span class="n">' + n + "</span>" : "") : CAMPANA_MAS) + "</button>";
+  }
+  function campanaTitulo(j) {
+    var titulo = datos && datos.paginas && !j._vivo ? '<a href="juego/' + encodeURIComponent(j.id) + '/">' + esc(j.titulo) + "</a>" : esc(j.titulo);
+    return '<div class="j-tit"><h2>' + titulo + "</h2>" + botonCampana(j) + "</div>";
   }
 
   // Lo mismo que cuenta el historial: nuevo, con stock, sin los revendedores que la web oculta de serie
@@ -1185,16 +1260,20 @@ button { cursor: pointer; }
     var palabras = q.split(/\s+/).filter(Boolean);
     var filas = [], vistos = {};
     var coincide = function (j) { var t = j._norm || (j._norm = norm(j.titulo)); return palabras.every(function (p) { return t.indexOf(p) >= 0; }); };
-    if (vivo.q === qTxt) vivo.juegos.forEach(function (j) { var r = fila(j); if (r) { filas.push(r); vistos[norm(j.titulo)] = 1; } });
+    var porFecha = f.orden === "recientes" ? esReciente : f.orden === "proximos" ? esProximo : null;
+    if (vivo.q === qTxt) vivo.juegos.forEach(function (j) { if (porFecha && !porFecha(j)) return; var r = fila(j); if (r) { filas.push(r); vistos[norm(j.titulo)] = 1; } });
     datos.juegos.forEach(function (j) {
       var tipoJ = (j.tipo === "edicion" ? "juego" : j.tipo) || "juego"; // las ediciones especiales son juegos
       if (f.tipo && f.tipo !== "todos" && f.tipo !== "edicion" && tipoJ !== f.tipo) return;
       if (palabras.length && !coincide(j)) return;
+      if (porFecha && !porFecha(j)) return;
       if (vistos[j._norm || norm(j.titulo)]) return;
       var r = fila(j); if (r) filas.push(r);
     });
     filas.sort(function (a, b) {
       if (!!b.j._vivo - !!a.j._vivo) return !!b.j._vivo - !!a.j._vivo;
+      if (f.orden === "recientes") return (b.j.lanzamiento || "").localeCompare(a.j.lanzamiento || "") || (a.j.pop || 99999) - (b.j.pop || 99999);
+      if (f.orden === "proximos") return (a.j.lanzamiento || "9999").localeCompare(b.j.lanzamiento || "9999") || (a.j.pop || 99999) - (b.j.pop || 99999);
       if (f.orden === "descuento") return b.dto - a.dto;
       if (f.orden === "az") return a.j.titulo.localeCompare(b.j.titulo, "es");
       if (f.orden === "barato") return total(a.mejor) - total(b.mejor);
@@ -1209,12 +1288,15 @@ button { cursor: pointer; }
         : vivo.error && vivo.q === qTxt ? '<div class="busca-vivo err">' + esc(vivo.error) + "</div>" : "";
     }
     if (!filas.length) {
+      lista.classList.toggle("cuadricula", f.vista === "cuadricula");
       lista.innerHTML = estadoVivo + (vivo.cargando ? "" : '<div class="vacio"><b>Nada con estos filtros</b>' +
-        (q ? "No tenemos «" + esc(qTxt) + "» con estos filtros." : "Prueba a quitar alguno.") + '<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button></div>');
+        (f.orden === "recientes" ? "No hay lanzamientos de los últimos 30 días con estos filtros." : f.orden === "proximos" ? "No hay juegos en reserva con estos filtros." :
+          q ? "No tenemos «" + esc(qTxt) + "» con estos filtros." : "Prueba a quitar alguno.") + '<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button></div>');
       return;
     }
     var resto = filas.length - mostrar;
-    lista.innerHTML = estadoVivo + filas.slice(0, mostrar).map(tarjeta).join("") +
+    lista.classList.toggle("cuadricula", f.vista === "cuadricula");
+    lista.innerHTML = estadoVivo + filas.slice(0, mostrar).map(function (r) { return f.vista === "cuadricula" && !abiertosGrid[r.j.id] ? mini(r) : tarjeta(r); }).join("") +
       (resto > 0 ? '<button type="button" class="btn mas-juegos" data-mas-juegos>Ver más juegos <span>(quedan ' + resto.toLocaleString("es-ES") + ")</span></button>" : "");
   }
 
@@ -1320,14 +1402,37 @@ button { cursor: pointer; }
   $("lista").addEventListener("click", function (e) {
     var av = e.target.closest("[data-aviso]");
     if (av) { var ja = buscarJuego(av.dataset.aviso); if (ja) abrirAviso(ja, av); return; }
+    var ce = e.target.closest("[data-cerrar]");
+    if (ce) { delete abiertosGrid[ce.dataset.cerrar]; pintar(); var mc = $("lista").querySelector('[data-abrir="' + ce.dataset.cerrar + '"]'); if (mc) mc.focus(); return; }
+    var ab = e.target.closest("[data-abrir]");
+    if (ab) { abrirEnGrid(ab.dataset.abrir); return; }
     var b = e.target.closest("[data-mas]");
     if (b) { abiertos[b.dataset.mas] = !abiertos[b.dataset.mas]; pintar(); return; }
     var d = e.target.closest("[data-grupo]");
     if (d) { desplegados[d.dataset.grupo] = !desplegados[d.dataset.grupo]; pintar(); return; }
     if (e.target.closest("[data-mas-juegos]")) { mostrar += PAGINA; pintar(); return; }
-    if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: f.orden }; pintarControles(); cambio(); }
+    if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: f.orden, vista: f.vista }; pintarControles(); cambio(); }
   });
   $("recargar").addEventListener("click", function () { leerServidor(true); });
+  function abrirEnGrid(id) {
+    abiertosGrid[id] = true; pintar();
+    var el = document.getElementById("j-" + id);
+    if (el) {
+      // que la cabecera fija no tape el principio de la tarjeta
+      var cab = document.querySelector(".top"); el.style.scrollMarginTop = ((cab ? cab.offsetHeight : 0) + 12) + "px";
+      el.scrollIntoView({ block: "start", behavior: "smooth" });
+      var b = el.querySelector("[data-cerrar]"); if (b) b.focus({ preventScroll: true });
+    }
+  }
+  $("lista").addEventListener("keydown", function (e) {
+    var ab = e.target.closest && e.target.closest("[data-abrir]");
+    if (ab && e.target === ab && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); abrirEnGrid(ab.dataset.abrir); }
+  });
+  $("vista").addEventListener("click", function () {
+    f.vista = f.vista === "cuadricula" ? "lista" : "cuadricula"; abiertosGrid = {};
+    pintarBotonVista(); guardarFiltros(); pintar();
+  });
+  pintarBotonVista();
 
   // panel en móvil
   function panel(abrir) { $("panel").classList.toggle("abierto", abrir); $("fondo").classList.toggle("ver", abrir); }

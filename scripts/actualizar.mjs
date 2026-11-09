@@ -111,6 +111,23 @@ function juego(titulo, { pop = 99999, prioridad = false, tipo } = {}) {
   j.pop = Math.min(j.pop, pop);
   return j;
 }
+// ---------- Fechas de lanzamiento ----------
+// Las de las tiendas oficiales (Steam, eShop, Microsoft Store) mandan; la de Instant Gaming solo si no hay otra.
+// De varias fechas oficiales nos quedamos con la primera (el juego salió ese día, aunque luego llegara a otras consolas).
+const MESES = { ene: 1, feb: 2, mar: 3, abr: 4, may: 5, jun: 6, jul: 7, ago: 8, sep: 9, set: 9, oct: 10, nov: 11, dic: 12 };
+function fechaValida(f) { return /^\d{4}-\d{2}-\d{2}$/.test(f || "") && f >= "1980-01-01" && f <= "2035-12-31" ? f : null; }
+function fechaSteam(txt) {
+  const m = limpiar(txt).match(/^(\d{1,2}) ([a-z]{3})[a-z]* (\d{4})$/);
+  return m && MESES[m[2]] ? fechaValida(`${m[3]}-${String(MESES[m[2]]).padStart(2, "0")}-${m[1].padStart(2, "0")}`) : null;
+}
+function fechar(j, fecha, oficial = true) {
+  fecha = fechaValida(fecha);
+  if (!j || !fecha) return;
+  const k = oficial ? "_fechaOf" : "_fechaIG";
+  if (!j[k] || fecha < j[k]) j[k] = fecha;
+}
+const HOY = new Date().toISOString().slice(0, 10);
+
 const PRECIO_MAX = 400; // ningún juego cuesta más; por encima son datos de relleno (p. ej. 99.999 €) o hardware
 function ofertar(j, o) {
   if (!j || !(o.precio > 0) || o.precio > PRECIO_MAX) return;
@@ -137,7 +154,9 @@ function leerFilasSteam(html) {
     const dto = +(trozo.match(/data-discount="(\d+)"/)?.[1] || 0);
     const precio = +final[1] / 100;
     if (precio > 150) continue; // hardware (Steam Deck, mandos…), no juegos
-    filas.push({ appid: app[1], titulo: html2txt(titulo[1]), precio, regular: dto ? precio / (1 - dto / 100) : precio });
+    if (/^(steam (deck|controller|machine|frame|link)|valve index)/i.test(html2txt(titulo[1]))) continue;
+    const fecha = fechaSteam((trozo.match(/search_released[^>]*>\s*([^<]*)</) || [])[1] || "");
+    filas.push({ appid: app[1], titulo: html2txt(titulo[1]), precio, regular: dto ? precio / (1 - dto / 100) : precio, fecha });
   }
   return filas;
 }
@@ -156,7 +175,15 @@ async function steamMasVendidos() {
       if (!NO_PRODUCTO.test(limpiar(f.titulo))) filas.push({ ...f, puesto });
     }
     await esperar(800);
+  }  // Próximos lanzamientos populares: solo entran los que ya tienen precio (se pueden reservar)
+  for (const p of [0, 1]) {
+    try {
+      const d = await (await pedir(`https://store.steampowered.com/search/results/?query&start=${p * 100}&count=100&filter=popularcomingsoon&cc=es&l=spanish&infinite=1`)).json();
+      for (const f of leerFilasSteam(d.results_html || "")) if (!filas.some((x) => x.appid === f.appid)) filas.push({ ...f, puesto: 3000 + p * 100 + filas.length });
+    } catch (e) { console.warn("Steam próximos lanzamientos: " + e.message); }
+    await esperar(1500);
   }
+
   // El listado a veces enseña el precio de una mejora de pago de un juego gratuito (p. ej. Counter-Strike 2 «Prime»).
   // Confirmamos cada precio con la ficha oficial de Steam (100 juegos por consulta) y descartamos los gratuitos.
   const oficial = new Map();
@@ -177,7 +204,9 @@ async function steamMasVendidos() {
       if (!po || po.currency !== "EUR" || !(po.final > 0)) { gratis++; continue; } // gratuito o sin precio en euros
       precio = po.final / 100; regular = po.initial / 100;
     }
-    ofertar(juego(f.titulo, { pop: f.puesto }), { tienda: "steam", plataforma: "PC", precio, regular, url: `https://store.steampowered.com/app/${f.appid}/`, fuente: "steam" });
+    const j = juego(f.titulo, { pop: f.puesto });
+    ofertar(j, { tienda: "steam", plataforma: "PC", precio, regular, url: `https://store.steampowered.com/app/${f.appid}/`, fuente: "steam" });
+    fechar(j, f.fecha);
     n++;
   }
   console.log(`Steam: ${n} juegos de pago, ${gratis} gratuitos descartados`);
@@ -224,6 +253,7 @@ function ofertaEshop(doc, precios, opciones) {
   if (EXTRAS.test(limpiar(doc.title))) return false;
   const j = juego(doc.title, opciones);
   ofertar(j, { tienda: "eshop", plataforma: esSwitch2(doc) ? "Switch 2" : "Switch", precio: p.precio, regular: p.regular, url: doc.url ? "https://www.nintendo.com" + doc.url : "https://www.nintendo.com/es-es/", fuente: "eshop" });
+  fechar(j, String(doc.dates_released_dts?.[0] || "").slice(0, 10));
   return true;
 }
 async function eshopCatalogo() {
@@ -231,7 +261,7 @@ async function eshopCatalogo() {
   const leerTramo = async (desde, hasta) => {
     let total = 0;
     for (let inicio = desde; inicio < hasta; inicio += 500) {
-      const url = `https://searching.nintendo-europe.com/es/select?q=*&fq=type:GAME&fq=nsuid_txt:*&sort=popularity%20asc&rows=${Math.min(500, hasta - inicio)}&start=${inicio}&wt=json&fl=title,nsuid_txt,system_names_txt,url`;
+      const url = `https://searching.nintendo-europe.com/es/select?q=*&fq=type:GAME&fq=nsuid_txt:*&sort=popularity%20asc&rows=${Math.min(500, hasta - inicio)}&start=${inicio}&wt=json&fl=title,nsuid_txt,system_names_txt,url,dates_released_dts`;
       const d = await (await pedir(url)).json();
       total = d.response?.numFound || total;
       docs.push(...(d.response?.docs || []));
@@ -251,7 +281,7 @@ async function eshopCatalogo() {
 }
 async function eshopUno(j) {
   if (![...j.plataformas, ...(j._buscarEn || [])].some((p) => p.startsWith("Switch")) || j.ofertas.some((o) => o.tienda === "eshop")) return 0;
-  const url = `https://searching.nintendo-europe.com/es/select?q=${encodeURIComponent(j.titulo)}&fq=type:GAME&fq=nsuid_txt:*&rows=20&wt=json&fl=title,nsuid_txt,system_names_txt,url`;
+  const url = `https://searching.nintendo-europe.com/es/select?q=${encodeURIComponent(j.titulo)}&fq=type:GAME&fq=nsuid_txt:*&rows=20&wt=json&fl=title,nsuid_txt,system_names_txt,url,dates_released_dts`;
   const docs = ((await (await pedir(url)).json()).response?.docs || []).filter((d) => parecido(j.titulo, String(d.title).replace(/[–-]\s*Nintendo Switch 2 Edition/i, "")) > 0.5);
   if (!docs.length) return 0;
   const precios = await preciosEshop(docs.map((d) => d.nsuid_txt[0]));
@@ -396,6 +426,7 @@ async function microsoftStore(j) {
       if (!mejor || pr.ListPrice < mejor.ListPrice) mejor = pr;
     }
     if (!mejor) continue;
+    fechar(j, String(p.MarketProperties?.[0]?.OriginalReleaseDate || "").slice(0, 10));
     for (const plat of plataformasMS(p)) {
       const antes = j.ofertas.length;
       ofertar(j, { tienda: "xbox", plataforma: plat, precio: mejor.ListPrice, regular: mejor.MSRP, url: `https://www.xbox.com/es-ES/games/store/p/${p.ProductId}`, fuente: "xbox" });
@@ -424,7 +455,7 @@ async function instantGaming(j) {
   const datos = JSON.parse(bloqueJSON(html, i));
   let n = 0;
   for (const h of datos.hits || []) {
-    if (!h.has_stock || h.is_prepaid || h.is_subscription || h.preorder) continue;
+    if (!h.has_stock || h.is_prepaid || h.is_subscription) continue;
     const precio = parseFloat(h.price_eur);
     if (!(precio > 0) || !valeEnEspana(h)) continue;
     let destino = null;
@@ -437,13 +468,14 @@ async function instantGaming(j) {
       if (deEste && tipo !== "juego" && !NO_PRODUCTO.test(n)) destino = juego(h.name, { pop: j.pop + 0.5, tipo });
     }
     if (!destino) continue;
+    if (h.avail_date > 0) fechar(destino, new Date(h.avail_date * 1000).toISOString().slice(0, 10), false);
     for (const nombre of h.platform_names || []) {
       const plat = PLAT_IG[limpiar(nombre)] || PLAT_IG[String(nombre).toLowerCase()];
       if (!plat) continue;
       const antes = destino.ofertas.length;
       ofertar(destino, {
         tienda: "instantgaming", plataforma: plat, precio, regular: parseFloat(h.default_retail) || undefined, drm: h.type || undefined,
-        condicion: `Clave ${h.type || ""} · ${h.region_fulltext || h.region || "Worldwide"}`.replace(/\s+·/, " ·"),
+        condicion: `${h.preorder ? "Reserva · " : ""}Clave ${h.type || ""} · ${h.region_fulltext || h.region || "Worldwide"}`.replace(/\s+·/, " ·"),
         url: `https://www.instant-gaming.com/es/${h.prod_id}-comprar-${h.seo_name}/?igr=${AFILIADO_IG}`, fuente: "instantgaming",
       });
       if (destino.ofertas.length > antes) n++;
@@ -776,8 +808,15 @@ async function main() {
     j.pvp = r.length ? redondear(r[Math.floor((r.length - 1) / 2)]) : 0;
   }
 
+  // Fecha de lanzamiento: la oficial; si no, la de Instant Gaming; si esta vez no ha salido ninguna, la que ya teníamos
+  const fechaAnterior = new Map((anterior.juegos || []).map((j) => [j.id, j.lanzamiento]));
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
-    .map(({ _buscarEn, _pvpFijo, plataformas, revisado, ...j }) => ({ ...j, plataformas: [...plataformas], pvp: j.pvp || undefined, revisado: revisado.size ? [...revisado] : undefined }));
+    .map(({ _buscarEn, _pvpFijo, _fechaOf, _fechaIG, plataformas, revisado, ...j }) => {
+      const lanzamiento = _fechaOf || _fechaIG || fechaAnterior.get(j.id) || undefined;
+      return { ...j, plataformas: [...plataformas], pvp: j.pvp || undefined, revisado: revisado.size ? [...revisado] : undefined,
+        lanzamiento, reserva: lanzamiento > HOY || j.ofertas.some((o) => /^Reserva/.test(o.condicion || "")) || undefined };
+    });
+  console.log(`Fechas de lanzamiento: ${lista.filter((j) => j.lanzamiento).length} de ${lista.length}; reservas: ${lista.filter((j) => j.reserva).length}`);
   const total = lista.reduce((s, j) => s + j.ofertas.length, 0);
   console.log("Ofertas por fuente:", JSON.stringify(cuenta));
   console.log("Primeros del catálogo:", lista.slice(0, 15).map((j) => j.titulo).join(" | "));
