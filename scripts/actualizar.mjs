@@ -38,7 +38,8 @@ const idDe = (titulo) => clave(titulo).replace(/ /g, "-").slice(0, 80);
 function visitar(fuente, j) { if (!j) return; (VISITAS.get(fuente) || VISITAS.set(fuente, new Set()).get(fuente)).add(typeof j === "string" ? j : j.id); }
 const ventana = (lista, tam) => { if (!lista.length) return []; const n = Math.ceil(lista.length / tam), k = TURNO % n; return lista.slice(k * tam, (k + 1) * tam); };
 const ESHOP_MAX = +(ENV.ESHOP_MAX || 2500);
-const EBAY_MAX = +(ENV.EBAY_MAX || 150);
+const EBAY_MAX = +(ENV.EBAY_MAX || 250);     // eBay: los juegos de consola más populares en cada ejecución…
+const EBAY_ROTA = +(ENV.EBAY_ROTA || 650);   // …y un bloque nuevo del resto, rotando (eBay permite unas 5.000 consultas al día)
 const GAME_MAX = +(ENV.GAME_MAX || 200);
 const IG_MAX = +(ENV.IG_MAX || 250);
 const MS_MAX = +(ENV.MS_MAX || 400);
@@ -746,7 +747,7 @@ async function main() {
   const populares = (max) => [...juegos.values()].sort((a, b) => a.pop - b.pop).slice(0, max);
   const consolaPopulares = (max) => [...juegos.values()].filter((j) => j.tipo !== "tarjeta" && [...j.plataformas].some((p) => p !== "PC")).sort((a, b) => a.pop - b.pop).slice(0, max);
   // Qué tiendas quedan comprobadas cuando una fuente revisa un juego (si no hay precio, es que no lo tienen)
-  const REVISA = { game: ["game", "gameseminuevos"], xbox: ["xbox"], instantgaming: ["instantgaming"], ebay: [] };
+  const REVISA = { game: ["game", "gameseminuevos"], xbox: ["xbox"], instantgaming: ["instantgaming"], ebay: ["ebay"] };
   const recorrerFuente = async (nombre, lista, fn, pausa) => {
     let fallos = 0;
     for (const j of lista) {
@@ -766,7 +767,13 @@ async function main() {
   const candidatosIG = [...juegos.values()].filter((j) => j.tipo !== "tarjeta").sort((a, b) => a.pop - b.pop);
   await recorrerFuente("instantgaming", [...candidatosIG.slice(0, IG_MAX), ...ventana(candidatosIG.slice(IG_MAX), IG_ROTA)], instantGaming, 900);
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");
-  if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) await recorrerFuente("ebay", consolaPopulares(EBAY_MAX), ebay, 250);
+  if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) {
+    // Juegos en disco (no DLC ni tarjetas): los populares siempre y el resto por turnos, hasta cubrir todo el catálogo
+    const paraEbay = consolaPopulares(Infinity).filter((j) => j.tipo !== "dlc");
+    const listaEbay = [...paraEbay.slice(0, EBAY_MAX), ...ventana(paraEbay.slice(EBAY_MAX), EBAY_ROTA)];
+    console.log(`eBay: ${listaEbay.length} juegos de ${paraEbay.length} en esta ejecución`);
+    await recorrerFuente("ebay", listaEbay, ebay, 250);
+  }
 
   // 4. IsThereAnyDeal para los juegos de PC más populares
   if (ENV.ITAD_KEY) {
