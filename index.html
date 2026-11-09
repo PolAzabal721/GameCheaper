@@ -1441,31 +1441,51 @@ button { cursor: pointer; }
     var t = j._nb || (j._nb = normBusq(j.titulo)), qn = qs.join(" ");
     return total + (t === qn ? 3 : 0);
   }
-  // Si no sale nada: lo que más se parece (distancia entre palabras), para «metro ezodus», «halo infinit»…
+  // Si no sale nada: lo más parecido aunque esté muy mal escrito («zelfa breth of te wild», «metro egzodus»).
+  // Lo que no se parece a nada (letras al azar) sigue sin dar resultados.
+  // Letras cambiadas, de más, de menos o dos cambiadas de sitio («rign» → «ring» es un solo error)
   function distancia(a, b) {
-    var prev = [], cur, i, k;
-    for (k = 0; k <= b.length; k++) prev[k] = k;
-    for (i = 1; i <= a.length; i++) {
-      cur = [i];
-      for (k = 1; k <= b.length; k++) cur[k] = Math.min(prev[k] + 1, cur[k - 1] + 1, prev[k - 1] + (a[i - 1] === b[k - 1] ? 0 : 1));
-      prev = cur;
+    var d = [], i, k;
+    for (i = 0; i <= a.length; i++) { d[i] = [i]; }
+    for (k = 0; k <= b.length; k++) d[0][k] = k;
+    for (i = 1; i <= a.length; i++) for (k = 1; k <= b.length; k++) {
+      d[i][k] = Math.min(d[i - 1][k] + 1, d[i][k - 1] + 1, d[i - 1][k - 1] + (a[i - 1] === b[k - 1] ? 0 : 1));
+      if (i > 1 && k > 1 && a[i - 1] === b[k - 2] && a[i - 2] === b[k - 1]) d[i][k] = Math.min(d[i][k], d[i - 2][k - 2] + 1);
     }
-    return prev[b.length];
+    return d[a.length][b.length];
   }
-  function parecidoBusq(q, j) {
-    var qs = normBusq(q).split(" ").filter(function (x) { return x.length >= 2; }); if (!qs.length) return 0;
-    var idx = j._idx || (j._idx = indiceBusq(j.titulo)), suma = 0, bien = 0;
-    for (var i = 0; i < qs.length; i++) {
-      var mejor = 0;
-      for (var k = 0; k < idx.length; k++) {
-        var p = idx[k]; if (Math.abs(p.length - qs[i].length) > 3) continue;
-        var s = 1 - distancia(qs[i], p) / Math.max(qs[i].length, p.length);
-        if (s > mejor) mejor = s;
+  function pares(s) { var r = {}, n = 0; s = " " + s + " "; for (var i = 0; i < s.length - 1; i++) { var p = s.substr(i, 2); r[p] = (r[p] || 0) + 1; n++; } r._n = n; return r; }
+  function dice(pa, pb) { var c = 0; for (var k in pa) if (k !== "_n" && pb[k]) c += Math.min(pa[k], pb[k]); return 2 * c / (pa._n + pb._n); }
+  // Lo más parecido aunque esté muy mal escrito. Primero se compara cada palabra buscada con todas las palabras
+  // distintas del catálogo (una sola vez), y luego cada juego suma lo que se parecen sus palabras.
+  var VOCAB = {};
+  function parecidos(q, juegos) {
+    var qs = normBusq(q).split(" ").filter(function (x) { return x.length >= 2; }); if (!qs.length) return [];
+    // Las palabras distintas del catálogo (con sus pares de letras), calculadas una sola vez
+    if (VOCAB.de !== juegos) { VOCAB = { de: juegos, pal: {} }; juegos.forEach(function (j) { (j._idx || (j._idx = indiceBusq(j.titulo))).forEach(function (t) { if (!VOCAB.pal[t]) VOCAB.pal[t] = pares(t); }); }); }
+    var vocab = VOCAB.pal;
+    var sims = qs.map(function (w) {
+      var pw = pares(w), m = {};
+      for (var t in vocab) {
+        if (Math.abs(t.length - w.length) > 4) continue;
+        var d = dice(pw, vocab[t]); if (d < 0.25 && t[0] !== w[0]) continue;
+        var s = Math.max(d, 1 - distancia(w, t) / Math.max(w.length, t.length));
+        if (s >= 0.5) m[t] = s;
       }
-      if (mejor >= 0.65) { bien++; suma += mejor; }
-    }
-    // Al menos la mitad de las palabras tienen que parecerse
-    return bien && bien * 2 >= qs.length ? suma / qs.length : 0;
+      return m;
+    });
+    var junto = pares(qs.join("")), largo = qs.join("").length;
+    var res = [];
+    juegos.forEach(function (j) {
+      var suma = 0;
+      for (var i = 0; i < qs.length; i++) { var mejor = 0; j._idx.forEach(function (t) { var s = sims[i][t]; if (s > mejor) mejor = s; }); suma += mejor; }
+      var t = j._nb || (j._nb = normBusq(j.titulo)), entero = dice(junto, pares(t.replace(/ /g, "").slice(0, largo + 6)));
+      var nota = Math.max(suma / qs.length, entero);
+      if (nota >= 0.75) res.push([nota, j]);
+    });
+    if (!res.length) return [];
+    var top = Math.max.apply(null, res.map(function (r) { return r[0]; }));
+    return res.filter(function (r) { return r[0] >= top - 0.12; });
   }
 
   function pintar() {
@@ -1486,21 +1506,20 @@ button { cursor: pointer; }
       if (vistos[j._norm || (j._norm = norm(j.titulo))]) return;
       var r = fila(j); if (r) { r.nota = nota; filas.push(r); }
     });
-    // Nada con ese nombre: enseñamos lo que más se parece
-    var parecidos = false;
-    if (!filas.length && palabras.length && !porFecha && !vivo.cargando) {
-      datos.juegos.forEach(function (j) {
-        var tipoJ = (j.tipo === "edicion" ? "juego" : j.tipo) || "juego";
-        if (f.tipo && f.tipo !== "todos" && f.tipo !== "edicion" && tipoJ !== f.tipo) return;
-        var nota = parecidoBusq(qTxt, j); if (!nota) return;
-        var r = fila(j); if (r) { r.nota = nota; filas.push(r); }
-      });
-      filas.sort(function (a, b) { return b.nota - a.nota || (a.j.pop || 99999) - (b.j.pop || 99999); });
-      filas = filas.slice(0, 12);
-      parecidos = filas.length > 0;
-    }
     var TIPO_ORDEN = { juego: 0, edicion: 1, dlc: 2, tarjeta: 3 };
-    if (!parecidos) filas.sort(function (a, b) {
+    // Nada con ese nombre: enseñamos lo que más se parece
+    var hayParecidos = false;
+    if (!filas.length && palabras.length && !porFecha && !vivo.cargando) {
+      parecidos(qTxt, datos.juegos).forEach(function (x) {
+        var j = x[1], tipoJ = (j.tipo === "edicion" ? "juego" : j.tipo) || "juego";
+        if (f.tipo && f.tipo !== "todos" && f.tipo !== "edicion" && tipoJ !== f.tipo) return;
+        var r = fila(j); if (r) { r.nota = x[0]; filas.push(r); }
+      });
+      filas.sort(function (a, b) { return b.nota - a.nota || (TIPO_ORDEN[a.j.tipo] || 0) - (TIPO_ORDEN[b.j.tipo] || 0) || (a.j.pop || 99999) - (b.j.pop || 99999); });
+      filas = filas.slice(0, 12);
+      hayParecidos = filas.length > 0;
+    }
+    if (!hayParecidos) filas.sort(function (a, b) {
       if (!!b.j._vivo - !!a.j._vivo) return !!b.j._vivo - !!a.j._vivo;
       // Buscando y sin otro orden elegido: lo que mejor encaja con lo escrito, el juego antes que sus ediciones, DLC y tarjetas
       if (palabras.length && f.orden === "populares") return (b.nota || 0) - (a.nota || 0) || (TIPO_ORDEN[a.j.tipo] || 0) - (TIPO_ORDEN[b.j.tipo] || 0) || (a.j.pop || 99999) - (b.j.pop || 99999);
@@ -1526,7 +1545,7 @@ button { cursor: pointer; }
           q ? "No tenemos «" + esc(qTxt) + "» con estos filtros." : "Prueba a quitar alguno.") + '<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button></div>');
       return;
     }
-    if (parecidos) estadoVivo += '<div class="busca-vivo">No encontramos «' + esc(qTxt) + '» tal cual. Esto es lo que más se parece:</div>';
+    if (hayParecidos) estadoVivo += '<div class="busca-vivo">No encontramos «' + esc(qTxt) + '» tal cual. Esto es lo que más se parece:</div>';
     var resto = filas.length - mostrar;
     lista.classList.toggle("cuadricula", f.vista === "cuadricula");
     lista.innerHTML = estadoVivo + filas.slice(0, mostrar).map(function (r) { return f.vista === "cuadricula" && !abiertosGrid[r.j.id] ? mini(r) : tarjeta(r); }).join("") +
