@@ -1380,6 +1380,94 @@ button { cursor: pointer; }
   var temporizadorGraf = null;
   window.addEventListener("resize", function () { if (!modal.j) return; clearTimeout(temporizadorGraf); temporizadorGraf = setTimeout(pintarModal, 150); });
 
+  // ---------- Búsqueda con parecidos ----------
+  // Búsqueda con parecidos (ES5, para meter en index.html)
+  var ROMANOS = { i: "1", ii: "2", iii: "3", iv: "4", v: "5", vi: "6", vii: "7", viii: "8", ix: "9", x: "10", xi: "11", xii: "12", xiii: "13", xiv: "14", xv: "15", xvi: "16" };
+  // Nombres que la gente usa en vez del oficial (se añaden al título para buscar, no se enseñan)
+  var APODOS = [
+    [/\bea sports fc\b/, "fifa fc"], [/\bfc (2[4-9]|3\d)\b/, "fifa"], [/\bgrand theft auto\b/, "gta"], [/\bcall of duty\b/, "cod"],
+    [/\bblack ops\b/, "bo"], [/\bmodern warfare\b/, "mw"], [/\bthe legend of zelda\b/, "zelda"], [/\bred dead redemption\b/, "rdr"],
+    [/\bfinal fantasy\b/, "ff"], [/\bassassin ?s creed\b/, "ac"], [/\bresident evil\b/, "re"], [/\bthe last of us\b/, "tlou"],
+    [/\bgod of war\b/, "gow"], [/\bspider man\b/, "spiderman"], [/\bcounter strike\b/, "cs"], [/\bworld of warcraft\b/, "wow"],
+    [/\bleague of legends\b/, "lol"], [/\bnba 2k(\d+)\b/, "nba2k$1 2k$1"], [/\bpokemon\b/, "pokemon"], [/\bsuper smash bros\b/, "smash ssbu"],
+    [/\bmario kart\b/, "mk mariokart"], [/\bplayerunknown ?s battlegrounds\b/, "pubg"], [/\bdragon ball\b/, "dragonball db"],
+    [/\bgran turismo\b/, "gt"], [/\bmetal gear solid\b/, "mgs"], [/\bmonster hunter\b/, "mh"], [/\bhorizon zero dawn\b/, "hzd"],
+    [/\bbaldur ?s gate\b/, "bg"], [/\bthe elder scrolls\b/, "tes"], [/\bdeath stranding\b/, "ds"], [/\bstreet fighter\b/, "sf"],
+  ];
+  function normBusq(s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/['’`´]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); }
+  // Índice de un título: sus palabras, y las de sus otras formas de escribirlo (apodos, romanos en cifras,
+  // iniciales, apodo y número juntos: «gta5», «ff7», «bo7»)
+  function indiceBusq(titulo) {
+    var t = normBusq(titulo), formas = [t];
+    var apodado = t; APODOS.forEach(function (a) { apodado = apodado.replace(a[0], a[1]); });
+    if (apodado !== t) formas.push(apodado);
+    formas.slice().forEach(function (f) { var c = f.split(" ").map(function (x, i) { return i && ROMANOS[x] ? ROMANOS[x] : x; }).join(" "); if (c !== f) formas.push(c); });
+    var w = t.split(" "), letras = [], num = "";
+    for (var i = 0; i < w.length; i++) { var n = /^\d+$/.test(w[i]) ? w[i] : i && ROMANOS[w[i]]; if (n) { num = n; break; } letras.push(w[i][0]); }
+    if (letras.length >= 2) formas.push(letras.join("") + " " + num);
+    var fichas = {};
+    formas.forEach(function (f) {
+      var ws = f.split(" ");
+      ws.forEach(function (x, i) { if (x) fichas[x] = 1; if (/^[a-z]{1,4}$/.test(x) && /^\d{1,2}$/.test(ws[i + 1] || "")) fichas[x + ws[i + 1]] = 1; });
+    });
+    return Object.keys(fichas);
+  }
+  // ¿Se parece la palabra buscada a alguna del título? Exacta (3), empieza igual (2), una letra mal (1)
+  function unaLetra(a, b) {
+    if (Math.abs(a.length - b.length) > 1 || a[0] !== b[0]) return false; // la primera letra, bien
+    var i = 0; while (i < a.length && a[i] === b[i]) i++;
+    if (a.slice(i + 1) === b.slice(i + 1)) return true;                      // cambiada
+    if (a.slice(i + 1) === b.slice(i)) return true;                          // sobra en a
+    if (a.slice(i) === b.slice(i + 1)) return true;                          // falta en a
+    return a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2); // dos letras cambiadas de sitio
+  }
+  function notaPalabra(q, palabras) {
+    var mejor = 0;
+    for (var i = 0; i < palabras.length; i++) {
+      var p = palabras[i];
+      if (p === q) return 3;
+      if (/^\d+$/.test(q)) continue;                                         // los números, exactos
+      if (p.indexOf(q) === 0) mejor = Math.max(mejor, 2);
+      else if (q.length >= 5 && unaLetra(q, p.slice(0, Math.max(q.length, Math.min(p.length, q.length + 1))))) mejor = Math.max(mejor, 1);
+    }
+    return mejor;
+  }
+  // Nota del título para la búsqueda (0 = no sale)
+  function notaBusq(q, j) {
+    var qs = normBusq(q).split(" ").filter(Boolean); if (!qs.length) return 1;
+    var idx = j._idx || (j._idx = indiceBusq(j.titulo)), total = 0;
+    for (var i = 0; i < qs.length; i++) { var n = notaPalabra(qs[i], idx); if (!n) return 0; total += n; }
+    // El nombre exacto primero («elden ring» antes que «Elden Ring Nightreign»)
+    var t = j._nb || (j._nb = normBusq(j.titulo)), qn = qs.join(" ");
+    return total + (t === qn ? 3 : 0);
+  }
+  // Si no sale nada: lo que más se parece (distancia entre palabras), para «metro ezodus», «halo infinit»…
+  function distancia(a, b) {
+    var prev = [], cur, i, k;
+    for (k = 0; k <= b.length; k++) prev[k] = k;
+    for (i = 1; i <= a.length; i++) {
+      cur = [i];
+      for (k = 1; k <= b.length; k++) cur[k] = Math.min(prev[k] + 1, cur[k - 1] + 1, prev[k - 1] + (a[i - 1] === b[k - 1] ? 0 : 1));
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+  function parecidoBusq(q, j) {
+    var qs = normBusq(q).split(" ").filter(function (x) { return x.length >= 2; }); if (!qs.length) return 0;
+    var idx = j._idx || (j._idx = indiceBusq(j.titulo)), suma = 0, bien = 0;
+    for (var i = 0; i < qs.length; i++) {
+      var mejor = 0;
+      for (var k = 0; k < idx.length; k++) {
+        var p = idx[k]; if (Math.abs(p.length - qs[i].length) > 3) continue;
+        var s = 1 - distancia(qs[i], p) / Math.max(qs[i].length, p.length);
+        if (s > mejor) mejor = s;
+      }
+      if (mejor >= 0.65) { bien++; suma += mejor; }
+    }
+    // Al menos la mitad de las palabras tienen que parecerse
+    return bien && bien * 2 >= qs.length ? suma / qs.length : 0;
+  }
+
   function pintar() {
     var lista = $("lista");
     var n = nActivos(); var nb = $("nfiltros"); nb.hidden = !n; nb.textContent = n;
@@ -1387,19 +1475,35 @@ button { cursor: pointer; }
     var qTxt = f.q.trim(), q = norm(qTxt);
     var palabras = q.split(/\s+/).filter(Boolean);
     var filas = [], vistos = {};
-    var coincide = function (j) { var t = j._norm || (j._norm = norm(j.titulo)); return palabras.every(function (p) { return t.indexOf(p) >= 0; }); };
     var porFecha = f.orden === "recientes" ? esReciente : f.orden === "proximos" ? esProximo : null;
     if (vivo.q === qTxt) vivo.juegos.forEach(function (j) { if (porFecha && !porFecha(j)) return; var r = fila(j); if (r) { filas.push(r); vistos[norm(j.titulo)] = 1; } });
     datos.juegos.forEach(function (j) {
       var tipoJ = (j.tipo === "edicion" ? "juego" : j.tipo) || "juego"; // las ediciones especiales son juegos
       if (f.tipo && f.tipo !== "todos" && f.tipo !== "edicion" && tipoJ !== f.tipo) return;
-      if (palabras.length && !coincide(j)) return;
+      var nota = palabras.length ? notaBusq(qTxt, j) : 1;
+      if (!nota) return;
       if (porFecha && !porFecha(j)) return;
-      if (vistos[j._norm || norm(j.titulo)]) return;
-      var r = fila(j); if (r) filas.push(r);
+      if (vistos[j._norm || (j._norm = norm(j.titulo))]) return;
+      var r = fila(j); if (r) { r.nota = nota; filas.push(r); }
     });
-    filas.sort(function (a, b) {
+    // Nada con ese nombre: enseñamos lo que más se parece
+    var parecidos = false;
+    if (!filas.length && palabras.length && !porFecha && !vivo.cargando) {
+      datos.juegos.forEach(function (j) {
+        var tipoJ = (j.tipo === "edicion" ? "juego" : j.tipo) || "juego";
+        if (f.tipo && f.tipo !== "todos" && f.tipo !== "edicion" && tipoJ !== f.tipo) return;
+        var nota = parecidoBusq(qTxt, j); if (!nota) return;
+        var r = fila(j); if (r) { r.nota = nota; filas.push(r); }
+      });
+      filas.sort(function (a, b) { return b.nota - a.nota || (a.j.pop || 99999) - (b.j.pop || 99999); });
+      filas = filas.slice(0, 12);
+      parecidos = filas.length > 0;
+    }
+    var TIPO_ORDEN = { juego: 0, edicion: 1, dlc: 2, tarjeta: 3 };
+    if (!parecidos) filas.sort(function (a, b) {
       if (!!b.j._vivo - !!a.j._vivo) return !!b.j._vivo - !!a.j._vivo;
+      // Buscando y sin otro orden elegido: lo que mejor encaja con lo escrito, el juego antes que sus ediciones, DLC y tarjetas
+      if (palabras.length && f.orden === "populares") return (b.nota || 0) - (a.nota || 0) || (TIPO_ORDEN[a.j.tipo] || 0) - (TIPO_ORDEN[b.j.tipo] || 0) || (a.j.pop || 99999) - (b.j.pop || 99999);
       if (f.orden === "recientes") return (b.j.lanzamiento || "").localeCompare(a.j.lanzamiento || "") || (a.j.pop || 99999) - (b.j.pop || 99999);
       if (f.orden === "proximos") return (a.j.lanzamiento || "9999").localeCompare(b.j.lanzamiento || "9999") || (a.j.pop || 99999) - (b.j.pop || 99999);
       if (f.orden === "descuento") return b.dto - a.dto;
@@ -1422,6 +1526,7 @@ button { cursor: pointer; }
           q ? "No tenemos «" + esc(qTxt) + "» con estos filtros." : "Prueba a quitar alguno.") + '<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button></div>');
       return;
     }
+    if (parecidos) estadoVivo += '<div class="busca-vivo">No encontramos «' + esc(qTxt) + '» tal cual. Esto es lo que más se parece:</div>';
     var resto = filas.length - mostrar;
     lista.classList.toggle("cuadricula", f.vista === "cuadricula");
     lista.innerHTML = estadoVivo + filas.slice(0, mostrar).map(function (r) { return f.vista === "cuadricula" && !abiertosGrid[r.j.id] ? mini(r) : tarjeta(r); }).join("") +
