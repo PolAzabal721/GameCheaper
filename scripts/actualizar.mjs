@@ -39,7 +39,7 @@ function visitar(fuente, j) { if (!j) return; (VISITAS.get(fuente) || VISITAS.se
 const ventana = (lista, tam) => { if (!lista.length) return []; const n = Math.ceil(lista.length / tam), k = TURNO % n; return lista.slice(k * tam, (k + 1) * tam); };
 const ESHOP_MAX = +(ENV.ESHOP_MAX || 2500);
 const EBAY_MAX = +(ENV.EBAY_MAX || 250);     // eBay: los juegos de consola más populares en cada ejecución…
-const EBAY_ROTA = +(ENV.EBAY_ROTA || 650);   // …y un bloque nuevo del resto, rotando (eBay permite unas 5.000 consultas al día)
+const EBAY_ROTA = +(ENV.EBAY_ROTA || 450);   // …y un bloque nuevo del resto, rotando (eBay permite unas 5.000 consultas al día)
 const GAME_MAX = +(ENV.GAME_MAX || 150);
 const IG_MAX = +(ENV.IG_MAX || 250);
 const MS_MAX = +(ENV.MS_MAX || 400);
@@ -77,7 +77,7 @@ export const limpiar = (s) => String(s).toLowerCase().normalize("NFD").replace(/
 const SOBRANTE = /\b(nintendo switch 2 edition|nintendo switch 2|nintendo switch|switch 2|ps4 (y|and) ps5|ps5|ps4|edicion estandar|standard edition|edicion standard)\b/g;
 export const clave = (titulo) => limpiar(titulo).replace(SOBRANTE, " ").replace(/\s+/g, " ").trim();
 // Para cruzar con los catálogos de las tiendas (mapas de productos): sin apóstrofos («Meier's» = «meiers» = «meier-s»)
-const llave = (t) => clave(String(t).replace(/['’`´]/g, "").replace(/[™®©]/g, " ")).replace(/\b([a-z0-9]+) s\b/g, "$1s").replace(/([a-z])(\d)/g, "$1 $2");
+const llave = (t) => clave(String(t).replace(/['’`´]/g, "").replace(/[™®©]/g, " ").replace(/\bedici[oó]n (deluxe|ultimate|gold|definitiva|completa|premium|especial|digital deluxe)\b/gi, "$1 edition")).replace(/\b([a-z0-9]+) s\b/g, "$1s").replace(/([a-z])(\d)/g, "$1 $2");
 const tituloBonito = (t) => html2txt(t).replace(/[™®©]/g, "").replace(/\s*[–-]\s*Nintendo Switch 2 Edition$/i, "").replace(/\s+/g, " ").trim();
 // Palabras que indican que NO es un juego completo
 const EXTRAS = /\b(lite|dlc|pack|pase|season pass|expansion|soundtrack|banda sonora|bundle|lote|monedas|coins|points|puntos|vbucks|upgrade|mejora|demo|trial|prueba|artbook|wallpaper|paquete|music|musica|costume|traje|skin|skins|cosmetico|ost)\b/;
@@ -949,6 +949,8 @@ async function main() {
   const recorrerFuente = async (nombre, lista, fn, pausa) => {
     let fallos = 0;
     for (const j of lista) {
+      // Límite diario de la API alcanzado (eBay: unas 5.000 consultas al día): se para sin darla por rota
+      if (/HTTP 429/.test(avisos[avisos.length - 1] || "") && avisos[avisos.length - 1].startsWith(nombre + ":")) { avisos.push(`${nombre}: límite diario de consultas alcanzado, sigo en la próxima ejecución`); break; }
       if (await intentar(nombre, () => fn(j))) { (REVISA[nombre] || [nombre]).forEach((t) => j.revisado.add(t)); visitar(nombre, j); }
       else if (++fallos >= 5) { avisos.push(`${nombre}: demasiados fallos, paro`); caidas.add(nombre); break; }
       await esperar(pausa);
@@ -980,6 +982,9 @@ async function main() {
   }
   // Microsoft Store: los juegos que salen en el mapa de productos de xbox.com, todos en cada ejecución (de 20 en 20);
   // para el resto, el buscador de Microsoft con los más populares y un bloque distinto cada vez
+  // Los juegos que ya teníamos de antes (sobre todo los que solo vienen de Instant Gaming, que se consulta después)
+  // también se buscan en el mapa de Microsoft; si al final no tienen ningún precio, no salen
+  for (const v of anterior.juegos || []) if (v.tipo !== "tarjeta") { const j = juego(v.titulo, { pop: v.pop, tipo: v.tipo }); if (j) (v.plataformas || []).forEach((p) => j.plataformas.add(p)); }
   let mapaXbox = null;
   try { mapaXbox = await mapaMS(); } catch (e) { avisos.push(`xbox: ${e.message}`); }
   const enMapaMS = new Set();
