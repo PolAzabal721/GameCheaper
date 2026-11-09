@@ -10,5 +10,3 @@ jobs:
       - run: node scripts/actualizar.mjs
         env:
           PRUEBA_ALCAMPO: "1"
-          ALCAMPO_TITULOS: "25"
-          ALCAMPO_ROTA: "0"

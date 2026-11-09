@@ -516,25 +516,18 @@ async function instantGaming(j) {
 // Su robots.txt permite consultarlo. Solo cogemos productos de la sección «Videojuegos» que no sean consolas ni accesorios,
 // y solo los asociamos a juegos que ya están en el catálogo (todas las palabras del título tienen que aparecer).
 const ALCAMPO = "https://www.compraonline.alcampo.es";
-const ALCAMPO_TITULOS = +(ENV.ALCAMPO_TITULOS || 60);   // juegos populares que se buscan por su nombre en cada ejecución…
-const ALCAMPO_ROTA = +(ENV.ALCAMPO_ROTA || 90);          // …y otros tantos por turnos
-const ALCAMPO_PAUSA = 5000;                               // Alcampo corta si se le pregunta muy seguido: una consulta cada 5 s
+// Alcampo tiene una protección anti-bots: tras unas pocas consultas seguidas responde «202» vacío (un reto para navegadores).
+// No la saltamos: hacemos solo unas pocas consultas amplias por ejecución y, si aparece, paramos hasta la siguiente.
+const ALCAMPO_CONSULTAS = ["videojuego", "juego ps5", "juego nintendo switch", "juego switch 2", "juego ps4"];
+const ALCAMPO_PAUSA = 8000;
 const PLAT_ALCAMPO = [["Switch 2", /switch 2|switch2/], ["Switch", /switch/], ["PS5", /ps5|playstation 5/], ["PS4", /ps4|playstation 4/], ["Xbox Series", /xbox/]];
 const NO_JUEGO_ALCAMPO = /\b(consola|mando|auricular|auriculares|tarjeta|memoria|cargador|cable|funda|volante|soporte|base|bateria|pack consola|camara|gafas|headset|steering|accesorio)\b/;
-async function alcampo(lista, visitar) {
+async function alcampo(visitar) {
   const productos = new Map();
-  let seguidos = 0;
   const buscar = async (q) => {
-    // Si Alcampo nos frena (respuesta vacía), esperamos un minuto y reintentamos una vez; si vuelve a pasar, paramos
-    let texto = "";
-    for (let intento = 1; intento <= 2 && !texto; intento++) {
-      const r = await pedir(`${ALCAMPO}/api/webproductpagews/v6/product-pages/search?q=${encodeURIComponent(q)}&maxPageSize=300&maxProductsToDecorate=300`, { headers: { Accept: "application/json" } });
-      texto = await r.text();
-      if (!texto) console.warn(`Alcampo «${q}»: respuesta vacía (HTTP ${r.status}, ${r.headers.get("content-type")}, ${r.headers.get("content-length")})`);
-      if (!texto && intento === 1) await esperar(60000);
-    }
-    if (!texto) { if (++seguidos >= 3) throw new Error("Alcampo no responde (nos frena)"); return; }
-    seguidos = 0;
+    const r = await pedir(`${ALCAMPO}/api/webproductpagews/v6/product-pages/search?q=${encodeURIComponent(q)}&maxPageSize=300&maxProductsToDecorate=300`, { headers: { Accept: "application/json" } });
+    const texto = await r.text();
+    if (r.status === 202 || !texto) return false; // nos pide demostrar que somos un navegador: lo dejamos
     const d = JSON.parse(texto);
     for (const g of d.productGroups || []) for (const p of g.decoratedProducts || []) {
       const ruta = (p.categoryPath || []).map(limpiar);
@@ -542,15 +535,10 @@ async function alcampo(lista, visitar) {
       if (NO_JUEGO_ALCAMPO.test(limpiar(p.name)) || !(parseFloat(p.price?.amount) > 0)) continue;
       productos.set(p.retailerProductId, p);
     }
+    return true;
   };
-  // 1. Búsquedas amplias por plataforma y 2. los juegos de consola más populares por su nombre
-  for (const q of ["videojuego", "juego ps5", "juego ps4", "juego nintendo switch", "juego switch 2", "juego xbox", "pegi", "ps5 pegi", "switch pegi", "ps4 pegi", "xbox pegi"]) {
-    await buscar(q);
-    await esperar(ALCAMPO_PAUSA);
-  }
-  const buscados = [];
-  for (const j of [...lista.slice(0, ALCAMPO_TITULOS), ...ventana(lista.slice(ALCAMPO_TITULOS), ALCAMPO_ROTA)]) {
-    try { await buscar(j.titulo); buscados.push(j); } catch (e) { console.warn("Alcampo: " + e.message); break; }
+  for (const q of ALCAMPO_CONSULTAS) {
+    if (!(await buscar(q))) { console.warn(`Alcampo: su protección anti-bots ha saltado tras «${q}»; seguimos en la próxima ejecución`); break; }
     await esperar(ALCAMPO_PAUSA);
   }
   // 3. Asociar cada producto al juego del catálogo con el título más largo que encaje
@@ -569,7 +557,6 @@ async function alcampo(lista, visitar) {
     visitar(mejor.j);
     n++;
   }
-  buscados.forEach((j) => { j.revisado.add("alcampo"); visitar(j); });
   console.log(`Alcampo: ${productos.size} videojuegos en su tienda, ${n} asociados al catálogo`);
   return n;
 }
@@ -763,7 +750,7 @@ async function main() {
   if (ENV.PRUEBA_ALCAMPO) {
     for (const v of JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8")).juegos) { const j = juego(v.titulo, { pop: v.pop, tipo: v.tipo }); if (j) v.plataformas.forEach((p) => j.plataformas.add(p)); }
     const lista = [...juegos.values()].filter((j) => j.tipo !== "dlc" && j.tipo !== "tarjeta" && [...j.plataformas].some((p) => p !== "PC")).sort((a, b) => a.pop - b.pop);
-    await alcampo(lista, () => {});
+    await alcampo(() => {});
     for (const j of juegos.values()) if (j.ofertas.some((o) => o.tienda === "alcampo")) console.log("ALCAMPO", j.titulo, "→", j.ofertas.filter((o) => o.tienda === "alcampo").map((o) => `${o.plataforma} ${o.precio}${o.stock ? "" : " (agotado)"} ${o.url}`).join(" | "));
     const u = [...juegos.values()].flatMap((j) => j.ofertas).find((o) => o.tienda === "alcampo")?.url;
     if (u) { const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0 (compatible; Pillao-comparador/2.0)" }, redirect: "follow" }); console.log("ENLACE", u, "→", r.status, r.url); }
@@ -846,7 +833,7 @@ async function main() {
   await recorrerFuente("xbox", [...candidatosMS.slice(0, MS_MAX), ...ventana(candidatosMS.slice(MS_MAX), MS_ROTA)], microsoftStore, 300);
   const candidatosIG = [...juegos.values()].filter((j) => j.tipo !== "tarjeta").sort((a, b) => a.pop - b.pop);
   await recorrerFuente("instantgaming", [...candidatosIG.slice(0, IG_MAX), ...ventana(candidatosIG.slice(IG_MAX), IG_ROTA)], instantGaming, 900);
-  if (!(await intentar("alcampo", () => alcampo(consolaPopulares(Infinity).filter((j) => j.tipo !== "dlc"), (j) => visitar("alcampo", j))))) caidas.add("alcampo");
+  if (!(await intentar("alcampo", () => alcampo((j) => visitar("alcampo", j))))) caidas.add("alcampo");
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) {
     // Juegos en disco (no DLC ni tarjetas): los populares siempre y el resto por turnos, hasta cubrir todo el catálogo
