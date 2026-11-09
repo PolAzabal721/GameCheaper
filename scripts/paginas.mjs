@@ -59,7 +59,12 @@ td.p{font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:700;white-s
 h2{font-family:"Bricolage Grotesque","Arial Black",sans-serif;font-size:20px;margin:8px 0 0}
 .mas{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0}.mas a{display:inline-block;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:5px 12px;text-decoration:none;color:var(--ink);font-size:14px}
 .letras{display:flex;flex-wrap:wrap;gap:6px}.letras a{font-weight:700;text-decoration:none;padding:4px 9px;border-radius:6px;background:var(--surface);border:1px solid var(--line)}
-.lista{columns:3 220px;padding:0;list-style:none;margin:0}.lista li{break-inside:avoid;padding:2px 0;font-size:14px}
+.lista{columns:3 230px;column-gap:18px;padding:0;list-style:none;margin:0}.lista li{break-inside:avoid;padding:0}
+.lista a{display:block;padding:6px 10px;border-radius:8px;color:var(--ink);text-decoration:none;font-size:14px;line-height:1.3}.lista a:hover{background:var(--surface);color:var(--accent)}
+.letras{position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:2}.letras a{color:var(--ink)}
+h2[id^="l-"]{margin-top:22px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.ir-app{background:var(--ink);color:var(--surface);padding:8px 14px;border-radius:9px;text-decoration:none;font-weight:700;font-size:14px}
+.migas a{text-decoration:none}
 footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;padding:18px 0 30px}footer nav{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}footer a{color:var(--muted)}
 @media(max-width:600px){h1{font-size:24px}.ficha>div:first-child{flex-basis:100%}.etiqueta{align-self:flex-start}th:nth-child(3),td:nth-child(3){display:none}th,td{padding:9px 8px;font-size:13px}td a .l{display:none}}`;
 }
@@ -72,7 +77,7 @@ function plantilla({ titulo, descripcion, canonica, raiz, cuerpo, jsonld }) {
 <meta property="og:description" content="${esc(descripcion)}"><meta property="og:url" content="${canonica}"><meta property="og:locale" content="es_ES"><meta property="og:site_name" content="Pillao">
 <link rel="stylesheet" href="${raiz}fonts/fuentes.css"><link rel="stylesheet" href="${raiz}paginas.css">
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>` : ""}
-</head><body><header><div class="wrap"><a class="logo" href="${raiz}">Pillao<span>€</span></a><a href="${raiz}juegos/">Todos los juegos</a></div></header>
+</head><body><header><div class="wrap"><a class="logo" href="${raiz}">Pillao<span>€</span></a><a class="ir-app" href="${raiz}">Ir al comparador →</a></div></header>
 <main class="wrap">${cuerpo}</main>
 <footer><div class="wrap">Pillao compara precios de videojuegos y no vende productos. Los precios son orientativos: el válido es siempre el de cada tienda. Algunos enlaces son de afiliado: si compras tras pulsarlos, la tienda puede pagarnos una comisión, sin coste para ti.
 <nav><a href="${raiz}legal.html#aviso-legal">Aviso legal</a><a href="${raiz}legal.html#condiciones">Condiciones de uso</a><a href="${raiz}legal.html#privacidad">Privacidad</a><a href="${raiz}legal.html#cookies">Cookies</a></nav></div></footer>
@@ -139,7 +144,7 @@ function paginaLista(juegos) {
   [...juegos].sort((a, b) => a.titulo.localeCompare(b.titulo, "es")).forEach((j) => (grupos[letra(j.titulo)] ||= []).push(j));
   const letras = Object.keys(grupos).sort((a, b) => (a === "#") - (b === "#") || a.localeCompare(b));
   const cuerpo = `<nav class="migas"><a href="../">Pillao</a> › Todos los juegos</nav><h1>Todos los juegos</h1>
-<p class="resumen">${juegos.length.toLocaleString("es-ES")} juegos, DLC y tarjetas regalo con precios comparados.</p>
+<p class="resumen">${juegos.length.toLocaleString("es-ES")} juegos, DLC y tarjetas regalo con precios comparados. Para filtrar por plataforma, tienda o precio, usa el <a href="../">comparador</a>.</p>
 <nav class="letras">${letras.map((l) => `<a href="#l-${l === "#" ? "num" : l}">${l}</a>`).join("")}</nav>
 ${letras.map((l) => `<h2 id="l-${l === "#" ? "num" : l}">${l}</h2><ul class="lista">${grupos[l].map((j) => `<li><a href="../juego/${j.id}/">${esc(j.titulo)}</a></li>`).join("")}</ul>`).join("\n")}`;
   return plantilla({ titulo: "Todos los juegos | Pillao", descripcion: "Lista de todos los videojuegos, DLC y tarjetas regalo cuyos precios compara Pillao en tiendas españolas.", canonica: SITIO + "juegos/", raiz: "../", cuerpo });

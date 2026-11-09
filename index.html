@@ -473,6 +473,7 @@ button { cursor: pointer; }
       <a href="legal.html#condiciones">Condiciones de uso</a>
       <a href="legal.html#privacidad">Privacidad</a>
       <a href="legal.html#cookies">Cookies</a>
+      <a href="juegos/">Lista de juegos</a>
       <button type="button" id="pie-cookies">Configurar cookies</button>
     </nav>
   </div>
@@ -1020,8 +1021,7 @@ button { cursor: pointer; }
       (n ? CAMPANA_OK + (n > 1 ? '<span class="n">' + n + "</span>" : "") : CAMPANA_MAS) + "</button>";
   }
   function campanaTitulo(j) {
-    var titulo = datos && datos.paginas && !j._vivo ? '<a href="juego/' + encodeURIComponent(j.id) + '/">' + esc(j.titulo) + "</a>" : esc(j.titulo);
-    return '<div class="j-tit"><h2>' + titulo + "</h2>" + botonCampana(j) + "</div>";
+    return '<div class="j-tit"><h2>' + esc(j.titulo) + "</h2>" + botonCampana(j) + "</div>";
   }
 
   // Lo mismo que cuenta el historial: nuevo, con stock, sin los revendedores que la web oculta de serie
