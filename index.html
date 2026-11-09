@@ -82,6 +82,11 @@ button { cursor: pointer; }
 #plataformas { flex-wrap: wrap; }
 @media (max-width: 700px) { .sep { display: none; } .seg button { padding: 6px 10px; } }
 .chip { border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; border-radius: 99px; font-size: 14px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
+.chip-plat { display: inline-flex; align-items: center; gap: 6px; }
+.ic-plat { width: 17px; height: 17px; flex-shrink: 0; }
+.ic-pc { color: var(--muted); } .ic-ps { color: #1f5fd6; } .ic-xbox { color: #12893e; } .ic-nin { color: #d42a2a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ic-ps { color: #6f9bff; } :root:not([data-theme="light"]) .ic-xbox { color: #3fcf73; } :root:not([data-theme="light"]) .ic-nin { color: #ff6b6b; } }
+:root[data-theme="dark"] .ic-ps { color: #6f9bff; } :root[data-theme="dark"] .ic-xbox { color: #3fcf73; } :root[data-theme="dark"] .ic-nin { color: #ff6b6b; }
 .chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
 
 .aviso { margin-top: 14px; padding: 10px 14px; border-radius: 10px; background: var(--warn-soft); color: var(--warn); font-size: 14px; display: flex; gap: 10px; align-items: flex-start; }
@@ -637,7 +642,8 @@ button { cursor: pointer; }
     plats.sort(function (a, b) { var ia = orden.indexOf(a), ib = orden.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b); });
     f.plats = f.plats.filter(function (p) { return plats.indexOf(p) >= 0; });
     $("plataformas").innerHTML = plats.map(function (p) {
-      return '<button type="button" class="chip" data-p="' + esc(p) + '" aria-pressed="' + (f.plats.indexOf(p) >= 0) + '">' + esc(p) + "</button>";
+      var ic = iconoPlat(p);
+      return '<button type="button" class="chip chip-plat" data-p="' + esc(p) + '" aria-pressed="' + (f.plats.indexOf(p) >= 0) + '">' + ic + esc(p) + "</button>";
     }).join("");
     // tiendas agrupadas por tipo (solo las que tienen algún precio)
     conOfertas = {};
@@ -687,6 +693,20 @@ button { cursor: pointer; }
     [].forEach.call($("formato").children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === f.formato); });
     [].forEach.call($("estado-f").children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === f.estado); });
     [].forEach.call($("tipo-f").children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === (f.tipo || "todos")); });
+  }
+
+  // Iconos genéricos de cada plataforma (no son los logos de las marcas): pantalla para PC,
+  // mando para PlayStation y Xbox (cada uno con su color) y consola portátil para Switch
+  var ICONOS_PLAT = {
+    pc: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+    mando: '<path d="M7.5 7h9a4.5 4.5 0 0 1 4.4 3.6l.9 5.1a2.4 2.4 0 0 1-4.2 2L15.8 15H8.2l-1.8 2.7a2.4 2.4 0 0 1-4.2-2l.9-5.1A4.5 4.5 0 0 1 7.5 7z"/><path d="M8 10v3M6.5 11.5h3"/><circle cx="15.5" cy="10.5" r=".6" fill="currentColor"/><circle cx="17" cy="12.5" r=".6" fill="currentColor"/>',
+    portatil: '<rect x="2" y="6" width="20" height="12" rx="3"/><rect x="7" y="8.5" width="10" height="7" rx="1"/><circle cx="4.5" cy="10" r=".6" fill="currentColor"/><circle cx="19.5" cy="14" r=".6" fill="currentColor"/>',
+  };
+  function iconoPlat(p) {
+    var tipo = p === "PC" ? "pc" : /^PS|Xbox/.test(p) ? "mando" : /Switch/.test(p) ? "portatil" : null;
+    if (!tipo) return "";
+    var marca = /^PS/.test(p) ? "ps" : /Xbox/.test(p) ? "xbox" : /Switch/.test(p) ? "nin" : "pc";
+    return '<svg class="ic-plat ic-' + marca + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONOS_PLAT[tipo] + "</svg>";
   }
 
   function enlace(o, j) {
