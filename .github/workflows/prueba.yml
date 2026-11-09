@@ -1,0 +1,30 @@
+name: Prueba
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prueba:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+      - name: Mapas
+        run: |
+          cat > p.mjs <<'X'
+          import { gunzipSync } from "node:zlib";
+          const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)","Accept-Language":"es-ES,es;q=0.9"};
+          const locs=(b)=>[...b.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
+          let todas=[];
+          for(let i=0;i<13;i++){const r=await fetch(`https://www.xbox.com/sitemap/pdp-es-ES-sitemap-${i}.xml.gz`,{headers:H});const buf=Buffer.from(await r.arrayBuffer());let x;try{x=gunzipSync(buf).toString()}catch{x=buf.toString()}const l=locs(x);todas.push(...l);if(i==0)console.log("XS0",r.status,l.length,l.slice(0,6).join(" "));}
+          console.log("XTOTAL",todas.length);
+          for(const q of ["borderlands-4","f1-25","street-fighter-6","split-fiction","civilization-vii","lego-batman","jurassic-world-evolution-3","ea-sports-fc-27","hogwarts-legacy"])console.log("X",q,todas.filter(u=>u.includes(q)).slice(0,6).join(" "));
+          const g=locs(await (await fetch("https://www.game.es/sitemap/sitemap_productos.xml",{headers:H})).text());
+          for(const q of ["f1-25","tekken-8","hollow-knight"])console.log("G",q,g.filter(u=>u.includes(q)).slice(0,8).join(" "));
+          console.log("GT",g.filter(u=>/\/(tarjeta|codigo|prepago|psn|monedero)[a-z0-9-]*\//.test(u)).map(u=>u.replace("https://www.game.es/","")).join(" "));
+          const p=await (await fetch("https://www.playstation.com/es-es/sitemap.xml",{headers:H})).text();const ps=[...p.matchAll(/\/es-es\/games\/([a-z0-9-]+)\/</g)].map(m=>m[1]);
+          for(const q of ["assassin","hollow-knight","f1-","dragon","nba-2k","football-manager","peak","tomb-raider","resident-evil-4"])console.log("P",q,[...new Set(ps.filter(s=>s.includes(q)))].slice(0,10).join(" "));
+          X
+          node p.mjs
