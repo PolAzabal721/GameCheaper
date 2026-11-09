@@ -183,7 +183,7 @@ button { cursor: pointer; }
   .lista.cuadricula { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   /* Fila del móvil: miniatura y datos arriba, la etiqueta amarilla del precio a lo ancho debajo */
   .cuadro { display: grid; grid-template-columns: 96px minmax(0, 1fr); column-gap: 12px; row-gap: 10px; height: auto; min-height: 0; padding: 10px; }
-  .cuadro-img { margin: 0; width: 96px; height: auto; min-height: 76px; border-radius: 7px; align-self: stretch; }
+  .cuadro-img { margin: 0; width: 96px; height: 76px; border-radius: 7px; align-self: start; }
   .j-cov { width: 64px; height: 86px; border-radius: 8px; }
   .j-izq { gap: 12px; }
   .mini-izq { gap: 4px; }
@@ -226,10 +226,6 @@ button { cursor: pointer; }
 .ofertas { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
 .of { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .of:last-child { border-bottom: 0; }
-/* Fila con el color de la tienda o de la plataforma, difuminado de izquierda a derecha y a todo el ancho de la tarjeta */
-.of.tinte { margin: 0 -18px; padding-left: 18px; padding-right: 18px; background: linear-gradient(90deg, color-mix(in srgb, var(--tinte) 15%, transparent) 0%, color-mix(in srgb, var(--tinte) 6%, transparent) 40%, transparent 75%); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .of.tinte { background: linear-gradient(90deg, color-mix(in srgb, var(--tinte) 24%, transparent) 0%, color-mix(in srgb, var(--tinte) 9%, transparent) 40%, transparent 75%); } }
-:root[data-theme="dark"] .of.tinte { background: linear-gradient(90deg, color-mix(in srgb, var(--tinte) 24%, transparent) 0%, color-mix(in srgb, var(--tinte) 9%, transparent) 40%, transparent 75%); }
 .of.sub { padding: 7px 0 7px 18px; background: var(--surface-2); border-bottom-style: dashed; font-size: 14px; }
 .of.sub .of-t span:first-child { font-weight: 600; }
 .of.sub .of-p b { font-size: 15px; }
@@ -865,11 +861,6 @@ button { cursor: pointer; }
     return { j: j, ofs: ofs, mejor: mejor, nuevo: minDe("nuevo"), usado: minDe("usado"), dto: ref > 0 ? Math.max(0, Math.round((1 - total(mejor) / ref) * 100)) : 0 };
   }
 
-  // Color suave de cada fila de oferta: el de la tienda si tiene uno propio; si no, el de la plataforma
-  var COLOR_TIENDA = { instantgaming: "#ff6a13", steam: "#66c0f4", psstore: "#0070d1", xbox: "#107c10", eshop: "#e60012" };
-  var COLOR_PLAT = { PC: "#14b8a6", PS5: "#0070d1", PS4: "#0070d1", "Xbox Series": "#107c10", Switch: "#e60012", "Switch 2": "#e60012", "Tarjeta regalo": "#f5a524" };
-  function tinte(tienda, plataforma) { return COLOR_TIENDA[tienda] || COLOR_PLAT[plataforma] || ""; }
-
   // Precio sin rebaja de la tienda, tachado (no en tarjetas de saldo: ya enseñan su valor)
   function antes(o, j) {
     if (j.valor || o.estado === "usado" || !(o.regular > o.precio + 0.01)) return "";
@@ -1002,8 +993,7 @@ button { cursor: pointer; }
             (o.condicion ? "<span>·</span><span>" + esc(o.condicion) + "</span>" : "") +
             (o.envio ? "<span>·</span><span>" + eur.format(o.precio) + " + " + eur.format(o.envio) + " envío</span>" : "") +
             (o.stock ? "" : '<span class="agotado">· Agotado</span>');
-        var col = tinte(g.claves ? o.tienda : g.id, o.plataforma);
-        var fila = '<li class="of' + (g.ofs.indexOf(m) >= 0 ? " mejor" : "") + (col ? " tinte" : "") + '"' + (col ? ' style="--tinte:' + col + '"' : "") + '><div class="of-t"><strong>' + esc(t.nombre) + '</strong><span class="badge b-' + t.tipo + '">' + (g.claves ? "Claves" : TIPOS[t.tipo]) + "</span>" +
+        var fila = '<li class="of' + (g.ofs.indexOf(m) >= 0 ? " mejor" : "") + '"><div class="of-t"><strong>' + esc(t.nombre) + '</strong><span class="badge b-' + t.tipo + '">' + (g.claves ? "Claves" : TIPOS[t.tipo]) + "</span>" +
           (n === 1 && o.estado === "usado" ? '<span class="usado">Usado</span>' : "") +
           (n > 1 ? '<button type="button" class="desp" data-grupo="' + esc(clave) + '" aria-expanded="' + !!abierto + '">' + (abierto ? "▴ " : "▾ ") + (g.claves ? n + " ofertas de " + g.nTiendas + " tiendas" : g.id === "ebay" ? n + " anuncios" : n + (plats.length === n ? " plataformas" : " opciones")) + "</button>" : "") + "</div>" +
           '<div class="of-d">' + detalle + "</div>" +
