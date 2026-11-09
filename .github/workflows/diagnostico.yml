@@ -6,13 +6,11 @@ jobs:
     steps:
       - run: |
           UA="Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)"
-          B=https://www.compraonline.alcampo.es/api/webproductpagews/v6
-          prueba() { echo "=== $1"; curl -s -m 30 -A "$UA" -H "Accept: application/json" "$B$1" -o /tmp/s.json; echo "  $(head -c 160 /tmp/s.json | tr -d '\n')"; jq -c '{grupos: (.productGroups|length?), productos: ([.productGroups[]?.decoratedProducts[]?]|length), ids: ([.productGroups[]?.otherProductIds[]?]|length), meta: .metadata, nombres: [.productGroups[]? | .name]}' /tmp/s.json 2>/dev/null | head -c 900; echo; sleep 2; }
-          prueba "/product-pages?categoryId=OC17612018&maxPageSize=50&maxProductsToDecorate=50"
-          prueba "/categories/OC17612018/product-pages?maxPageSize=50&maxProductsToDecorate=50"
-          prueba "/product-pages/categories/OC17612018?maxPageSize=50&maxProductsToDecorate=50"
-          prueba "/product-pages/search?q=pegi&maxPageSize=100&maxProductsToDecorate=100&includeAdditionalPageInfo=true"
-          prueba "/product-pages/search?q=pegi&maxPageSize=100&maxProductsToDecorate=100&categoryId=OC17612018"
-          curl -s -m 30 -A "$UA" "https://www.compraonline.alcampo.es/categories/juguetes/videojuegos/OC17612018" -o /tmp/c.html
-          echo "=== página de categoría: $(wc -c < /tmp/c.html) bytes"; grep -o -E 'api/webproductpagews/v[0-9]+/[a-z\-/]+' /tmp/c.html | sort -u | head; grep -o -E '__INITIAL_STATE__|__PRELOADED_STATE__|productGroups|nextPageToken|pageToken' /tmp/c.html | sort | uniq -c
-          grep -o -E '"(nextPageToken|pageToken|totalProducts|totalCount)":[^,]{0,80}' /tmp/c.html | head -5
+          B=https://www.compraonline.alcampo.es/api/webproductpagews/v6/product-pages/search
+          for q in pegi "pegi ps5" "pegi switch" "pegi ps4" "pegi xbox" videojuego; do
+            curl -s -m 30 -A "$UA" -H "Accept: application/json" "$B?q=$(echo $q | sed 's/ /%20/g')&maxPageSize=300&maxProductsToDecorate=300" -o /tmp/s.json
+            echo "=== $q: $(jq -c '{prods: ([.productGroups[]?.decoratedProducts[]?]|length), otros: ([.productGroups[]?.otherProductIds[]?]|length), grupos: [.productGroups[]? | {type, name, n: (.decoratedProducts|length), o: (.otherProductIds|length)}], meta: .metadata}' /tmp/s.json | head -c 700)"
+            sleep 3
+          done
+          jq -c '[.productGroups[]?.decoratedProducts[]?] | .[0] | {name, brand, price, available, isInCurrentCatalog, categoryPath, size, images: (.images|length?), keys: keys}' /tmp/s.json | head -c 1500; echo
+          jq -c '[.productGroups[]?.decoratedProducts[]? | {name, p: .price.amount, a: .available}] | .[0:30]' /tmp/s.json | head -c 2500; echo
