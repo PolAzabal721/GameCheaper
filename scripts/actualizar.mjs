@@ -511,6 +511,56 @@ async function instantGaming(j) {
   return n;
 }
 
+// ---------- Alcampo (juegos en disco) ----------
+// Su tienda online tiene un buscador con los datos de cada producto (nombre, precio, disponibilidad y sección).
+// Su robots.txt permite consultarlo. Solo cogemos productos de la sección «Videojuegos» que no sean consolas ni accesorios,
+// y solo los asociamos a juegos que ya están en el catálogo (todas las palabras del título tienen que aparecer).
+const ALCAMPO = "https://www.compraonline.alcampo.es";
+const ALCAMPO_TITULOS = +(ENV.ALCAMPO_TITULOS || 150);
+const PLAT_ALCAMPO = [["Switch 2", /switch 2|switch2/], ["Switch", /switch/], ["PS5", /ps5|playstation 5/], ["PS4", /ps4|playstation 4/], ["Xbox Series", /xbox/]];
+const NO_JUEGO_ALCAMPO = /\b(consola|mando|auricular|auriculares|tarjeta|memoria|cargador|cable|funda|volante|soporte|base|bateria|pack consola|camara|gafas|headset|steering|accesorio)\b/;
+async function alcampo(lista, visitar) {
+  const productos = new Map();
+  const buscar = async (q) => {
+    const d = await (await pedir(`${ALCAMPO}/api/webproductpagews/v6/product-pages/search?q=${encodeURIComponent(q)}&maxPageSize=300&maxProductsToDecorate=300`, { headers: { Accept: "application/json" } })).json();
+    for (const g of d.productGroups || []) for (const p of g.decoratedProducts || []) {
+      const ruta = (p.categoryPath || []).map(limpiar);
+      if (ruta[1] !== "videojuegos" || /consola|accesorio|memoria|tarjeta/.test(ruta[2] || "")) continue;
+      if (NO_JUEGO_ALCAMPO.test(limpiar(p.name)) || !(parseFloat(p.price?.amount) > 0)) continue;
+      productos.set(p.retailerProductId, p);
+    }
+  };
+  // 1. Búsquedas amplias por plataforma y 2. los juegos de consola más populares por su nombre
+  for (const q of ["videojuego", "juego ps5", "juego ps4", "juego nintendo switch", "juego switch 2", "juego xbox", "pegi", "ps5 pegi", "switch pegi", "ps4 pegi", "xbox pegi"]) {
+    try { await buscar(q); } catch (e) { console.warn("Alcampo «" + q + "»: " + e.message); }
+    await esperar(1500);
+  }
+  const buscados = [];
+  for (const j of lista.slice(0, ALCAMPO_TITULOS)) {
+    try { await buscar(j.titulo); buscados.push(j); } catch (e) { console.warn("Alcampo «" + j.titulo + "»: " + e.message); }
+    await esperar(1200);
+  }
+  // 3. Asociar cada producto al juego del catálogo con el título más largo que encaje
+  const candidatos = [...juegos.values()].filter((j) => j.tipo !== "dlc" && j.tipo !== "tarjeta").map((j) => ({ j, palabras: clave(j.titulo).split(" ").filter(Boolean) })).filter((c) => c.palabras.length);
+  let n = 0;
+  for (const p of productos.values()) {
+    const t = " " + limpiar(p.name) + " ";
+    const plat = PLAT_ALCAMPO.find(([, re]) => re.test(t))?.[0];
+    if (!plat) continue;
+    let mejor = null;
+    for (const c of candidatos) if (c.palabras.every((w) => t.includes(" " + w + " ")) && (!mejor || c.palabras.length > mejor.palabras.length)) mejor = c;
+    if (!mejor || mejor.palabras.length < 2 && !/^\S{5,}$/.test(mejor.palabras[0])) continue; // títulos de una sola palabra corta: demasiado ambiguos
+    const slug = limpiar(p.name).replace(/ /g, "-");
+    ofertar(mejor.j, { tienda: "alcampo", plataforma: plat, formato: "fisico", estado: "nuevo", stock: !!p.available, precio: parseFloat(p.price.amount),
+      url: `${ALCAMPO}/products/${slug}/${p.retailerProductId}`, fuente: "alcampo" });
+    visitar(mejor.j);
+    n++;
+  }
+  buscados.forEach((j) => { j.revisado.add("alcampo"); visitar(j); });
+  console.log(`Alcampo: ${productos.size} videojuegos en su tienda, ${n} asociados al catálogo`);
+  return n;
+}
+
 // ---------- Tarjetas regalo, monedas de juegos y suscripciones ----------
 // Fuentes: Instant Gaming (tarjetas, monedas como V-Bucks o Robux, suscripciones), GAME (tarjetas PlayStation y Nintendo)
 // y la recarga oficial de Steam. Solo lo que vale en España; las tarjetas de saldo, solo con valor en euros.
@@ -696,6 +746,16 @@ async function itad(lista, tiendas) {
 
 // ---------- Programa ----------
 async function main() {
+  // Prueba rápida de Alcampo con el catálogo actual, sin tocar precios.json (PRUEBA_ALCAMPO=1)
+  if (ENV.PRUEBA_ALCAMPO) {
+    for (const v of JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8")).juegos) { const j = juego(v.titulo, { pop: v.pop, tipo: v.tipo }); if (j) v.plataformas.forEach((p) => j.plataformas.add(p)); }
+    const lista = [...juegos.values()].filter((j) => j.tipo !== "dlc" && j.tipo !== "tarjeta" && [...j.plataformas].some((p) => p !== "PC")).sort((a, b) => a.pop - b.pop);
+    await alcampo(lista, () => {});
+    for (const j of juegos.values()) if (j.ofertas.some((o) => o.tienda === "alcampo")) console.log("ALCAMPO", j.titulo, "→", j.ofertas.filter((o) => o.tienda === "alcampo").map((o) => `${o.plataforma} ${o.precio}${o.stock ? "" : " (agotado)"} ${o.url}`).join(" | "));
+    const u = [...juegos.values()].flatMap((j) => j.ofertas).find((o) => o.tienda === "alcampo")?.url;
+    if (u) { const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0 (compatible; Pillao-comparador/2.0)" }, redirect: "follow" }); console.log("ENLACE", u, "→", r.status, r.url); }
+    return;
+  }
   // Prueba rápida: solo tarjetas regalo, sin tocar precios.json (PRUEBA_TARJETAS=1)
   if (ENV.PRUEBA_TARJETAS) {
     await tarjetasRegalo(() => {});
@@ -773,6 +833,7 @@ async function main() {
   await recorrerFuente("xbox", [...candidatosMS.slice(0, MS_MAX), ...ventana(candidatosMS.slice(MS_MAX), MS_ROTA)], microsoftStore, 300);
   const candidatosIG = [...juegos.values()].filter((j) => j.tipo !== "tarjeta").sort((a, b) => a.pop - b.pop);
   await recorrerFuente("instantgaming", [...candidatosIG.slice(0, IG_MAX), ...ventana(candidatosIG.slice(IG_MAX), IG_ROTA)], instantGaming, 900);
+  if (!(await intentar("alcampo", () => alcampo(consolaPopulares(Infinity).filter((j) => j.tipo !== "dlc"), (j) => visitar("alcampo", j))))) caidas.add("alcampo");
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) {
     // Juegos en disco (no DLC ni tarjetas): los populares siempre y el resto por turnos, hasta cubrir todo el catálogo

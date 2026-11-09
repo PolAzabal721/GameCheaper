@@ -4,13 +4,10 @@ jobs:
   d:
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          UA="Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)"
-          B=https://www.compraonline.alcampo.es/api/webproductpagews/v6/product-pages/search
-          for q in pegi "pegi ps5" "pegi switch" "pegi ps4" "pegi xbox" videojuego; do
-            curl -s -m 30 -A "$UA" -H "Accept: application/json" "$B?q=$(echo $q | sed 's/ /%20/g')&maxPageSize=300&maxProductsToDecorate=300" -o /tmp/s.json
-            echo "=== $q: $(jq -c '{prods: ([.productGroups[]?.decoratedProducts[]?]|length), otros: ([.productGroups[]?.otherProductIds[]?]|length), grupos: [.productGroups[]? | {type, name, n: (.decoratedProducts|length), o: (.otherProductIds|length)}], meta: .metadata}' /tmp/s.json | head -c 700)"
-            sleep 3
-          done
-          jq -c '[.productGroups[]?.decoratedProducts[]?] | .[0] | {name, brand, price, available, isInCurrentCatalog, categoryPath, size, images: (.images|length?), keys: keys}' /tmp/s.json | head -c 1500; echo
-          jq -c '[.productGroups[]?.decoratedProducts[]? | {name, p: .price.amount, a: .available}] | .[0:30]' /tmp/s.json | head -c 2500; echo
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: { node-version: 20 }
+      - run: node scripts/actualizar.mjs
+        env:
+          PRUEBA_ALCAMPO: "1"
+          ALCAMPO_TITULOS: "60"
