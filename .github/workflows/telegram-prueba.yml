@@ -1,0 +1,27 @@
+name: Probar Telegram
+
+# Manda un mensaje de bienvenida al canal para comprobar que el bot puede publicar.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Mensaje de bienvenida
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CANAL: ${{ secrets.TELEGRAM_CANAL }}
+        run: |
+          T=$(printf '%s' "$TELEGRAM_BOT_TOKEN" | tr -d '[:space:]'); C=$(printf '%s' "$TELEGRAM_CANAL" | tr -d '[:space:]')
+          [ -n "$T" ] && [ -n "$C" ] || { echo "::error::Faltan los secretos TELEGRAM_BOT_TOKEN y/o TELEGRAM_CANAL"; exit 1; }
+          echo "Bot:"; curl -s "https://api.telegram.org/bot$T/getMe" | jq -c '{ok, usuario: .result.username, error: .description}'
+          TEXTO=$(printf '👋 <b>¡Bienvenido a Pillao Chollos!</b>\n\nAquí publicamos automáticamente las bajadas de precio más fuertes en videojuegos: tiendas oficiales, claves y disco, en España.\n\n🔎 <a href="https://polazabal721.github.io/GameCheaper/">Compara todas las tiendas en Pillao</a>')
+          R=$(curl -s -X POST "https://api.telegram.org/bot$T/sendMessage" -H "Content-Type: application/json" \
+            -d "$(jq -n --arg c "$C" --arg t "$TEXTO" '{chat_id: $c, text: $t, parse_mode: "HTML", link_preview_options: {is_disabled: true}}')")
+          echo "Envío:"; echo "$R" | jq -c '{ok, error: .description}'
+          echo "$R" | jq -e '.ok' >/dev/null || exit 1
