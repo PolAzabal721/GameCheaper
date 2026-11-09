@@ -129,6 +129,18 @@ function fechar(j, fecha, oficial = true) {
 }
 const HOY = new Date().toISOString().slice(0, 10);
 
+// ---------- Imágenes de cada juego (de las tiendas oficiales; no las guardamos, solo su dirección) ----------
+// img: imagen horizontal (cuadrícula y móvil); cov: carátula vertical (vista de lista).
+// Steam se guarda como «s:<número del juego>» y la web forma las direcciones (ocupa mucho menos).
+// Prioridad: Steam > Microsoft Store > Nintendo eShop (de cada una, la primera que llegue).
+const PRIO_IMG = { steam: 3, xbox: 2, eshop: 1 };
+function ponerImagen(j, fuente, img, cov) {
+  if (!j) return;
+  const p = PRIO_IMG[fuente] || 0;
+  if (img && (!j._img || p > j._imgP)) { j._img = img; j._imgP = p; }
+  if (cov && (!j._cov || p > j._covP)) { j._cov = cov; j._covP = p; }
+}
+
 const PRECIO_MAX = 400; // ningún juego cuesta más; por encima son datos de relleno (p. ej. 99.999 €) o hardware
 function ofertar(j, o) {
   if (!j || !(o.precio > 0) || o.precio > PRECIO_MAX) return;
@@ -214,6 +226,7 @@ async function steamMasVendidos() {
     const j = juego(f.titulo, { pop: f.puesto });
     ofertar(j, { tienda: "steam", plataforma: "PC", precio, regular, url: `https://store.steampowered.com/app/${f.appid}/`, fuente: "steam" });
     fechar(j, f.fecha);
+    ponerImagen(j, "steam", "s:" + f.appid, "s:" + f.appid);
     n++;
   }
   console.log(`Steam: ${n} juegos de pago, ${gratis} gratuitos descartados`);
@@ -226,12 +239,14 @@ async function steamUno(j, extra) {
     const p = d[extra.steamAppId]?.success && d[extra.steamAppId].data?.price_overview;
     if (!p || p.currency !== "EUR") return 0;
     ofertar(j, { tienda: "steam", plataforma: "PC", precio: p.final / 100, regular: p.initial / 100, url: `https://store.steampowered.com/app/${extra.steamAppId}/`, fuente: "steam" });
+    ponerImagen(j, "steam", "s:" + extra.steamAppId, "s:" + extra.steamAppId);
     return 1;
   }
   const d = await (await pedir(`https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(j.titulo)}&l=spanish&cc=ES`)).json();
   const item = mejorCoincidencia(j.titulo, (d.items || []).filter((i) => i.price?.currency === "EUR"), (i) => i.name);
   if (!item) return 0;
   ofertar(j, { tienda: "steam", plataforma: "PC", precio: item.price.final / 100, regular: item.price.initial / 100, url: `https://store.steampowered.com/app/${item.id}/`, fuente: "steam" });
+  ponerImagen(j, "steam", "s:" + item.id, "s:" + item.id);
   return 1;
 }
 
@@ -261,6 +276,8 @@ function ofertaEshop(doc, precios, opciones) {
   const j = juego(doc.title, opciones);
   ofertar(j, { tienda: "eshop", plataforma: esSwitch2(doc) ? "Switch 2" : "Switch", precio: p.precio, regular: p.regular, url: doc.url ? "https://www.nintendo.com" + doc.url : "https://www.nintendo.com/es-es/", fuente: "eshop" });
   fechar(j, String(doc.dates_released_dts?.[0] || "").slice(0, 10));
+  const imgN = (u) => (u ? (u.startsWith("//") ? "https:" + u : u) : null);
+  ponerImagen(j, "eshop", imgN(doc.image_url_h2x1_s), imgN(doc.image_url_sq_s));
   return true;
 }
 async function eshopCatalogo() {
@@ -268,7 +285,7 @@ async function eshopCatalogo() {
   const leerTramo = async (desde, hasta) => {
     let total = 0;
     for (let inicio = desde; inicio < hasta; inicio += 500) {
-      const url = `https://searching.nintendo-europe.com/es/select?q=*&fq=type:GAME&fq=nsuid_txt:*&sort=popularity%20asc&rows=${Math.min(500, hasta - inicio)}&start=${inicio}&wt=json&fl=title,nsuid_txt,system_names_txt,url,dates_released_dts`;
+      const url = `https://searching.nintendo-europe.com/es/select?q=*&fq=type:GAME&fq=nsuid_txt:*&sort=popularity%20asc&rows=${Math.min(500, hasta - inicio)}&start=${inicio}&wt=json&fl=title,nsuid_txt,system_names_txt,url,dates_released_dts,image_url_h2x1_s,image_url_sq_s`;
       const d = await (await pedir(url)).json();
       total = d.response?.numFound || total;
       docs.push(...(d.response?.docs || []));
@@ -288,7 +305,7 @@ async function eshopCatalogo() {
 }
 async function eshopUno(j) {
   if (![...j.plataformas, ...(j._buscarEn || [])].some((p) => p.startsWith("Switch")) || j.ofertas.some((o) => o.tienda === "eshop")) return 0;
-  const url = `https://searching.nintendo-europe.com/es/select?q=${encodeURIComponent(j.titulo)}&fq=type:GAME&fq=nsuid_txt:*&rows=20&wt=json&fl=title,nsuid_txt,system_names_txt,url,dates_released_dts`;
+  const url = `https://searching.nintendo-europe.com/es/select?q=${encodeURIComponent(j.titulo)}&fq=type:GAME&fq=nsuid_txt:*&rows=20&wt=json&fl=title,nsuid_txt,system_names_txt,url,dates_released_dts,image_url_h2x1_s,image_url_sq_s`;
   const docs = ((await (await pedir(url)).json()).response?.docs || []).filter((d) => parecido(j.titulo, String(d.title).replace(/[–-]\s*Nintendo Switch 2 Edition/i, "")) > 0.5);
   if (!docs.length) return 0;
   const precios = await preciosEshop(docs.map((d) => d.nsuid_txt[0]));
@@ -454,6 +471,9 @@ async function microsoftStore(j) {
     }
     if (!mejor) continue;
     fechar(j, String(p.MarketProperties?.[0]?.OriginalReleaseDate || "").slice(0, 10));
+    const imgs = p.LocalizedProperties?.[0]?.Images || [], uri = (tipo) => { const i = imgs.find((x) => x.ImagePurpose === tipo); return i?.Uri ? "https:" + i.Uri.replace(/^https?:/, "") : null; };
+    const h = uri("SuperHeroArt") || uri("TitledHeroArt"), v = uri("Poster") || uri("BoxArt");
+    ponerImagen(j, "xbox", h && h + "?w=460", v && v + "?w=300");
     for (const plat of plataformasMS(p)) {
       const antes = j.ofertas.length;
       ofertar(j, { tienda: "xbox", plataforma: plat, precio: mejor.ListPrice, regular: mejor.MSRP, url: `https://www.xbox.com/es-ES/games/store/p/${p.ProductId}`, fuente: "xbox" });
@@ -908,13 +928,16 @@ async function main() {
 
   // Fecha de lanzamiento: la oficial; si no, la de Instant Gaming; si esta vez no ha salido ninguna, la que ya teníamos
   const fechaAnterior = new Map((anterior.juegos || []).map((j) => [j.id, j.lanzamiento]));
+  const imgAnterior = new Map((anterior.juegos || []).map((j) => [j.id, [j.img, j.cov]]));
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
-    .map(({ _buscarEn, _pvpFijo, _fechaOf, _fechaIG, plataformas, revisado, ...j }) => {
+    .map(({ _buscarEn, _pvpFijo, _fechaOf, _fechaIG, _img, _imgP, _cov, _covP, plataformas, revisado, ...j }) => {
       const lanzamiento = _fechaOf || _fechaIG || fechaAnterior.get(j.id) || undefined;
+      const [imgV, covV] = imgAnterior.get(j.id) || [];
       return { ...j, plataformas: [...plataformas], pvp: j.pvp || undefined, revisado: revisado.size ? [...revisado] : undefined,
+        img: _img || imgV || undefined, cov: _cov || covV || undefined,
         lanzamiento, reserva: lanzamiento > HOY || j.ofertas.some((o) => /^Reserva/.test(o.condicion || "")) || undefined };
     });
-  console.log(`Fechas de lanzamiento: ${lista.filter((j) => j.lanzamiento).length} de ${lista.length}; reservas: ${lista.filter((j) => j.reserva).length}`);
+  console.log(`Fechas de lanzamiento: ${lista.filter((j) => j.lanzamiento).length} de ${lista.length}; reservas: ${lista.filter((j) => j.reserva).length}; con imagen: ${lista.filter((j) => j.img || j.cov).length}`);
   const total = lista.reduce((s, j) => s + j.ofertas.length, 0);
   console.log("Ofertas por fuente:", JSON.stringify(cuenta));
   console.log("Primeros del catálogo:", lista.slice(0, 15).map((j) => j.titulo).join(" | "));
