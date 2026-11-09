@@ -150,17 +150,17 @@ button { cursor: pointer; }
 .lista.cuadricula { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; align-items: start; }
 .lista.cuadricula > .juego, .lista.cuadricula > .mas-juegos, .lista.cuadricula > .busca-vivo, .lista.cuadricula > .vacio { grid-column: 1 / -1; }
 .lista.cuadricula > .mas-juegos { justify-self: center; }
-.mini { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; height: 258px; position: relative; overflow: hidden; }
-.mini:hover { border-color: var(--accent); }
-.mini:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cuadro { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; height: 258px; position: relative; overflow: hidden; }
+.cuadro:hover { border-color: var(--accent); }
+.cuadro:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .mini-izq { display: flex; flex-direction: column; gap: 7px; min-width: 0; flex: 1 1 auto; overflow: hidden; }
 .mini-top { display: flex; gap: 6px; align-items: flex-start; justify-content: space-between; min-height: 22px; }
 .mini-tags { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
-.mini .campana { width: 32px; height: 32px; margin: -4px -4px 0 0; }
-.mini .campana svg { width: 16px; height: 16px; }
-.mini h2 { font-family: var(--f-display); font-weight: 800; font-size: 16.5px; line-height: 1.2; margin: 0; letter-spacing: -.01em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.mini .plats { display: flex; flex-wrap: nowrap; gap: 4px; overflow: hidden; }
-.mini .plat { font-size: 11px; padding: 1px 6px; white-space: nowrap; }
+.cuadro .campana { width: 32px; height: 32px; margin: -4px -4px 0 0; }
+.cuadro .campana svg { width: 16px; height: 16px; }
+.cuadro h2 { font-family: var(--f-display); font-weight: 800; font-size: 16.5px; line-height: 1.2; margin: 0; letter-spacing: -.01em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.cuadro .plats { display: flex; flex-wrap: nowrap; gap: 4px; overflow: hidden; }
+.cuadro .plat { font-size: 11px; padding: 1px 6px; white-space: nowrap; }
 .mini-mas { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mini-precio { flex-shrink: 0; background: var(--tag); color: var(--tag-ink); border-radius: 8px; padding: 8px 10px; position: relative; }
 .mini-precio .precio { display: block; font-family: var(--f-mono); font-weight: 700; font-size: 22px; line-height: 1.15; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
@@ -171,12 +171,12 @@ button { cursor: pointer; }
 /* En el móvil: filas alargadas, con la información a la izquierda y el precio a la derecha */
 @media (max-width: 560px) {
   .lista.cuadricula { grid-template-columns: minmax(0, 1fr); gap: 8px; }
-  .mini { flex-direction: row; align-items: stretch; height: auto; min-height: 104px; padding: 10px 10px 10px 12px; gap: 10px; }
+  .cuadro { flex-direction: row; align-items: stretch; height: auto; min-height: 104px; padding: 10px 10px 10px 12px; gap: 10px; }
   .mini-izq { gap: 4px; }
-  .mini h2 { font-size: 15px; -webkit-line-clamp: 2; }
+  .cuadro h2 { font-size: 15px; -webkit-line-clamp: 2; }
   .mini-top { min-height: 0; }
   .mini-top .mini-tags:empty { display: none; }
-  .mini .campana { width: 30px; height: 30px; }
+  .cuadro .campana { width: 30px; height: 30px; }
   .mini-precio { align-self: flex-end; min-width: 108px; max-width: 42%; padding: 6px 9px; text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
   .mini-precio .ahorro { position: static; transform: none; align-self: flex-end; margin-bottom: 2px; }
   .mini-precio .antes { position: static; font-size: 11.5px; }
@@ -857,7 +857,7 @@ button { cursor: pointer; }
     var antesTxt = ref && ref > total(m) + 0.004 && ref <= total(m) * 4 ? '<s class="antes">' + eur.format(ref) + "</s>" : "";
     // la fecha va en la etiqueta si es novedad o reserva; si no, en la línea de abajo
     var fecha = j.lanzamiento && !etiquetaFecha(j) ? "Lanzamiento: " + diaBonito(j.lanzamiento) : "";
-    return '<article class="mini" data-abrir="' + esc(j.id) + '" tabindex="0" role="button" aria-label="' + esc(j.titulo) + ': ver todas las ofertas">' +
+    return '<article class="cuadro" data-abrir="' + esc(j.id) + '" tabindex="0" role="button" aria-label="' + esc(j.titulo) + ': ver todas las ofertas">' +
       '<div class="mini-izq"><div class="mini-top"><div class="mini-tags">' + etiquetaFecha(j) + tipo + "</div>" + botonCampana(j) + "</div>" +
       "<h2>" + esc(j.titulo) + "</h2>" +
       '<div class="plats">' + plats.slice(0, 3).map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") +

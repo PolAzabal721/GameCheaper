@@ -767,6 +767,7 @@ async function main() {
   for (const viejo of anterior.juegos || []) {
     for (const o of viejo.ofertas || []) {
       if (o.fuente === "psstore" || o.fuente === "manual") continue;     // estas se recargan enteras en cada ejecución
+      if (/^(steam (deck|controller|machine|frame|link)|valve index)/i.test(viejo.titulo)) continue; // hardware, no juegos
       if (VISITAS.get(o.fuente)?.has(viejo.id)) continue;                // revisado ahora: manda lo nuevo
       if (Date.parse(o.t || anterior.actualizado) < limite) continue;    // demasiado antiguo
       const j = juego(viejo.titulo, { pop: viejo.pop, tipo: viejo.tipo });
