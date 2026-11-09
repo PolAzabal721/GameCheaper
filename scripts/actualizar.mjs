@@ -934,7 +934,8 @@ async function main() {
   const ps = await leer("data/playstation.json", { juegos: {} });
   let nPs = 0;
   for (const [id, e] of Object.entries(ps.juegos || {})) {
-    if (!e.ofertas?.length) { const jx = [...juegos.values()].find((x) => x.id === id); if (jx && e.buscado) jx.revisado.add("psstore"); continue; }
+    // Solo cuenta como «PS Store no lo vende» si encontramos su ficha y no tiene precio (si no la encontramos, no sabemos)
+    if (!e.ofertas?.length) { const jx = [...juegos.values()].find((x) => x.id === id); if (jx && e.ids?.length && e.actualizado) jx.revisado.add("psstore"); continue; }
     const j = [...juegos.values()].find((x) => x.id === id) || juego(e.titulo);
     for (const o of e.ofertas) { ofertar(j, o); nPs++; }
   }
@@ -1034,7 +1035,7 @@ async function main() {
   const porId = new Map([...juegos.values()].map((j) => [j.id, j]));
   // (GAME se recalcula entero con su mapa de productos; lo de Microsoft anterior a la versión 2 se descarta porque
   //  la búsqueda fallaba con los nombres que llevan ™ y marcaba como revisados juegos que sí tienen)
-  const noArrastrar = new Set(mapa ? ["game", "gameseminuevos"] : []);
+  const noArrastrar = new Set(mapa ? ["game", "gameseminuevos", "psstore"] : ["psstore"]); // PS Store se recalcula entero cada vez
   if (anterior.revisadoV !== 2) noArrastrar.add("xbox");
   for (const viejo of anterior.juegos || []) { const j = porId.get(viejo.id); if (j) (viejo.revisado || []).forEach((t) => { if (!noArrastrar.has(t)) j.revisado.add(t); }); }
 
