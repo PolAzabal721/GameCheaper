@@ -535,7 +535,7 @@ button { cursor: pointer; }
   var f = cargarFiltros();
 
   function cargarFiltros() {
-    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: "populares", vista: "lista" };
+    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: "populares", vista: "lista", calOff: [] };
     if (!prefsOk()) return base;
     try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g) base[k] = g[k]; } catch (e) {}
     return base;
@@ -670,6 +670,7 @@ button { cursor: pointer; }
         if (!ps.some(function (p) { return f.plats.indexOf(p) >= 0; })) return false;
       }
       if (f.fuera.indexOf(o.tienda) >= 0) return false;
+      if (o.calidad && f.calOff.indexOf(o.calidad) >= 0) return false;
       if (t.tipo === "revendedor" && o.tienda !== "instantgaming" && f.revOn.indexOf(o.tienda) < 0) return false;
       if (!f.mkt && t.tipo === "marketplace") return false;
       if (!f.part && t.tipo === "particulares") return false;
@@ -712,6 +713,18 @@ button { cursor: pointer; }
       var chipRev = function (t) { return '<button type="button" class="chip" data-rev="' + esc(t.id) + '" aria-pressed="' + (f.revOn.indexOf(t.id) >= 0) + '">' + esc(t.nombre) + "</button>"; };
       var ig = ts[0].id === "instantgaming" ? ts[0] : null, otros = ig ? ts.slice(1) : ts;
       // Revendedores de claves: Instant Gaming a la vista y el resto dentro de su desplegable
+      // Entre particulares: eBay con un desplegable para elegir el estado de los juegos
+      var eb = bl.id === "particulares" && ts.filter(function (t) { return t.id === "ebay"; })[0];
+      if (eb) {
+        var abiertoEb = !!bloquesAbiertos.ebay, quitados = CALIDADES.filter(function (c) { return f.calOff.indexOf(c) >= 0; }).length;
+        return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + ts.filter(function (t) { return t.id !== "ebay"; }).map(chip).join("") +
+          '<span class="chip-grupo' + (abiertoEb ? " abierto" : "") + '">' + chip(eb) +
+          '<button type="button" class="chip-caret" data-sub-abrir="ebay" aria-expanded="' + abiertoEb + '" aria-label="Estado de los juegos de eBay">' +
+          (quitados ? (CALIDADES.length - quitados) + "/" + CALIDADES.length + " estados" : "Estado") + " " + (abiertoEb ? "▴" : "▾") + "</button></span></div>" +
+          (abiertoEb ? '<div class="sub-panel"><div class="sub-cab"><span class="sub-tit">Estado del juego</span>' +
+            '<button type="button" class="chip mini" data-todos="calidades">' + (quitados ? "Marcar todos" : "Quitar todos") + "</button></div>" +
+            '<div class="chips">' + CALIDADES.map(function (c) { return '<button type="button" class="chip" data-cal="' + c + '" aria-pressed="' + (f.calOff.indexOf(c) < 0) + '">' + c + "</button>"; }).join("") + "</div></div>" : "") + "</div>";
+      }
       if (bl.id !== "claves" || !ig || !otros.length)
         return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + ts.map(chip).join("") + "</div></div>";
       var abierto = !!bloquesAbiertos.claves;
@@ -756,6 +769,8 @@ button { cursor: pointer; }
     var marca = /^PS/.test(p) ? "ps" : /Xbox/.test(p) ? "xbox" : /Switch/.test(p) ? "nin" : "pc";
     return '<svg class="ic-plat ic-' + marca + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONOS_PLAT[tipo] + "</svg>";
   }
+
+  var CALIDADES = ["Como nuevo", "Muy bueno", "Bueno", "Aceptable", "Usado"];
 
   function enlace(o, j) {
     if (o.url) return o.url;
@@ -924,15 +939,17 @@ button { cursor: pointer; }
             (o.stock ? "" : '<span class="agotado">· Agotado</span>');
         var fila = '<li class="of' + (g.ofs.indexOf(m) >= 0 ? " mejor" : "") + '"><div class="of-t"><strong>' + esc(t.nombre) + '</strong><span class="badge b-' + t.tipo + '">' + (g.claves ? "Claves" : TIPOS[t.tipo]) + "</span>" +
           (n === 1 && o.estado === "usado" ? '<span class="usado">Usado</span>' : "") +
-          (n > 1 ? '<button type="button" class="desp" data-grupo="' + esc(clave) + '" aria-expanded="' + !!abierto + '">' + (abierto ? "▴ " : "▾ ") + (g.claves ? n + " ofertas de " + g.nTiendas + " tiendas" : n + (plats.length === n ? " plataformas" : " opciones")) + "</button>" : "") + "</div>" +
+          (n > 1 ? '<button type="button" class="desp" data-grupo="' + esc(clave) + '" aria-expanded="' + !!abierto + '">' + (abierto ? "▴ " : "▾ ") + (g.claves ? n + " ofertas de " + g.nTiendas + " tiendas" : g.id === "ebay" ? n + " anuncios" : n + (plats.length === n ? " plataformas" : " opciones")) + "</button>" : "") + "</div>" +
           '<div class="of-d">' + detalle + "</div>" +
           '<div class="of-p"><b>' + eur.format(total(o)) + "</b><small>" + antes(o, j) + (dif > 0.004 ? "+" + eur.format(dif) : "el más barato") + "</small></div>" +
           (url ? '<a class="ir" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + (o.url ? "Ver oferta" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
         if (n > 1 && abierto) fila += g.ofs.map(function (x) {
           var u = enlace(x, j);
           var tx = tiendaPorId[x.tienda] || { nombre: x.tienda };
-          return '<li class="of sub' + (x === m ? " mejor" : "") + '"><div class="of-t"><span>' + esc(g.claves ? tx.nombre : (x.plataforma || "—")) + "</span>" + (x.estado === "usado" ? '<span class="usado">Usado</span>' : "") + "</div>" +
-            '<div class="of-d"><span>' + (g.claves ? esc(x.plataforma || "—") : (x.formato === "fisico" ? "En disco" : "Digital")) + "</span>" + (x.condicion ? "<span>·</span><span>" + esc(x.condicion) + "</span>" : "") +
+          // En eBay cada línea es un estado distinto del juego (como nuevo, muy bueno…)
+          var esEb = g.id === "ebay" && x.calidad, resto = esEb ? (x.condicion || "").replace(x.calidad, "").replace(/^\s*·\s*/, "") : x.condicion;
+          return '<li class="of sub' + (x === m ? " mejor" : "") + '"><div class="of-t"><span>' + esc(g.claves ? tx.nombre : esEb ? x.calidad : (x.plataforma || "—")) + "</span>" + (x.estado === "usado" && !esEb ? '<span class="usado">Usado</span>' : "") + "</div>" +
+            '<div class="of-d"><span>' + (g.claves || esEb ? esc(x.plataforma || "—") : (x.formato === "fisico" ? "En disco" : "Digital")) + "</span>" + (resto ? "<span>·</span><span>" + esc(resto) + "</span>" : "") +
             (x.envio ? "<span>·</span><span>+ " + eur.format(x.envio) + " envío</span>" : "") + (x.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
             '<div class="of-p"><b>' + eur.format(total(x)) + "</b>" + (antes(x, j) ? "<small>" + antes(x, j).replace(/ · $/, "") + "</small>" : "") + "</div>" +
             (u ? '<a class="ir" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + (x.url ? "Ver" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
@@ -1396,6 +1413,12 @@ button { cursor: pointer; }
   $("tiendas").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     if (b.dataset.subAbrir) { bloquesAbiertos[b.dataset.subAbrir] = !bloquesAbiertos[b.dataset.subAbrir]; pintarControles(); return; }
+    if (b.dataset.cal) {
+      var ic = f.calOff.indexOf(b.dataset.cal);
+      if (ic >= 0) f.calOff.splice(ic, 1); else f.calOff.push(b.dataset.cal);
+      pintarControles(); cambio(); return;
+    }
+    if (b.dataset.todos === "calidades") { f.calOff = f.calOff.length ? [] : CALIDADES.slice(); pintarControles(); cambio(); return; }
     if (b.dataset.rev) {
       var ir = f.revOn.indexOf(b.dataset.rev);
       if (ir >= 0) f.revOn.splice(ir, 1); else f.revOn.push(b.dataset.rev);
@@ -1438,7 +1461,7 @@ button { cursor: pointer; }
     var d = e.target.closest("[data-grupo]");
     if (d) { desplegados[d.dataset.grupo] = !desplegados[d.dataset.grupo]; pintar(); return; }
     if (e.target.closest("[data-mas-juegos]")) { mostrar += PAGINA; pintar(); return; }
-    if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: f.orden, vista: f.vista }; pintarControles(); cambio(); }
+    if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: f.orden, vista: f.vista, calOff: [] }; pintarControles(); cambio(); }
   });
   $("recargar").addEventListener("click", function () { leerServidor(true); });
   function abrirEnGrid(id) {

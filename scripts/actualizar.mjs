@@ -135,10 +135,12 @@ function ofertar(j, o) {
   if (!(o.regular >= o.precio && o.regular <= PRECIO_MAX)) o = { ...o, regular: o.precio };
   // Una sola oferta por tienda + plataforma + estado: la más barata
   // (y por tipo de clave, para poder filtrar "solo claves de Steam" en Instant Gaming)
-  const igual = j.ofertas.find((x) => x.tienda === o.tienda && x.plataforma === o.plataforma && (x.estado || "nuevo") === (o.estado || "nuevo") && (x.drm || "") === (o.drm || ""));
+  // (y en segunda mano de particulares, una por estado del artículo: como nuevo, muy bueno, bueno…)
+  const igual = j.ofertas.find((x) => x.tienda === o.tienda && x.plataforma === o.plataforma && (x.estado || "nuevo") === (o.estado || "nuevo") && (x.drm || "") === (o.drm || "") && (x.calidad || "") === (o.calidad || ""));
   const nueva = { estado: "nuevo", stock: true, formato: "digital", ...o, precio: redondear(o.precio), t: o.t || AHORA };
   // Preferimos lo que hay en stock; a igualdad, lo más barato
-  if (igual) { if ((nueva.stock && !igual.stock) || (nueva.stock === igual.stock && nueva.precio < igual.precio)) Object.assign(igual, nueva); }
+  const tot = (x) => x.precio + (x.envio || 0);
+  if (igual) { if ((nueva.stock && !igual.stock) || (nueva.stock === igual.stock && tot(nueva) < tot(igual))) Object.assign(igual, nueva); }
   else j.ofertas.push(nueva);
   if (o.plataforma) j.plataformas.add(o.plataforma);
   if (o.regular > j.pvp) j.pvp = redondear(o.regular);
@@ -341,6 +343,7 @@ const PLAT_EBAY = [["Switch 2", /switch 2/], ["Switch", /switch/], ["PS5", /ps5|
 // Estado y país del anuncio en español (eBay lo da en el idioma del vendedor: «Sehr gut», «Good»…)
 const ESTADOS_EBAY = { 2750: "Como nuevo", 3000: "Usado", 4000: "Muy bueno", 5000: "Bueno", 6000: "Aceptable" };
 const PAISES_EBAY = { ES: "", DE: "Alemania", FR: "Francia", IT: "Italia", PT: "Portugal", GB: "Reino Unido", NL: "Países Bajos", BE: "Bélgica", AT: "Austria", IE: "Irlanda", PL: "Polonia" };
+const calidadEbay = (it) => ESTADOS_EBAY[it.conditionId] || "Usado";
 function estadoEbay(it) {
   const estado = ESTADOS_EBAY[it.conditionId] || "Usado";
   const pais = it.itemLocation?.country;
@@ -372,7 +375,7 @@ async function ebay(j) {
     const precio = parseFloat(it.price?.value), envio = parseFloat(it.shippingOptions?.[0]?.shippingCost?.value || 0);
     if (!(precio > 0) || !precioCreible(j, precio + (envio || 0))) continue;
     const antes = j.ofertas.length;
-    ofertar(j, { tienda: "ebay", plataforma: plat, formato: "fisico", estado: "usado", precio, envio: redondear(envio), condicion: estadoEbay(it), url: it.itemWebUrl, fuente: "ebay" });
+    ofertar(j, { tienda: "ebay", plataforma: plat, formato: "fisico", estado: "usado", precio, envio: redondear(envio), condicion: estadoEbay(it), calidad: calidadEbay(it), url: it.itemWebUrl, fuente: "ebay" });
     if (j.ofertas.length > antes) n++;
   }
   return n;

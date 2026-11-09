@@ -51,8 +51,9 @@ class Resultado {
   }
   ofertar(j, o) {
     if (!(o.precio > 0)) return;
-    const igual = j.ofertas.find((x) => x.tienda === o.tienda && x.plataforma === o.plataforma && x.estado === o.estado);
-    if (igual) { if (o.precio < igual.precio) Object.assign(igual, o); } else j.ofertas.push(o);
+    const igual = j.ofertas.find((x) => x.tienda === o.tienda && x.plataforma === o.plataforma && x.estado === o.estado && (x.calidad || "") === (o.calidad || ""));
+    const tot = (x) => x.precio + (x.envio || 0);
+    if (igual) { if (tot(o) < tot(igual)) Object.assign(igual, o); } else j.ofertas.push(o);
     if (!j.plataformas.includes(o.plataforma)) j.plataformas.push(o.plataforma);
     if (o.regular > j.pvp) j.pvp = r2(o.regular);
   }
@@ -96,6 +97,7 @@ const PLAT_EBAY = [["Switch 2", /switch 2/], ["Switch", /switch/], ["PS5", /ps5|
 // Estado y país del anuncio en español (eBay lo da en el idioma del vendedor: «Sehr gut», «Good»…)
 const ESTADOS_EBAY = { 2750: "Como nuevo", 3000: "Usado", 4000: "Muy bueno", 5000: "Bueno", 6000: "Aceptable" };
 const PAISES_EBAY = { ES: "", DE: "Alemania", FR: "Francia", IT: "Italia", PT: "Portugal", GB: "Reino Unido", NL: "Países Bajos", BE: "Bélgica", AT: "Austria", IE: "Irlanda", PL: "Polonia" };
+const calidadEbay = (it) => ESTADOS_EBAY[it.conditionId] || "Usado";
 function estadoEbay(it) {
   const estado = ESTADOS_EBAY[it.conditionId] || "Usado";
   const pais = it.itemLocation?.country;
@@ -137,7 +139,7 @@ async function ebay(q, res, env) {
     // Por menos de una cuarta parte del juego nuevo no suele ser el juego (caja, portada…)
     const nuevos = j.ofertas.filter((o) => o.estado !== "usado").map((o) => o.precio);
     if (nuevos.length && precio + envio < Math.min(...nuevos) * 0.25) continue;
-    res.ofertar(j, { tienda: "ebay", plataforma: plat, formato: "fisico", estado: "usado", stock: true, precio, envio: r2(envio), condicion: estadoEbay(it), url: it.itemWebUrl });
+    res.ofertar(j, { tienda: "ebay", plataforma: plat, formato: "fisico", estado: "usado", stock: true, precio, envio: r2(envio), condicion: estadoEbay(it), calidad: calidadEbay(it), url: it.itemWebUrl });
   }
 }
 
