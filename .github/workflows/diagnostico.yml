@@ -6,11 +6,11 @@ jobs:
     steps:
       - run: |
           UA="Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)"
-          echo "=== Alcampo robots completo (User-agent *)"; curl -s -m 20 -A "$UA" https://www.compraonline.alcampo.es/robots.txt | head -40
-          curl -s -m 20 -A "$UA" "https://www.compraonline.alcampo.es/search?q=nintendo%20switch%20juego" -o /tmp/a.html
-          echo "=== Alcampo búsqueda: $(wc -c < /tmp/a.html) bytes"; grep -o -i -E 'captcha|cf-chl|access denied|akamai|blocked' /tmp/a.html | sort | uniq -c
-          grep -o -E '"name":"[^"]{5,90}","[^}]{0,300}"price":\{[^}]{0,120}' /tmp/a.html | head -5
-          grep -o -E 'window\.__[A-Z_]+__' /tmp/a.html | sort -u | head
-          grep -o -E '[^>]{0,80}(Zelda|Mario|Switch)[^<]{0,80}' /tmp/a.html | head -8
-          echo "=== xtralife robots"; curl -s -m 20 -A "$UA" https://www.xtralife.com/robots.txt | head -30
-          echo "=== xtralife sitemap"; curl -s -m 20 -A "$UA" https://www.xtralife.com/sitemap.xml | head -c 1500; echo
+          for u in "https://www.compraonline.alcampo.es/search?q=zelda" "https://www.compraonline.alcampo.es/api/webproductpagews/v5/product-pages/search?term=zelda&maxProductsToDecorate=10&maxPageSize=10" "https://www.compraonline.alcampo.es/api/webproductpagews/v6/product-pages/search?includeAdditionalPageInfo=true&maxPageSize=10&maxProductsToDecorate=10&q=zelda"; do
+            C=$(curl -s -m 30 -A "$UA" -H "Accept: application/json,text/html" -o /tmp/a -w "%{http_code} %{content_type}" "$u"); echo "=== $u → $C, $(wc -c < /tmp/a) bytes"
+            head -c 600 /tmp/a | tr -d '\n'; echo
+            grep -o -E '"(name|title)":"[^"]{4,90}"' /tmp/a | head -6 | tr '\n' ' '; echo
+            grep -o -E '"(amount|price|current)"[^,}]{0,40}' /tmp/a | head -6 | tr '\n' ' '; echo
+            sleep 3
+          done
+          echo "=== sitemap index"; curl -s -m 30 -A "$UA" https://compraonline.alcampo.es/sitemaps/sitemap_index.xml | head -c 800; echo
