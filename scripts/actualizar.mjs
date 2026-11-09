@@ -858,6 +858,11 @@ async function main() {
   // Prueba rápida de GAME y Microsoft Store con unos juegos, sin tocar precios.json (PRUEBA_GAME=1)
   if (ENV.PRUEBA_GAME) {
     const mapa = await mapaGame(), mapaX = await mapaMS();
+    for (const ids of [["9NM79B7N9JM6"], ["9N1WXXD1RL8D"], ["9NG6VZHN5GQL"]]) for (const p of await productosMS(ids)) {
+      console.log("MSP", p.ProductId, p.LocalizedProperties?.[0]?.ProductTitle, JSON.stringify(plataformasMS(p)));
+      for (const sk of p.DisplaySkuAvailabilities || []) for (const av of sk.Availabilities || []) { const pr = av.OrderManagementData?.Price; console.log("   ", sk.Sku?.LocalizedProperties?.[0]?.SkuTitle, pr && pr.CurrencyCode, pr && pr.ListPrice, (av.Actions || []).join(",")); }
+    }
+    for (const q of ["Borderlands", "Borderlands 4", "Street Fighter", "Split Fiction"]) { const sug = await (await pedir(`https://displaycatalog.mp.microsoft.com/v7.0/productFamilies/autosuggest?market=ES&languages=es-ES&productFamilyNames=Games&query=${encodeURIComponent(q)}`)).json(); console.log("SUG", q, (sug.Results || []).flatMap((r) => r.Products || []).map((p) => p.ProductId + " " + p.Title).join(" || ")); }
     console.log("MAPA GAME:", mapa.size, "juegos; tarjetas:", TARJETAS_GAME.map((t) => t.texto + " " + t.valor).join(", "), "| MAPA MS:", mapaX.size);
     for (const t of ["EA SPORTS FC 27", "EA Sports FC 27 Ultimate Edition", "Borderlands 4", "F1 25", "Street Fighter 6", "Split Fiction", "Sid Meier's Civilization VII", "Jurassic World Evolution 3", "LEGO Batman: El Legado del Caballero Oscuro", "TEKKEN 8", "Hollow Knight"]) {
       const j = juego(t, {}); const f = mapa.get(llave(t).replace(/^ea sports (?=\S+ \S)/, "")) || [];
