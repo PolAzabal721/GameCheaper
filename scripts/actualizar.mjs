@@ -424,6 +424,7 @@ async function mapaGame() {
   const mapa = new Map(); // clave del juego -> [{ url, plataforma, usado }]
   for (const m of xml.matchAll(/<loc>https:\/\/www\.game\.es\/([a-z0-9-]+)\/([a-z0-9]+)<\/loc>/g)) {
     let slug = m[1];
+    if (/^(consola|pack|nintendo-switch|playstation|xbox-series|mando|tarjeta)/.test(slug)) continue; // consolas y packs con juego
     const suf = SUFIJOS_GAME.find(([x]) => slug.endsWith("-" + x));
     if (suf) slug = slug.slice(0, -suf[0].length - 1);
     const usado = /-seminuev[oa](-|$)/.test(slug);
@@ -810,6 +811,16 @@ async function main() {
   if (ENV.PRUEBA_GAME) {
     const mapa = await mapaGame();
     console.log("MAPA GAME:", mapa.size, "juegos");
+    {
+      const sug = await (await pedir("https://displaycatalog.mp.microsoft.com/v7.0/productFamilies/autosuggest?market=ES&languages=es-ES&productFamilyNames=Games&query=EA%20SPORTS%20FC")).json();
+      const ps = (sug.Results || []).flatMap((r) => r.Products || []);
+      console.log("MS CANDIDATOS", ps.map((p) => p.ProductId + " " + p.Title + " → " + parecido("EA SPORTS FC 27", sinEdicion(p.Title))).join(" || "));
+      const d = await (await pedir(`https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${ps.slice(0, 8).map((p) => p.ProductId).join(",")}&market=ES&languages=es-es`)).json();
+      for (const p of d.Products || []) {
+        console.log("MS PROD", p.ProductId, p.LocalizedProperties?.[0]?.ProductTitle, JSON.stringify(plataformasMS(p)));
+        for (const sk of p.DisplaySkuAvailabilities || []) for (const av of sk.Availabilities || []) { const pr = av.OrderManagementData?.Price; console.log("   ", sk.Sku?.LocalizedProperties?.[0]?.SkuTitle, pr && pr.CurrencyCode, pr && pr.ListPrice, pr && pr.MSRP, (av.Actions || []).join(",")); }
+      }
+    }
     for (const t of ["EA SPORTS FC 27", "EA Sports FC 27 Ultimate Edition", "The Legend of Zelda: Tears of the Kingdom", "Mario Kart World", "Hogwarts Legacy"]) {
       const j = juego(t, {}); const f = mapa.get(clave(t)) || [];
       console.log("FICHAS", t, JSON.stringify(f));
