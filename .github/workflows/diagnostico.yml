@@ -6,22 +6,11 @@ jobs:
     steps:
       - run: |
           UA="Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)"
-          revisar() { # nombre, dominio, ruta de búsqueda de ejemplo
-            echo "=== $1"
-            R=$(curl -s -m 20 -A "$UA" "https://$2/robots.txt")
-            echo "$R" | awk 'BEGIN{IGNORECASE=1} /^user-agent:/{ua=$0} /^(dis)?allow:|^crawl-delay/{ if (ua ~ /\*/) print "   " $0 }' | grep -i -E "search|busca|query|resultado|\?q=|\?s=|keyword|catalog|producto|/s\?|crawl-delay|^ *disallow: /$" | head -12
-            C=$(curl -s -m 20 -A "$UA" -o /tmp/p.html -w "%{http_code}" "https://$2$3")
-            echo "   búsqueda $3 → HTTP $C, $(wc -c < /tmp/p.html) bytes, precios visibles: $(grep -o -E '[0-9]+[,.][0-9]{2} ?(€|&euro;)' /tmp/p.html | head -3 | tr '\n' ' ')$(grep -c -i -E 'captcha|cf-chl|access denied|akamai|blocked' /tmp/p.html) señales de bloqueo"
-          }
-          revisar Alcampo www.compraonline.alcampo.es "/search?q=zelda"
-          revisar Carrefour www.carrefour.es "/?query=zelda"
-          revisar MediaMarkt www.mediamarkt.es "/es/search.html?query=zelda"
-          revisar Fnac www.fnac.es "/SearchResult/ResultList.aspx?Search=zelda"
-          revisar xtralife www.xtralife.com "/buscar/zelda"
-          revisar PcComponentes www.pccomponentes.com "/search/?query=zelda"
-          revisar ElCorteIngles www.elcorteingles.es "/search-nwx/1/?s=zelda"
-          revisar Amazon www.amazon.es "/s?k=zelda"
-          revisar CeX es.webuy.com "/search?stext=zelda"
-          revisar Wallapop es.wallapop.com "/search?keywords=zelda"
-          revisar Eneba www.eneba.com "/es/store?text=zelda"
-          revisar G2A www.g2a.com "/es/search?query=zelda"
+          echo "=== Alcampo robots completo (User-agent *)"; curl -s -m 20 -A "$UA" https://www.compraonline.alcampo.es/robots.txt | head -40
+          curl -s -m 20 -A "$UA" "https://www.compraonline.alcampo.es/search?q=nintendo%20switch%20juego" -o /tmp/a.html
+          echo "=== Alcampo búsqueda: $(wc -c < /tmp/a.html) bytes"; grep -o -i -E 'captcha|cf-chl|access denied|akamai|blocked' /tmp/a.html | sort | uniq -c
+          grep -o -E '"name":"[^"]{5,90}","[^}]{0,300}"price":\{[^}]{0,120}' /tmp/a.html | head -5
+          grep -o -E 'window\.__[A-Z_]+__' /tmp/a.html | sort -u | head
+          grep -o -E '[^>]{0,80}(Zelda|Mario|Switch)[^<]{0,80}' /tmp/a.html | head -8
+          echo "=== xtralife robots"; curl -s -m 20 -A "$UA" https://www.xtralife.com/robots.txt | head -30
+          echo "=== xtralife sitemap"; curl -s -m 20 -A "$UA" https://www.xtralife.com/sitemap.xml | head -c 1500; echo
