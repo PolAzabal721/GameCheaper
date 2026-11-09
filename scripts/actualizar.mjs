@@ -337,12 +337,18 @@ async function ebayToken() {
   return tokenEbay;
 }
 const PLAT_EBAY = [["Switch 2", /switch 2/], ["Switch", /switch/], ["PS5", /ps5|playstation 5/], ["PS4", /ps4|playstation 4/], ["Xbox Series", /xbox series/]];
-const NO_JUEGO = /\b(solo caja|caja vacia|sin juego|sin cartucho|sin disco|steelbook|funda|codigo|code|key|clave|dlc|figura|amiibo|poster|lote|pack|consola|mando)\b/;
+const NO_JUEGO = /\b(solo caja|caja vacia|caja|portada|caratula|manual|sin juego|sin cartucho|sin disco|steelbook|funda|protector|codigo|code|key|clave|dlc|figura|amiibo|poster|lote|pack|consola|mando|moneda|coin|guia|guide|artbook|precinto)\b/;
+// Un anuncio de segunda mano por menos de una cuarta parte del juego nuevo más barato no suele ser el juego (caja, portada…)
+function precioCreible(j, total) {
+  const nuevos = j.ofertas.filter((o) => o.estado !== "usado" && o.formato === "fisico").map((o) => o.precio + (o.envio || 0));
+  const ref = nuevos.length ? Math.min(...nuevos) : Math.min(...j.ofertas.filter((o) => o.estado !== "usado").map((o) => o.precio), Infinity);
+  return !isFinite(ref) || total >= ref * 0.25;
+}
 async function ebay(j) {
   const consolas = [...j.plataformas].filter((p) => p !== "PC");
   if (!consolas.length) return 0;
   const token = await ebayToken();
-  const filtro = "conditions:{USED},buyingOptions:{FIXED_PRICE},deliveryCountry:ES,priceCurrency:EUR,price:[2..150]";
+  const filtro = "conditions:{USED},buyingOptions:{FIXED_PRICE},deliveryCountry:ES,priceCurrency:EUR,price:[4..150]";
   const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(j.titulo)}&filter=${encodeURIComponent(filtro)}&sort=price&limit=50`;
   const d = await (await pedir(url, { headers: { Authorization: `Bearer ${token}`, "X-EBAY-C-MARKETPLACE-ID": "EBAY_ES", "Accept-Language": "es-ES" } })).json();
   let n = 0;
@@ -354,7 +360,7 @@ async function ebay(j) {
     const plat = PLAT_EBAY.find(([, re]) => re.test(t))?.[0];
     if (!plat || !consolas.includes(plat)) continue;
     const precio = parseFloat(it.price?.value), envio = parseFloat(it.shippingOptions?.[0]?.shippingCost?.value || 0);
-    if (!(precio > 0)) continue;
+    if (!(precio > 0) || !precioCreible(j, precio + (envio || 0))) continue;
     const antes = j.ofertas.length;
     ofertar(j, { tienda: "ebay", plataforma: plat, formato: "fisico", estado: "usado", precio, envio: redondear(envio), condicion: it.condition || "Usado", url: it.itemWebUrl, fuente: "ebay" });
     if (j.ofertas.length > antes) n++;

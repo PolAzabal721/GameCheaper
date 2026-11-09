@@ -93,18 +93,28 @@ async function eshop(q, res) {
 }
 
 const PLAT_EBAY = [["Switch 2", /switch 2/], ["Switch", /switch/], ["PS5", /ps5|playstation 5/], ["PS4", /ps4|playstation 4/], ["Xbox Series", /xbox series/]];
-const NO_JUEGO = /\b(solo caja|caja vacia|sin juego|sin cartucho|sin disco|steelbook|funda|codigo|code|key|clave|dlc|figura|amiibo|poster|lote|pack|consola|mando)\b/;
-async function ebay(q, res, env) {
-  if (!env.EBAY_CLIENT_ID || !env.EBAY_CLIENT_SECRET) return;
+const NO_JUEGO = /\b(solo caja|caja vacia|caja|portada|caratula|manual|sin juego|sin cartucho|sin disco|steelbook|funda|protector|codigo|code|key|clave|dlc|figura|amiibo|poster|lote|pack|consola|mando|moneda|coin|guia|guide|artbook|precinto)\b/;
+// Token de eBay reutilizado mientras dure (vale 2 horas): pedir uno por búsqueda hace que eBay a veces responda 401
+let tokenEbay = null, caducaEbay = 0;
+async function ebayToken(env) {
+  if (tokenEbay && Date.now() < caducaEbay) return tokenEbay;
   const tok = await (await pedir("https://api.ebay.com/identity/v1/oauth2/token", {
     method: "POST",
-    headers: { Authorization: "Basic " + btoa(`${env.EBAY_CLIENT_ID}:${env.EBAY_CLIENT_SECRET}`), "Content-Type": "application/x-www-form-urlencoded" },
+    headers: { Authorization: "Basic " + btoa(`${env.EBAY_CLIENT_ID.trim()}:${env.EBAY_CLIENT_SECRET.trim()}`), "Content-Type": "application/x-www-form-urlencoded" },
     body: "grant_type=client_credentials&scope=" + encodeURIComponent("https://api.ebay.com/oauth/api_scope"),
   })).json();
-  const filtro = "conditions:{USED},buyingOptions:{FIXED_PRICE},deliveryCountry:ES,priceCurrency:EUR,price:[2..150]";
-  const d = await (await pedir(`https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(q)}&filter=${encodeURIComponent(filtro)}&sort=price&limit=50`, {
-    headers: { Authorization: `Bearer ${tok.access_token}`, "X-EBAY-C-MARKETPLACE-ID": "EBAY_ES" },
-  })).json();
+  tokenEbay = tok.access_token; caducaEbay = Date.now() + ((tok.expires_in || 7200) - 300) * 1000;
+  return tokenEbay;
+}
+async function ebay(q, res, env) {
+  if (!env.EBAY_CLIENT_ID || !env.EBAY_CLIENT_SECRET) return;
+  const filtro = "conditions:{USED},buyingOptions:{FIXED_PRICE},deliveryCountry:ES,priceCurrency:EUR,price:[4..150]";
+  const buscarEbay = async () => pedir(`https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(q)}&filter=${encodeURIComponent(filtro)}&sort=price&limit=50`, {
+    headers: { Authorization: `Bearer ${await ebayToken(env)}`, "X-EBAY-C-MARKETPLACE-ID": "EBAY_ES" },
+  });
+  let r;
+  try { r = await buscarEbay(); } catch (e) { if (!/401/.test(e.message)) throw e; tokenEbay = null; r = await buscarEbay(); } // token caducado: pedimos otro
+  const d = await r.json();
   // Solo colgamos anuncios de eBay en juegos ya encontrados en tiendas oficiales
   const juegos = [...res.mapa.values()];
   for (const it of d.itemSummaries || []) {
@@ -115,6 +125,9 @@ async function ebay(q, res, env) {
     const j = juegos.find((x) => clave(x.titulo).split(" ").every((p) => t.includes(" " + p + " ")));
     if (!j) continue;
     const precio = parseFloat(it.price?.value), envio = parseFloat(it.shippingOptions?.[0]?.shippingCost?.value || 0);
+    // Por menos de una cuarta parte del juego nuevo no suele ser el juego (caja, portada…)
+    const nuevos = j.ofertas.filter((o) => o.estado !== "usado").map((o) => o.precio);
+    if (nuevos.length && precio + envio < Math.min(...nuevos) * 0.25) continue;
     res.ofertar(j, { tienda: "ebay", plataforma: plat, formato: "fisico", estado: "usado", stock: true, precio, envio: r2(envio), condicion: it.condition || "Usado", url: it.itemWebUrl });
   }
 }
