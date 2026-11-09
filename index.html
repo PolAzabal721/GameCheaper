@@ -183,7 +183,10 @@ button { cursor: pointer; }
   .mini-precio .precio { font-size: 19px; }
   .mini-precio .donde { max-width: 100%; font-size: 11.5px; white-space: normal; line-height: 1.25; }
 }
-.exp-barra { display: flex; justify-content: flex-end; margin: -6px -6px -6px 0; }
+.exp-barra { display: flex; justify-content: flex-start; margin: -6px 0 2px -6px; }
+.btn-menos { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); display: grid; place-items: center; padding: 0; }
+.btn-menos:hover { border-color: var(--muted); }
+.btn-menos svg { width: 18px; height: 18px; }
 .fecha-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; background: var(--good-soft); color: var(--good); }
 .fecha-tag.prox { background: var(--warn-soft); color: var(--warn); }
 
@@ -924,7 +927,7 @@ button { cursor: pointer; }
     var enMinimo = j.minimo && total(m) <= j.minimo + 0.005;
     var enGrid = f.vista === "cuadricula";
     return '<article class="juego' + (enGrid ? " expandida" : "") + '" id="j-' + esc(j.id) + '">' +
-      (enGrid ? '<div class="exp-barra"><button type="button" class="btn" data-cerrar="' + esc(j.id) + '">Ver en pequeño</button></div>' : "") +
+      (enGrid ? '<div class="exp-barra"><button type="button" class="btn-menos" data-cerrar="' + esc(j.id) + '" aria-label="Ver en pequeño" title="Ver en pequeño"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"/></svg></button></div>' : "") +
       '<div class="j-cab"><div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") + etiquetaFecha(j) +
       (enMinimo ? '<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>' : "") +
       (j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo" }[j.tipo] || "") + "</span>" : "") + campanaTitulo(j) + '<div class="plats">' +
