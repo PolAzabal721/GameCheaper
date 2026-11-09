@@ -1,0 +1,19 @@
+name: Diagnóstico eBay
+on: workflow_dispatch
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probar las claves de eBay (token y una búsqueda)
+        env:
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+        run: |
+          I=$(printf '%s' "$EBAY_CLIENT_ID" | tr -d '[:space:]'); C=$(printf '%s' "$EBAY_CLIENT_SECRET" | tr -d '[:space:]')
+          echo "::add-mask::$I"; echo "::add-mask::$C"
+          echo "App ID: ${#I} caracteres, contiene -PRD-: $(echo "$I" | grep -c -- '-PRD-'), contiene -SBX-: $(echo "$I" | grep -c -- '-SBX-')"
+          echo "Cert ID: ${#C} caracteres, empieza por PRD-: $(echo "$C" | grep -c '^PRD-'), empieza por SBX-: $(echo "$C" | grep -c '^SBX-')"
+          R=$(curl -s -u "$I:$C" -H "Content-Type: application/x-www-form-urlencoded" -d "grant_type=client_credentials&scope=https%3A%2F%2Fapi.ebay.com%2Foauth%2Fapi_scope" https://api.ebay.com/identity/v1/oauth2/token)
+          echo "Token: $(echo "$R" | jq -c '{ok: (.access_token != null), expires_in, error, error_description}')"
+          T=$(echo "$R" | jq -r '.access_token // empty'); echo "::add-mask::$T"
+          [ -n "$T" ] && curl -s -H "Authorization: Bearer $T" -H "X-EBAY-C-MARKETPLACE-ID: EBAY_ES" "https://api.ebay.com/buy/browse/v1/item_summary/search?q=zelda%20tears%20of%20the%20kingdom%20switch&limit=3" | jq -c '{total, errores: .errors, ejemplos: [.itemSummaries[]? | {title, precio: .price.value, moneda: .price.currency, estado: .condition}]}'
