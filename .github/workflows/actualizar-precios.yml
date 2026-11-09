@@ -30,11 +30,13 @@ jobs:
           EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
           EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
           BUSCADOR_URL: ${{ vars.BUSCADOR_URL }}
+      - name: Revisar que todas las tiendas dan precios
+        run: node scripts/salud.mjs
       - name: Guardar cambios
         run: |
           git config user.name "pillao-bot"
           git config user.email "pillao-bot@users.noreply.github.com"
-          git add precios.json minimos.json data/historial
+          git add precios.json minimos.json data/historial data/salud.json
           git diff --cached --quiet && exit 0
           git commit -m "Precios actualizados"
           # Si mientras tanto se ha subido otra versión de los precios, manda la de esta ejecución (es la más reciente)
@@ -43,4 +45,9 @@ jobs:
             git rebase --abort 2>/dev/null || true
             sleep 10
           done
+          exit 1
+      - name: Avisar si alguna tienda ha dejado de dar precios
+        if: env.FUENTES_CON_PROBLEMAS == '1'
+        run: |
+          echo "::error::Alguna tienda ha dejado de dar precios. Mira el resumen de la ejecución («Revisar que todas las tiendas dan precios»)."
           exit 1

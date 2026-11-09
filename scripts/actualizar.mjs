@@ -1022,7 +1022,7 @@ async function main() {
   console.log("Primeros del catálogo:", lista.slice(0, 15).map((j) => j.titulo).join(" | "));
   if (avisos.length) console.warn(`Avisos (${avisos.length}):\n - ` + avisos.slice(0, 40).join("\n - "));
   if (total === 0) { console.error("No se ha conseguido ningún precio. No toco precios.json."); process.exit(1); }
-  const salida = { actualizado: new Date().toISOString(), ejemplo: false, revisadoV: 2, buscador: buscador || undefined, tiendas, juegos: lista };
+  const salida = { actualizado: new Date().toISOString(), ejemplo: false, revisadoV: 2, caidas: caidas.size ? [...caidas] : undefined, buscador: buscador || undefined, tiendas, juegos: lista };
   await writeFile(join(RAIZ, "precios.json"), JSON.stringify(salida) + "\n");
   console.log(`precios.json listo: ${lista.length} juegos, ${total} ofertas.`);
   // Historial diario (gráfica de la web) y precios mínimos (avisos por email)
