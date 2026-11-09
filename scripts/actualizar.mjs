@@ -521,7 +521,7 @@ const ALCAMPO = "https://www.compraonline.alcampo.es";
 const ALCAMPO_CONSULTAS = ["videojuego", "juego ps5", "juego nintendo switch", "juego switch 2", "juego ps4"];
 const ALCAMPO_PAUSA = 8000;
 const PLAT_ALCAMPO = [["Switch 2", /switch 2|switch2/], ["Switch", /switch/], ["PS5", /ps5|playstation 5/], ["PS4", /ps4|playstation 4/], ["Xbox Series", /xbox/]];
-const NO_JUEGO_ALCAMPO = /\b(consola|mando|auricular|auriculares|tarjeta|memoria|cargador|cable|funda|volante|soporte|base|bateria|pack consola|camara|gafas|headset|steering|accesorio)\b/;
+const NO_JUEGO_ALCAMPO = /\b(pack|consola|mando|auricular|auriculares|tarjeta|memoria|cargador|cable|funda|volante|soporte|base|bateria|pack consola|camara|gafas|headset|steering|accesorio)\b/;
 async function alcampo(visitar) {
   const productos = new Map();
   const buscar = async (q) => {
@@ -542,15 +542,18 @@ async function alcampo(visitar) {
     await esperar(ALCAMPO_PAUSA);
   }
   // 3. Asociar cada producto al juego del catálogo con el título más largo que encaje
-  const candidatos = [...juegos.values()].filter((j) => j.tipo !== "dlc" && j.tipo !== "tarjeta").map((j) => ({ j, palabras: clave(j.titulo).split(" ").filter(Boolean) })).filter((c) => c.palabras.length);
+  // «FC27» y «FC 27» son lo mismo: separamos letras de números en ambos lados
+  const separar = (x) => x.replace(/([a-z])(\d)/g, "$1 $2").replace(/(\d)([a-z])/g, "$1 $2");
+  const candidatos = [...juegos.values()].filter((j) => j.tipo !== "dlc" && j.tipo !== "tarjeta").map((j) => ({ j, palabras: separar(clave(j.titulo)).split(" ").filter(Boolean) })).filter((c) => c.palabras.length);
   let n = 0;
   for (const p of productos.values()) {
-    const t = " " + limpiar(p.name) + " ";
-    const plat = PLAT_ALCAMPO.find(([, re]) => re.test(t))?.[0];
+    const t = " " + separar(limpiar(p.name)) + " ";
+    const plat = PLAT_ALCAMPO.find(([, re]) => re.test(" " + limpiar(p.name) + " "))?.[0];
     if (!plat) continue;
     let mejor = null;
     for (const c of candidatos) if (c.palabras.every((w) => t.includes(" " + w + " ")) && (!mejor || c.palabras.length > mejor.palabras.length)) mejor = c;
-    if (!mejor || mejor.palabras.length < 2 && !/^\S{5,}$/.test(mejor.palabras[0])) continue; // títulos de una sola palabra corta: demasiado ambiguos
+    // Un título de una sola palabra solo vale si el producto empieza por ella (si no, «Sports» encajaría con cualquier juego de deportes)
+    if (!mejor || (mejor.palabras.length < 2 && !t.trimStart().replace(/^(juego|nintendo switch 2|nintendo switch|ps5|ps4) /, "").startsWith(mejor.palabras[0] + " "))) continue;
     const slug = limpiar(p.name).replace(/ /g, "-");
     ofertar(mejor.j, { tienda: "alcampo", plataforma: plat, formato: "fisico", estado: "nuevo", stock: !!p.available, precio: parseFloat(p.price.amount),
       url: `${ALCAMPO}/products/${slug}/${p.retailerProductId}`, fuente: "alcampo" });
