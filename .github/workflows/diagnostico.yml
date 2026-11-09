@@ -4,13 +4,19 @@ jobs:
   d:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: { node-version: 20 }
       - run: |
-          UA="Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)"
-          curl -s -L -m 30 -A "$UA" https://www.xtralife.com/producto/007-first-light-edicion-legacy/108287 -o /tmp/p.html
-          echo "=== scripts:"; grep -o -E '<script[^>]*src="[^"]+"' /tmp/p.html | head; grep -o -E 'https?://[a-z0-9.-]*xtralife[a-z0-9.-]*' /tmp/p.html | sort -u
-          for js in $(grep -o -E 'src="[^"]+\.js"' /tmp/p.html | sed 's/src="//;s/"$//' | head -6); do
-            case "$js" in http*) u="$js";; //*) u="https:$js";; *) u="https://www.xtralife.com/${js#/}";; esac
-            curl -s -m 30 -A "$UA" "$u" -o /tmp/j.js; echo "--- $u ($(wc -c < /tmp/j.js) bytes)"
-            grep -o -E 'https?://[a-z0-9.-]*(api|backend|services?)[a-z0-9.-]*\.[a-z]{2,}[a-zA-Z0-9/_.-]{0,40}' /tmp/j.js | sort -u | head -8
-            grep -o -E '"/?(api|v[0-9])/[a-zA-Z0-9/_{}.-]{3,60}' /tmp/j.js | sort -u | grep -i -E 'product|producto|item|price' | head -10
-          done
+          cd /tmp && npm i -s playwright@1.48.2 >/dev/null 2>&1 && npx -y playwright@1.48.2 install --with-deps chromium >/dev/null 2>&1
+          cat > v.mjs <<'JS'
+          import { chromium } from "playwright";
+          const b = await chromium.launch(); const p = await b.newPage({ userAgent: "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)" });
+          const peticiones = [];
+          p.on("response", async (r) => { const u = r.url(); if (/json/.test(r.headers()["content-type"] || "") ) peticiones.push(r.status() + " " + u.slice(0, 160)); });
+          await p.goto("https://www.xtralife.com/producto/007-first-light-edicion-legacy/108287", { waitUntil: "networkidle" });
+          console.log("PETICIONES JSON:\n" + peticiones.join("\n"));
+          const t = await p.evaluate(() => document.body.innerText.replace(/\s+/g, " ").slice(0, 600));
+          console.log("TEXTO:", t);
+          await b.close();
+          JS
+          node v.mjs
