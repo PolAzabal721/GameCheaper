@@ -176,12 +176,16 @@ async function steamMasVendidos() {
     }
     await esperar(800);
   }  // Próximos lanzamientos populares: solo entran los que ya tienen precio (se pueden reservar)
+  // Steam limita las peticiones seguidas (HTTP 429): esperamos antes y, si aun así nos frena, reintentamos más tarde
   for (const p of [0, 1]) {
-    try {
-      const d = await (await pedir(`https://store.steampowered.com/search/results/?query&start=${p * 100}&count=100&filter=popularcomingsoon&cc=es&l=spanish&infinite=1`)).json();
-      for (const f of leerFilasSteam(d.results_html || "")) if (!filas.some((x) => x.appid === f.appid)) filas.push({ ...f, puesto: 3000 + p * 100 + filas.length });
-    } catch (e) { console.warn("Steam próximos lanzamientos: " + e.message); }
-    await esperar(1500);
+    for (let intento = 1; intento <= 3; intento++) {
+      await esperar(intento === 1 ? 10000 : 45000);
+      try {
+        const d = await (await pedir(`https://store.steampowered.com/search/results/?query&start=${p * 100}&count=100&filter=popularcomingsoon&cc=es&l=spanish&infinite=1`)).json();
+        for (const f of leerFilasSteam(d.results_html || "")) if (!filas.some((x) => x.appid === f.appid)) filas.push({ ...f, puesto: 3000 + p * 100 + filas.length });
+        break;
+      } catch (e) { if (intento === 3) console.warn("Steam próximos lanzamientos: " + e.message.slice(0, 80)); }
+    }
   }
 
   // El listado a veces enseña el precio de una mejora de pago de un juego gratuito (p. ej. Counter-Strike 2 «Prime»).
