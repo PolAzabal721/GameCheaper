@@ -490,10 +490,10 @@ function plataformasMS(p) {
 }
 async function microsoftStore(j) {
   // El buscador de Microsoft no encuentra «EA SPORTS FC 27» si en la tienda se llama «EA SPORTS FC™ 27»:
-  // si no sale nada, probamos quitando palabras del final («EA SPORTS FC»), hasta dos veces
+  // si no sale nada, probamos quitando palabras del final («EA SPORTS FC»), hasta tres veces
   const palabras = j.titulo.replace(/[™®©]/g, "").split(/\s+/).filter(Boolean);
   let candidatos = [];
-  for (let quitar = 0; quitar <= 2 && !candidatos.length; quitar++) {
+  for (let quitar = 0; quitar <= 3 && !candidatos.length; quitar++) {
     const q = palabras.slice(0, palabras.length - quitar).join(" ");
     if (quitar && (palabras.length - quitar < 2 || q.length < 6)) break;
     const sug = await (await pedir(`https://displaycatalog.mp.microsoft.com/v7.0/productFamilies/autosuggest?market=ES&languages=es-ES&productFamilyNames=Games&query=${encodeURIComponent(q)}`)).json();
@@ -816,16 +816,6 @@ async function main() {
   if (ENV.PRUEBA_GAME) {
     const mapa = await mapaGame();
     console.log("MAPA GAME:", mapa.size, "juegos");
-    {
-      const sug = await (await pedir("https://displaycatalog.mp.microsoft.com/v7.0/productFamilies/autosuggest?market=ES&languages=es-ES&productFamilyNames=Games&query=EA%20SPORTS%20FC")).json();
-      const ps = (sug.Results || []).flatMap((r) => r.Products || []);
-      console.log("MS CANDIDATOS", ps.map((p) => p.ProductId + " " + p.Title + " → " + parecido("EA SPORTS FC 27", sinEdicion(p.Title))).join(" || "));
-      const d = await (await pedir(`https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${ps.slice(0, 8).map((p) => p.ProductId).join(",")}&market=ES&languages=es-es`)).json();
-      for (const p of d.Products || []) {
-        console.log("MS PROD", p.ProductId, p.LocalizedProperties?.[0]?.ProductTitle, JSON.stringify(plataformasMS(p)));
-        for (const sk of p.DisplaySkuAvailabilities || []) for (const av of sk.Availabilities || []) { const pr = av.OrderManagementData?.Price; console.log("   ", sk.Sku?.LocalizedProperties?.[0]?.SkuTitle, pr && pr.CurrencyCode, pr && pr.ListPrice, pr && pr.MSRP, (av.Actions || []).join(",")); }
-      }
-    }
     for (const t of ["EA SPORTS FC 27", "EA Sports FC 27 Ultimate Edition", "The Legend of Zelda: Tears of the Kingdom", "Mario Kart World", "Hogwarts Legacy"]) {
       const j = juego(t, {}); const f = mapa.get(clave(t)) || [];
       console.log("FICHAS", t, JSON.stringify(f));
