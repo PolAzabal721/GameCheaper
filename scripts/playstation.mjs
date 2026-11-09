@@ -30,22 +30,37 @@ async function texto(url) {
 }
 
 // 1. Página del juego en playstation.com → números de ficha de la tienda
+// El mapa del sitio (sitemap.xml, permitido) dice qué páginas de juegos existen. Probamos el nombre completo,
+// sin subtítulo y la página de la saga («ea-sports-fc-27» → «ea-sports-fc»), que enlaza a la entrega más reciente.
+let PAGINAS = null;
+async function paginasJuegos() {
+  if (PAGINAS) return PAGINAS;
+  const xml = (await texto("https://www.playstation.com/es-es/sitemap.xml")) || "";
+  PAGINAS = new Set([...xml.matchAll(/\/es-es\/games\/([a-z0-9-]+)\/</g)].map((m) => m[1]));
+  console.log(`Páginas de juegos en playstation.com: ${PAGINAS.size}`);
+  return PAGINAS;
+}
 async function descubrir(titulo) {
-  // Primero el título completo; si no existe, sin el subtítulo («Juego: Subtítulo» → «Juego»)
-  const opciones = [titulo, titulo.split(/[:–-]\s/)[0]].map((t) => limpiar(t).replace(/ /g, "-")).filter((s, i, a) => s && a.indexOf(s) === i);
-  let html = null;
-  for (const slug of opciones) {
-    html = await texto(`https://www.playstation.com/es-es/games/${slug}/`);
-    if (html) break;
-    if (opciones.length > 1) await esperar(5000);
-  }
-  if (!html) return [];
+  const paginas = await paginasJuegos();
+  const slug = (t) => limpiar(t).replace(/ /g, "-");
+  const completo = slug(titulo), corto = slug(titulo.split(/[:–-]\s/)[0]);
+  const opciones = [completo, corto];
+  // Saga: el nombre quitando palabras del final (como mucho dos), si esa página existe
+  const partes = completo.split("-");
+  for (let q = 1; q <= 2 && partes.length - q >= 2; q++) opciones.push(partes.slice(0, partes.length - q).join("-"));
+  const validas = opciones.filter((s, i, a) => s && a.indexOf(s) === i && (!paginas.size || paginas.has(s))).slice(0, 2);
   const ids = new Set();
-  for (const m of html.matchAll(/store\.playstation\.com\/(?:[a-z]{2}-[a-z]{2}\/)?concept\/(\d+)/g)) ids.add(m[1]);
-  for (const m of html.matchAll(/"conceptId"\s*:\s*"?(\d+)/g)) ids.add(m[1]);
-  // Fichas de producto europeas (EP…) como alternativa
-  for (const m of html.matchAll(/store\.playstation\.com\/(?:[a-z]{2}-[a-z]{2}\/)?product\/(EP[A-Z0-9_-]+)/g)) ids.add(m[1]);
-  return [...ids].slice(0, 4);
+  for (const s of validas) {
+    const html = await texto(`https://www.playstation.com/es-es/games/${s}/`);
+    await esperar(5000); // Crawl-delay de playstation.com
+    if (!html) continue;
+    for (const m of html.matchAll(/store\.playstation\.com\/(?:[a-z]{2}-[a-z]{2}\/)?concept\/(\d+)/g)) ids.add(m[1]);
+    for (const m of html.matchAll(/"conceptId"\s*:\s*"?(\d+)/g)) ids.add(m[1]);
+    // Fichas de producto europeas (EP…) como alternativa
+    for (const m of html.matchAll(/store\.playstation\.com\/(?:[a-z]{2}-[a-z]{2}\/)?product\/(EP[A-Z0-9_-]+)/g)) ids.add(m[1]);
+    if (ids.size && s === completo) break;
+  }
+  return [...ids].slice(0, 8);
 }
 
 // 2. Ficha de la tienda → precio en euros para España
@@ -77,7 +92,7 @@ async function main() {
   // luego los más populares. Saltamos los ya buscados (salvo los no encontrados hace más de un mes).
   const pendientes = catalogo.juegos.filter((j) => {
     const e = estado.juegos[j.id];
-    return !e || (!e.ids?.length && ahora - Date.parse(e.buscado || 0) > REINTENTAR_DIAS * 86400000);
+    return !e || (!e.ids?.length && (e.v !== 2 || ahora - Date.parse(e.buscado || 0) > REINTENTAR_DIAS * 86400000));
   }).sort((a, b) => {
     const pa = (a.plataformas || []).some((p) => /^PS/.test(p)) ? 0 : 1, pb = (b.plataformas || []).some((p) => /^PS/.test(p)) ? 0 : 1;
     return pa - pb || (a.pop || 99999) - (b.pop || 99999);
@@ -86,10 +101,9 @@ async function main() {
   for (const j of pendientes) {
     try {
       const ids = await descubrir(j.titulo);
-      estado.juegos[j.id] = { titulo: j.titulo, ids, buscado: new Date().toISOString(), ofertas: estado.juegos[j.id]?.ofertas || [] };
+      estado.juegos[j.id] = { titulo: j.titulo, ids, v: 2, buscado: new Date().toISOString(), ofertas: estado.juegos[j.id]?.ofertas || [] };
       ids.length ? cuenta.descubiertos++ : cuenta.sinFicha++;
     } catch (e) { cuenta.fallos++; if (avisos.length < 10) avisos.push(`descubrir ${j.titulo}: ${e.message}`); }
-    await esperar(5000); // Crawl-delay de playstation.com
   }
 
   // Precios: los que llevan más tiempo sin actualizar primero

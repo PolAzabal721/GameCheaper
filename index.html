@@ -815,7 +815,9 @@ button { cursor: pointer; }
 
   var PAGINA = 30, mostrar = PAGINA;         // juegos que se pintan de cada vez
   var vivo = { q: "", juegos: [], cargando: false, error: "" }, temporizador = null;
-  var PLATS_TIENDA = { steam: ["PC"], psstore: ["PS5", "PS4"], eshop: ["Switch 2", "Switch"], xbox: ["Xbox Series", "PC", "PS5", "PS4"] };
+  var PLATS_TIENDA = { steam: ["PC"], psstore: ["PS5", "PS4"], eshop: ["Switch 2", "Switch"], xbox: ["Xbox Series", "PC"] };
+  // Tiendas cuyo precio buscamos solos en todo el catálogo: nunca van a «Búscalo en»
+  var AUTOMATICAS = { steam: 1, eshop: 1, ebay: 1, alcampo: 1, game: 1, gameseminuevos: 1 };
   var conOfertas = {};                       // tiendas que tienen algún precio automático
 
   // Tiendas sin precio para este juego donde merece la pena buscar a mano
@@ -823,14 +825,15 @@ button { cursor: pointer; }
     // Tiendas que ya tienen precio (por identificador y por nombre, por si llegan de dos fuentes distintas)
     var tiene = {}; j.ofertas.forEach(function (o) { tiene[o.tienda] = 1; var t = tiendaPorId[o.tienda]; if (t) tiene["n:" + norm(t.nombre)] = 1; });
     var consola = j.plataformas.some(function (p) { return p !== "PC"; });
-    // Indicios de que el juego existe en disco o como clave de revendedor
-    var fisicoVisto = j.ofertas.some(function (o) { return o.formato === "fisico"; });
+    // Pruebas de que el juego existe en cada formato (otra tienda lo vende así)
+    var plat = function (re) { return j.ofertas.some(function (o) { return re.test(o.plataforma || ""); }); };
+    var nuevoDisco = j.ofertas.some(function (o) { return o.formato === "fisico" && o.estado === "nuevo"; });
+    var usadoVisto = j.ofertas.some(function (o) { return o.estado === "usado"; });
     var clavesVisto = j.ofertas.some(function (o) { var t = tiendaPorId[o.tienda]; return t && (t.tipo === "revendedor" || t.tipo === "marketplace"); });
-    var popular = function (n) { return (j.pop || 99999) <= n; };
     return datos.tiendas.filter(function (t) {
       if (!t.busqueda || tiene[t.id] || tiene["n:" + norm(t.nombre)] || f.fuera.indexOf(t.id) >= 0) return false;
-      // eBay y Alcampo se consultan automáticamente para todo el catálogo: si no sale su precio es que no lo tienen
-      if (t.id === "ebay" || t.id === "alcampo") return false;
+      // Tiendas que consultamos solas para todo el catálogo: si no sale su precio es que no lo tienen
+      if (AUTOMATICAS[t.id] || t.id.indexOf("itad-") === 0) return false;
       if (!f.part && t.tipo === "particulares") return false;
       if (!f.mkt && t.tipo === "marketplace") return false;
       var fisica = (t.formatos || []).indexOf("fisico") >= 0 && (t.formatos || []).indexOf("digital") < 0;
@@ -839,15 +842,15 @@ button { cursor: pointer; }
       if (f.formato === "fisico" && !fisica) return false;
       if (f.estado === "usado" && !usada) return false;
       if (f.estado === "nuevo" && usada) return false;
-      if (fisica && !consola) return false;
       if (fisica && (j.tipo === "dlc" || j.tipo === "tarjeta")) return false;
       // Tiendas que ya revisamos automáticamente para este juego: si no hay precio, es que no lo tienen
       if ((j.revisado || []).indexOf(t.id) >= 0) return false;
-      // Las tiendas de PC de IsThereAnyDeal se consultan todas a la vez: sin precio = no lo tienen
-      if (t.id.indexOf("itad-") === 0) return false;
-      // Tiendas que no podemos revisar: solo si es muy probable que lo tengan
-      if (fisica && !(fisicoVisto || (consola && popular(300)))) return false;
-      if ((t.tipo === "marketplace" || t.tipo === "revendedor") && !(clavesVisto || popular(500))) return false;
+      // Tiendas que no podemos revisar: solo si otra tienda demuestra que el juego existe en ese formato
+      if (t.id === "psstore") return plat(/^PS/);
+      if (t.id === "xbox") return plat(/^Xbox/);
+      if (fisica && usada) return usadoVisto;
+      if (fisica) return nuevoDisco;
+      if (t.tipo === "marketplace" || t.tipo === "revendedor") return clavesVisto;
       var ps = PLATS_TIENDA[t.id];
       if (ps && !ps.some(function (p) { return j.plataformas.indexOf(p) >= 0; })) return false;
       return true;
@@ -1404,6 +1407,16 @@ button { cursor: pointer; }
       (resto > 0 ? '<button type="button" class="btn mas-juegos" data-mas-juegos>Ver más juegos <span>(quedan ' + resto.toLocaleString("es-ES") + ")</span></button>" : "");
   }
 
+  function claveTitulo(t) { return norm(String(t).replace(/[™®©]/g, "")).replace(/[^a-z0-9]+/g, " ").trim(); }
+  // Mete en una ficha del catálogo los precios recién consultados: los de la misma tienda, plataforma y estado se cambian por los nuevos
+  function unirOfertas(c, j) {
+    var grupo = function (o) { return o.tienda + "|" + (o.plataforma || "") + "|" + o.estado + "|" + o.formato; };
+    var nuevos = {}; j.ofertas.forEach(function (o) { nuevos[grupo(o)] = 1; });
+    c.ofertas = c.ofertas.filter(function (o) { return !nuevos[grupo(o)]; }).concat(j.ofertas);
+    j.ofertas.forEach(function (o) { if (o.plataforma && c.plataformas.indexOf(o.plataforma) < 0) c.plataformas.push(o.plataforma); });
+    if (!c.img && j.img) c.img = j.img;
+  }
+
   // Búsqueda en vivo: si hay buscador configurado, pregunta a las tiendas por lo que escribes
   function buscarEnVivo() {
     var qTxt = f.q.trim();
@@ -1419,8 +1432,15 @@ button { cursor: pointer; }
           // tiendas nuevas que trae la búsqueda en vivo (GOG, Epic…)
           (d.tiendas || []).forEach(function (t) { if (t && t.id && !tiendaPorId[t.id]) tiendaPorId[t.id] = { id: t.id, nombre: t.nombre || t.id, tipo: TIPOS[t.tipo] ? t.tipo : "tienda" }; });
           var v = validar({ juegos: d.juegos || [], tiendas: [] });
-          v.juegos.forEach(function (j) { j._vivo = true; });
-          vivo = { q: qTxt, juegos: v.juegos, cargando: false, error: "" }; pintar();
+          // Si el juego ya está en el catálogo, sus precios en vivo se suman a la ficha (no la sustituyen:
+          // así no se pierden las demás tiendas ni lo que ya sabemos que cada tienda tiene o no tiene)
+          var porTitulo = {}; datos.juegos.forEach(function (c) { porTitulo[claveTitulo(c.titulo)] = c; });
+          var nuevos = [];
+          v.juegos.forEach(function (j) {
+            var c = porTitulo[claveTitulo(j.titulo)];
+            if (c) unirOfertas(c, j); else { j._vivo = true; nuevos.push(j); }
+          });
+          vivo = { q: qTxt, juegos: nuevos, cargando: false, error: "" }; pintar();
         })
         .catch(function () { if (f.q.trim() !== qTxt) return; vivo = { q: qTxt, juegos: [], cargando: false, error: "La búsqueda en las tiendas no ha respondido. Mostramos solo lo que ya teníamos." }; pintar(); });
     }, 600);
