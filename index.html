@@ -706,7 +706,10 @@ button { cursor: pointer; }
       { id: "particulares", titulo: "Entre particulares", tipos: ["particulares"] },
     ];
     $("tiendas").innerHTML = BLOQUES.map(function (bl) {
-      var ts = datos.tiendas.filter(function (t) { return bl.tipos.indexOf(t.tipo) >= 0 && conOfertas[t.id]; });
+      // eBay va con las tiendas de segunda mano (con su desplegable de estados), tenga ya precios o no
+      var ebay = tiendaPorId.ebay;
+      var ts = datos.tiendas.filter(function (t) { return t.id !== "ebay" && bl.tipos.indexOf(t.tipo) >= 0 && conOfertas[t.id]; });
+      if (bl.id === "segundamano" && ebay) ts.push(ebay);
       if (!ts.length) return "";
       ts.sort(function (a, b) { return (b.id === "instantgaming") - (a.id === "instantgaming") || conOfertas[b.id] - conOfertas[a.id] || a.nombre.localeCompare(b.nombre); });
       var chip = function (t) { return '<button type="button" class="chip" data-t="' + esc(t.id) + '" aria-pressed="' + (f.fuera.indexOf(t.id) < 0) + '">' + esc(t.nombre) + "</button>"; };
@@ -714,7 +717,7 @@ button { cursor: pointer; }
       var ig = ts[0].id === "instantgaming" ? ts[0] : null, otros = ig ? ts.slice(1) : ts;
       // Revendedores de claves: Instant Gaming a la vista y el resto dentro de su desplegable
       // Entre particulares: eBay con un desplegable para elegir el estado de los juegos
-      var eb = bl.id === "particulares" && ts.filter(function (t) { return t.id === "ebay"; })[0];
+      var eb = bl.id === "segundamano" && ts.filter(function (t) { return t.id === "ebay"; })[0];
       if (eb) {
         var abiertoEb = !!bloquesAbiertos.ebay, quitados = CALIDADES.filter(function (c) { return f.calOff.indexOf(c) >= 0; }).length;
         return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + ts.filter(function (t) { return t.id !== "ebay"; }).map(chip).join("") +
@@ -738,7 +741,7 @@ button { cursor: pointer; }
     }).join("");
     tiendasDeBloque = function (id) {
       var bl = BLOQUES.filter(function (x) { return x.id === id; })[0];
-      return datos.tiendas.filter(function (t) { return bl && bl.tipos.indexOf(t.tipo) >= 0 && conOfertas[t.id]; }).map(function (t) { return t.id; });
+      return datos.tiendas.filter(function (t) { return bl && (t.id === "ebay" ? id === "segundamano" : bl.tipos.indexOf(t.tipo) >= 0 && conOfertas[t.id]); }).map(function (t) { return t.id; });
     };
     // precio
     var max = 10;
