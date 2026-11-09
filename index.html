@@ -183,7 +183,7 @@ button { cursor: pointer; }
   .lista.cuadricula { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   /* Fila del móvil: miniatura y datos arriba, la etiqueta amarilla del precio a lo ancho debajo */
   .cuadro { display: grid; grid-template-columns: 96px minmax(0, 1fr); column-gap: 12px; row-gap: 10px; height: auto; min-height: 0; padding: 10px; }
-  .cuadro-img { margin: 0; width: 96px; height: 54px; border-radius: 7px; align-self: start; }
+  .cuadro-img { margin: 0; width: 96px; height: 76px; border-radius: 7px; align-self: start; }
   .j-cov { width: 64px; height: 86px; border-radius: 8px; }
   .j-izq { gap: 12px; }
   .mini-izq { gap: 4px; }
@@ -824,8 +824,8 @@ button { cursor: pointer; }
     var popular = function (n) { return (j.pop || 99999) <= n; };
     return datos.tiendas.filter(function (t) {
       if (!t.busqueda || tiene[t.id] || tiene["n:" + norm(t.nombre)] || f.fuera.indexOf(t.id) >= 0) return false;
-      // eBay se consulta automáticamente para todo el catálogo: si no sale su precio es que no hay anuncios que valgan
-      if (t.id === "ebay") return false;
+      // eBay y Alcampo se consultan automáticamente para todo el catálogo: si no sale su precio es que no lo tienen
+      if (t.id === "ebay" || t.id === "alcampo") return false;
       if (!f.part && t.tipo === "particulares") return false;
       if (!f.mkt && t.tipo === "marketplace") return false;
       var fisica = (t.formatos || []).indexOf("fisico") >= 0 && (t.formatos || []).indexOf("digital") < 0;
