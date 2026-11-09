@@ -712,7 +712,8 @@ button { cursor: pointer; }
       if (bl.id === "segundamano" && ebay) ts.push(ebay);
       if (!ts.length) return "";
       ts.sort(function (a, b) { return (b.id === "instantgaming") - (a.id === "instantgaming") || conOfertas[b.id] - conOfertas[a.id] || a.nombre.localeCompare(b.nombre); });
-      var chip = function (t) { return '<button type="button" class="chip" data-t="' + esc(t.id) + '" aria-pressed="' + (f.fuera.indexOf(t.id) < 0) + '">' + esc(t.nombre) + "</button>"; };
+      var activa = function (t) { return f.fuera.indexOf(t.id) < 0 && !(t.tipo === "particulares" && !f.part); };
+      var chip = function (t) { return '<button type="button" class="chip" data-t="' + esc(t.id) + '" aria-pressed="' + activa(t) + '">' + esc(t.nombre) + "</button>"; };
       var chipRev = function (t) { return '<button type="button" class="chip" data-rev="' + esc(t.id) + '" aria-pressed="' + (f.revOn.indexOf(t.id) >= 0) + '">' + esc(t.nombre) + "</button>"; };
       var ig = ts[0].id === "instantgaming" ? ts[0] : null, otros = ig ? ts.slice(1) : ts;
       // Revendedores de claves: Instant Gaming a la vista y el resto dentro de su desplegable
@@ -726,7 +727,7 @@ button { cursor: pointer; }
           (quitados ? (CALIDADES.length - quitados) + "/" + CALIDADES.length + " estados" : "Estado") + " " + (abiertoEb ? "▴" : "▾") + "</button></span></div>" +
           (abiertoEb ? '<div class="sub-panel"><div class="sub-cab"><span class="sub-tit">Estado del juego</span>' +
             '<button type="button" class="chip mini" data-todos="calidades">' + (quitados ? "Marcar todos" : "Quitar todos") + "</button></div>" +
-            '<div class="chips">' + CALIDADES.map(function (c) { return '<button type="button" class="chip" data-cal="' + c + '" aria-pressed="' + (f.calOff.indexOf(c) < 0) + '">' + c + "</button>"; }).join("") + "</div></div>" : "") + "</div>";
+            '<div class="chips">' + CALIDADES.map(function (c) { return '<button type="button" class="chip" data-cal="' + c + '" aria-pressed="' + (activa(eb) && f.calOff.indexOf(c) < 0) + '">' + c + "</button>"; }).join("") + "</div></div>" : "") + "</div>";
       }
       if (bl.id !== "claves" || !ig || !otros.length)
         return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + ts.map(chip).join("") + "</div></div>";
@@ -1402,7 +1403,7 @@ button { cursor: pointer; }
     if (f.estado === "usado" && f.formato === "digital") f.formato = "todos";
     pintarControles(); cambio();
   });
-  $("part").addEventListener("change", function (e) { f.part = e.target.checked; cambio(); });
+  $("part").addEventListener("change", function (e) { f.part = e.target.checked; pintarControles(); cambio(); });
   $("tipo-f").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     f.tipo = f.tipo === b.dataset.v ? "todos" : b.dataset.v; pintarControles(); cambio();
@@ -1417,6 +1418,7 @@ button { cursor: pointer; }
     var b = e.target.closest("button"); if (!b) return;
     if (b.dataset.subAbrir) { bloquesAbiertos[b.dataset.subAbrir] = !bloquesAbiertos[b.dataset.subAbrir]; pintarControles(); return; }
     if (b.dataset.cal) {
+      if (!f.part || f.fuera.indexOf("ebay") >= 0) { f.part = true; f.fuera = f.fuera.filter(function (x) { return x !== "ebay"; }); f.calOff = CALIDADES.filter(function (c) { return c !== b.dataset.cal; }); pintarControles(); cambio(); return; }
       var ic = f.calOff.indexOf(b.dataset.cal);
       if (ic >= 0) f.calOff.splice(ic, 1); else f.calOff.push(b.dataset.cal);
       pintarControles(); cambio(); return;
@@ -1440,7 +1442,13 @@ button { cursor: pointer; }
       if (todasMarcadas) f.fuera = f.fuera.concat(ids);
       pintarControles(); cambio(); return;
     }
-    var t = b.dataset.t, i = f.fuera.indexOf(t);
+    var t = b.dataset.t, i = f.fuera.indexOf(t), tt = tiendaPorId[t];
+    if (tt && tt.tipo === "particulares" && !f.part) {
+      f.part = true;
+      if (i >= 0) f.fuera.splice(i, 1);
+      datos.tiendas.forEach(function (x) { if (x.tipo === "particulares" && x.id !== t && f.fuera.indexOf(x.id) < 0) f.fuera.push(x.id); });
+      pintarControles(); cambio(); return;
+    }
     if (i >= 0) f.fuera.splice(i, 1); else f.fuera.push(t);
     b.setAttribute("aria-pressed", i >= 0); cambio();
   });
