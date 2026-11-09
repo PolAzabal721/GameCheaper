@@ -20,7 +20,7 @@ const REINTENTAR_DIAS = 30;                      // si no encontramos un juego, 
 const CABECERAS = { "User-Agent": "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)", "Accept-Language": "es-ES,es;q=0.9" };
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 const leer = async (ruta, porDefecto) => { try { return JSON.parse(await readFile(join(RAIZ, ruta), "utf8")); } catch { return porDefecto; } };
-const limpiar = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[™®©]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+const limpiar = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[™®©]/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
 
 async function texto(url) {
   const r = await fetch(url, { headers: CABECERAS, redirect: "follow" });
