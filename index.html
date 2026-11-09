@@ -575,7 +575,8 @@ button { cursor: pointer; }
   function leerServidor(manual) {
     if (origen === "propio" && !manual) return;
     var est = $("estado"); est.className = "estado"; $("estado-txt").textContent = "Buscando precios…";
-    fetch("precios.json?t=" + Date.now(), { cache: "no-store" })
+    // «no-cache»: el navegador pregunta si hay precios nuevos y solo los descarga si han cambiado
+    fetch("precios.json", { cache: "no-cache" })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       .then(function (d) { usarDatos(d, "servidor"); })
       .catch(function () {
