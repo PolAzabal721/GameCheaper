@@ -6,10 +6,11 @@ jobs:
     steps:
       - run: |
           UA="Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)"
-          echo "=== robots completo"; curl -s -m 20 -A "$UA" https://www.xtralife.com/robots.txt | grep -v "^#" | grep -v "^$"
-          for s in https://www.xtralife.com/sitemap.xml https://www.xtralife.com/sitemap_index.xml https://www.xtralife.com/sitemaps/sitemap.xml https://edge-cache.xtralife.com/sitemap.xml; do echo "=== $s → $(curl -s -m 20 -A "$UA" -o /tmp/s -w '%{http_code}' $s) $(head -c 300 /tmp/s | tr -d '\n')"; done
-          U="https://www.xtralife.com/producto/atari-50-the-anniversary-celebration-edicion-expandida-ps5-estandar/90567"
-          echo "=== ficha → $(curl -s -m 20 -A "$UA" -o /tmp/p.html -w '%{http_code}' "$U") $(wc -c < /tmp/p.html) bytes"
-          grep -o -E '"price"[^,]{0,30}|itemprop="price"[^>]{0,80}|"@type":"Product"|application/ld\+json' /tmp/p.html | head -6
-          echo "=== portada → $(curl -s -m 20 -A "$UA" -o /tmp/h.html -w '%{http_code}' https://www.xtralife.com/) $(wc -c < /tmp/h.html) bytes, enlaces de producto: $(grep -o '/producto/[^"]*' /tmp/h.html | sort -u | wc -l)"
-          grep -o 'href="/[a-z0-9-]*/[^"]*"' /tmp/h.html | grep -v producto | sort -u | head -15
+          curl -s -m 30 -A "$UA" https://static.xtralife.com/sitemap.xml -o /tmp/s.xml; echo "=== sitemap: $(wc -c < /tmp/s.xml) bytes"; head -c 1200 /tmp/s.xml; echo
+          for sm in $(grep -o '<loc>[^<]*</loc>' /tmp/s.xml | sed 's/<[^>]*>//g' | head -8); do curl -s -m 30 -A "$UA" "$sm" -o /tmp/x; echo "--- $sm: $(wc -c < /tmp/x) bytes, URLs: $(grep -c '<loc>' /tmp/x), producto: $(grep -c '/producto/' /tmp/x)"; grep -o '<loc>[^<]*producto[^<]*</loc>' /tmp/x | head -3; sleep 2; done
+          U=$(grep -o '/producto/[^"]*' /tmp/s.xml | head -1); [ -z "$U" ] && U="/producto/atari-50-the-anniversary-celebration-edicion-expandida-ps5-estandar/90567"
+          curl -s -L -m 30 -A "$UA" "https://www.xtralife.com/producto/battlefield-6-ps5-estandar/129393" -o /tmp/p.html -w "=== ficha → %{http_code} %{url_effective}\n"
+          echo "$(wc -c < /tmp/p.html) bytes"
+          grep -o -E 'application/ld\+json[^<]{0,600}' /tmp/p.html | head -2
+          grep -o -E '"(price|lowPrice|priceCurrency|availability|sku|gtin13)"\s*:\s*"?[^,"}]{0,40}' /tmp/p.html | head -10
+          grep -o -E 'og:(title|price:amount)" content="[^"]*' /tmp/p.html | head -4
