@@ -591,14 +591,16 @@ button { cursor: pointer; }
     try { var l = JSON.parse(localStorage.getItem("pillao-recientes") || "[]"); return Array.isArray(l) ? l.slice(0, 8) : []; } catch (e) { return []; }
   }
   function pintarRecientes() {
-    $("recientes").innerHTML = leerRecientes().map(function (x) { return '<option value="' + esc(x) + '"></option>'; }).join("");
+    $("recientes").innerHTML = leerRecientes().slice(0, 5).map(function (x) { return '<option value="' + esc(x) + '"></option>'; }).join("");
   }
   function anadirReciente(q) {
     q = String(q || "").trim();
     if (!prefsOk() || q.length < 3) return;
-    var l = leerRecientes().filter(function (x) { return norm(x) !== norm(q); });
+    // Solo las 5 últimas búsquedas, y sin las versiones a medio escribir («Shrek 2 Remaste» y «Shrek 2 Remaster» son la misma)
+    var nq = norm(q);
+    var l = leerRecientes().filter(function (x) { var nx = norm(x); return nx !== nq && nq.indexOf(nx) !== 0 && nx.indexOf(nq) !== 0; });
     l.unshift(q);
-    try { localStorage.setItem("pillao-recientes", JSON.stringify(l.slice(0, 8))); } catch (e) {}
+    try { localStorage.setItem("pillao-recientes", JSON.stringify(l.slice(0, 5))); } catch (e) {}
     pintarRecientes();
   }
 
