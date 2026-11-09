@@ -4,19 +4,11 @@ jobs:
   d:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with: { node-version: 20 }
       - run: |
-          cd /tmp && npm i -s playwright@1.48.2 >/dev/null 2>&1 && npx -y playwright@1.48.2 install --with-deps chromium >/dev/null 2>&1
-          cat > v.mjs <<'JS'
-          import { chromium } from "playwright";
-          const b = await chromium.launch(); const p = await b.newPage({ userAgent: "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)" });
-          const peticiones = [];
-          p.on("response", async (r) => { const u = r.url(); if (/json/.test(r.headers()["content-type"] || "") ) peticiones.push(r.status() + " " + u.slice(0, 160)); });
-          await p.goto("https://www.xtralife.com/producto/007-first-light-edicion-legacy/108287", { waitUntil: "networkidle" });
-          console.log("PETICIONES JSON:\n" + peticiones.join("\n"));
-          const t = await p.evaluate(() => document.body.innerText.replace(/\s+/g, " ").slice(0, 600));
-          console.log("TEXTO:", t);
-          await b.close();
-          JS
-          node v.mjs
+          UA="Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)"
+          echo "=== robots de api.xtralife.com → $(curl -s -m 20 -A "$UA" -o /tmp/r -w '%{http_code}' https://api.xtralife.com/robots.txt)"; head -c 600 /tmp/r; echo
+          for u in "https://api.xtralife.com/public-api/v1/sku?storefront_id=1&id=108287" "https://api.xtralife.com/public-api/v1/sku/offer?storefront_id=1&id=108287"; do
+            echo "=== $u → $(curl -s -m 20 -A "$UA" -H 'Accept: application/json' -o /tmp/j -w '%{http_code}' "$u") $(wc -c < /tmp/j) bytes"
+            jq -c 'if type=="object" then (.data // .) else . end | (if type=="object" then with_entries(select(.key|test("name|title|price|stock|available|platform|edition|sku|id|ean|status|offer|amount|currency|url|slug";"i"))) else .[0] end)' /tmp/j | head -c 1800; echo
+            sleep 2
+          done
