@@ -1,0 +1,27 @@
+name: Prueba PS
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prueba:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+      - name: Fichas
+        run: |
+          cat > p.mjs <<'X'
+          const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)","Accept-Language":"es-ES,es;q=0.9"};
+          for (const id of ["227229","232640","231364","10000819","EP0002-PPSA07950_00-CODMW4STANDARD01","10011898","10017332"]) {
+            const u=`https://store.playstation.com/es-es/${/^\d+$/.test(id)?"concept":"product"}/${id}`;
+            const r=await fetch(u,{headers:H}); const h=await r.text();
+            const lds=[...h.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1].slice(0,400));
+            console.log("FICHA",id,r.status,h.length,"ld:",lds.length); for(const l of lds) console.log("   ",l);
+            const m=h.match(/"platforms"\s*:\s*\[([^\]]*)\]/); console.log("   plats",m&&m[1]);
+            await new Promise(r=>setTimeout(r,1500));
+          }
+          X
+          node p.mjs
