@@ -6,6 +6,6 @@ jobs:
     steps:
       - run: |
           U=https://pillao-buscador.pillao-bb5842.workers.dev
-          for q in "mario kart 8 deluxe" "the last of us parte ii" "fifa 23"; do
+          for q in "zelda tears of the kingdom" "god of war ragnarok" "animal crossing new horizons" "super mario odyssey"; do
             echo "== $q"; curl -s "$U/buscar?q=$(echo $q | sed 's/ /%20/g')" | jq -c '{juegos: (.juegos|length), avisos, ebay: [.juegos[] | {titulo, ofertas: [.ofertas[] | select(.tienda=="ebay") | {plataforma, precio, envio, condicion}]} | select(.ofertas|length>0)][0:2]}'
           done
