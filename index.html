@@ -184,6 +184,8 @@ button { cursor: pointer; }
   /* Fila del móvil: miniatura y datos arriba, la etiqueta amarilla del precio a lo ancho debajo */
   .cuadro { display: grid; grid-template-columns: 96px minmax(0, 1fr); column-gap: 12px; row-gap: 10px; height: auto; min-height: 0; padding: 10px; }
   .cuadro-img { margin: 0; width: 96px; height: 76px; border-radius: 7px; align-self: start; }
+  /* Las filas con etiqueta (Novedad, DLC…) son más altas: su imagen baja hasta el final del texto */
+  .cuadro.con-etq .cuadro-img { height: auto; min-height: 76px; align-self: stretch; }
   .j-cov { width: 64px; height: 86px; border-radius: 8px; }
   .j-izq { gap: 12px; }
   .mini-izq { gap: 4px; }
@@ -929,7 +931,7 @@ button { cursor: pointer; }
     var antesTxt = ref && ref > total(m) + 0.004 && ref <= total(m) * 4 ? '<s class="antes">' + eur.format(ref) + "</s>" : "";
     // la fecha va en la etiqueta si es novedad o reserva; si no, en la línea de abajo
     var fecha = j.lanzamiento && !etiquetaFecha(j) ? "Lanzamiento: " + diaBonito(j.lanzamiento) : "";
-    return '<article class="cuadro" data-abrir="' + esc(j.id) + '" tabindex="0" role="button" aria-label="' + esc(j.titulo) + ': ver todas las ofertas">' +
+    return '<article class="cuadro' + (etiquetaFecha(j) || tipo ? " con-etq" : "") + '" data-abrir="' + esc(j.id) + '" tabindex="0" role="button" aria-label="' + esc(j.titulo) + ': ver todas las ofertas">' +
       imagenJuego(j, false, "cuadro-img") +
       '<div class="mini-izq">' + (etiquetaFecha(j) || tipo ? '<div class="mini-tags">' + etiquetaFecha(j) + tipo + "</div>" : "") +
       '<div class="cuadro-tit"><h2>' + esc(j.titulo) + "</h2>" + botonCampana(j) + "</div>" +
