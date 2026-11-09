@@ -77,7 +77,7 @@ export const limpiar = (s) => String(s).toLowerCase().normalize("NFD").replace(/
 const SOBRANTE = /\b(nintendo switch 2 edition|nintendo switch 2|nintendo switch|switch 2|ps4 (y|and) ps5|ps5|ps4|edicion estandar|standard edition|edicion standard)\b/g;
 export const clave = (titulo) => limpiar(titulo).replace(SOBRANTE, " ").replace(/\s+/g, " ").trim();
 // Para cruzar con los catálogos de las tiendas (mapas de productos): sin apóstrofos («Meier's» = «meiers» = «meier-s»)
-const llave = (t) => clave(String(t).replace(/['’`´]/g, "")).replace(/\b([a-z0-9]+) s\b/g, "$1s");
+const llave = (t) => clave(String(t).replace(/['’`´]/g, "").replace(/[™®©]/g, " ")).replace(/\b([a-z0-9]+) s\b/g, "$1s").replace(/([a-z])(\d)/g, "$1 $2");
 const tituloBonito = (t) => html2txt(t).replace(/[™®©]/g, "").replace(/\s*[–-]\s*Nintendo Switch 2 Edition$/i, "").replace(/\s+/g, " ").trim();
 // Palabras que indican que NO es un juego completo
 const EXTRAS = /\b(lite|dlc|pack|pase|season pass|expansion|soundtrack|banda sonora|bundle|lote|monedas|coins|points|puntos|vbucks|upgrade|mejora|demo|trial|prueba|artbook|wallpaper|paquete|music|musica|costume|traje|skin|skins|cosmetico|ost)\b/;
@@ -482,9 +482,10 @@ async function game(j, fichas) {
 // ---------- Microsoft Store (Xbox y PC) ----------
 // Catálogo público oficial de Microsoft: búsqueda por nombre (autosuggest) + ficha con precio para España.
 // «EA SPORTS FC™ 27 Standard Edition para Xbox One y Xbox Series X|S» → «EA SPORTS FC™ 27»
-const sinEdicion = (t) => String(t).replace(/\s+para\s+(xbox|pc|windows)\b.*$/i, "").replace(/[:\-–]?\s*(edici[oó]n est[aá]ndar|standard edition)\s*$/i, "");
+const sinEdicion = (t) => String(t).replace(/[™®©]/g, " ").replace(/\s+para\s+(xbox|pc|windows)\b.*$/i, "").replace(/[:\-–]?\s*(edici[oó]n est[aá]ndar|standard edition)\s*$/i, "");
 function plataformasMS(p) {
-  const pk = JSON.stringify((p.DisplaySkuAvailabilities || []).map((s) => s.Sku?.Properties?.Packages || []));
+  // Paquetes y plataformas permitidas de la compra (Windows.Xbox = consola, Windows.Desktop = PC)
+  const pk = JSON.stringify(p.DisplaySkuAvailabilities || []);
   const out = [];
   if (/Windows\.Xbox/i.test(pk)) out.push("Xbox Series");
   if (/Windows\.Desktop/i.test(pk)) out.push("PC");
@@ -858,11 +859,6 @@ async function main() {
   // Prueba rápida de GAME y Microsoft Store con unos juegos, sin tocar precios.json (PRUEBA_GAME=1)
   if (ENV.PRUEBA_GAME) {
     const mapa = await mapaGame(), mapaX = await mapaMS();
-    for (const ids of [["9NM79B7N9JM6"], ["9N1WXXD1RL8D"], ["9NG6VZHN5GQL"]]) for (const p of await productosMS(ids)) {
-      console.log("MSP", p.ProductId, p.LocalizedProperties?.[0]?.ProductTitle, JSON.stringify(plataformasMS(p)));
-      for (const sk of p.DisplaySkuAvailabilities || []) for (const av of sk.Availabilities || []) { const pr = av.OrderManagementData?.Price; console.log("   ", sk.Sku?.LocalizedProperties?.[0]?.SkuTitle, pr && pr.CurrencyCode, pr && pr.ListPrice, (av.Actions || []).join(",")); }
-    }
-    for (const q of ["Borderlands", "Borderlands 4", "Street Fighter", "Split Fiction"]) { const sug = await (await pedir(`https://displaycatalog.mp.microsoft.com/v7.0/productFamilies/autosuggest?market=ES&languages=es-ES&productFamilyNames=Games&query=${encodeURIComponent(q)}`)).json(); console.log("SUG", q, (sug.Results || []).flatMap((r) => r.Products || []).map((p) => p.ProductId + " " + p.Title).join(" || ")); }
     console.log("MAPA GAME:", mapa.size, "juegos; tarjetas:", TARJETAS_GAME.map((t) => t.texto + " " + t.valor).join(", "), "| MAPA MS:", mapaX.size);
     for (const t of ["EA SPORTS FC 27", "EA Sports FC 27 Ultimate Edition", "Borderlands 4", "F1 25", "Street Fighter 6", "Split Fiction", "Sid Meier's Civilization VII", "Jurassic World Evolution 3", "LEGO Batman: El Legado del Caballero Oscuro", "TEKKEN 8", "Hollow Knight"]) {
       const j = juego(t, {}); const f = mapa.get(llave(t).replace(/^ea sports (?=\S+ \S)/, "")) || [];
