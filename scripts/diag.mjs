@@ -1,17 +1,17 @@
 const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)","Accept-Language":"es-ES,es;q=0.9"};
-const t=async(u)=>{const r=await fetch(u,{headers:H});return [r.status,await r.text()]};
-function bloqueJSON(texto, desde){let i=texto.indexOf("{",desde),p=0,e=false;for(let k=i;k<texto.length;k++){const c=texto[k];if(e){if(c==="\\")k++;else if(c==='"')e=false;continue}if(c==='"')e=true;else if(c==="{")p++;else if(c==="}"&&--p===0)return texto.slice(i,k+1)}return null}
-for (const q of ["EA SPORTS FC 27","EA Sports FC 27 Ultimate Edition"]) {
-  const [s,html]=await t("https://www.game.es/resultados?search="+encodeURIComponent(q));
-  const fl=[...html.matchAll(/self\.__next_f\.push\(\[1,"((?:\\.|[^"\\])*)"\]\)/g)].map(m=>{try{return JSON.parse('"'+m[1]+'"')}catch{return ""}}).join("");
-  const i=fl.indexOf('"initialResult":');console.log("GAME",q,s,i);
-  if(i>=0){const it=JSON.parse(bloqueJSON(fl,i)).items||[];for(const x of it.slice(0,15))console.log("  ",x.title,"|",x.category,"|",x.allPlatforms,"|",x.isPack,"|",JSON.stringify(x.pricing),"|",x.availability,"|",JSON.stringify(x.tag))}
-  const [s2,sug]=await t(`https://displaycatalog.mp.microsoft.com/v7.0/productFamilies/autosuggest?market=ES&languages=es-ES&productFamilyNames=Games&query=${encodeURIComponent(q)}`);
-  let js={};try{js=JSON.parse(sug)}catch{}
-  const ps=(js.Results||[]).flatMap(r=>r.Products||[]);console.log("MS",s2,ps.map(p=>p.ProductId+" "+p.Title).join(" || "));
-  if(ps.length){const [s3,d]=await t(`https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${ps.slice(0,5).map(p=>p.ProductId).join(",")}&market=ES&languages=es-es`);
-    for(const p of JSON.parse(d).Products||[]){console.log("  MSP",p.ProductId,p.LocalizedProperties?.[0]?.ProductTitle);for(const s of p.DisplaySkuAvailabilities||[])for(const a of s.Availabilities||[]){const pr=a.OrderManagementData?.Price;if(pr)console.log("     ",s.Sku?.LocalizedProperties?.[0]?.SkuTitle,pr.CurrencyCode,pr.ListPrice,pr.MSRP,(a.Actions||[]).join(","))}}}
+const t=async(u)=>{try{const r=await fetch(u,{headers:H});return [r.status,await r.text(),r.headers.get("content-type")]}catch(e){return [0,String(e),""]}};
+// MS
+for (const q of ["halo infinite","EA SPORTS FC 27","fc 27","forza horizon 5"]) {
+  for (const lang of ["es-ES","es-es"]) {const [s,b]=await t(`https://displaycatalog.mp.microsoft.com/v7.0/productFamilies/autosuggest?market=ES&languages=${lang}&productFamilyNames=Games&query=${encodeURIComponent(q)}`);console.log("MS",q,lang,s,b.length,b.slice(0,200));}
 }
-for (const u of ["https://www.playstation.com/es-es/games/ea-sports-fc-27/","https://www.playstation.com/es-es/games/ea-sports-fc-26/","https://store.playstation.com/robots.txt","https://www.playstation.com/robots.txt","https://www.game.es/robots.txt"]) {
-  const [s,b]=await t(u); console.log("URL",u,s, u.endsWith("robots.txt")? "\n"+b.slice(0,1500) : [...new Set([...b.matchAll(/concept\/(\d+)/g)].map(m=>m[1]))].join(","));
+{const [s,b]=await t("https://www.xbox.com/robots.txt");console.log("XBOX ROBOTS",s,b.slice(0,1500));}
+{const [s,b]=await t("https://www.xbox.com/es-ES/search/results/games?q=EA%20SPORTS%20FC%2027");console.log("XBOX SEARCH",s,b.length,[...new Set([...b.matchAll(/store\/[a-z0-9-]+\/([0-9A-Z]{12})/g)].map(m=>m[0]))].slice(0,10).join(" "));const i=b.indexOf("__PRELOADED_STATE__");console.log("preloaded",i,b.slice(i,i+300));}
+// GAME sitemap
+{const [s,b]=await t("https://www.game.es/sitemap/sitemap.xml");console.log("GAME SITEMAP",s,b.length,b.slice(0,1500));}
+// PS store search
+{const [s,b]=await t("https://store.playstation.com/es-es/search/EA%20SPORTS%20FC%2027");console.log("PS SEARCH",s,b.length);
+ console.log([...new Set([...b.matchAll(/(concept|product)\/([A-Z0-9_-]{6,})/g)].map(m=>m[0]))].slice(0,20).join(" "));
+ const i=b.indexOf("__NEXT_DATA__");console.log("next",i);
+ for(const m of [...b.matchAll(/"name":"([^"]{3,80})"[^{}]{0,400}?"basePrice":"([^"]*)"[^{}]{0,200}?"discountedPrice":"([^"]*)"/g)].slice(0,15))console.log("  ",m[1],m[2],m[3]);
+ for(const m of [...b.matchAll(/"id":"([^"]+)","name":"([^"]+)"/g)].slice(0,15))console.log("  id",m[1],m[2]);
 }
