@@ -6,13 +6,11 @@ jobs:
     steps:
       - run: |
           UA="Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)"
-          curl -s -m 60 -A "$UA" https://static.xtralife.com/sitemapproducts-1.xml -o /tmp/x
-          echo "=== estructura de una entrada:"; grep -o '<url>.\{0,900\}' /tmp/x | head -1
-          echo "=== total productos en los 5 mapas:"; T=0; for i in 1 2 3 4 5; do curl -s -m 60 -A "$UA" https://static.xtralife.com/sitemapproducts-$i.xml -o /tmp/y; N=$(grep -o '<loc>https://www.xtralife.com/producto/' /tmp/y | wc -l); T=$((T+N)); echo "  $i: $N"; sleep 2; done; echo "  total $T"
-          for U in https://www.xtralife.com/producto/007-first-light-edicion-legacy/108287 https://www.xtralife.com/producto/rollercoaster-tycoon-adventures-deluxe/80591; do
-            curl -s -L -m 30 -A "$UA" "$U" -o /tmp/p.html -w "=== ficha → %{http_code} %{url_effective} %{size_download} bytes\n"
-            grep -o -E '<script type="application/ld\+json">.{0,900}' /tmp/p.html | head -2
-            grep -o -E '"(price|lowPrice|highPrice|priceCurrency|availability|gtin13|sku|platform|name)"\s*:\s*"?[^,"}]{0,60}' /tmp/p.html | sort -u | head -14
-            grep -o -E '(og|product):[a-z:_]+" content="[^"]*' /tmp/p.html | head -6
-            sleep 3
+          curl -s -L -m 30 -A "$UA" https://www.xtralife.com/producto/007-first-light-edicion-legacy/108287 -o /tmp/p.html
+          echo "=== scripts:"; grep -o -E '<script[^>]*src="[^"]+"' /tmp/p.html | head; grep -o -E 'https?://[a-z0-9.-]*xtralife[a-z0-9.-]*' /tmp/p.html | sort -u
+          for js in $(grep -o -E 'src="[^"]+\.js"' /tmp/p.html | sed 's/src="//;s/"$//' | head -6); do
+            case "$js" in http*) u="$js";; //*) u="https:$js";; *) u="https://www.xtralife.com/${js#/}";; esac
+            curl -s -m 30 -A "$UA" "$u" -o /tmp/j.js; echo "--- $u ($(wc -c < /tmp/j.js) bytes)"
+            grep -o -E 'https?://[a-z0-9.-]*(api|backend|services?)[a-z0-9.-]*\.[a-z]{2,}[a-zA-Z0-9/_.-]{0,40}' /tmp/j.js | sort -u | head -8
+            grep -o -E '"/?(api|v[0-9])/[a-zA-Z0-9/_{}.-]{3,60}' /tmp/j.js | sort -u | grep -i -E 'product|producto|item|price' | head -10
           done
