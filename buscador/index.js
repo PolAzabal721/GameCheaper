@@ -93,6 +93,15 @@ async function eshop(q, res) {
 }
 
 const PLAT_EBAY = [["Switch 2", /switch 2/], ["Switch", /switch/], ["PS5", /ps5|playstation 5/], ["PS4", /ps4|playstation 4/], ["Xbox Series", /xbox series/]];
+// Estado y país del anuncio en español (eBay lo da en el idioma del vendedor: «Sehr gut», «Good»…)
+const ESTADOS_EBAY = { 2750: "Como nuevo", 3000: "Usado", 4000: "Muy bueno", 5000: "Bueno", 6000: "Aceptable" };
+const PAISES_EBAY = { ES: "", DE: "Alemania", FR: "Francia", IT: "Italia", PT: "Portugal", GB: "Reino Unido", NL: "Países Bajos", BE: "Bélgica", AT: "Austria", IE: "Irlanda", PL: "Polonia" };
+function estadoEbay(it) {
+  const estado = ESTADOS_EBAY[it.conditionId] || "Usado";
+  const pais = it.itemLocation?.country;
+  const desde = pais && pais !== "ES" ? " · envío desde " + (PAISES_EBAY[pais] || pais) : "";
+  return estado + desde;
+}
 const NO_JUEGO = /\b(solo caja|caja vacia|caja|portada|caratula|manual|sin juego|sin cartucho|sin disco|steelbook|funda|protector|codigo|code|key|clave|dlc|figura|amiibo|poster|lote|pack|consola|mando|moneda|coin|guia|guide|artbook|precinto)\b/;
 // Token de eBay reutilizado mientras dure (vale 2 horas): pedir uno por búsqueda hace que eBay a veces responda 401
 let tokenEbay = null, caducaEbay = 0;
@@ -128,7 +137,7 @@ async function ebay(q, res, env) {
     // Por menos de una cuarta parte del juego nuevo no suele ser el juego (caja, portada…)
     const nuevos = j.ofertas.filter((o) => o.estado !== "usado").map((o) => o.precio);
     if (nuevos.length && precio + envio < Math.min(...nuevos) * 0.25) continue;
-    res.ofertar(j, { tienda: "ebay", plataforma: plat, formato: "fisico", estado: "usado", stock: true, precio, envio: r2(envio), condicion: it.condition || "Usado", url: it.itemWebUrl });
+    res.ofertar(j, { tienda: "ebay", plataforma: plat, formato: "fisico", estado: "usado", stock: true, precio, envio: r2(envio), condicion: estadoEbay(it), url: it.itemWebUrl });
   }
 }
 

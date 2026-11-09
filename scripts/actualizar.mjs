@@ -337,6 +337,15 @@ async function ebayToken() {
   return tokenEbay;
 }
 const PLAT_EBAY = [["Switch 2", /switch 2/], ["Switch", /switch/], ["PS5", /ps5|playstation 5/], ["PS4", /ps4|playstation 4/], ["Xbox Series", /xbox series/]];
+// Estado y país del anuncio en español (eBay lo da en el idioma del vendedor: «Sehr gut», «Good»…)
+const ESTADOS_EBAY = { 2750: "Como nuevo", 3000: "Usado", 4000: "Muy bueno", 5000: "Bueno", 6000: "Aceptable" };
+const PAISES_EBAY = { ES: "", DE: "Alemania", FR: "Francia", IT: "Italia", PT: "Portugal", GB: "Reino Unido", NL: "Países Bajos", BE: "Bélgica", AT: "Austria", IE: "Irlanda", PL: "Polonia" };
+function estadoEbay(it) {
+  const estado = ESTADOS_EBAY[it.conditionId] || "Usado";
+  const pais = it.itemLocation?.country;
+  const desde = pais && pais !== "ES" ? " · envío desde " + (PAISES_EBAY[pais] || pais) : "";
+  return estado + desde;
+}
 const NO_JUEGO = /\b(solo caja|caja vacia|caja|portada|caratula|manual|sin juego|sin cartucho|sin disco|steelbook|funda|protector|codigo|code|key|clave|dlc|figura|amiibo|poster|lote|pack|consola|mando|moneda|coin|guia|guide|artbook|precinto)\b/;
 // Un anuncio de segunda mano por menos de una cuarta parte del juego nuevo más barato no suele ser el juego (caja, portada…)
 function precioCreible(j, total) {
@@ -362,7 +371,7 @@ async function ebay(j) {
     const precio = parseFloat(it.price?.value), envio = parseFloat(it.shippingOptions?.[0]?.shippingCost?.value || 0);
     if (!(precio > 0) || !precioCreible(j, precio + (envio || 0))) continue;
     const antes = j.ofertas.length;
-    ofertar(j, { tienda: "ebay", plataforma: plat, formato: "fisico", estado: "usado", precio, envio: redondear(envio), condicion: it.condition || "Usado", url: it.itemWebUrl, fuente: "ebay" });
+    ofertar(j, { tienda: "ebay", plataforma: plat, formato: "fisico", estado: "usado", precio, envio: redondear(envio), condicion: estadoEbay(it), url: it.itemWebUrl, fuente: "ebay" });
     if (j.ofertas.length > antes) n++;
   }
   return n;
