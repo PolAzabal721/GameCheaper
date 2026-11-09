@@ -484,16 +484,20 @@ async function game(j, fichas) {
 // «EA SPORTS FC™ 27 Standard Edition para Xbox One y Xbox Series X|S» → «EA SPORTS FC™ 27»
 const sinEdicion = (t) => String(t).replace(/[™®©]/g, " ").replace(/\s+para\s+(xbox|pc|windows)\b.*$/i, "").replace(/[:\-–]?\s*(edici[oó]n est[aá]ndar|standard edition)\s*$/i, "");
 function plataformasMS(p) {
-  // Paquetes y plataformas permitidas de la compra (Windows.Xbox = consola, Windows.Desktop = PC)
-  const pk = JSON.stringify(p.DisplaySkuAvailabilities || []);
+  const pk = JSON.stringify((p.DisplaySkuAvailabilities || []).map((s) => s.Sku?.Properties?.Packages || []));
   const out = [];
   if (/Windows\.Xbox/i.test(pk)) out.push("Xbox Series");
   if (/Windows\.Desktop/i.test(pk)) out.push("PC");
   if (out.length) return out;
-  // Los lotes y ediciones que se venden como paquete no traen paquetes: la plataforma va en el nombre
+  // Los lotes y ediciones que se venden como paquete no traen paquetes: la plataforma va en el nombre…
   const t = p.LocalizedProperties?.[0]?.ProductTitle || "";
   if (/xbox/i.test(t)) out.push("Xbox Series");
   if (/\b(pc|windows)\b/i.test(t)) out.push("PC");
+  if (out.length) return out;
+  // …o en las plataformas donde se puede comprar (si se compra en consola, contamos solo la consola)
+  const pl = JSON.stringify(p.DisplaySkuAvailabilities || []);
+  if (/Windows\.Xbox/i.test(pl)) return ["Xbox Series"];
+  if (/Windows\.Desktop/i.test(pl)) return ["PC"];
   return out;
 }
 // Mapa de productos de xbox.com (sitemap, permitido): «/es-ES/games/store/<nombre>/<id>». Así encontramos el juego
