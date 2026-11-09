@@ -670,7 +670,8 @@ button { cursor: pointer; }
         if (!ps.some(function (p) { return f.plats.indexOf(p) >= 0; })) return false;
       }
       if (f.fuera.indexOf(o.tienda) >= 0) return false;
-      if (o.calidad && f.calOff.indexOf(o.calidad) >= 0) return false;
+      var cal = calidadDe(o);
+      if (cal && f.calOff.indexOf(cal) >= 0) return false;
       if (t.tipo === "revendedor" && o.tienda !== "instantgaming" && f.revOn.indexOf(o.tienda) < 0) return false;
       if (!f.mkt && t.tipo === "marketplace") return false;
       if (!f.part && t.tipo === "particulares") return false;
@@ -775,6 +776,13 @@ button { cursor: pointer; }
   }
 
   var CALIDADES = ["Como nuevo", "Muy bueno", "Bueno", "Aceptable", "Usado"];
+  // Estado de un anuncio de eBay (los datos antiguos solo lo traen dentro del texto: «Muy bueno · envío desde…»)
+  function calidadDe(o) {
+    if (o.calidad) return o.calidad;
+    if (o.tienda !== "ebay") return null;
+    var c = (o.condicion || "").split(" · ")[0];
+    return CALIDADES.indexOf(c) >= 0 ? c : "Usado";
+  }
 
   function enlace(o, j) {
     if (o.url) return o.url;
@@ -951,8 +959,8 @@ button { cursor: pointer; }
           var u = enlace(x, j);
           var tx = tiendaPorId[x.tienda] || { nombre: x.tienda };
           // En eBay cada línea es un estado distinto del juego (como nuevo, muy bueno…)
-          var esEb = g.id === "ebay" && x.calidad, resto = esEb ? (x.condicion || "").replace(x.calidad, "").replace(/^\s*·\s*/, "") : x.condicion;
-          return '<li class="of sub' + (x === m ? " mejor" : "") + '"><div class="of-t"><span>' + esc(g.claves ? tx.nombre : esEb ? x.calidad : (x.plataforma || "—")) + "</span>" + (x.estado === "usado" && !esEb ? '<span class="usado">Usado</span>' : "") + "</div>" +
+          var calX = g.id === "ebay" ? calidadDe(x) : null, esEb = !!calX, resto = esEb ? (x.condicion || "").replace(calX, "").replace(/^\s*·\s*/, "") : x.condicion;
+          return '<li class="of sub' + (x === m ? " mejor" : "") + '"><div class="of-t"><span>' + esc(g.claves ? tx.nombre : esEb ? calX : (x.plataforma || "—")) + "</span>" + (x.estado === "usado" && !esEb ? '<span class="usado">Usado</span>' : "") + "</div>" +
             '<div class="of-d"><span>' + (g.claves || esEb ? esc(x.plataforma || "—") : (x.formato === "fisico" ? "En disco" : "Digital")) + "</span>" + (resto ? "<span>·</span><span>" + esc(resto) + "</span>" : "") +
             (x.envio ? "<span>·</span><span>+ " + eur.format(x.envio) + " envío</span>" : "") + (x.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
             '<div class="of-p"><b>' + eur.format(total(x)) + "</b>" + (antes(x, j) ? "<small>" + antes(x, j).replace(/ · $/, "") + "</small>" : "") + "</div>" +
