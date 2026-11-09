@@ -1,4 +1,4 @@
-name: Diagnostico
+name: Prueba GAME
 on:
   workflow_dispatch:
 permissions:
