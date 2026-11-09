@@ -188,7 +188,8 @@ button { cursor: pointer; }
   .cuadro-img { margin: 0; width: 96px; height: 76px; border-radius: 7px; align-self: start; }
   /* Las filas con etiqueta (Novedad, DLC…) son más altas: su imagen baja hasta el final del texto */
   .cuadro.con-etq .cuadro-img { height: auto; min-height: 76px; align-self: stretch; }
-  .j-cov { width: 64px; height: auto; min-height: 86px; border-radius: 8px; }
+  /* En el móvil la carátula de la lista tiene siempre el mismo tamaño (estirada se ve mal) */
+  .j-cov { width: 64px; height: 86px; min-height: 0; border-radius: 8px; align-self: flex-start; }
   .j-izq { gap: 12px; }
   .mini-izq { gap: 4px; }
   .cuadro h2 { font-size: 15px; -webkit-line-clamp: 2; }
