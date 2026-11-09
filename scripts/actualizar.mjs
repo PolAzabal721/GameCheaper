@@ -481,6 +481,11 @@ function plataformasMS(p) {
   const out = [];
   if (/Windows\.Xbox/i.test(pk)) out.push("Xbox Series");
   if (/Windows\.Desktop/i.test(pk)) out.push("PC");
+  if (out.length) return out;
+  // Los lotes y ediciones que se venden como paquete no traen paquetes: la plataforma va en el nombre
+  const t = p.LocalizedProperties?.[0]?.ProductTitle || "";
+  if (/xbox/i.test(t)) out.push("Xbox Series");
+  if (/\b(pc|windows)\b/i.test(t)) out.push("PC");
   return out;
 }
 async function microsoftStore(j) {
