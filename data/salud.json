@@ -1,0 +1,20 @@
+{
+ "revisado": "2026-11-09T19:54",
+ "referencia": {
+  "steam": 1857,
+  "game": 532,
+  "itad": 10227,
+  "xbox": 759,
+  "eshop": 4706,
+  "gameseminuevos": 104,
+  "instantgaming": 442,
+  "psstore": 131,
+  "alcampo": 6,
+  "ebay": 236
+ },
+ "problemas": [
+  "steam: no ha traído precio de «Hogwarts Legacy» en esta ejecución",
+  "itad: no ha traído precio de «Hogwarts Legacy» en esta ejecución",
+  "ebay: la fuente se ha parado por errores"
+ ]
+}
