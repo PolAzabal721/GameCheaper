@@ -4,19 +4,11 @@ jobs:
   d:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with: { node-version: 20 }
-      - run: |
-          U="https://www.compraonline.alcampo.es/api/webproductpagews/v6/product-pages/search?q=videojuego&maxPageSize=300&maxProductsToDecorate=300"
-          UA="Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)"
-          echo "curl: $(curl -s -m 30 -A "$UA" -H 'Accept: application/json' -o /tmp/a -w '%{http_code}' "$U") $(wc -c < /tmp/a) bytes"
-          sleep 5
-          node -e '
-          const u=process.argv[1];
-          (async()=>{
-            for (const [n,h] of [["como el actualizador",{"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)","Accept-Language":"es-ES,es;q=0.9",Accept:"application/json"}],["sin idioma",{"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)",Accept:"application/json"}],["sin nada",{}]]) {
-              const r=await fetch(u,{headers:h}); const t=await r.text();
-              console.log(n,"→",r.status,t.length,"bytes",[...r.headers].filter(([k])=>/server|akamai|cf-|x-cache|set-cookie|content-encoding|content-type/.test(k)).map(([k,v])=>k+"="+v.slice(0,60)).join(" | "));
-              await new Promise(r=>setTimeout(r,5000));
-            }
-          })()' "$U"
+      - run: node scripts/actualizar.mjs
+        env:
+          PRUEBA_ALCAMPO: "1"
+          ALCAMPO_TITULOS: "25"
+          ALCAMPO_ROTA: "0"

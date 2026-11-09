@@ -528,7 +528,9 @@ async function alcampo(lista, visitar) {
     // Si Alcampo nos frena (respuesta vacía), esperamos un minuto y reintentamos una vez; si vuelve a pasar, paramos
     let texto = "";
     for (let intento = 1; intento <= 2 && !texto; intento++) {
-      texto = await (await pedir(`${ALCAMPO}/api/webproductpagews/v6/product-pages/search?q=${encodeURIComponent(q)}&maxPageSize=300&maxProductsToDecorate=300`, { headers: { Accept: "application/json" } })).text();
+      const r = await pedir(`${ALCAMPO}/api/webproductpagews/v6/product-pages/search?q=${encodeURIComponent(q)}&maxPageSize=300&maxProductsToDecorate=300`, { headers: { Accept: "application/json" } });
+      texto = await r.text();
+      if (!texto) console.warn(`Alcampo «${q}»: respuesta vacía (HTTP ${r.status}, ${r.headers.get("content-type")}, ${r.headers.get("content-length")})`);
       if (!texto && intento === 1) await esperar(60000);
     }
     if (!texto) { if (++seguidos >= 3) throw new Error("Alcampo no responde (nos frena)"); return; }
