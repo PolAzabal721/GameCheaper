@@ -342,7 +342,11 @@ async function ebayToken() {
 const PLAT_EBAY = [["Switch 2", /switch 2/], ["Switch", /switch/], ["PS5", /ps5|playstation 5/], ["PS4", /ps4|playstation 4/], ["Xbox Series", /xbox series/]];
 // Estado y país del anuncio en español (eBay lo da en el idioma del vendedor: «Sehr gut», «Good»…)
 const ESTADOS_EBAY = { 2750: "Como nuevo", 3000: "Usado", 4000: "Muy bueno", 5000: "Bueno", 6000: "Aceptable" };
-const PAISES_EBAY = { ES: "", DE: "Alemania", FR: "Francia", IT: "Italia", PT: "Portugal", GB: "Reino Unido", NL: "Países Bajos", BE: "Bélgica", AT: "Austria", IE: "Irlanda", PL: "Polonia" };
+// Solo anuncios que se envían desde la Unión Europea: desde fuera (EE. UU., Japón, Reino Unido…) hay aduanas y envíos carísimos
+const PAISES_EBAY = { ES: "", PT: "Portugal", FR: "Francia", DE: "Alemania", IT: "Italia", NL: "Países Bajos", BE: "Bélgica", LU: "Luxemburgo",
+  AT: "Austria", IE: "Irlanda", DK: "Dinamarca", SE: "Suecia", FI: "Finlandia", PL: "Polonia", CZ: "Chequia", SK: "Eslovaquia", SI: "Eslovenia",
+  HR: "Croacia", HU: "Hungría", RO: "Rumanía", BG: "Bulgaria", GR: "Grecia", CY: "Chipre", MT: "Malta", EE: "Estonia", LV: "Letonia", LT: "Lituania" };
+const desdeUE = (it) => (it.itemLocation?.country || "ES") in PAISES_EBAY;
 const calidadEbay = (it) => ESTADOS_EBAY[it.conditionId] || "Usado";
 function estadoEbay(it) {
   const estado = ESTADOS_EBAY[it.conditionId] || "Usado";
@@ -350,7 +354,7 @@ function estadoEbay(it) {
   const desde = pais && pais !== "ES" ? " · envío desde " + (PAISES_EBAY[pais] || pais) : "";
   return estado + desde;
 }
-const NO_JUEGO = /\b(solo caja|caja vacia|caja|portada|caratula|manual|sin juego|sin cartucho|sin disco|steelbook|funda|protector|codigo|code|key|clave|dlc|figura|amiibo|poster|lote|pack|consola|mando|moneda|coin|guia|guide|artbook|precinto)\b/;
+const NO_JUEGO = /\b(solo caja|caja vacia|caja|portada|caratula|manual|sin juego|sin cartucho|sin disco|steelbook|funda|protector|codigo|code|key|clave|dlc|figura|amiibo|poster|lote|pack|consola|mando|moneda|coin|guia|guide|artbook|precinto|download|descarga|digital|voucher|bundle|card|tarjeta)\b/;
 // Un anuncio de segunda mano por menos de una cuarta parte del juego nuevo más barato no suele ser el juego (caja, portada…)
 function precioCreible(j, total) {
   const nuevos = j.ofertas.filter((o) => o.estado !== "usado" && o.formato === "fisico").map((o) => o.precio + (o.envio || 0));
@@ -367,7 +371,7 @@ async function ebay(j) {
   let n = 0;
   for (const it of d.itemSummaries || []) {
     const t = limpiar(it.title);
-    if (NO_JUEGO.test(t)) continue;
+    if (NO_JUEGO.test(t) || !desdeUE(it)) continue;
     const palabras = clave(j.titulo).split(" ");
     if (!palabras.every((p) => (" " + t + " ").includes(" " + p + " "))) continue;
     const plat = PLAT_EBAY.find(([, re]) => re.test(t))?.[0];
