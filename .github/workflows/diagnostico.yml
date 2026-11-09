@@ -6,13 +6,13 @@ jobs:
     steps:
       - run: |
           UA="Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)"
-          B=https://www.compraonline.alcampo.es
-          echo "=== categorías de videojuegos"; curl -s -m 30 -A "$UA" $B/sitemaps/sitemap-categories-part1.xml | grep -o '<loc>[^<]*</loc>' | grep -i -E 'videojuego|consola|nintendo|playstation|xbox|gaming' | head -20
-          for q in "nintendo switch" "ps5" "mario"; do
-            echo "=== v6 q=$q"; curl -s -m 30 -A "$UA" -H "Accept: application/json" "$B/api/webproductpagews/v6/product-pages/search?includeAdditionalPageInfo=true&maxPageSize=20&maxProductsToDecorate=20&q=$(echo $q | sed 's/ /%20/g')" -o /tmp/s.json
-            jq -c '{grupos: (.productGroups|length), primeros: [.productGroups[]?.decoratedProducts[]? | {name, price: .price, retailerProductId, brand}][0:4], claves: (.productGroups[0] // {} | keys)}' /tmp/s.json | head -c 1500; echo
-            sleep 3
-          done
-          echo "=== página de búsqueda: estado incrustado"; curl -s -m 30 -A "$UA" "$B/search?q=nintendo%20switch" -o /tmp/p.html
-          grep -o -E 'window\.__[A-Za-z_]+__ ?=' /tmp/p.html | sort -u; grep -o -E '<script[^>]*id="[^"]+"' /tmp/p.html | sort -u | head
-          grep -o -E '"name":"[^"]{6,80}"[^{}]{0,200}"price"[^{}]{0,200}' /tmp/p.html | head -5
+          B=https://www.compraonline.alcampo.es/api/webproductpagews/v6
+          prueba() { echo "=== $1"; curl -s -m 30 -A "$UA" -H "Accept: application/json" "$B$1" -o /tmp/s.json; echo "  $(head -c 160 /tmp/s.json | tr -d '\n')"; jq -c '{grupos: (.productGroups|length?), productos: ([.productGroups[]?.decoratedProducts[]?]|length), ids: ([.productGroups[]?.otherProductIds[]?]|length), meta: .metadata, nombres: [.productGroups[]? | .name]}' /tmp/s.json 2>/dev/null | head -c 900; echo; sleep 2; }
+          prueba "/product-pages?categoryId=OC17612018&maxPageSize=50&maxProductsToDecorate=50"
+          prueba "/categories/OC17612018/product-pages?maxPageSize=50&maxProductsToDecorate=50"
+          prueba "/product-pages/categories/OC17612018?maxPageSize=50&maxProductsToDecorate=50"
+          prueba "/product-pages/search?q=pegi&maxPageSize=100&maxProductsToDecorate=100&includeAdditionalPageInfo=true"
+          prueba "/product-pages/search?q=pegi&maxPageSize=100&maxProductsToDecorate=100&categoryId=OC17612018"
+          curl -s -m 30 -A "$UA" "https://www.compraonline.alcampo.es/categories/juguetes/videojuegos/OC17612018" -o /tmp/c.html
+          echo "=== página de categoría: $(wc -c < /tmp/c.html) bytes"; grep -o -E 'api/webproductpagews/v[0-9]+/[a-z\-/]+' /tmp/c.html | sort -u | head; grep -o -E '__INITIAL_STATE__|__PRELOADED_STATE__|productGroups|nextPageToken|pageToken' /tmp/c.html | sort | uniq -c
+          grep -o -E '"(nextPageToken|pageToken|totalProducts|totalCount)":[^,]{0,80}' /tmp/c.html | head -5
