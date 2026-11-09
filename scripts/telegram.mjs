@@ -11,7 +11,7 @@ import { execFileSync } from "node:child_process";
 
 const ENV = process.env;
 const TOKEN = (ENV.TELEGRAM_BOT_TOKEN || "").trim(), CANAL = (ENV.TELEGRAM_CANAL || "").trim();
-const POPULARES = +(ENV.TG_POPULARES || 2000), MAXIMO = +(ENV.TG_MAXIMO || 5), DIAS = 7;
+const POPULARES = +(ENV.TG_POPULARES || 2000), MAXIMO = ENV.TG_EJEMPLO ? 1 : +(ENV.TG_MAXIMO || 5), DIAS = 7;
 const SITIO = "https://polazabal721.github.io/GameCheaper/";
 const AFILIADO_G2A = "gname=reflink-ad5993112c";
 if (!TOKEN || !CANAL) { console.log("Telegram: faltan TELEGRAM_BOT_TOKEN o TELEGRAM_CANAL; no publico nada."); process.exit(0); }
@@ -32,11 +32,12 @@ for (const j of antes.juegos) for (const o of j.ofertas) if (o.estado !== "usado
 const candidatos = [];
 for (const j of ahora.juegos) {
   if ((j.pop || 99999) > POPULARES || j.tipo === "tarjeta" || j.tipo === "dlc") continue;
+  if (ENV.TG_EJEMPLO && !(j.img || j.cov)) continue;
   for (const o of j.ofertas) {
     const t = tienda[o.tienda] || {};
     if (o.estado === "usado" || o.stock === false || t.tipo === "particulares") continue;
     const p = total(o), anterior = previo.get(clave(j, o));
-    if (!(anterior > p + 0.01)) continue;                       // tiene que haber BAJADO en esta actualización
+    if (!ENV.TG_EJEMPLO && !(anterior > p + 0.01)) continue;    // tiene que haber BAJADO en esta actualización (salvo en la prueba)
     const ref = Math.max(j.pvp || 0, o.regular || 0);
     if (!(ref > p)) continue;
     const dto = 1 - p / ref, minimo = j.minimo && p <= j.minimo + 0.01;
@@ -94,5 +95,5 @@ for (const { j, o, p, ref, dto, minimo } of elegidos) {
 }
 // Olvida lo publicado hace más de 7 días
 for (const [k, v] of Object.entries(estado.publicados)) if (Date.now() - Date.parse(v.fecha) > DIAS * 86400000) delete estado.publicados[k];
-await writeFile("data/telegram.json", JSON.stringify(estado) + "\n");
+if (!ENV.TG_EJEMPLO) await writeFile("data/telegram.json", JSON.stringify(estado) + "\n");
 console.log(`Telegram: ${enviados} mensajes publicados en ${CANAL}.`);

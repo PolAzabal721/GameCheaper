@@ -3,6 +3,11 @@ name: Probar Telegram
 # Manda un mensaje de bienvenida al canal para comprobar que el bot puede publicar.
 on:
   workflow_dispatch:
+    inputs:
+      ejemplo:
+        description: "Mandar un chollo real de ejemplo (en vez del mensaje de bienvenida)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -12,7 +17,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        if: inputs.ejemplo
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        if: inputs.ejemplo
+        with:
+          node-version: 20
+      - name: Chollo de ejemplo (el mejor de ahora mismo)
+        if: inputs.ejemplo
+        run: node scripts/telegram.mjs
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CANAL: ${{ secrets.TELEGRAM_CANAL }}
+          TG_EJEMPLO: "1"
       - name: Mensaje de bienvenida
+        if: ${{ !inputs.ejemplo }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CANAL: ${{ secrets.TELEGRAM_CANAL }}
