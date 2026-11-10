@@ -324,9 +324,9 @@ button { cursor: pointer; }
 .h-tip b { font-family: var(--f-mono); }
 .h-tip i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
 .h-nota { margin: -6px 0 0; font-size: 12.5px; color: var(--muted); }
-:root { --s-barato: #0f8a5f; --s-medio: #2741d6; --s-caro: #c2410c; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --s-barato: #22a86d; --s-medio: #6f82ff; --s-caro: #d9712e; } }
-:root[data-theme="dark"] { --s-barato: #22a86d; --s-medio: #6f82ff; --s-caro: #d9712e; }
+:root { --s-barato: #0f8a5f; --s-medio: #2741d6; --s-caro: #c2410c; --s-estable: #7c3aed; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --s-barato: #22a86d; --s-medio: #6f82ff; --s-caro: #d9712e; --s-estable: #a78bfa; } }
+:root[data-theme="dark"] { --s-barato: #22a86d; --s-medio: #6f82ff; --s-caro: #d9712e; --s-estable: #a78bfa; }
 .av { border-top: 1px solid var(--line); padding-top: 16px; display: flex; flex-direction: column; gap: 12px; }
 .av h3 { margin: 0; font-size: 16px; font-family: var(--f-display); display: flex; align-items: center; gap: 8px; }
 .av h3 svg { width: 18px; height: 18px; color: var(--accent); }
@@ -1200,6 +1200,22 @@ button { cursor: pointer; }
     { id: "medio", nombre: "Precio medio", i: 3, color: "var(--s-medio)", disc: true },
     { id: "caro", nombre: "Más caro", i: 2, color: "var(--s-caro)" },
   ];
+  // Cuando mínimo, medio y máximo son el mismo precio (una sola tienda), se dibuja una sola línea en lila
+  var UNICA = { id: "unico", nombre: "Precio", i: 1, color: "var(--s-estable)" };
+  function unaSolaLinea(pts) {
+    if (!pts.length) return false;
+    for (var i = 0; i < pts.length; i++) {
+      var v = pts[i].v, vals = [v[1], v[2], v[3]].filter(function (x) { return x != null; });
+      if (!vals.length) return false;
+      if (Math.max.apply(null, vals) - Math.min.apply(null, vals) > 0.005) return false;
+    }
+    return true;
+  }
+  function nuncaCambia(pts) {
+    if (!unaSolaLinea(pts)) return false;
+    var a = pts[0].v[1];
+    return pts.every(function (p) { return p.v[1] != null && Math.abs(p.v[1] - a) <= 0.005; });
+  }
   var PERIODOS = [["1m", "1 mes", 31], ["3m", "3 meses", 92], ["1a", "1 año", 366], ["todo", "Todo", 0]];
   var vista = { series: { barato: true, medio: true, caro: true }, periodo: "todo" };
   var modal = { j: null, puntos: null, itad: null, estados: {}, form: false, msg: "", msgOk: true, enviando: false, origen: null };
@@ -1312,7 +1328,7 @@ button { cursor: pointer; }
   function aFecha(d) { return new Date(d + "T12:00:00Z"); }
 
   function svgGrafica(pts, ancho, alto) {
-    var activas = SERIES.filter(function (s) { return vista.series[s.id]; });
+    var activas = unaSolaLinea(pts) ? [UNICA] : SERIES.filter(function (s) { return vista.series[s.id]; });
     var vals = [];
     pts.forEach(function (p) { activas.forEach(function (s) { if (p.v[s.i] != null) vals.push(p.v[s.i]); }); });
     if (!vals.length) return "";
@@ -1370,9 +1386,11 @@ button { cursor: pointer; }
       '<button type="button" class="m-cerrar" data-m="cerrar" aria-label="Cerrar">×</button></div>' +
       '<div class="h-stats"><div><span>Ahora</span><b>' + euro(ahora) + "</b></div><div><span>Mínimo histórico</span><b>" + euro(minimo) + "</b></div>" +
       "<div><span>Precio medio</span><b>" + euro(medio) + "</b></div><div><span>Más caro visto</span><b>" + euro(maxReg) + "</b></div></div>" +
-      '<div class="h-ctrl"><div class="chips" role="group" aria-label="Qué precios ver">' + SERIES.map(function (s) {
+      '<div class="h-ctrl"><div class="chips" role="group" aria-label="Qué precios ver">' + (unaSolaLinea(pts) ?
+        '<span class="chip" aria-disabled="true" style="color:' + UNICA.color + '"><span class="sw" style="color:' + UNICA.color + '"></span>Precio</span>'
+        : SERIES.map(function (s) {
         return '<button type="button" class="chip" data-serie="' + s.id + '" aria-pressed="' + !!vista.series[s.id] + '" style="color:' + (vista.series[s.id] ? s.color : "") + '"><span class="sw' + (s.disc ? " disc" : "") + '" style="color:' + s.color + '"></span>' + s.nombre + "</button>";
-      }).join("") + '</div><div class="chips" role="group" aria-label="Periodo">' + PERIODOS.map(function (p) {
+      }).join("")) + '</div><div class="chips" role="group" aria-label="Periodo">' + PERIODOS.map(function (p) {
         return '<button type="button" class="chip mini" data-periodo="' + p[0] + '" aria-pressed="' + (vista.periodo === p[0]) + '">' + p[1] + "</button>";
       }).join("") + "</div></div>" +
       '<div class="graf" id="h-graf">' + (cargando ? '<div class="vacia">Cargando historial…</div>' : "") + "</div>";
@@ -1380,7 +1398,9 @@ button { cursor: pointer; }
       var conItad = pts.some(function (p) { return p.itad; });
       var nota = [];
       if (conItad) nota.push("Antes del " + fechaLarga.format(aFecha((modal.puntos[0] || [])[0] || new Date().toISOString().slice(0, 10))) + ": precios de tiendas de PC según IsThereAnyDeal.");
-      nota.push("Precios nuevos y con stock. Las líneas se mantienen hasta que el precio cambia.");
+      if (nuncaCambia(pts)) nota.push("Precio estable: no ha cambiado desde que lo seguimos.");
+      else if (unaSolaLinea(pts)) nota.push("Solo una tienda lo vende, así que el más barato, el medio y el más caro son el mismo precio.");
+      nota.push("Precios nuevos y con stock. " + (unaSolaLinea(pts) ? "La línea se mantiene" : "Las líneas se mantienen") + " hasta que el precio cambia.");
       html += '<p class="h-nota">' + nota.join(" ") + "</p>";
     }
 
@@ -1438,7 +1458,7 @@ button { cursor: pointer; }
       cruz.setAttribute("visibility", "visible");
       cruz.querySelector("line").setAttribute("x1", px); cruz.querySelector("line").setAttribute("x2", px);
       [].forEach.call(cruz.querySelectorAll("circle"), function (ci) {
-        var s = SERIES.filter(function (z) { return z.id === ci.dataset.s; })[0], v = p.v[s.i];
+        var s = SERIES.concat([UNICA]).filter(function (z) { return z.id === ci.dataset.s; })[0], v = p.v[s.i];
         ci.setAttribute("visibility", v == null ? "hidden" : "visible");
         if (v != null) { ci.setAttribute("cx", px); ci.setAttribute("cy", c.Y(v)); }
       });

@@ -1,27 +1,27 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 4032,
+   "pendientes": 3885,
    "ejemplos": [
-    "Princess Peach: Showtime!",
-    "Euro Truck Simulator 2 - Nordic Horizons",
-    "Super Mario Maker 2",
-    "LIVE A LIVE",
-    "Xenoblade Chronicles: Definitive Edition"
+    "RAIDOU Remastered: The Mystery of the Soulless Army",
+    "Elite Dangerous",
+    "Starward Rogue",
+    "Left 4 Dead 2",
+    "The Last Caretaker"
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 2517,
+   "pendientes": 3103,
    "ejemplos": [
-    "Dragon Quest Builders",
-    "DAEMON X MACHINA",
-    "UNCHARTED: Colección Legado de los Ladrones",
-    "Nocturnal 2",
-    "Astro Colony"
+    "Stellar Blade Complete Edition",
+    "LIVE A LIVE",
+    "BRAVELY DEFAULT II",
+    "The Longing",
+    "Manual Samuel"
    ]
   },
   "game (consola)": {
-   "pendientes": 14735,
+   "pendientes": 15068,
    "ejemplos": [
     "EA Sports FC 27 Ultimate Edition",
     "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo",
@@ -31,7 +31,7 @@
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 429,
+   "pendientes": 461,
    "ejemplos": [
     "Football Manager 27",
     "NBA 2K27",
@@ -41,145 +41,191 @@
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 14880,
+   "pendientes": 14727,
    "ejemplos": [
+    "Worst Class Ever",
     "Super Mario RPG",
     "Splatoon 3",
-    "DC Super Hero Girls: Teen Power",
-    "Part Time UFO",
-    "Metroid Dread"
+    "TANUKI: Pon's Summer",
+    "DC Super Hero Girls: Teen Power"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 429,
-  "sinFicha": 414,
-  "fichasEncontradas": 295
+  "sinPrecio": 461,
+  "sinFicha": 347,
+  "fichasEncontradas": 397
  },
  "fotos": {
   "juego": {
-   "total": 19524,
-   "con": 17044,
-   "porcentaje": 87
+   "total": 20297,
+   "con": 17356,
+   "porcentaje": 86
   },
   "edicion": {
-   "total": 1212,
-   "con": 836,
-   "porcentaje": 69
+   "total": 1362,
+   "con": 871,
+   "porcentaje": 64
   },
   "dlc": {
-   "total": 1107,
-   "con": 838,
-   "porcentaje": 76
+   "total": 1219,
+   "con": 899,
+   "porcentaje": 74
   },
   "tarjeta": {
-   "total": 295,
+   "total": 294,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 2546,
-   "probadas": 12,
-   "fallan": 3,
-   "ejemplos": [
-    "Beholder: The Landlord's Handbook - Digital Comic → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5405460/header.jpg",
-    "Swarmslam → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4794170/header.jpg",
-    "Pioneers of Pagonia - Echoes of Aldramar → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5070310/header.jpg"
-   ]
-  },
-  "steam (nuevas)": {
-   "total": 1750,
+   "total": 2816,
    "probadas": 12,
    "fallan": 12,
    "ejemplos": [
-    "Forgotten Realms: Demon Stone → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3843530/b2840bf3e84f1c26d85502b50caed1c10adfc71b/capsule_616x353.jpg",
-    "CarX Street → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1114150/4f5b553a6bac0c536a7ce8c1266f1ce30751531c/capsule_616x353.jpg",
-    "Road to Vostok → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1963610/28148123f92e62b6a2911eb2f4bab8d8539528de/capsule_616x353.jpg"
+    "Little Big Adventure 2 - Twinsen's Odyssey → 0 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/398000/header.jpg",
+    "Dead By Daylight - Silent Hill Chapter → 0 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1324970/header.jpg",
+    "TBH : Task Bar Hero - Supporter Pack → 0 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4427390/header.jpg"
+   ]
+  },
+  "steam (nuevas)": {
+   "total": 1707,
+   "probadas": 12,
+   "fallan": 12,
+   "ejemplos": [
+    "Whisper of the House → 0 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2589500/cb61929b4c02abbebd2b738e500a8b140ed84203/capsule_616x353.jpg",
+    "Wing Commander: Privateer → 0 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2008760/a7bf4058b8be7b0e84792c4c14337eccc3cb12d8/capsule_616x353.jpg",
+    "over the hill → 0 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2929250/c9074a798026361d9c8521ef9a23d6e52c0bea38/capsule_616x353.jpg"
    ]
   },
   "nintendo": {
-   "total": 8270,
+   "total": 8262,
    "probadas": 12,
-   "fallan": 0,
-   "ejemplos": []
+   "fallan": 12,
+   "ejemplos": [
+    "Super Mario Maker 2 → 0 https://www.nintendo.com/eu/media/images/10_share_images/games_15/nintendo_switch_4/H2x1_NSwitch_SuperMarioMaker2_image500w.jpg",
+    "Buddy & Friends: Santa's Workshop Animal Party → 0 https://www.nintendo.com/eu/media/images/10_share_images/games_15/nintendo_switch_download_software_1/2x1_NSwitchDS_BuddyAndFriendsSantasWorkshopAnimalParty_image500w.jpg",
+    "Zombie Survival → 0 https://www.nintendo.com/eu/media/images/10_share_images/games_15/nintendo_switch_download_software_1/2x1_NSwitchDS_ZombieSurvival_image500w.jpg"
+   ]
   },
   "microsoft": {
-   "total": 6151,
+   "total": 6340,
    "probadas": 12,
-   "fallan": 0,
-   "ejemplos": []
+   "fallan": 12,
+   "ejemplos": [
+    "Phantom Abyss → 0 https://store-images.s-microsoft.com/image/apps.8354.13571270788175547.a0b8d076-db6b-4fbb-8482-0f78d6b14c6e.b3e55109-6f71-45dc-996c-f5854ae43549?w=460",
+    "Maneater → 0 https://store-images.s-microsoft.com/image/apps.53142.14572536018362984.944e7368-3c2f-4b4e-8072-fe5da70a10fa.945db987-dfab-48e8-b6c9-06f3d2db5450?w=460",
+    "Instant Sports Plus → 0 https://store-images.s-microsoft.com/image/apps.34802.14390610116297740.d7ca4885-0ed5-4ea1-8b4a-3a7c222d64ab.0b6f1ba2-8755-4ec8-9de8-53aaef06c9c8?w=460"
+   ]
   },
   "otras": {
    "total": 1,
    "probadas": 1,
-   "fallan": 0,
-   "ejemplos": []
+   "fallan": 1,
+   "ejemplos": [
+    "Ghost of Yōtei → 0 https://media.game.es/COVERV2/3D_L/244/244874.png"
+   ]
   }
  },
  "enlaces": {
   "steam": {
-   "ofertas": 5143,
+   "ofertas": 5472,
    "probadas": 6,
-   "fallan": 0,
+   "fallan": 6,
    "bloqueados": 0,
-   "ejemplos": []
+   "ejemplos": [
+    "Heir of the Dog → 0",
+    "Tied to the Beat → 0",
+    "Total War: WARHAMMER III - Aislinn – Tides of Torment → 0"
+   ]
   },
   "game": {
-   "ofertas": 1102,
+   "ofertas": 1119,
    "probadas": 6,
-   "fallan": 0,
+   "fallan": 6,
    "bloqueados": 0,
-   "ejemplos": []
+   "ejemplos": [
+    "Final Fantasy Tactics: Ivalice Chronicles → 0",
+    "Super Smash Bros. Ultimate → 0",
+    "The Adventures of Elliot: The Millennium Tales → 0"
+   ]
   },
   "xbox": {
-   "ofertas": 9939,
+   "ofertas": 10211,
    "probadas": 6,
-   "fallan": 0,
+   "fallan": 6,
    "bloqueados": 0,
-   "ejemplos": []
+   "ejemplos": [
+    "Summertime Madness → 0",
+    "WUCHANG: Fallen Feathers → 0",
+    "Quantum Storm → 0"
+   ]
   },
   "instantgaming": {
-   "ofertas": 2119,
+   "ofertas": 2911,
    "probadas": 6,
-   "fallan": 0,
+   "fallan": 6,
    "bloqueados": 0,
-   "ejemplos": []
+   "ejemplos": [
+    "OFFBEAT → 0",
+    "Marvel’s Spider-Man Remastered → 0",
+    "Bibots → 0"
+   ]
   },
   "eshop": {
-   "ofertas": 16179,
+   "ofertas": 16178,
    "probadas": 6,
-   "fallan": 0,
+   "fallan": 6,
    "bloqueados": 0,
-   "ejemplos": []
+   "ejemplos": [
+    "Deliver Us The Moon → 0",
+    "Asterix & Obelix XXL 2 → 0",
+    "Detective Instinct: Farewell, My Beloved → 0"
+   ]
   },
   "gameseminuevos": {
-   "ofertas": 244,
+   "ofertas": 249,
    "probadas": 6,
-   "fallan": 0,
+   "fallan": 6,
    "bloqueados": 0,
-   "ejemplos": []
+   "ejemplos": [
+    "Everybody 1-2-Switch! → 0",
+    "Mortal Kombat 11 → 0",
+    "Operation Night Strikers → 0"
+   ]
   },
   "psstore": {
    "ofertas": 217,
    "probadas": 6,
-   "fallan": 0,
+   "fallan": 6,
    "bloqueados": 0,
-   "ejemplos": []
+   "ejemplos": [
+    "CRISIS CORE –FINAL FANTASY VII– REUNION → 0",
+    "Cuphead → 0",
+    "Onimusha: Way of the Sword → 0"
+   ]
   },
   "alcampo": {
    "ofertas": 7,
    "probadas": 6,
-   "fallan": 0,
+   "fallan": 6,
    "bloqueados": 0,
-   "ejemplos": []
+   "ejemplos": [
+    "TEKKEN 8 → 0",
+    "EA SPORTS FC 27 → 0",
+    "GTA+ → 0"
+   ]
   },
   "ebay": {
-   "ofertas": 993,
+   "ofertas": 1025,
    "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 6,
-   "ejemplos": []
+   "fallan": 6,
+   "bloqueados": 0,
+   "ejemplos": [
+    "A Plague Tale: Innocence → 0",
+    "Bugsnax → 0",
+    "Everybody 1-2-Switch! → 0"
+   ]
   }
  },
  "afiliados": {
@@ -190,29 +236,34 @@
   "ejemplos": []
  },
  "actualizado": {
-  "precios": "2026-11-10T19:52:02.809Z",
+  "precios": "2026-11-10T22:49:33.977Z",
   "diasDesdeLaUltima": 0.04
+ },
+ "historial": {
+  "series": 22588,
+  "rotas": 0,
+  "alDia": 22499,
+  "ultimoDia": "2026-11-11"
  },
  "red": {
   "comprobadas": 103,
-  "sinRespuesta": 0,
-  "sinConexion": false
+  "sinRespuesta": 103,
+  "sinConexion": true
  },
  "resumen": {
-  "juegos": 22138,
-  "ofertas": 70653,
+  "juegos": 23172,
+  "ofertas": 78152,
   "tiendas": 39,
-  "conFoto": "85 %"
+  "conFoto": "83 %"
  },
- "fecha": "2026-11-10T20:53:30.450Z",
- "graves": [
-  "fotos de steam (nuevas): fallan 12 de 12 (Forgotten Realms: Demon Stone → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3843530/b2840bf3e84f1c26d85502b50caed1c10adfc71b/capsule_616x353.jpg)"
- ],
+ "fecha": "2026-11-10T23:49:12.509Z",
+ "graves": [],
  "avisos": [
-  "instantgaming (clave digital): 198 juegos populares aún sin consultar (p. ej. Princess Peach: Showtime!, Euro Truck Simulator 2 - Nordic Horizons, Super Mario Maker 2)",
-  "game (consola): 409 juegos populares aún sin consultar (p. ej. EA Sports FC 27 Ultimate Edition, Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo, Final Fantasy VII Rebirth Digital Deluxe Edition)",
-  "psstore (PS4 o PS5): 56 juegos populares aún sin consultar (p. ej. Football Manager 27, NBA 2K27, Mortal Shell II)",
-  "ebay (consola, 2ª mano): 284 juegos populares aún sin consultar (p. ej. Super Mario RPG, Splatoon 3, DC Super Hero Girls: Teen Power)",
-  "fotos: 260 juegos populares sin foto (p. ej. Phantom Blade Zero Digital Deluxe Edition, NBA 2K27 Deluxe Edition, Hogwarts Legacy Deluxe Edition)"
+  "xbox (PC o Xbox): 33 juegos populares aún sin consultar (p. ej. Stellar Blade Complete Edition, LIVE A LIVE, BRAVELY DEFAULT II)",
+  "game (consola): 418 juegos populares aún sin consultar (p. ej. EA Sports FC 27 Ultimate Edition, Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo, Final Fantasy VII Rebirth Digital Deluxe Edition)",
+  "psstore (PS4 o PS5): 72 juegos populares aún sin consultar (p. ej. Football Manager 27, NBA 2K27, Mortal Shell II)",
+  "ebay (consola, 2ª mano): 297 juegos populares aún sin consultar (p. ej. Worst Class Ever, Super Mario RPG, Splatoon 3)",
+  "fotos: 253 juegos populares sin foto (p. ej. Phantom Blade Zero Digital Deluxe Edition, NBA 2K27 Deluxe Edition, Hogwarts Legacy Deluxe Edition)",
+  "no he podido comprobar ninguna dirección: sin conexión a Internet en esta ejecución"
  ]
 }

@@ -138,6 +138,32 @@ const dias = (iso) => (Date.now() - Date.parse(iso)) / 86400000;
 informe.actualizado = { precios: precios.actualizado, diasDesdeLaUltima: +dias(precios.actualizado).toFixed(2) };
 if (dias(precios.actualizado) > 0.6) graves.push(`los precios llevan ${dias(precios.actualizado).toFixed(1)} días sin actualizarse`);
 
+// ---------- 7. Historial ----------
+// (dejó de escribirse durante dos días sin que nadie se enterase: ahora se vigila)
+{
+  const { readdir } = await import("node:fs/promises");
+  const hoy = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Madrid" }).format(new Date());
+  const ayer = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Madrid" }).format(new Date(Date.now() - 86400000));
+  let series = 0, rotas = 0, alDia = 0, ultimoDia = "";
+  try {
+    for (const f of await readdir("data/historial")) {
+      const t = JSON.parse(await readFile(`data/historial/${f}`, "utf8"));
+      for (const serie of Object.values(t)) {
+        series++;
+        if (!Array.isArray(serie) || !serie.length || serie.some((p) => !Array.isArray(p) || p.length !== 4)) { rotas++; continue; }
+        const d = serie[serie.length - 1][0];
+        if (d > ultimoDia) ultimoDia = d;
+        if (d === hoy || d === ayer) alDia++;
+      }
+    }
+  } catch { /* sin historial todavía */ }
+  informe.historial = { series, rotas, alDia, ultimoDia };
+  if (!series) graves.push("no hay historial de precios guardado");
+  else if (ultimoDia < ayer) graves.push(`el historial no se escribe desde el ${ultimoDia}`);
+  else if (alDia < series * 0.5) graves.push(`solo ${alDia} de ${series} juegos tienen punto de historial de hoy o ayer`);
+  if (rotas) graves.push(`${rotas} series del historial están mal formadas`);
+}
+
 // ---------- Informe ----------
 // Sin conexión no se puede juzgar ninguna tienda: se avisa y se quitan esos problemas
 const sinRed = pedidas > 0 && sinRespuesta === pedidas;
