@@ -106,16 +106,18 @@ informe.enlaces = {}; informe.afiliados = {};
 let sinAfiliado = 0;
 for (const [t, lista] of Object.entries(porTienda)) {
   if (t.startsWith("itad-")) continue; // todos pasan por el mismo redirector
-  let mal = 0; const ejemplos = [];
+  let mal = 0, bloqueado = 0; const ejemplos = [];
   for (const { j, o } of alAzar(lista, Math.min(MUESTRA, 6))) {
     const u = larga(o.url);
     if (t === "instantgaming" && !/igr=gamer-681806/.test(u)) sinAfiliado++;
     const s = await responde(u);
-    if (s >= 400 || s === 0) { mal++; if (ejemplos.length < 3) ejemplos.push(`${j.titulo} → ${s}`); }
+    // 403 y 429: la tienda frena a los programas, no es que el enlace esté roto (en el navegador funciona)
+    if (s === 403 || s === 429) bloqueado++;
+    else if (s >= 400 || s === 0) { mal++; if (ejemplos.length < 3) ejemplos.push(`${j.titulo} → ${s}`); }
     await esperar(250);
   }
   const probadas = Math.min(MUESTRA, 6, lista.length);
-  informe.enlaces[t] = { ofertas: lista.length, probadas, fallan: mal, ejemplos };
+  informe.enlaces[t] = { ofertas: lista.length, probadas, fallan: mal, bloqueados: bloqueado, ejemplos };
   if (probadas >= 3 && mal === probadas) graves.push(`${t}: fallan todos los enlaces probados (${ejemplos[0] || ""})`);
 }
 informe.afiliados = { instantGamingSinCodigo: sinAfiliado };
@@ -160,7 +162,7 @@ linea(`${informe.resumen.juegos} juegos · ${informe.resumen.ofertas} ofertas ·
 linea("Pendientes por tienda: " + Object.entries(informe.cobertura).map(([k, v]) => `${k} ${v.pendientes}`).join(", "));
 linea("Fotos: " + Object.entries(informe.fotos).filter(([k]) => k !== "tarjeta").map(([k, v]) => `${k} ${v.porcentaje} %`).join(", "));
 linea("Direcciones de fotos que fallan: " + Object.entries(informe.fotosComprobadas).map(([k, v]) => `${k} ${v.fallan || 0}/${v.probadas || 0}`).join(", "));
-linea("Enlaces que fallan: " + Object.entries(informe.enlaces).map(([k, v]) => `${k} ${v.fallan}/${v.probadas}`).join(", "));
+linea("Enlaces que fallan: " + Object.entries(informe.enlaces).map(([k, v]) => `${k} ${v.fallan}/${v.probadas}` + (v.bloqueados ? ` (${v.bloqueados} sin comprobar)` : "")).join(", "));
 if (avisos.length) linea("AVISOS:\n - " + avisos.join("\n - "));
 if (graves.length) linea("PROBLEMAS:\n - " + graves.join("\n - "));
 if (!avisos.length && !graves.length) linea("Todo correcto.");
