@@ -18,15 +18,13 @@ jobs:
           const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)","Accept-Language":"es-ES,es;q=0.9"};
           const t=async(u)=>{try{const r=await fetch(u,{headers:H});return [r.status,await r.text(),r.url]}catch(e){return [0,String(e),""]}};
           function bloque(t,d){let i=t.indexOf("{",d),p=0,e=false;for(let k=i;k<t.length;k++){const c=t[k];if(e){if(c==="\\")k++;else if(c==='"')e=false;continue}if(c==='"')e=true;else if(c==="{")p++;else if(c==="}"&&--p===0)return t.slice(i,k+1)}return null}
-          for (const u of ["https://store.steampowered.com/robots.txt","https://searching.nintendo-europe.com/robots.txt","https://www.compraonline.alcampo.es/robots.txt","https://displaycatalog.mp.microsoft.com/robots.txt","https://www.nintendo.com/robots.txt"]) { const [s,b]=await t(u); console.log("ROBOTS",u,s,"\n"+b.slice(0,1800)); }
-          const [s1,sm]=await t("https://www.instant-gaming.com/sitemap_ig.xml"); const l1=[...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]); console.log("IGSM",s1,sm.length,l1.length,l1.slice(0,30).join(" "));
-          for (const u of l1.filter(x=>/es/.test(x)).slice(0,6)) { const [s2,b2]=await t(u); let x=b2; if(u.endsWith(".gz")){} const l2=[...x.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]); console.log("  IGSUB",u,s2,x.length,l2.length,l2.slice(0,8).join(" ")); }
-          const [s3,pg]=await t("https://www.instant-gaming.com/es/414-comprar-no-man-s-sky-pc-mac-steam/");
-          const lds=[...pg.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
-          console.log("IGPROD",s3,pg.length,"ld",lds.length); for(const l of lds) console.log("   LD",l.replace(/\s+/g," ").slice(0,900));
-          const meta=[...pg.matchAll(/<meta[^>]+(?:itemprop|property)="([^"]+)"[^>]+content="([^"]*)"/g)].map(m=>m[1]+"="+m[2]).filter(x=>/price|currency|availab|name|image/.test(x)); console.log("   META",meta.slice(0,20).join(" | "));
-          let xs=[];for(let i=0;i<40;i++){const r=await fetch(`https://www.xbox.com/sitemap/pdp-es-ES-sitemap-${i}.xml.gz`,{headers:H});if(r.status===404)break;const b=Buffer.from(await r.arrayBuffer());let x;try{x=gunzipSync(b).toString()}catch{x=b.toString()}for(const m of x.matchAll(/\/games\/store\/([a-z0-9-]+)\//g))xs.push(m[1])}
-          const mon=xs.filter(s=>/(points|puntos|monedas|coins|creditos|credits|v-bucks|pavos|robux|gemas|gems|platino|atomos|cristales|fichas|tarjeta|gift|shark|tiburon|minecoins)/.test(s));
-          console.log("XBOXMON",xs.length,mon.length,mon.slice(0,300).join(" "));
+          for (const sm of ["sitemap_ig_products_es.xml","sitemap_ig_products_es_2.xml","sitemap_ig_products_es_3.xml","sitemap_ig_giftcards_es.xml"]) { const [s,b]=await t("https://www.instant-gaming.com/"+sm); const l=[...b.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]); console.log("SM",sm,s,l.length,l.slice(0,5).join(" ")); if(sm.includes("gift")) console.log("   GIFT",l.map(x=>x.replace("https://www.instant-gaming.com/es/","")).join(" ").slice(0,6000)); }
+          for (const [n,extra] of [["sin",{}],["cookie",{Cookie:"currency=EUR; country=ES"}],["cookie2",{Cookie:"ig_currency=EUR"}]]) {
+            const r=await fetch("https://www.instant-gaming.com/es/414-comprar-no-man-s-sky-pc-mac-steam/",{headers:{...H,...extra}}); const h=await r.text();
+            const pr=h.match(/itemprop="price"[^>]*content="([^"]*)"/)||h.match(/content="([^"]*)"[^>]*itemprop="price"/); const cu=h.match(/itemprop="priceCurrency"[^>]*content="([^"]*)"/)||h.match(/content="([^"]*)"[^>]*itemprop="priceCurrency"/);
+            console.log("PAG",n,r.status,pr&&pr[1],cu&&cu[1],"| price_eur:",(h.match(/"price_eur"\s*:\s*"?([\d.]+)/)||[])[1],"| data-price:",(h.match(/data-price[a-z-]*="([^"]+)"/)||[])[0],"| €:",(h.match(/[\d,.]+\s?€/)||[])[0], "| set-cookie:",(r.headers.get("set-cookie")||"").slice(0,200));
+            const i2=h.indexOf("EUR"); console.log("   EURctx",i2,h.slice(Math.max(0,i2-200),i2+100).replace(/\s+/g," "));
+            await new Promise(r=>setTimeout(r,1500));
+          }
           X
           node p.mjs
