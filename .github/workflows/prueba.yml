@@ -6,12 +6,10 @@ permissions:
 jobs:
   prueba:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 5
     steps:
-      - name: Mixto datos
+      - name: Redireccion y HSTS
         run: |
-          curl -s https://pillaojuegos.com/precios.json -o p.json
-          echo "== tamano"; ls -la p.json
-          echo "== http:// en los datos"; grep -o 'http://[^"]*' p.json | sort -u | head -20; echo "(fin)"
-          echo "== buscador"; grep -o '"buscador":"[^"]*"' p.json | head -2
-          echo "== prefijos"; grep -o '"prefijos":\[[^]]*\]' p.json | head -c 1200
+          echo "== http -> ?"; curl -sI http://pillaojuegos.com/ | grep -i "^HTTP\|^location"
+          echo "== https cabeceras completas"; curl -sI https://pillaojuegos.com/ | grep -i "strict-transport\|^HTTP"
+          echo "== http www -> ?"; curl -sI http://www.pillaojuegos.com/ | grep -i "^HTTP\|^location"
