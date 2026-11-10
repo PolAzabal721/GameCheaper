@@ -30,6 +30,7 @@ jobs:
       - name: Preparar ffmpeg
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Preparar la voz
+        if: vars.VIDEOS_VOZ == '1'
         run: |
           python3 -m pip install --quiet piper-tts
           mkdir -p voz
@@ -44,6 +45,7 @@ jobs:
       - name: Hacer los vídeos
         env:
           VIDEOS_MAX: ${{ inputs.maximo || '5' }}
+          VIDEOS_VOZ: ${{ vars.VIDEOS_VOZ }}
           PIPER_CMD: python3 -m piper
           PIPER_VOZ: es_ES-davefx-medium
           PIPER_DIR: voz
@@ -55,7 +57,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: videos
-          path: videos/*.mp4
+          path: |
+            videos/*.mp4
+            videos/*-guiones.txt
           if-no-files-found: ignore
       - name: Guardarlos en la web
         run: |

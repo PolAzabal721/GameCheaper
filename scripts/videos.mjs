@@ -152,7 +152,7 @@ function pantalla(c, n) {
 const PIPER = (ENV.PIPER_CMD || "piper").split(" ");
 const VOZ = ENV.PIPER_VOZ || "es_ES-davefx-medium";
 const VOZ_DIR = ENV.PIPER_DIR || "voz";
-const hayVoz = !!ENV.PIPER_CMD;
+const hayVoz = !!ENV.PIPER_CMD && ENV.VIDEOS_VOZ === "1";   // por defecto el vídeo sale mudo y el diálogo se entrega aparte
 // «8,47 €» se lee mejor como «8 euros con 47»
 const enVoz = (n) => {
   const e = Math.floor(n + 1e-6), c = Math.round((n - e) * 100);
@@ -203,8 +203,10 @@ for (let i = 0; i < elegidos.length; i++) {
   }
   // La voz manda: el vídeo dura lo que tarda en contarse
   const wav = join("tmp-videos", `voz-${i}.wav`);
-  const segundos = await narrar(guion(c), wav);
-  const total = Math.max(11, Math.min(34, segundos ? segundos + 1.2 : 12.5));
+  const texto = guion(c);
+  const segundos = await narrar(texto, wav);
+  const leido = texto.length / 14 + 2;   // unos 14 caracteres por segundo al leerlo en voz alta
+  const total = Math.max(11, Math.min(34, segundos ? segundos + 1.2 : leido));
   const dur = [total * 0.3, total * 0.45, total * 0.25].map((x) => Math.round(x * 10) / 10);
   // Cada pantalla con un zoom lento y un fundido entre ellas
   const salida = join("videos", `${hoy}-${i + 1}.mp4`);
@@ -220,7 +222,8 @@ for (let i = 0; i < elegidos.length; i++) {
     "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", "-r", "30",
     "-t", String(largo), "-movflags", "+faststart", salida], { maxBuffer: 1 << 28 });
   hechos.push({ archivo: salida.replace(/\\/g, "/"), juego: c.j.titulo, precio: c.precio, antes: c.antes, dto: c.dto,
-    tienda: c.nombre, plataforma: c.o.plataforma || "", minimo: !!c.minimo, url: `https://${SITIO}/?q=${encodeURIComponent(c.j.titulo)}` });
+    tienda: c.nombre, plataforma: c.o.plataforma || "", minimo: !!c.minimo, guion: texto, segundos: Math.round(total * 10) / 10,
+    url: `https://${SITIO}/?q=${encodeURIComponent(c.j.titulo)}` });
   console.log(`  ${salida} · ${c.j.titulo} · ${eur(c.precio)} (−${c.dto} %)`);
 }
 await navegador.close();
@@ -228,7 +231,7 @@ await rm("tmp-videos", { recursive: true, force: true });
 
 // 4. Aviso en Telegram con los enlaces, si está encendido (VIDEOS_TELEGRAM=1)
 if (ENV.VIDEOS_TELEGRAM === "1" && ENV.TELEGRAM_BOT_TOKEN && ENV.TELEGRAM_CANAL) {
-  const texto = `🎬 <b>Vídeos de hoy listos</b>\n\n${hechos.map((v) => `· ${v.juego} — ${eur(v.precio)} (−${v.dto} %)`).join("\n")}\n\n<a href="https://${SITIO}/videos/">Descargarlos para TikTok y Reels</a>`;
+  const texto = `🎬 <b>Vídeos de hoy listos</b>\n\n${hechos.map((v) => `· ${v.juego} — ${eur(v.precio)} (−${v.dto} %)`).join("\n")}`;
   try {
     const r = await fetch(`https://api.telegram.org/bot${ENV.TELEGRAM_BOT_TOKEN.trim()}/sendMessage`, { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ chat_id: ENV.TELEGRAM_CANAL.trim(), text: texto, parse_mode: "HTML", link_preview_options: { is_disabled: true } }) });
@@ -240,4 +243,7 @@ if (ENV.VIDEOS_TELEGRAM === "1" && ENV.TELEGRAM_BOT_TOKEN && ENV.TELEGRAM_CANAL)
 const todos = (await readdir("videos")).filter((f) => f.endsWith(".mp4")).sort();
 for (const f of todos.slice(0, Math.max(0, todos.length - GUARDAR))) await rm(join("videos", f), { force: true });
 await writeFile(join("videos", "index.json"), JSON.stringify({ fecha: new Date().toISOString(), videos: hechos }, null, 1) + "\n");
+// Los diálogos, para ponerles la voz con otra herramienta
+await writeFile(join("videos", `${hoy}-guiones.txt`),
+  hechos.map((v) => `### ${v.archivo}  ·  ${v.juego}  ·  ${v.segundos} s\n${v.guion}`).join("\n\n") + "\n");
 console.log(`Listos ${hechos.length} vídeos en videos/.`);
