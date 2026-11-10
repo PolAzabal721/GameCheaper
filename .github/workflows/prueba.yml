@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Mixto
+      - name: Mixto datos
         run: |
-          echo "== cabeceras https"; curl -sI https://pillaojuegos.com/ | head -8
-          echo "== http://"; curl -s https://pillaojuegos.com/ | grep -o 'http://[^"'"'"' <)]*' | sort -u | head -20
-          echo "== csp"; curl -s https://pillaojuegos.com/ | grep -o 'Content-Security-Policy" content="[^"]*"' | head -2
-          echo "== legal"; curl -s https://pillaojuegos.com/legal.html | grep -o 'http://[^"'"'"' <)]*' | sort -u | head -10
-          echo "== juego"; curl -s https://pillaojuegos.com/juego/football-manager-27/ | grep -o 'http://[^"'"'"' <)]*' | sort -u | head -10
+          curl -s https://pillaojuegos.com/precios.json -o p.json
+          echo "== tamano"; ls -la p.json
+          echo "== http:// en los datos"; grep -o 'http://[^"]*' p.json | sort -u | head -20; echo "(fin)"
+          echo "== buscador"; grep -o '"buscador":"[^"]*"' p.json | head -2
+          echo "== prefijos"; grep -o '"prefijos":\[[^]]*\]' p.json | head -c 1200
