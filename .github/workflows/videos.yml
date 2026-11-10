@@ -28,7 +28,10 @@ jobs:
         with:
           node-version: 20
       - name: Preparar el navegador
-        run: npm install --no-save playwright@1.56.1 && npx playwright install --with-deps chromium
+        # La versión más nueva de Playwright es la que trae navegador para este Ubuntu
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
       - name: Hacer los vídeos
         env:
           VIDEOS_MAX: ${{ inputs.maximo || '5' }}
