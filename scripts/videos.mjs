@@ -43,11 +43,7 @@ for (const [clave, v] of Object.entries(estado.publicados || {})) {
     nombre: (tienda[o.tienda] || {}).nombre || o.tienda });
 }
 chollos.sort((a, b) => b.dto - a.dto);
-// Un vídeo por juego: si el mismo juego está de oferta en varias tiendas, solo su mejor chollo
-const yaVisto = new Set(), elegidos = [];
-for (const c of chollos) { if (yaVisto.has(c.j.id)) continue; yaVisto.add(c.j.id); elegidos.push(c); if (elegidos.length >= MAX) break; }
-console.log(`Chollos de las últimas ${HORAS} h: ${chollos.length}; hago vídeo de ${elegidos.length}.`);
-if (!elegidos.length) { console.log("Nada que contar hoy."); process.exit(0); }
+console.log(`Chollos de las últimas ${HORAS} h: ${chollos.length}.`);
 
 // 2. La imagen de cada juego (si no hay, un fondo de color)
 const STEAM = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/";
@@ -59,16 +55,38 @@ const urlImagen = (j) => {
   return /^https:\/\//.test(v) ? v : null;
 };
 await mkdir("tmp-videos", { recursive: true });
-for (const c of elegidos) {
-  const u = urlImagen(c.j);
-  if (!u) continue;
+
+// 2. Quiénes salen: un vídeo por juego, solo si su foto se ve de verdad (un vídeo sin foto no vale)
+// y sin repetir juego del que ya se hizo vídeo hace poco.
+const hechosAntes = await leer("data/videos.json", { hechos: {} });
+for (const [id, f] of Object.entries(hechosAntes.hechos)) if (Date.now() - Date.parse(f) > HORAS * 3600000) delete hechosAntes.hechos[id];
+const foto = async (j) => {
+  const u = urlImagen(j);
+  if (!u) return null;
   try {
     const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)" } });
-    if (!r.ok) continue;
+    if (!r.ok) return null;
     const tipo = (r.headers.get("content-type") || "image/jpeg").split(";")[0];
-    c.imagen = `data:${tipo};base64,${Buffer.from(await r.arrayBuffer()).toString("base64")}`;
-  } catch { /* sin imagen: fondo de color */ }
+    if (!/^image\//.test(tipo)) return null;
+    const b = Buffer.from(await r.arrayBuffer());
+    if (b.length < 2000) return null;
+    return `data:${tipo};base64,${b.toString("base64")}`;
+  } catch { return null; }
+};
+const yaVisto = new Set(), elegidos = [];
+let sinFoto = 0, repetidos = 0;
+for (const c of chollos) {
+  if (elegidos.length >= MAX) break;
+  if (yaVisto.has(c.j.id)) continue;
+  yaVisto.add(c.j.id);
+  if (hechosAntes.hechos[c.j.id]) { repetidos++; continue; }
+  const img = await foto(c.j);
+  if (!img) { sinFoto++; console.log(`  sin foto, lo salto: ${c.j.titulo}`); continue; }
+  c.imagen = img;
+  elegidos.push(c);
 }
+console.log(`Hago vídeo de ${elegidos.length}${sinFoto ? `; ${sinFoto} saltados por no tener foto` : ""}${repetidos ? `; ${repetidos} ya tenían vídeo` : ""}.`);
+if (!elegidos.length) { console.log("Nada que contar hoy."); process.exit(0); }
 
 // 3. Las tres pantallas de cada vídeo
 const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
@@ -164,6 +182,9 @@ async function narrar(texto, salida) {
     return Math.max(0, parseFloat(stdout.trim()) || 0);
   } catch (e) { console.warn("voz: " + (e.stderr || e.message || "").toString().split("\n").slice(0, 3).join(" | ")); return 0; }
 }
+
+for (const c of elegidos) hechosAntes.hechos[c.j.id] = new Date().toISOString();
+await writeFile("data/videos.json", JSON.stringify(hechosAntes) + "\n");
 
 const navegador = await chromium.launch();
 const pagina = await navegador.newPage({ viewport: { width: 1080, height: 1920 } });

@@ -168,6 +168,7 @@ function ponerImagen(j, fuente, img, cov) {
   if (cov && (!j._cov || p > j._covP)) { j._cov = cov; j._covP = p; }
 }
 
+const FOTOS_STEAM_MAX = +(process.env.FOTOS_STEAM_MAX || 600); // fotos de Steam que se ponen al día por ejecución
 const PRECIO_MAX = 400; // ningún juego cuesta más; por encima son datos de relleno (p. ej. 99.999 €) o hardware
 function ofertar(j, o) {
   if (!j || !(o.precio > 0) || o.precio > PRECIO_MAX) return;
@@ -1186,6 +1187,23 @@ async function main() {
   for (const j of juegos.values()) if (!j._img && !j._cov) {
     const app = j.ofertas.map((o) => String(o.url || "").match(/store\.steampowered\.com\/app\/(\d+)/)).find(Boolean);
     if (app) ponerImagen(j, "steam", "s:" + app[1], "s:" + app[1]);
+  }
+  // Las direcciones de siempre (apps/<id>/header.jpg) ya no valen para muchos juegos: se piden sus carpetas
+  // a la API de la tienda, por tandas, empezando por los más buscados.
+  const appDe = (j) => (String(j._img || "").startsWith("s:") ? String(j._img).slice(2)
+    : (j.ofertas.map((o) => String(o.url || "").match(/store\.steampowered\.com\/app\/(\d+)/)).find(Boolean) || [])[1]);
+  const viejas = [...juegos.values()].filter((j) => (!j._img || String(j._img).startsWith("s:")) && appDe(j)).sort((a, b) => a.pop - b.pop);
+  const porApp = new Map();
+  for (const j of viejas.slice(0, FOTOS_STEAM_MAX)) { const a = appDe(j); if (a && !porApp.has(a)) porApp.set(a, []); if (a) porApp.get(a).push(j); }
+  if (porApp.size) {
+    const nuevas = await fotosSteam([...porApp.keys()]);
+    let arregladas = 0;
+    for (const [a, js] of porApp) {
+      const ft = nuevas.get(a); if (!ft || !(ft.img || ft.cov)) continue;
+      for (const j of js) { if (ft.img) { j._img = ft.img; j._imgP = PRIO_IMG.steam || 0; } if (ft.cov) { j._cov = ft.cov; j._covP = PRIO_IMG.steam || 0; } }
+      arregladas += js.length;
+    }
+    console.log(`Fotos de Steam al día: ${arregladas} de ${porApp.size} juegos consultados (quedan ${Math.max(0, viejas.length - porApp.size)}).`);
   }
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
     .map(({ _buscarEn, _pvpFijo, _fechaOf, _fechaIG, _img, _imgP, _cov, _covP, plataformas, revisado, ...j }) => {
