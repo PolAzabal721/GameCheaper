@@ -6,10 +6,23 @@ permissions:
 jobs:
   prueba:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
-      - name: HTTP a HTTPS
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: { node-version: 20 }
+      - name: PS FM27
         run: |
-          echo "== HTTP"; curl -sI http://pillaojuegos.com/ | head -4
-          echo "== HTTP www"; curl -sI http://www.pillaojuegos.com/ | head -4
-          echo "== HTTPS"; curl -sI https://pillaojuegos.com/ | head -3
+          cat > p.mjs <<'X'
+          const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)","Accept-Language":"es-ES,es;q=0.9"};
+          for (const u of ["https://www.playstation.com/es-es/games/football-manager-27/","https://www.playstation.com/es-es/games/football-manager/","https://www.playstation.com/es-es/games/nba-2k27/","https://www.playstation.com/es-es/games/f1-25/"]) {
+            const r=await fetch(u,{headers:H}); const b=await r.text();
+            console.log("PS",u.replace("https://www.playstation.com/es-es/games/",""),r.status,b.length,"concepts:",[...new Set([...b.matchAll(/concept\/(\d+)/g)].map(m=>m[1]))].slice(0,4).join(","));
+            await new Promise(x=>setTimeout(x,5000));
+          }
+          // ¿cuántas páginas de juegos hay en el mapa del sitio?
+          const sm=await (await fetch("https://www.playstation.com/es-es/sitemap.xml",{headers:H})).text();
+          const paginas=[...new Set([...sm.matchAll(/\/es-es\/games\/([a-z0-9-]+)\/</g)].map(m=>m[1])));
+          console.log("MAPA paginas de juego:", paginas.length);
+          X
+          sed -i 's/)));/))];/' p.mjs
+          node p.mjs
