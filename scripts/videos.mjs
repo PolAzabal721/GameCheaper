@@ -7,7 +7,7 @@
 // Los deja en videos/ y escribe videos/index.json con los datos de cada uno.
 import { readFile, writeFile, mkdir, rm, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import { join } from "node:path";
 import { createRequire } from "node:module";
@@ -149,8 +149,15 @@ function guion(c) {
 async function narrar(texto, salida) {
   if (!hayVoz) return 0;
   try {
-    await ejecutar(PIPER[0], [...PIPER.slice(1), "-m", VOZ, "--data-dir", VOZ_DIR, "-f", salida],
-      { input: texto, maxBuffer: 1 << 28 });
+    // El texto se le pasa por la entrada estándar (execFile no sabe hacerlo, así que lanzamos el proceso a mano)
+    await new Promise((listo, fallo) => {
+      const p = spawn(PIPER[0], [...PIPER.slice(1), "-m", VOZ, "--data-dir", VOZ_DIR, "-f", salida], { stdio: ["pipe", "ignore", "pipe"] });
+      let err = "";
+      p.stderr.on("data", (d) => { err += d; });
+      p.on("error", fallo);
+      p.on("close", (code) => (code === 0 ? listo() : fallo(new Error(err.split("\n").slice(-4).join(" | ")))));
+      p.stdin.end(texto + "\n");
+    });
     const { stdout } = await ejecutar("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", salida]);
     return Math.max(0, parseFloat(stdout.trim()) || 0);
   } catch (e) { console.warn("voz: " + (e.stderr || e.message || "").toString().split("\n").slice(0, 3).join(" | ")); return 0; }
