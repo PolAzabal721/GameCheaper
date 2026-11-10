@@ -1,0 +1,34 @@
+name: Prueba
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prueba:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+      - name: Tarjetas
+        run: |
+          cat > p.mjs <<'X'
+          import { gunzipSync } from "node:zlib";
+          const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)","Accept-Language":"es-ES,es;q=0.9"};
+          const t=async(u)=>{try{const r=await fetch(u,{headers:H});return [r.status,await r.text(),r.url]}catch(e){return [0,String(e),""]}};
+          function bloque(t,d){let i=t.indexOf("{",d),p=0,e=false;for(let k=i;k<t.length;k++){const c=t[k];if(e){if(c==="\\")k++;else if(c==='"')e=false;continue}if(c==='"')e=true;else if(c==="{")p++;else if(c==="}"&&--p===0)return t.slice(i,k+1)}return null}
+          const [s0,rb]=await t("https://www.instant-gaming.com/robots.txt"); console.log("IGROBOTS",s0,"\n"+rb.slice(0,2500));
+          for (const u of ["https://www.instant-gaming.com/es/busquedas/?query=&type%5B0%5D=prepaid","https://www.instant-gaming.com/es/busquedas/?type%5B%5D=prepaid","https://www.instant-gaming.com/es/busquedas/?gametype=prepaid","https://www.instant-gaming.com/es/busquedas/?query=tarjeta&page=2","https://www.instant-gaming.com/es/tarjetas-regalo/","https://www.instant-gaming.com/es/prepago/"]) {
+            const [s,h,fin]=await t(u); const i=h.indexOf("window.searchResults = "); let d=null; try{d=i<0?null:JSON.parse(bloque(h,i))}catch{}
+            console.log("IGURL",u,s,fin,h.length,"hits",d?.hits?.length,"nbHits",d?.nbHits,"nbPages",d?.nbPages,"keys",d?Object.keys(d).join(","):"", d?.hits?.slice(0,5).map(x=>x.name+"("+x.is_prepaid+")").join(" | "));
+            const links=[...new Set([...h.matchAll(/href="(\/es\/[a-z0-9-]+\/)"/g)].map(m=>m[1]))].filter(x=>/tarjet|prepag|gift|regalo|recarga|moneda|saldo/.test(x)).slice(0,20);console.log("   links",links.join(" "));
+            await new Promise(r=>setTimeout(r,1500));
+          }
+          const g=[...(await t("https://www.game.es/sitemap/sitemap_productos.xml"))[1].matchAll(/<loc>https:\/\/www\.game\.es\/([a-z0-9-]+)\/[a-z0-9]+<\/loc>/g)].map(m=>m[1]).filter(x=>/^(tarjeta|codigo|recarga|monedero|psn|saldo)/.test(x));
+          console.log("GAMECARDS",g.length,g.join(" "));
+          let xs=[];for(let i=0;i<40;i++){const r=await fetch(`https://www.xbox.com/sitemap/pdp-es-ES-sitemap-${i}.xml.gz`,{headers:H});if(r.status===404)break;const b=Buffer.from(await r.arrayBuffer());let x;try{x=gunzipSync(b).toString()}catch{x=b.toString()}xs.push(...[...x.matchAll(/\/games\/store\/([a-z0-9-]+)\//g)].map(m=>m[1]))}
+          const mon=xs.filter(s=>/(points|puntos|monedas|coins|creditos|credits|v-bucks|pavos|robux|gemas|gems|platino|atomos|oro|cristales|fichas|tarjeta|gift|shark|tiburon|minecoins|cod-points)/.test(s));
+          console.log("XBOXMON",mon.length,mon.slice(0,400).join(" "));
+          X
+          node p.mjs
