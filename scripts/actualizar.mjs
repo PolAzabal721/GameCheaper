@@ -5,7 +5,7 @@
 //   - Steam: los más vendidos (STEAM_PAGINAS × 100 juegos), con precio y descuento.
 //   - Nintendo eShop: los juegos más populares del catálogo (ESHOP_MAX), con precio de la eShop española.
 //   - PlayStation Store: los juegos de config/seguimiento.json que tienen "psConcept".
-//   - Instant Gaming: la clave más barata, con stock y válida en España, por plataforma (IG_MAX juegos).
+//   - Instant Gaming: claves válidas en España por plataforma, desde su mapa de productos (IG_MAX populares + IG_ROTA por turnos).
 //   - Microsoft Store: precio oficial de Xbox/PC (MS_MAX juegos de PC o Xbox).
 //   - GAME: disco nuevo y seminuevo de los juegos de consola más populares (GAME_MAX).
 //   - eBay (segunda mano): si existen EBAY_CLIENT_ID y EBAY_CLIENT_SECRET, busca anuncios de usados
@@ -27,7 +27,7 @@ const STEAM_PAGINAS = +(ENV.STEAM_PAGINAS || 20);   // los 2.000 más vendidos, 
 const STEAM_ROTA = +(ENV.STEAM_ROTA || 10);         // + 1.000 más en cada ejecución, rotando…
 const STEAM_MAX_PAGINAS = +(ENV.STEAM_MAX_PAGINAS || 150); // …hasta los 15.000 más vendidos
 const ESHOP_ROTA = +(ENV.ESHOP_ROTA || 2500);       // eShop: además de los populares, un bloque nuevo cada vez
-const IG_ROTA = +(ENV.IG_ROTA || 350);
+const IG_ROTA = +(ENV.IG_ROTA || 250);
 const MS_ROTA = +(ENV.MS_ROTA || 300);
 const CONSERVAR_DIAS = 7;                            // un precio no revisado en una ejecución se conserva hasta 7 días
 const AHORA = new Date().toISOString().slice(0, 16);
@@ -605,7 +605,7 @@ const IG_REG_OK = ["europe", "espana", "worldwide", "global", "europa"];
 const IG_REG_NO = ["estados-unidos", "reino-unido", "latam", "america-latina", "turquia", "argentina", "brasil", "india", "mexico", "canada", "australia",
   "japon", "rusia", "alemania", "francia", "italia", "polonia", "norteamerica", "north-america", "asia", "oriente-medio", "arabia-saudi", "emiratos-arabes-unidos",
   "sudafrica", "nueva-zelanda", "corea-del-sur", "china", "hong-kong", "suiza", "noruega", "suecia", "dinamarca", "paises-bajos", "belgica", "austria",
-  "portugal", "irlanda", "usa", "uk", "us", "ue-sin-alemania"];
+  "portugal", "irlanda", "usa", "uk", "us", "ue-sin-alemania", "finlandia", "grecia", "hungria", "republica-checa", "rumania", "eslovaquia", "croacia", "chile", "colombia", "peru", "indonesia", "tailandia", "filipinas", "malasia", "singapur", "taiwan", "israel", "ucrania"];
 const IG_PLAT = [["xbox-series-x-s", "Xbox Series"], ["xbox-one", "Xbox Series"], ["playstation-5", "PS5"], ["playstation-4", "PS4"], ["ps5", "PS5"], ["ps4", "PS4"],
   ["nintendo-switch-2", "Switch 2"], ["switch-2", "Switch 2"], ["nintendo-switch", "Switch"], ["switch", "Switch"], ["pc", "PC"], ["mac", null], ["linux", null],
   ["juego", null], ["card", null]];
@@ -1054,7 +1054,7 @@ async function main() {
       const prio = (p) => ({ espana: 0, europe: 1, europa: 1, worldwide: 2, global: 2 }[p.region] ?? 3);
       const vistos = new Map();
       for (const p of [...lista].sort((a, b) => prio(a) - prio(b) || a.id - b.id)) { const k = p.plats.join() + "|" + p.drm; if (!vistos.has(k)) vistos.set(k, p); }
-      return [...vistos.values()].slice(0, 5);
+      return [...vistos.values()].slice(0, 4);
     };
     const enIG = [];
     for (const j of [...juegos.values()]) {
