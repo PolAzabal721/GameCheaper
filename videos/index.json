@@ -1,0 +1,16 @@
+{
+ "fecha": "2026-11-10T19:53:51.852Z",
+ "videos": [
+  {
+   "archivo": "videos/2026-11-10-1.mp4",
+   "juego": "EVERSPACE 2",
+   "precio": 8.48,
+   "antes": 49.99,
+   "dto": 83,
+   "tienda": "GamesPlanet US",
+   "plataforma": "PC",
+   "minimo": false,
+   "url": "https://pillaojuegos.com/?q=EVERSPACE%202"
+  }
+ ]
+}
