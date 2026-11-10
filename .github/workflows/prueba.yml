@@ -1,0 +1,17 @@
+name: Prueba
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prueba:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Mixto
+        run: |
+          echo "== cabeceras https"; curl -sI https://pillaojuegos.com/ | head -8
+          echo "== http://"; curl -s https://pillaojuegos.com/ | grep -o 'http://[^"'"'"' <)]*' | sort -u | head -20
+          echo "== csp"; curl -s https://pillaojuegos.com/ | grep -o 'Content-Security-Policy" content="[^"]*"' | head -2
+          echo "== legal"; curl -s https://pillaojuegos.com/legal.html | grep -o 'http://[^"'"'"' <)]*' | sort -u | head -10
+          echo "== juego"; curl -s https://pillaojuegos.com/juego/football-manager-27/ | grep -o 'http://[^"'"'"' <)]*' | sort -u | head -10
