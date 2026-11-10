@@ -136,12 +136,31 @@ const HOY = new Date().toISOString().slice(0, 10);
 // Steam se guarda como «s:<número del juego>» y la web forma las direcciones (ocupa mucho menos).
 // Prioridad: Steam > Microsoft Store > Nintendo eShop (de cada una, la primera que llegue).
 const PRIO_IMG = { steam: 3, xbox: 2, eshop: 1 };
-// Desde 2025 Steam sirve cada foto en su propia carpeta: apps/<id>/<carpeta>/header.jpg.
-// La carpeta buena solo la da la ficha oficial (header_image); la del listado es la de la miniatura y no vale.
-function imagenSteam(d, id) {
-  const m = String(d?.header_image || "").match(/\/apps\/(\d+)\/([0-9a-f]{8,64})\/header\.jpg/);
-  return m && m[1] === String(id) ? `sc:${m[1]}/${m[2]}` : null;
+// Desde 2025 Steam sirve cada foto en su propia carpeta: store_item_assets/steam/apps/<id>/<carpeta>/<fichero>.
+// La carpeta la da esta API (en lotes); las direcciones de siempre (apps/<id>/header.jpg) solo valen para los juegos antiguos.
+const trozoSteam = (id, a) => {
+  const m = String(a || "").match(/^([0-9a-f]{8,64})\/([\w.-]+)$/);
+  return m ? `sc:${id}/${m[1]}/${m[2]}` : null;
+};
+async function fotosSteam(appids) {
+  const fotos = new Map();
+  for (let i = 0; i < appids.length; i += 50) {
+    const lote = appids.slice(i, i + 50);
+    const input = { ids: lote.map((a) => ({ appid: +a })), context: { language: "spanish", country_code: "ES" }, data_request: { include_assets: true } };
+    try {
+      const d = await (await pedir(`https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?input_json=${encodeURIComponent(JSON.stringify(input))}`)).json();
+      for (const it of d.response?.store_items || []) {
+        const a = it.assets || {}, id = String(it.appid || it.id || "");
+        const img = trozoSteam(id, a.main_capsule) || trozoSteam(id, a.header);
+        const cov = trozoSteam(id, a.library_capsule);
+        if (img || cov) fotos.set(id, { img, cov });
+      }
+    } catch (e) { console.warn("Steam fotos: " + e.message.slice(0, 80)); }
+    await esperar(800);
+  }
+  return fotos;
 }
+
 function ponerImagen(j, fuente, img, cov) {
   if (!j) return;
   const p = PRIO_IMG[fuente] || 0;
@@ -213,18 +232,16 @@ async function steamMasVendidos() {
 
   // El listado a veces enseña el precio de una mejora de pago de un juego gratuito (p. ej. Counter-Strike 2 «Prime»).
   // Confirmamos cada precio con la ficha oficial de Steam (100 juegos por consulta) y descartamos los gratuitos.
-  const oficial = new Map(), fotos = new Map();
+  const oficial = new Map();
   for (let i = 0; i < filas.length; i += 100) {
     const ids = filas.slice(i, i + 100).map((f) => f.appid).join(",");
     try {
-      const d = await (await pedir(`https://store.steampowered.com/api/appdetails?appids=${ids}&cc=es&filters=price_overview,basic`)).json();
-      for (const [id, v] of Object.entries(d)) if (v?.success) {
-        oficial.set(id, v.data?.price_overview || null);
-        const f = imagenSteam(v.data, id); if (f) fotos.set(id, f);
-      }
+      const d = await (await pedir(`https://store.steampowered.com/api/appdetails?appids=${ids}&cc=es&filters=price_overview`)).json();
+      for (const [id, v] of Object.entries(d)) if (v?.success) oficial.set(id, v.data?.price_overview || null);
     } catch (e) { /* si falla, nos quedamos con el precio del listado */ }
     await esperar(1500);
   }
+  const fotos = await fotosSteam([...new Set(filas.map((f) => f.appid))]);
   let n = 0, gratis = 0;
   for (const f of filas) {
     visitar("steam", idDe(f.titulo));
@@ -237,7 +254,8 @@ async function steamMasVendidos() {
     const j = juego(f.titulo, { pop: f.puesto });
     ofertar(j, { tienda: "steam", plataforma: "PC", precio, regular, url: `https://store.steampowered.com/app/${f.appid}/`, fuente: "steam" });
     fechar(j, f.fecha);
-    ponerImagen(j, "steam", fotos.get(f.appid) || "s:" + f.appid, "s:" + f.appid);
+    const ft = fotos.get(f.appid) || {};
+    ponerImagen(j, "steam", ft.img || "s:" + f.appid, ft.cov || "s:" + f.appid);
     n++;
   }
   console.log(`Steam: ${n} juegos de pago, ${gratis} gratuitos descartados`);
@@ -246,18 +264,20 @@ async function steamMasVendidos() {
 async function steamUno(j, extra) {
   if (j.ofertas.some((o) => o.tienda === "steam")) return 0;
   if (extra.steamAppId) {
-    const d = await (await pedir(`https://store.steampowered.com/api/appdetails?appids=${extra.steamAppId}&cc=es&l=spanish&filters=price_overview,basic`)).json();
+    const d = await (await pedir(`https://store.steampowered.com/api/appdetails?appids=${extra.steamAppId}&cc=es&l=spanish&filters=price_overview`)).json();
     const p = d[extra.steamAppId]?.success && d[extra.steamAppId].data?.price_overview;
     if (!p || p.currency !== "EUR") return 0;
     ofertar(j, { tienda: "steam", plataforma: "PC", precio: p.final / 100, regular: p.initial / 100, url: `https://store.steampowered.com/app/${extra.steamAppId}/`, fuente: "steam" });
-    ponerImagen(j, "steam", imagenSteam(d[extra.steamAppId].data, extra.steamAppId) || "s:" + extra.steamAppId, "s:" + extra.steamAppId);
+    const ft1 = (await fotosSteam([String(extra.steamAppId)])).get(String(extra.steamAppId)) || {};
+    ponerImagen(j, "steam", ft1.img || "s:" + extra.steamAppId, ft1.cov || "s:" + extra.steamAppId);
     return 1;
   }
   const d = await (await pedir(`https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(j.titulo)}&l=spanish&cc=ES`)).json();
   const item = mejorCoincidencia(j.titulo, (d.items || []).filter((i) => i.price?.currency === "EUR"), (i) => i.name);
   if (!item) return 0;
   ofertar(j, { tienda: "steam", plataforma: "PC", precio: item.price.final / 100, regular: item.price.initial / 100, url: `https://store.steampowered.com/app/${item.id}/`, fuente: "steam" });
-  ponerImagen(j, "steam", "s:" + item.id, "s:" + item.id);
+  const ft2 = (await fotosSteam([String(item.id)])).get(String(item.id)) || {};
+  ponerImagen(j, "steam", ft2.img || "s:" + item.id, ft2.cov || "s:" + item.id);
   return 1;
 }
 

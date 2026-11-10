@@ -66,7 +66,7 @@ const larga = (u) => (typeof u === "string" && u[0] === "~" ? (prefijos[parseInt
 const urlFoto = (j) => {
   const v = larga(j.img || j.cov);
   if (!v) return null;
-  if (v.startsWith("sc:")) return STEAM + v.slice(3) + "/header.jpg";
+  if (v.startsWith("sc:")) return STEAM + v.slice(3);
   if (v.startsWith("s:")) return STEAM + v.slice(2) + "/header.jpg";
   return v;
 };
