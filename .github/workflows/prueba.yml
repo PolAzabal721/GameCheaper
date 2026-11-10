@@ -16,7 +16,7 @@ jobs:
           cat > p.mjs <<'X'
           const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)","Accept-Language":"es-ES,es;q=0.9"};
           function bloque(t,d){let i=t.indexOf("{",d),p=0,e=false;for(let k=i;k<t.length;k++){const c=t[k];if(e){if(c==="\\")k++;else if(c==='"')e=false;continue}if(c==='"')e=true;else if(c==="{")p++;else if(c==="}"&&--p===0)return t.slice(i,k+1)}return null}
-          for (const q of ["amazon","tarjeta amazon","valorant","league of legends","ubisoft","rainbow six","r6 creditos","riot points","razer gold","paysafecard","spotify","apple"]) {
+          for (const q of ["valorant eur","valorant europa","league of legends eur","riot points eur","ubisoft connect","tarjeta ubisoft","creditos r6","amazon gift card","eneba"]) {
             const h=await (await fetch("https://www.instant-gaming.com/es/busquedas/?query="+encodeURIComponent(q),{headers:H})).text();
             const i=h.indexOf("window.searchResults = "); const hits=i<0?[]:(JSON.parse(bloque(h,i)).hits||[]);
             console.log("Q",q,hits.length);
