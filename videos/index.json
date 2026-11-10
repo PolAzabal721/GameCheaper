@@ -1,0 +1,27 @@
+{
+ "fecha": "2026-11-10T19:44:02.182Z",
+ "videos": [
+  {
+   "archivo": "videos/2026-11-10-1.mp4",
+   "juego": "EVERSPACE 2",
+   "precio": 8.47,
+   "antes": 49.99,
+   "dto": 83,
+   "tienda": "GamesPlanet US",
+   "plataforma": "PC",
+   "minimo": false,
+   "url": "https://pillaojuegos.com/?q=EVERSPACE%202"
+  },
+  {
+   "archivo": "videos/2026-11-10-2.mp4",
+   "juego": "Tyrant's Blessing",
+   "precio": 3.12,
+   "antes": 18.49,
+   "dto": 83,
+   "tienda": "GamesPlanet US",
+   "plataforma": "PC",
+   "minimo": false,
+   "url": "https://pillaojuegos.com/?q=Tyrant's%20Blessing"
+  }
+ ]
+}
