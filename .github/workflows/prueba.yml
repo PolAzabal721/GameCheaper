@@ -1,0 +1,23 @@
+name: Prueba
+
+on:
+  workflow_dispatch:
+
+jobs:
+  mirar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Ver las direcciones de las fotos de Steam
+        run: |
+          set -x
+          curl -s -A "Mozilla/5.0" "https://store.steampowered.com/search/results/?query&start=0&count=20&cc=es&l=spanish&infinite=1&specials=1" -o busq.json
+          grep -o 'store_item_assets/steam/apps/[0-9]*/[0-9a-f]*/[a-zA-Z0-9_.?=]*' busq.json | sed 's/\\\\//g' | sort -u | head -20
+          echo "=== pagina de producto 3843530 ==="
+          curl -s -A "Mozilla/5.0" -b "birthtime=0; lastagecheckage=1-0-1970; wants_mature_content=1" "https://store.steampowered.com/app/3843530/?cc=es&l=spanish" -o ficha.html
+          grep -o 'store_item_assets/steam/apps/3843530/[^"'"'"' ]*' ficha.html | sort -u | head -20
+          echo "=== probar variantes ==="
+          for f in capsule_616x353.jpg capsule_231x87.jpg header.jpg library_600x900.jpg capsule_616x353_alt_assets_0.jpg; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3843530/b2840bf3e84f1c26d85502b50caed1c10adfc71b/$f")
+            echo "$f -> $code"
+          done
