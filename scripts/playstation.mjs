@@ -14,7 +14,7 @@ import { dirname, join } from "node:path";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ENV = process.env;
-const DESCUBRIR = +(ENV.PS_DESCUBRIR || 120);   // juegos nuevos a buscar en cada ejecución
+const DESCUBRIR = +(ENV.PS_DESCUBRIR || 200);   // juegos nuevos a buscar en cada ejecución
 const PRECIOS = +(ENV.PS_PRECIOS || 300);       // fichas a las que se actualiza el precio en cada ejecución
 const REINTENTAR_DIAS = 30;                      // si no encontramos un juego, volvemos a probar al mes
 const CABECERAS = { "User-Agent": "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)", "Accept-Language": "es-ES,es;q=0.9" };
