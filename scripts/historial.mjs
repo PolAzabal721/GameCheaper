@@ -33,17 +33,19 @@ export function preciosQueCuentan(j, tiendaPorId) {
 
 export async function guardarHistorial(raiz, lista, tiendas, ahora = new Date()) {
   const tiendaPorId = Object.fromEntries(tiendas.map((t) => [t.id, t]));
-  const dia = ahora.toISOString().slice(0, 10);
+  // El día, en hora de España: si no, una actualización de la 1 de la madrugada contaría como del día anterior
+  const dia = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Madrid" }).format(ahora);
   const dir = join(raiz, "data", "historial");
   await mkdir(dir, { recursive: true });
 
   // 1. Leer los trozos anteriores
   const trozos = await Promise.all([...Array(TROZOS).keys()].map(async (n) => {
-    try { return JSON.parse(await readFile(join(dir, nombreTrozo(n)), "utf8")); } catch { return {}; }
+    // Sin prototipo: hay juegos que se llaman «Constructor», «toString»… y si no, chocan con las propiedades de Object
+    try { return Object.assign(Object.create(null), JSON.parse(await readFile(join(dir, nombreTrozo(n)), "utf8"))); } catch { return Object.create(null); }
   }));
 
   // 2. El punto de hoy de cada juego (si ya había uno de hoy, se combina: el más barato del día, el más caro del día)
-  const minimos = {};
+  const minimos = Object.create(null);
   let puntos = 0;
   for (const j of lista) {
     const ps = preciosQueCuentan(j, tiendaPorId);
