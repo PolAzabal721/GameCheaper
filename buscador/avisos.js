@@ -11,7 +11,7 @@
 // La parte aleatoria hace de contraseña: solo quien tiene el enlace (el navegador que lo creó o el email) puede tocarlo.
 // Envío de correos con Brevo: secretos BREVO_API_KEY y AVISOS_REMITENTE (email verificado en Brevo).
 
-const WEB = "https://polazabal721.github.io/GameCheaper/";
+const WEB = "https://pillaojuegos.com/";
 const SIN_CONFIRMAR_SEG = 2 * 86400;    // un aviso sin confirmar se borra a los 2 días
 const ENVIADO_SEG = 30 * 86400;          // un aviso ya enviado se guarda 30 días (para que la web enseñe «te avisamos»)
 const MAX_POR_JUEGO = 5;
