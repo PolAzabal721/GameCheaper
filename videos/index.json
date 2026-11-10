@@ -1,5 +1,5 @@
 {
- "fecha": "2026-11-10T20:53:02.667Z",
+ "fecha": "2026-11-10T20:55:47.439Z",
  "videos": [
   {
    "archivo": "videos/2026-11-10-1.mp4",
@@ -47,14 +47,14 @@
   },
   {
    "archivo": "videos/2026-11-10-5.mp4",
-   "juego": "EVERSPACE 2",
-   "precio": 8.88,
-   "antes": 49.99,
+   "juego": "My Time at Portia",
+   "precio": 5.39,
+   "antes": 29.99,
    "dto": 82,
-   "tienda": "IndieGala Store",
+   "tienda": "Fanatical",
    "plataforma": "PC",
    "minimo": false,
-   "url": "https://pillaojuegos.com/?q=EVERSPACE%202"
+   "url": "https://pillaojuegos.com/?q=My%20Time%20at%20Portia"
   }
  ]
 }
