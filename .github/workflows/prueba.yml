@@ -1,0 +1,23 @@
+name: Prueba
+on: { workflow_dispatch: }
+permissions: { contents: read }
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: { node-version: 20 }
+      - run: |
+          cat > p.mjs <<'X'
+          const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)","Accept-Language":"es-ES,es;q=0.9"};
+          const RE=/apple|itunes|app-store|supercell|clash|brawl|pokemon-go|nintendo-switch-online|xbox|psn|discord|crunchyroll|hbo|prime-video|amazon|paysafe|razer|steam|shein|zalando/;
+          let igs=[];
+          for (let i=1;i<=8;i++){const r=await fetch(`https://www.instant-gaming.com/sitemap_ig_products_es${i>1?"_"+i:""}.xml`,{headers:H});if(r.status===404)break;const b=await r.text();for(const m of b.matchAll(/\/es\/(\d+)-comprar-([a-z0-9-]+)\//g))igs.push(m[2]);await new Promise(x=>setTimeout(x,400));}
+          const igf=[...new Set(igs.filter(s=>RE.test(s)&&/(tarjeta|gift|card|regalo|saldo|codigo|credito|gemas|gems|membresia|suscripcion)/.test(s)))];
+          console.log("IG total",igs.length,"| candidatas",igf.length);
+          console.log("IG:",igf.slice(0,120).join("\n    "));
+          const g=[...(await (await fetch("https://www.game.es/sitemap/sitemap_productos.xml",{headers:H})).text()).matchAll(/<loc>https:\/\/www\.game\.es\/([a-z0-9-]+)\/[a-z0-9]+<\/loc>/g)].map(m=>m[1]);
+          console.log("GAME:",[...new Set(g.filter(s=>RE.test(s)))].slice(0,60).join(" "));
+          X
+          node p.mjs
