@@ -1,0 +1,32 @@
+name: Prueba
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prueba:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+      - name: Imagenes y PS
+        run: |
+          cat > p.mjs <<'X'
+          const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)","Accept-Language":"es-ES,es;q=0.9"};
+          const t=async(u)=>{try{const r=await fetch(u,{headers:H});const b=await r.text();return [r.status,b,r.url]}catch(e){return [0,String(e),""]}};
+          // 1. Imagenes de Steam de juegos nuevos
+          for (const id of ["4530370","3669620","275850","1245620"]) {
+            for (const f of ["header.jpg","library_600x900.jpg","capsule_616x353.jpg"]) {
+              const u=`https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${id}/${f}`;
+              const r=await fetch(u,{headers:H,method:"HEAD"}); console.log("IMG",id,f,r.status,r.headers.get("content-type"),r.headers.get("content-length"));
+            }
+            const [s,b]=await t(`https://store.steampowered.com/api/appdetails?appids=${id}&cc=es&l=spanish`);
+            try{const d=JSON.parse(b)[id].data;console.log("   API",id,d.name,"| header:",d.header_image,"| capsule:",d.capsule_image)}catch(e){console.log("   API",id,"err",b.slice(0,120))}
+          }
+          // 2. PS Store: robots y sitemap
+          const [s1,rb]=await t("https://store.playstation.com/robots.txt"); console.log("PSROBOTS",s1,"\n"+rb);
+          for (const u of ["https://store.playstation.com/sitemap.xml","https://store.playstation.com/sitemap_index.xml","https://store.playstation.com/es-es/sitemap.xml"]) { const [s,b]=await t(u); console.log("PSSM",u,s,b.length,b.slice(0,400).replace(/\s+/g," ")); }
+          X
+          node p.mjs
