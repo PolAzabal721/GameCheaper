@@ -46,6 +46,8 @@ jobs:
           VIDEOS_MAX: ${{ inputs.maximo || '5' }}
           PIPER_BIN: ./piper/piper
           PIPER_VOZ: voz/es_ES-davefx-medium.onnx
+          PIPER_DATOS: piper/espeak-ng-data
+          LD_LIBRARY_PATH: ${{ github.workspace }}/piper
           VIDEOS_TELEGRAM: ${{ vars.VIDEOS_TELEGRAM }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CANAL: ${{ secrets.TELEGRAM_CANAL }}

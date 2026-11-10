@@ -149,10 +149,11 @@ function guion(c) {
 async function narrar(texto, salida) {
   if (!hayVoz) return 0;
   try {
-    await ejecutar(PIPER, ["--model", VOZ, "--output_file", salida, "--length_scale", "1.0"], { input: texto, maxBuffer: 1 << 28 });
+    const datosVoz = ENV.PIPER_DATOS && existsSync(ENV.PIPER_DATOS) ? ["--espeak_data", ENV.PIPER_DATOS] : [];
+    await ejecutar(PIPER, ["--model", VOZ, "--output_file", salida, "--length_scale", "1.0", ...datosVoz], { input: texto, maxBuffer: 1 << 28 });
     const { stdout } = await ejecutar("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", salida]);
     return Math.max(0, parseFloat(stdout.trim()) || 0);
-  } catch (e) { console.warn("voz: " + e.message.split("\n")[0]); return 0; }
+  } catch (e) { console.warn("voz: " + (e.stderr || e.message || "").toString().split("\n").slice(0, 3).join(" | ")); return 0; }
 }
 
 const navegador = await chromium.launch();
