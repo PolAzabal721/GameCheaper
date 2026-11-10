@@ -52,7 +52,7 @@ function comprimir(datos) {
   });
   return { ...datos, paginas: true, prefijos: PREFIJOS, juegos };
 }
-const SITIO = (process.env.SITIO_URL || "https://polazabal721.github.io/GameCheaper/").replace(/\/?$/, "/");
+const SITIO = (process.env.SITIO_URL || "https://pillaojuegos.com/").replace(/\/?$/, "/");
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const eur = (n) => new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n);
@@ -205,6 +205,8 @@ async function main() {
   // Todo el catálogo en un solo archivo (ligero), para que la web lo enseñe entero de una vez
   await writeFile(join(SALIDA, "precios.json"), JSON.stringify(comprimir(datos)) + "\n");
   await writeFile(join(SALIDA, ".nojekyll"), "");
+  // Con dominio propio la web está en la raíz: aquí sí vale un robots.txt que indique el sitemap
+  await writeFile(join(SALIDA, "robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${SITIO}sitemap.xml\n`);
   await writeFile(join(SALIDA, "paginas.css"), estilos());
 
   // 2. Una página por juego
