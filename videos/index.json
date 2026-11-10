@@ -1,31 +1,70 @@
 {
- "fecha": "2026-11-10T22:58:54.945Z",
+ "fecha": "2026-11-10T23:00:51.604Z",
  "videos": [
   {
-   "archivo": "videos/2026-11-10-euro-truck-simulator-2.mp4",
-   "juego": "Euro Truck Simulator 2",
-   "precio": 4.99,
-   "antes": 19.99,
-   "dto": 75,
-   "tienda": "Steam",
+   "archivo": "videos/2026-11-10-everspace-2.mp4",
+   "juego": "EVERSPACE 2",
+   "precio": 8.48,
+   "antes": 49.99,
+   "dto": 83,
+   "tienda": "GamesPlanet US",
    "plataforma": "PC",
    "minimo": false,
-   "guion": "Chollo de hoy en Pillao. Euro Truck Simulator 2, para PC. Costaba 19 euros con 99 y ahora está en 4 euros con 99. Un 75 por ciento menos en Steam. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 16.2,
-   "url": "https://pillaojuegos.com/?q=Euro%20Truck%20Simulator%202"
+   "guion": "Chollo de hoy en Pillao. EVERSPACE 2, para PC. Costaba 49 euros con 99 y ahora está en 8 euros con 48. Un 83 por ciento menos en GamesPlanet US. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 16.1,
+   "url": "https://pillaojuegos.com/?q=EVERSPACE%202"
   },
   {
-   "archivo": "videos/2026-11-10-clair-obscur-expedition-33.mp4",
-   "juego": "Clair Obscur: Expedition 33",
-   "precio": 22.79,
-   "antes": 50.9,
-   "dto": 55,
-   "tienda": "Instant Gaming",
+   "archivo": "videos/2026-11-10-tyrant-s-blessing.mp4",
+   "juego": "Tyrant's Blessing",
+   "precio": 3.13,
+   "antes": 18.49,
+   "dto": 83,
+   "tienda": "GamesPlanet US",
    "plataforma": "PC",
-   "minimo": true,
-   "guion": "Chollo de hoy en Pillao. Clair Obscur: Expedition 33, para PC. Costaba 50 euros con 90 y ahora está en 22 euros con 79. Un 55 por ciento menos en Instant Gaming. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 19.8,
-   "url": "https://pillaojuegos.com/?q=Clair%20Obscur%3A%20Expedition%2033"
+   "minimo": false,
+   "guion": "Chollo de hoy en Pillao. Tyrant's Blessing, para PC. Costaba 18 euros con 49 y ahora está en 3 euros con 13. Un 83 por ciento menos en GamesPlanet US. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 16.5,
+   "url": "https://pillaojuegos.com/?q=Tyrant's%20Blessing"
+  },
+  {
+   "archivo": "videos/2026-11-10-creatures-of-ava.mp4",
+   "juego": "Creatures of Ava",
+   "precio": 4.47,
+   "antes": 24.99,
+   "dto": 82,
+   "tienda": "WinGameStore",
+   "plataforma": "PC",
+   "minimo": false,
+   "guion": "Chollo de hoy en Pillao. Creatures of Ava, para PC. Costaba 24 euros con 99 y ahora está en 4 euros con 47. Un 82 por ciento menos en WinGameStore. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 16.3,
+   "url": "https://pillaojuegos.com/?q=Creatures%20of%20Ava"
+  },
+  {
+   "archivo": "videos/2026-11-10-pathfinder-wrath-of-the-righteous-enhanc.mp4",
+   "juego": "Pathfinder: Wrath of the Righteous - Enhanced Edition",
+   "precio": 3.57,
+   "antes": 19.99,
+   "dto": 82,
+   "tienda": "WinGameStore",
+   "plataforma": "PC",
+   "minimo": false,
+   "guion": "Chollo de hoy en Pillao. Pathfinder: Wrath of the Righteous - Enhanced Edition, para PC. Costaba 19 euros con 99 y ahora está en 3 euros con 57. Un 82 por ciento menos en WinGameStore. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 18.9,
+   "url": "https://pillaojuegos.com/?q=Pathfinder%3A%20Wrath%20of%20the%20Righteous%20-%20Enhanced%20Edition"
+  },
+  {
+   "archivo": "videos/2026-11-10-my-time-at-portia.mp4",
+   "juego": "My Time at Portia",
+   "precio": 5.39,
+   "antes": 29.99,
+   "dto": 82,
+   "tienda": "Fanatical",
+   "plataforma": "PC",
+   "minimo": false,
+   "guion": "Chollo de hoy en Pillao. My Time at Portia, para PC. Costaba 29 euros con 99 y ahora está en 5 euros con 39. Un 82 por ciento menos en Fanatical. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 16.1,
+   "url": "https://pillaojuegos.com/?q=My%20Time%20at%20Portia"
   }
  ]
 }
