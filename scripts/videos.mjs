@@ -43,7 +43,9 @@ for (const [clave, v] of Object.entries(estado.publicados || {})) {
     nombre: (tienda[o.tienda] || {}).nombre || o.tienda });
 }
 chollos.sort((a, b) => b.dto - a.dto);
-const elegidos = chollos.slice(0, MAX);
+// Un vídeo por juego: si el mismo juego está de oferta en varias tiendas, solo su mejor chollo
+const yaVisto = new Set(), elegidos = [];
+for (const c of chollos) { if (yaVisto.has(c.j.id)) continue; yaVisto.add(c.j.id); elegidos.push(c); if (elegidos.length >= MAX) break; }
 console.log(`Chollos de las últimas ${HORAS} h: ${chollos.length}; hago vídeo de ${elegidos.length}.`);
 if (!elegidos.length) { console.log("Nada que contar hoy."); process.exit(0); }
 
