@@ -1,0 +1,206 @@
+{
+ "cobertura": {
+  "instantgaming (clave digital)": {
+   "pendientes": 3890,
+   "ejemplos": [
+    "iRacing Arcade",
+    "Escape from Tarkov",
+    "Attack on Titan 3 / A.O.T. 3",
+    "Outer Wilds",
+    "Paralives"
+   ]
+  },
+  "xbox (PC o Xbox)": {
+   "pendientes": 1649,
+   "ejemplos": [
+    "TEKKEN 8: Pase de personajes de la temporada 2",
+    "TEKKEN 8: Pase de personajes y escenarios de la temporada 2",
+    "TEKKEN 8: Pase de personajes y escenarios de la temporada 1",
+    "TEKKEN 8: Pase de personajes de la temporada 1",
+    "The Crew Motorfest Ultimate Year 2 Edition"
+   ]
+  },
+  "game (consola)": {
+   "pendientes": 12206,
+   "ejemplos": [
+    "EA Sports FC 27 Ultimate Edition",
+    "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo",
+    "Final Fantasy VII Rebirth Digital Deluxe Edition",
+    "NBA 2K27 Deluxe Edition",
+    "Hogwarts Legacy Deluxe Edition"
+   ]
+  },
+  "psstore (PS4 o PS5)": {
+   "pendientes": 358,
+   "ejemplos": [
+    "Football Manager 27",
+    "NBA 2K27",
+    "Mortal Shell II",
+    "Cyberpunk 2077: Phantom Liberty",
+    "Grand Theft Auto: The Trilogy – The Definitive Edition"
+   ]
+  },
+  "ebay (consola, 2ª mano)": {
+   "pendientes": 15004,
+   "ejemplos": [
+    "ARC Raiders - Frozen Trail Collector Set",
+    "EA SPORTS Madden NFL 27 Deluxe Edition",
+    "Attack on Titan 3 / A.O.T. 3",
+    "Assassin's Creed Unity",
+    "Streets of Rage 4"
+   ]
+  }
+ },
+ "playstation": {
+  "sinPrecio": 358,
+  "sinFicha": 343,
+  "fichasEncontradas": 295
+ },
+ "fotos": {
+  "juego": {
+   "total": 18470,
+   "con": 16238,
+   "porcentaje": 88
+  },
+  "edicion": {
+   "total": 1073,
+   "con": 805,
+   "porcentaje": 75
+  },
+  "dlc": {
+   "total": 869,
+   "con": 647,
+   "porcentaje": 74
+  },
+  "tarjeta": {
+   "total": 256,
+   "nota": "las tarjetas llevan un dibujo hecho por la web"
+  }
+ },
+ "fotosComprobadas": {
+  "steam (antiguas)": {
+   "total": 3778,
+   "probadas": 12,
+   "fallan": 6,
+   "ejemplos": [
+    "MD Engine → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3706620/header.jpg",
+    "Backrooms: Code Yellow → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4694270/header.jpg",
+    "Demon General Kirsten → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4112840/header.jpg"
+   ]
+  },
+  "steam (nuevas)": {
+   "total": 0
+  },
+  "nintendo": {
+   "total": 8028,
+   "probadas": 12,
+   "fallan": 0,
+   "ejemplos": []
+  },
+  "microsoft": {
+   "total": 5883,
+   "probadas": 12,
+   "fallan": 0,
+   "ejemplos": []
+  },
+  "otras": {
+   "total": 1,
+   "probadas": 1,
+   "fallan": 0,
+   "ejemplos": []
+  }
+ },
+ "enlaces": {
+  "steam": {
+   "ofertas": 4358,
+   "probadas": 6,
+   "fallan": 0,
+   "ejemplos": []
+  },
+  "game": {
+   "ofertas": 996,
+   "probadas": 6,
+   "fallan": 0,
+   "ejemplos": []
+  },
+  "xbox": {
+   "ofertas": 9623,
+   "probadas": 6,
+   "fallan": 0,
+   "ejemplos": []
+  },
+  "instantgaming": {
+   "ofertas": 1574,
+   "probadas": 6,
+   "fallan": 0,
+   "ejemplos": []
+  },
+  "eshop": {
+   "ofertas": 16081,
+   "probadas": 6,
+   "fallan": 0,
+   "ejemplos": []
+  },
+  "gameseminuevos": {
+   "ofertas": 228,
+   "probadas": 6,
+   "fallan": 0,
+   "ejemplos": []
+  },
+  "psstore": {
+   "ofertas": 217,
+   "probadas": 6,
+   "fallan": 0,
+   "ejemplos": []
+  },
+  "alcampo": {
+   "ofertas": 6,
+   "probadas": 6,
+   "fallan": 0,
+   "ejemplos": []
+  },
+  "ebay": {
+   "ofertas": 807,
+   "probadas": 6,
+   "fallan": 6,
+   "ejemplos": [
+    "Wunderling → 403",
+    "Farming Simulator 20 → 403",
+    "Tennis World Tour 2 → 403"
+   ]
+  }
+ },
+ "afiliados": {
+  "instantGamingSinCodigo": 0
+ },
+ "preciosRaros": {
+  "total": 0,
+  "ejemplos": []
+ },
+ "actualizado": {
+  "precios": "2026-11-10T15:49:13.705Z",
+  "diasDesdeLaUltima": 0.14
+ },
+ "red": {
+  "comprobadas": 91,
+  "sinRespuesta": 0,
+  "sinConexion": false
+ },
+ "resumen": {
+  "juegos": 20668,
+  "ofertas": 63547,
+  "tiendas": 39,
+  "conFoto": "86 %"
+ },
+ "fecha": "2026-11-10T19:04:22.113Z",
+ "graves": [
+  "ebay: fallan todos los enlaces probados (Wunderling → 403)"
+ ],
+ "avisos": [
+  "instantgaming (clave digital): 153 juegos populares aún sin consultar (p. ej. iRacing Arcade, Escape from Tarkov, Attack on Titan 3 / A.O.T. 3)",
+  "game (consola): 431 juegos populares aún sin consultar (p. ej. EA Sports FC 27 Ultimate Edition, Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo, Final Fantasy VII Rebirth Digital Deluxe Edition)",
+  "psstore (PS4 o PS5): 52 juegos populares aún sin consultar (p. ej. Football Manager 27, NBA 2K27, Mortal Shell II)",
+  "ebay (consola, 2ª mano): 504 juegos populares aún sin consultar (p. ej. ARC Raiders - Frozen Trail Collector Set, EA SPORTS Madden NFL 27 Deluxe Edition, Attack on Titan 3 / A.O.T. 3)",
+  "fotos: 301 juegos populares sin foto (p. ej. Phantom Blade Zero Digital Deluxe Edition, NBA 2K27 Deluxe Edition, Hogwarts Legacy Deluxe Edition)"
+ ]
+}
