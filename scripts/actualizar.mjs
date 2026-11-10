@@ -27,7 +27,7 @@ const STEAM_PAGINAS = +(ENV.STEAM_PAGINAS || 20);   // los 2.000 más vendidos, 
 const STEAM_ROTA = +(ENV.STEAM_ROTA || 10);         // + 1.000 más en cada ejecución, rotando…
 const STEAM_MAX_PAGINAS = +(ENV.STEAM_MAX_PAGINAS || 150); // …hasta los 15.000 más vendidos
 const ESHOP_ROTA = +(ENV.ESHOP_ROTA || 2500);       // eShop: además de los populares, un bloque nuevo cada vez
-const IG_ROTA = +(ENV.IG_ROTA || 250);
+const IG_ROTA = +(ENV.IG_ROTA || 350);
 const MS_ROTA = +(ENV.MS_ROTA || 300);
 const CONSERVAR_DIAS = 7;                            // un precio no revisado en una ejecución se conserva hasta 7 días
 const AHORA = new Date().toISOString().slice(0, 16);
@@ -41,7 +41,7 @@ const ESHOP_MAX = +(ENV.ESHOP_MAX || 2500);
 const EBAY_MAX = +(ENV.EBAY_MAX || 250);     // eBay: los juegos de consola más populares en cada ejecución…
 const EBAY_ROTA = +(ENV.EBAY_ROTA || 450);   // …y un bloque nuevo del resto, rotando (eBay permite unas 5.000 consultas al día)
 const GAME_MAX = +(ENV.GAME_MAX || 150);
-const IG_MAX = +(ENV.IG_MAX || 250);
+const IG_MAX = +(ENV.IG_MAX || 200);
 const MS_MAX = +(ENV.MS_MAX || 400);
 // GAME: además de los GAME_MAX más populares, en cada ejecución revisa un bloque distinto del resto (GAME_ROTA juegos),
 // así en un día y medio pasa por todo el catálogo de consola. Lo que no toca en una ejecución conserva su último precio.
@@ -432,6 +432,9 @@ async function mapaGame() {
     // Tarjetas de saldo («tarjeta-regalo-playstation-20», «codigo-prepago-nintendo-eshop-15», «tarjeta-xbox-live-50»…)
     const tj = slug.match(/^(?:tarjeta|codigo)(?:-regalo|-prepago)?(?:-de)?-([a-z-]+?)-(\d+)$/);
     if (tj && !/mes|meses|suscripcion|pass|plus|ultimate|memoria/.test(tj[1])) { TARJETAS_GAME.push({ url: `https://www.game.es/${m[1]}/${m[2]}`, texto: tj[1].replace(/-/g, " "), valor: +tj[2] }); continue; }
+    // Suscripciones: «tarjeta-microsoft-xbox-game-pass-ultimate-3-meses», «codigo-spotify-digital-1-mes»
+    const sus = slug.match(/^(?:tarjeta|codigo)-(?:microsoft-)?(xbox-game-pass-(?:essential|premium|ultimate|core|pc)|spotify(?:-digital)?)-(\d+)-mes(?:es)?$/);
+    if (sus) { TARJETAS_GAME.push({ url: `https://www.game.es/${m[1]}/${m[2]}`, texto: sus[1].replace(/-digital$/, "").replace(/-/g, " "), meses: +sus[2] }); continue; }
     if (/^(consola|pack|nintendo-switch|playstation|xbox-series|mando|tarjeta|codigo)/.test(slug)) continue; // consolas, packs y códigos
     const suf = SUFIJOS_GAME.find(([x]) => slug.endsWith("-" + x));
     if (suf) slug = slug.slice(0, -suf[0].length - 1);
@@ -591,40 +594,82 @@ function valeEnEspana(h) {
   if (wl.length) return wl.some((c) => REGIONES_OK.test(c));
   return REGIONES_OK.test(String(h.region || "").trim());
 }
-async function instantGaming(j) {
-  const html = await (await pedir("https://www.instant-gaming.com/es/busquedas/?query=" + encodeURIComponent(j.titulo))).text();
-  const i = html.indexOf("window.searchResults = ");
-  if (i < 0) throw new Error("la búsqueda ya no trae datos (puede que Instant Gaming haya cambiado su web)");
-  const datos = JSON.parse(bloqueJSON(html, i));
-  let n = 0;
-  for (const h of datos.hits || []) {
-    if (!h.has_stock || h.is_prepaid || h.is_subscription) continue;
-    const precio = parseFloat(h.price_eur);
-    if (!(precio > 0) || !valeEnEspana(h)) continue;
-    let destino = null;
-    if (!h.is_dlc && parecido(j.titulo, h.name) > 0.5) destino = j; // el mismo juego
-    else {
-      // Un DLC o una edición especial de este juego: tiene todas sus palabras → ficha propia
-      const n = " " + limpiar(h.name) + " ";
-      const deEste = clave(j.titulo).split(" ").every((p) => n.includes(" " + p + " "));
-      const tipo = h.is_dlc ? "dlc" : tipoDe(h.name);
-      if (deEste && tipo !== "juego" && !NO_PRODUCTO.test(n)) destino = juego(h.name, { pop: j.pop + 0.5, tipo });
-    }
-    if (!destino) continue;
-    if (h.avail_date > 0) fechar(destino, new Date(h.avail_date * 1000).toISOString().slice(0, 10), false);
-    for (const nombre of h.platform_names || []) {
-      const plat = PLAT_IG[limpiar(nombre)] || PLAT_IG[String(nombre).toLowerCase()];
-      if (!plat) continue;
-      const antes = destino.ofertas.length;
-      ofertar(destino, {
-        tienda: "instantgaming", plataforma: plat, precio, regular: parseFloat(h.default_retail) || undefined, drm: h.type || undefined,
-        condicion: `${h.preorder ? "Reserva · " : ""}Clave ${h.type || ""} · ${h.region_fulltext || h.region || "Worldwide"}`.replace(/\s+·/, " ·"),
-        url: `https://www.instant-gaming.com/es/${h.prod_id}-comprar-${h.seo_name}/?igr=${AFILIADO_IG}`, fuente: "instantgaming",
-      });
-      if (destino.ofertas.length > antes) n++;
-    }
+// Instant Gaming tiene vetado su buscador (/es/busquedas/) a programas en su robots.txt. Usamos lo que sí ofrece:
+// su mapa de productos (sitemap_ig_products_es*.xml), con todos los productos y, en la dirección, la plataforma,
+// la tienda de la clave y la región; y la ficha pública de cada producto, con el precio en euros y el stock.
+const IG_DRM = [["steam", "Steam"], ["epic-games", "Epic Games"], ["ubisoft-connect", "Ubisoft Connect"], ["ea-app", "EA App"], ["origin", "EA App"],
+  ["gog-com", "GOG"], ["gog", "GOG"], ["rockstar-games-launcher", "Rockstar"], ["rockstar", "Rockstar"], ["battle-net", "Battle.net"],
+  ["microsoft-store", "Microsoft Store"], ["windows-store", "Microsoft Store"], ["playstation-store", "PlayStation Store"], ["nintendo-eshop", "Nintendo eShop"]];
+// Regiones: las que valen en España y las que no (estas no se descargan)
+const IG_REG_OK = ["europe", "espana", "worldwide", "global", "europa"];
+const IG_REG_NO = ["estados-unidos", "reino-unido", "latam", "america-latina", "turquia", "argentina", "brasil", "india", "mexico", "canada", "australia",
+  "japon", "rusia", "alemania", "francia", "italia", "polonia", "norteamerica", "north-america", "asia", "oriente-medio", "arabia-saudi", "emiratos-arabes-unidos",
+  "sudafrica", "nueva-zelanda", "corea-del-sur", "china", "hong-kong", "suiza", "noruega", "suecia", "dinamarca", "paises-bajos", "belgica", "austria",
+  "portugal", "irlanda", "usa", "uk", "us", "ue-sin-alemania"];
+const IG_PLAT = [["xbox-series-x-s", "Xbox Series"], ["xbox-one", "Xbox Series"], ["playstation-5", "PS5"], ["playstation-4", "PS4"], ["ps5", "PS5"], ["ps4", "PS4"],
+  ["nintendo-switch-2", "Switch 2"], ["switch-2", "Switch 2"], ["nintendo-switch", "Switch"], ["switch", "Switch"], ["pc", "PC"], ["mac", null], ["linux", null],
+  ["juego", null], ["card", null]];
+const IG_TARJETA = /(^|-)(tarjeta|gift-card|card|puntos|points|monedas|coins|v-bucks|robux|creditos|credits|gemas|gems|platino|atomos|lingotes|fichas|minecoins|uc|nc|suscripcion|game-pass|ps-plus|playstation-plus|ea-play|switch-online|meses|mes|dias|saldo|recarga)(-|$)/;
+const termina = (w, frase) => { const f = frase.split("-"); return w.length > f.length && w.slice(-f.length).join("-") === frase ? f.length : 0; };
+function leerSlugIG(slug) {
+  let w = slug.split("-"), region = null, drm = null, n;
+  for (const r of [...IG_REG_NO, ...IG_REG_OK]) if ((n = termina(w, r))) { region = r; w = w.slice(0, -n); break; }
+  for (const [k, v] of IG_DRM) if ((n = termina(w, k))) { drm = v; w = w.slice(0, -n); break; }
+  const plats = new Set();
+  for (let otra = true; otra;) {
+    otra = false;
+    for (const [k, v] of IG_PLAT) if ((n = termina(w, k))) { if (v) plats.add(v); w = w.slice(0, -n); otra = true; break; }
   }
-  return n;
+  return { nombre: w.join(" "), region, drm, plats: [...plats], vale: !IG_REG_NO.includes(region || "") };
+}
+let PRODUCTOS_IG = null;
+async function mapaInstantGaming() {
+  const productos = [];
+  for (let i = 1; i <= 8; i++) {
+    const r = await fetch(`https://www.instant-gaming.com/sitemap_ig_products_es${i > 1 ? "_" + i : ""}.xml`, { headers: CABECERAS });
+    if (r.status === 404) break;
+    if (!r.ok) throw new Error(`HTTP ${r.status} en el mapa de productos de Instant Gaming`);
+    for (const m of (await r.text()).matchAll(/<loc>https:\/\/www\.instant-gaming\.com\/es\/(\d+)-comprar-([a-z0-9-]+)\/<\/loc>/g)) {
+      const d = leerSlugIG(m[2]);
+      if (!d.vale) continue;
+      productos.push({ id: +m[1], url: `https://www.instant-gaming.com/es/${m[1]}-comprar-${m[2]}/`, tarjeta: IG_TARJETA.test(m[2]), ...d });
+    }
+    await esperar(500);
+  }
+  if (productos.length < 3000) throw new Error(`el mapa de productos de Instant Gaming trae muy pocos productos (${productos.length})`);
+  PRODUCTOS_IG = productos;
+  return productos;
+}
+// Ficha de un producto: nombre (con la región detrás de « - »), precio en euros y si hay stock
+async function fichaIG(url) {
+  const html = await (await pedir(url)).text();
+  const m = html.match(/itemprop="price"[^>]*data-price-eur="([\d.]+)"/);
+  if (!m) return null;
+  const nombreCompleto = html2txt((html.match(/itemprop="name"\s+content="([^"]+)"/) || [])[1] || "");
+  const [, nombre, region] = nombreCompleto.match(/^(.*?)(?:\s+-\s+([^-]+))?$/) || [, nombreCompleto, ""];
+  return { nombre: nombre.trim(), region: (region || "").trim(), precio: Number(m[1]),
+    stock: /schema\.org\/InStock/.test((html.match(/itemprop="availability"\s+content="([^"]+)"/) || [])[1] || "") };
+}
+const regionValeIG = (r) => !r || /(españa|espana|europe|europa|worldwide|global|\beu\b|emea)/i.test(r);
+// Precio de un producto de Instant Gaming en una ficha del catálogo (o en una nueva si no la teníamos)
+async function productoIG(j, p) {
+  const f = await fichaIG(p.url);
+  await esperar(600);
+  if (!f || !(f.precio > 0) || !regionValeIG(f.region)) return { j, n: 0 };
+  if (!j) {
+    if (NO_PRODUCTO.test(limpiar(f.nombre))) return { j, n: 0 };
+    j = juego(f.nombre, { pop: 99999, tipo: DLC_RE.test(limpiar(f.nombre)) ? "dlc" : tipoDe(f.nombre) });
+    if (!j) return { j, n: 0 };
+  }
+  let n = 0;
+  for (const plat of p.plats.length ? p.plats : ["PC"]) {
+    const antes = j.ofertas.length;
+    ofertar(j, { tienda: "instantgaming", plataforma: plat, precio: f.precio, drm: p.drm || undefined, stock: f.stock,
+      condicion: `Clave ${p.drm || ""} · ${f.region || "Worldwide"}`.replace(/\s+·/, " ·"),
+      url: `${p.url}?igr=${AFILIADO_IG}`, fuente: "instantgaming" });
+    if (j.ofertas.length > antes) n++;
+  }
+  return { j, n };
 }
 
 // ---------- Alcampo (juegos en disco) ----------
@@ -685,12 +730,9 @@ async function alcampo(visitar) {
 // y la recarga oficial de Steam. Solo lo que vale en España; las tarjetas de saldo, solo con valor en euros.
 const MARCAS_SALDO = [
   ["PlayStation", /playstation|psn/], ["Nintendo eShop", /nintendo/], ["Xbox", /xbox|microsoft/], ["Steam", /steam/],
+  ["Roblox", /roblox/], ["Fortnite", /fortnite/], ["League of Legends", /league of legends/], ["Twitch", /twitch/], ["IMVU", /\bimvu\b/],
   ["Amazon", /amazon/], ["Apple", /apple|itunes/], ["Google Play", /google play/], ["Spotify", /spotify/], ["Netflix", /netflix/],
 ];
-const BUSQUEDAS_IG = ["nintendo eshop", "tarjeta playstation", "playstation plus", "tarjeta xbox", "xbox game pass", "steam tarjeta regalo",
-  "v-bucks", "robux", "fc points", "call of duty puntos", "apex monedas", "overwatch monedas", "minecraft minecoins", "gta online tarjeta",
-  "diablo platino", "ea play", "nintendo switch online", "valorant", "league of legends", "riot", "genshin", "pubg", "candy crush",
-  "fallout 76 atomos", "elder scrolls online coronas", "guild wars gemas", "creditos r6", "tarjeta ubisoft", "amazon", "google play", "apple", "spotify", "netflix", "tarjeta regalo"];
 const valorEuros = (txt) => { const m = String(txt).match(/(\d+(?:[.,]\d+)?)\s*(€|eur\b|euros?\b)/i); return m ? parseFloat(m[1].replace(",", ".")) : 0; };
 // Tarjeta de saldo de una tienda (p. ej. «Tarjeta regalo PlayStation 50 €»): una ficha por marca y valor
 // En qué plataformas se usa el saldo de cada marca (para el filtro de plataformas de la web)
@@ -712,84 +754,47 @@ function fichaSaldo(marca, valor, pop) {
   (PLATS_MARCA[marca] || []).forEach((p) => j.plataformas.add(p));
   return j;
 }
-// Recorre fichas de Instant Gaming siguiendo sus enlaces a otras versiones (importe y país) y se queda con las de España
-async function tarjetasEspanaIG(semillas, marca, visitar, maxFichas = +(ENV.IG_TARJETAS_FICHAS || 120)) {
-  const BASE = "https://www.instant-gaming.com/es/";
-  const vistas = new Set(), cola = [...semillas], hechas = new Set();
-  let n = 0, fichas = 0;
-  const esCandidata = (slug) => /-espana$/.test(slug) || (!/-juego-/.test(slug) && /\d+eur/.test(slug));
-  while (cola.length && fichas < maxFichas) {
-    const ruta = cola.shift();
-    const id = ruta.split("-")[0];
-    if (vistas.has(id)) continue;
-    vistas.add(id);
-    let html;
-    try { html = await (await pedir(BASE + ruta + "/")).text(); } catch { continue; }
-    fichas++;
-    await esperar(900);
-    // Enlaces a otras versiones: seguimos las de España y las que no dicen país (se comprueba al abrirlas)
-    for (const m of html.matchAll(/instant-gaming\.com\/es\/(\d+)-comprar-([a-z0-9-]+)\//g))
-      if (!vistas.has(m[1]) && esCandidata(m[2])) cola.push(`${m[1]}-comprar-${m[2]}`);
-    // ¿Es la versión de España? (país elegido en su selector)
-    const elegidos = [...html.matchAll(/<option value="\d+"\s+selected[^>]*>\s*([^<]+?)\s*<\/option>/g)].map((x) => limpiar(x[1]));
-    if (!/-espana$/.test(ruta) && !elegidos.includes("espana")) continue;
-    if (hechas.has(id)) continue;
-    hechas.add(id);
-    const titulo = html2txt(((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ")).replace(/\s*\([^)]*\)\s*$/, "").trim();
-    const precio = parseFloat((html.match(/itemprop="price"[^>]*data-price-eur="([\d.]+)"/) || [])[1]);
-    if (!titulo || !(precio > 0)) continue;
-    const stock = /itemprop="availability"[^>]*InStock/.test(html);
-    const valor = valorEuros(titulo) || +((ruta.match(/-(\d+)eur-/) || [])[1] || 0), m = marca(titulo);
-    const j = m && valor > 0 ? fichaSaldo(m, valor, 1500) : juego(titulo, { pop: 1600, tipo: "tarjeta" });
-    if (m) (PLATS_MARCA[m] || []).forEach((p) => j.plataformas.add(p));
-    visitar(j);
-    const antes = parseFloat((html.match(/class="retail"[^>]*>\s*([\d.,]+)/) || [])[1]?.replace(",", "."));
-    ofertar(j, { tienda: "instantgaming", plataforma: "Tarjeta regalo", precio, regular: m && valor > 0 ? valor : (antes > precio ? antes : undefined), stock,
-      condicion: "Código digital · España", url: `${BASE}${ruta}/?igr=${AFILIADO_IG}`, fuente: "tarjetas" });
-    n++;
-  }
-  console.log(`Instant Gaming, tarjetas de España: ${n} (de ${fichas} fichas revisadas)`);
-  return n;
-}
-
 async function tarjetasRegalo(visitar) {
   let n = 0;
   const marca = (txt) => (MARCAS_SALDO.find(([, re]) => re.test(limpiar(txt))) || [])[0];
-  // 1. Instant Gaming
-  // La búsqueda solo devuelve una versión de cada tarjeta (muchas veces la de EE. UU.); la de España es otra ficha
-  // a la que se llega desde el selector de país. Esas fichas «semilla» se recorren en el paso 1b.
-  const semillas = new Map();
-  for (const q of BUSQUEDAS_IG) {
-    const html = await (await pedir("https://www.instant-gaming.com/es/busquedas/?query=" + encodeURIComponent(q))).text();
-    const i = html.indexOf("window.searchResults = ");
-    if (i >= 0) for (const h of JSON.parse(bloqueJSON(html, i)).hits || []) {
-      if ((h.is_prepaid || h.is_subscription) && !valeEnEspana(h)) {
-        const familia = limpiar(String(h.name).replace(/[\d$€£.,]+/g, " "));
-        if (!semillas.has(familia)) semillas.set(familia, `${h.prod_id}-comprar-${h.seo_name}`);
-      }
-      if (!(h.is_prepaid || h.is_subscription) || !valeEnEspana(h)) continue;
-      const precio = parseFloat(h.price_eur);
-      if (!(precio > 0)) continue;
-      const nombre = String(h.name).trim(), valor = valorEuros(nombre), m = marca(nombre);
-      const esSaldo = m && valor > 0 && /(tarjeta|gift|card|wallet|recarga|prepago|codigo|saldo)/.test(limpiar(nombre));
-      if (m && !valor && /(tarjeta|gift card)/.test(limpiar(nombre)) && !h.is_subscription) continue; // saldo de otra moneda (USD…)
-      const j = esSaldo ? fichaSaldo(m, valor, 1500) : juego(nombre, { pop: 1600, tipo: "tarjeta" });
-      visitar(j);
-      // Monedas y suscripciones: una oferta por plataforma (las tarjetas tiburón de PC y de PlayStation no son la misma)
-      const plats = esSaldo ? ["Tarjeta regalo"] : (platsIG(h).length ? platsIG(h) : (PLATS_MARCA[m] || ["Tarjeta regalo"]));
-      if (!esSaldo && m) (PLATS_MARCA[m] || []).forEach((p) => j.plataformas.add(p));
-      for (const plataforma of plats) ofertar(j, { tienda: "instantgaming", plataforma, precio,
-        regular: esSaldo ? valor : (parseFloat(h.default_retail) || undefined), stock: !!h.has_stock,
-        condicion: `${h.is_subscription ? "Suscripción" : "Código digital"} · ${h.region_fulltext || h.region || "Worldwide"}`,
-        url: `https://www.instant-gaming.com/es/${h.prod_id}-comprar-${h.seo_name}/?igr=${AFILIADO_IG}`, fuente: "tarjetas" });
-      n++;
-    }
-    await esperar(900);
+  // 1. Instant Gaming: las tarjetas, monedas y suscripciones de su mapa de productos (válidas en España), unas cuantas
+  //    en cada ejecución: las de saldo de las marcas grandes siempre y el resto por turnos, hasta tenerlas todas
+  const tarjetasIG = (PRODUCTOS_IG || []).filter((p) => p.tarjeta);
+  const deSaldo = (p) => /tarjeta-regalo|gift-card|\d+eur/.test(p.url) && MARCAS_SALDO.some(([, re]) => re.test(p.nombre));
+  const listaTj = [...tarjetasIG.filter(deSaldo), ...ventana(tarjetasIG.filter((p) => !deSaldo(p)), +(ENV.IG_TARJETAS_ROTA || 120))];
+  console.log(`Tarjetas de Instant Gaming: ${tarjetasIG.length} en su mapa; ${listaTj.length} en esta ejecución`);
+  for (const p of listaTj) {
+    let f = null;
+    try { f = await fichaIG(p.url); } catch (e) { console.warn(`tarjetas IG: ${e.message}`); }
+    await esperar(600);
+    if (!f || !(f.precio > 0) || !regionValeIG(f.region)) continue;
+    const valor = valorEuros(f.nombre), m = marca(f.nombre);
+    const esSaldo = m && valor > 0 && /(tarjeta|gift|card|wallet|recarga|prepago|codigo|saldo)/.test(limpiar(f.nombre));
+    if (esSaldo && (f.precio < valor * 0.7 || f.precio > valor * 1.15)) continue; // no cuadra con su valor: no es lo que creemos
+    const j = esSaldo ? fichaSaldo(m, valor, 1500) : juego(f.nombre, { pop: 1600, tipo: "tarjeta" });
+    if (!j) continue;
+    visitar(j);
+    const plats = esSaldo ? ["Tarjeta regalo"] : (p.plats.length ? p.plats : (PLATS_MARCA[m] || ["Tarjeta regalo"]));
+    if (!esSaldo) (m ? PLATS_MARCA[m] || [] : p.plats).forEach((x) => j.plataformas.add(x));
+    for (const plataforma of plats) ofertar(j, { tienda: "instantgaming", plataforma, precio: f.precio, regular: esSaldo ? valor : undefined, stock: f.stock,
+      condicion: `Código digital · ${f.region || "Worldwide"}`, url: `${p.url}?igr=${AFILIADO_IG}`, fuente: "tarjetas" });
+    n++;
   }
-  // 1b. Instant Gaming: versiones de España de las tarjetas que la búsqueda solo enseña de otro país
-  n += await tarjetasEspanaIG([...semillas.values()], marca, visitar);
   // 2. GAME: tarjetas de saldo de su mapa de productos (PlayStation, Xbox, Nintendo eShop, Google Play, Netflix…)
-  for (const t of TARJETAS_GAME) {
+  for (const t of TARJETAS_GAME.filter((x) => x.meses)) {
+    let r = null;
+    try { r = await fichaGame(t.url); } catch (e) { console.warn(`tarjetas GAME: ${e.message}`); }
+    await esperar(500);
+    if (!r || !(r.precio > 0)) continue;
+    const nombre = t.texto.replace(/\b\w/g, (c) => c.toUpperCase()).replace(/^Xbox/, "Xbox") + ` ${t.meses} ${t.meses === 1 ? "mes" : "meses"}`;
+    const j = juego(nombre, { pop: 1600, tipo: "tarjeta" });
+    if (!j) continue;
+    visitar(j);
+    (/xbox/i.test(nombre) ? ["Xbox Series", "PC"] : []).forEach((x) => j.plataformas.add(x));
+    ofertar(j, { tienda: "game", plataforma: /xbox/i.test(nombre) ? "Xbox Series" : "Tarjeta regalo", precio: r.precio, stock: r.stock, condicion: "Código digital", url: t.url, fuente: "tarjetas" });
+    n++;
+  }
+  for (const t of TARJETAS_GAME.filter((x) => !x.meses)) {
     const m = marca(t.texto);
     if (!m) continue;
     let r = null;
@@ -863,6 +868,23 @@ async function itad(lista, tiendas) {
 
 // ---------- Programa ----------
 async function main() {
+  // Prueba rápida de Instant Gaming por su mapa de productos (PRUEBA_IG=1)
+  if (ENV.PRUEBA_IG) {
+    const ps = await mapaInstantGaming();
+    const tj = ps.filter((p) => p.tarjeta);
+    console.log("MAPA IG:", ps.length, "productos válidos;", tj.length, "tarjetas; regiones:", JSON.stringify(ps.reduce((a, p) => (a[p.region || "-"] = (a[p.region || "-"] || 0) + 1, a), {})));
+    console.log("EJEMPLOS:", ps.filter((p) => !p.tarjeta).slice(0, 8).map((p) => `${p.nombre} [${p.plats}] ${p.drm} ${p.region}`).join(" | "));
+    for (const t of ["No Man's Sky", "EA SPORTS FC 27", "Hogwarts Legacy", "Elden Ring", "Cyberpunk 2077"]) {
+      const k = llave(t).replace(/^ea sports (?=\S+ \S)/, ""), lista = ps.filter((p) => !p.tarjeta && llave(p.nombre).replace(/^ea sports (?=\S+ \S)/, "") === k);
+      console.log("FICHAS", t, lista.length, lista.slice(0, 6).map((p) => `${p.id} [${p.plats}] ${p.drm} ${p.region}`).join(" | "));
+      let j = juego(t, {});
+      for (const p of lista.slice(0, 3)) j = (await productoIG(j, p)).j;
+      console.log("OFERTAS", t, j.ofertas.map((o) => `${o.plataforma} ${o.precio}${o.stock ? "" : " (agotado)"} ${o.condicion}`).join(" | "));
+    }
+    console.log("TARJETAS:", tj.slice(0, 60).map((p) => p.nombre).join(" | "));
+    for (const p of tj.filter((p) => /playstation|robux|v-bucks|fc-points|creditos-r6|game-pass/.test(p.url)).slice(0, 8)) { const f = await fichaIG(p.url); console.log("FICHA TJ", p.url.slice(35), JSON.stringify(f)); await esperar(600); }
+    return;
+  }
   // Prueba rápida de GAME y Microsoft Store con unos juegos, sin tocar precios.json (PRUEBA_GAME=1)
   if (ENV.PRUEBA_GAME) {
     const mapa = await mapaGame(), mapaX = await mapaMS();
@@ -1020,8 +1042,40 @@ async function main() {
   }
   const candidatosMS = [...juegos.values()].filter((j) => !enMapaMS.has(j) && j.tipo !== "tarjeta" && (j.plataformas.has("PC") || j.plataformas.has("Xbox Series") || j._buscarEn?.includes("Xbox Series"))).sort((a, b) => a.pop - b.pop);
   await recorrerFuente("xbox", [...candidatosMS.slice(0, MS_MAX), ...ventana(candidatosMS.slice(MS_MAX), MS_ROTA)], microsoftStore, 300);
-  const candidatosIG = [...juegos.values()].filter((j) => j.tipo !== "tarjeta").sort((a, b) => a.pop - b.pop);
-  await recorrerFuente("instantgaming", [...candidatosIG.slice(0, IG_MAX), ...ventana(candidatosIG.slice(IG_MAX), IG_ROTA)], instantGaming, 900);
+  // Instant Gaming: el mapa de productos dice qué tiene de cada juego. Los del catálogo que no salen ahí quedan revisados;
+  // de los que sí, leemos sus fichas (los populares siempre y el resto por turnos). Lo que vende y no teníamos se añade.
+  let productosIG = null;
+  try { productosIG = await mapaInstantGaming(); } catch (e) { avisos.push(`instantgaming: ${e.message}`); caidas.add("instantgaming"); }
+  if (productosIG) {
+    const porLlave = new Map();
+    for (const p of productosIG) if (!p.tarjeta) { const k = llave(p.nombre).replace(/^ea sports (?=\S+ \S)/, ""); if (k) (porLlave.get(k) || porLlave.set(k, []).get(k)).push(p); }
+    // De cada juego, como mucho una ficha por plataforma y tienda de la clave (la de la región más útil: España, Europa, mundial)
+    const elegir = (lista) => {
+      const prio = (p) => ({ espana: 0, europe: 1, europa: 1, worldwide: 2, global: 2 }[p.region] ?? 3);
+      const vistos = new Map();
+      for (const p of [...lista].sort((a, b) => prio(a) - prio(b) || a.id - b.id)) { const k = p.plats.join() + "|" + p.drm; if (!vistos.has(k)) vistos.set(k, p); }
+      return [...vistos.values()].slice(0, 5);
+    };
+    const enIG = [];
+    for (const j of [...juegos.values()]) {
+      if (j.tipo === "tarjeta") continue;
+      const k = llave(j.titulo).replace(/^ea sports (?=\S+ \S)/, ""), lista = porLlave.get(k);
+      if (lista) { enIG.push({ j, fichas: elegir(lista), pop: j.pop }); porLlave.delete(k); }
+      else { j.revisado.add("instantgaming"); visitar("instantgaming", j); }
+    }
+    for (const [, lista] of porLlave) enIG.push({ j: null, fichas: elegir(lista), pop: 99999 });
+    enIG.sort((a, b) => a.pop - b.pop);
+    const listaIG = [...enIG.slice(0, IG_MAX), ...ventana(enIG.slice(IG_MAX), IG_ROTA)];
+    console.log(`Instant Gaming: ${productosIG.length} productos válidos en España en su mapa; ${enIG.length} juegos (${enIG.filter((x) => !x.j).length} nuevos para el catálogo); ${listaIG.length} en esta ejecución`);
+    let fallosIG = 0, nIG = 0;
+    for (const x of listaIG) {
+      let j = x.j;
+      try { for (const p of x.fichas) { const r = await productoIG(j, p); j = r.j; nIG += r.n; } }
+      catch (e) { if (++fallosIG <= 3) avisos.push(`instantgaming: ${e.message}`); if (fallosIG >= 8) { avisos.push("instantgaming: demasiados fallos, paro"); caidas.add("instantgaming"); break; } }
+      if (j) { j.revisado.add("instantgaming"); visitar("instantgaming", j); }
+    }
+    cuenta.instantgaming = nIG;
+  }
   if (!(await intentar("alcampo", () => alcampo((j) => visitar("alcampo", j))))) caidas.add("alcampo");
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) {

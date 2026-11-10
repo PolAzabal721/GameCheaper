@@ -6,25 +6,13 @@ permissions:
 jobs:
   prueba:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20
-      - name: Tarjetas
-        run: |
-          cat > p.mjs <<'X'
-          import { gunzipSync } from "node:zlib";
-          const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)","Accept-Language":"es-ES,es;q=0.9"};
-          const t=async(u)=>{try{const r=await fetch(u,{headers:H});return [r.status,await r.text(),r.url]}catch(e){return [0,String(e),""]}};
-          function bloque(t,d){let i=t.indexOf("{",d),p=0,e=false;for(let k=i;k<t.length;k++){const c=t[k];if(e){if(c==="\\")k++;else if(c==='"')e=false;continue}if(c==='"')e=true;else if(c==="{")p++;else if(c==="}"&&--p===0)return t.slice(i,k+1)}return null}
-          for (const u of ["https://www.instant-gaming.com/es/414-comprar-no-man-s-sky-pc-mac-steam/","https://www.instant-gaming.com/es/619-comprar-tarjeta-regalo-de-playstation-store-20eur-eur20-card-playstation-4-playstation-5-juego-playstation-store-espana/","https://www.instant-gaming.com/es/4294-comprar-tarjeta-regalo-de-playstation-store-5eur-eur5-card-playstation-4-playstation-5-juego-playstation-store-espana/"]) {
-            const r=await fetch(u,{headers:H}); const h=await r.text(); console.log("PAG",u.slice(35,90),r.status,h.length);
-            for (const re of [/data-price-eur="[^"]*"/g, /"price_eur"\s*:\s*"?[\d.]+/g, /itemprop="(?:availability|price|priceCurrency|name|sku)"[^>]*>/g, /"(?:is_prepaid|has_stock|region|region_fulltext|prod_id|drm|platform)"\s*:\s*[^,}]{0,60}/g, /class="[^"]*(?:stock|nostock|out-of-stock|agotado)[^"]*"/gi]) {
-              const ms=[...h.matchAll(re)].map(m=>m[0]); console.log("   ",re.source.slice(0,30),ms.length,ms.slice(0,6).join(" || ").slice(0,600));
-            }
-            const i1=h.indexOf('data-price-eur'); console.log("   CTX1",h.slice(Math.max(0,i1-700),i1+200).replace(/\s+/g," ").slice(0,900));
-            await new Promise(r=>setTimeout(r,1500));
-          }
-          X
-          node p.mjs
+      - name: Probar Instant Gaming
+        run: node scripts/actualizar.mjs
+        env:
+          PRUEBA_IG: "1"
