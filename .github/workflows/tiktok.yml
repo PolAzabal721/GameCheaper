@@ -1,0 +1,50 @@
+name: TikTok
+
+# Autoriza la cuenta y sube los vídeos del día a los borradores de TikTok.
+on:
+  workflow_dispatch:
+    inputs:
+      que:
+        description: "autorizar (enseña el enlace) · canjear (pega el código) · subir"
+        type: choice
+        options: [autorizar, canjear, subir]
+        default: autorizar
+      codigo:
+        description: "Solo para «canjear»: la dirección a la que te ha devuelto TikTok"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tiktok
+
+jobs:
+  tiktok:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Hacerlo
+        env:
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+        run: |
+          case "${{ inputs.que }}" in
+            autorizar) node scripts/tiktok.mjs url ;;
+            canjear)   node scripts/tiktok.mjs canjear "${{ inputs.codigo }}" ;;
+            subir)     node scripts/tiktok.mjs subir ;;
+          esac
+      - name: Guardar el permiso renovado
+        if: always()
+        run: |
+          if [ -n "$(git status --porcelain data/tiktok.enc)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/tiktok.enc
+            git commit -m "TikTok: permiso al dia"
+            git push
+          fi
