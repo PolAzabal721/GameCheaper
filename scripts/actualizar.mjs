@@ -279,7 +279,8 @@ function ofertaEshop(doc, precios, opciones) {
   ofertar(j, { tienda: "eshop", plataforma: esSwitch2(doc) ? "Switch 2" : "Switch", precio: p.precio, regular: p.regular, url: doc.url ? "https://www.nintendo.com" + doc.url : "https://www.nintendo.com/es-es/", fuente: "eshop" });
   fechar(j, String(doc.dates_released_dts?.[0] || "").slice(0, 10));
   const imgN = (u) => (u ? (u.startsWith("//") ? "https:" + u : u) : null);
-  ponerImagen(j, "eshop", imgN(doc.image_url_h2x1_s), imgN(doc.image_url_sq_s));
+  // Algunas fichas no traen la imagen apaisada ni la cuadrada: entonces, la general
+  ponerImagen(j, "eshop", imgN(doc.image_url_h2x1_s) || imgN(doc.image_url), imgN(doc.image_url_sq_s) || imgN(doc.image_url));
   return true;
 }
 async function eshopCatalogo() {
@@ -287,7 +288,7 @@ async function eshopCatalogo() {
   const leerTramo = async (desde, hasta) => {
     let total = 0;
     for (let inicio = desde; inicio < hasta; inicio += 500) {
-      const url = `https://searching.nintendo-europe.com/es/select?q=*&fq=type:GAME&fq=nsuid_txt:*&sort=popularity%20asc&rows=${Math.min(500, hasta - inicio)}&start=${inicio}&wt=json&fl=title,nsuid_txt,system_names_txt,url,dates_released_dts,image_url_h2x1_s,image_url_sq_s`;
+      const url = `https://searching.nintendo-europe.com/es/select?q=*&fq=type:GAME&fq=nsuid_txt:*&sort=popularity%20asc&rows=${Math.min(500, hasta - inicio)}&start=${inicio}&wt=json&fl=title,nsuid_txt,system_names_txt,url,dates_released_dts,image_url_h2x1_s,image_url_sq_s,image_url`;
       const d = await (await pedir(url)).json();
       total = d.response?.numFound || total;
       docs.push(...(d.response?.docs || []));
@@ -307,7 +308,7 @@ async function eshopCatalogo() {
 }
 async function eshopUno(j) {
   if (![...j.plataformas, ...(j._buscarEn || [])].some((p) => p.startsWith("Switch")) || j.ofertas.some((o) => o.tienda === "eshop")) return 0;
-  const url = `https://searching.nintendo-europe.com/es/select?q=${encodeURIComponent(j.titulo)}&fq=type:GAME&fq=nsuid_txt:*&rows=20&wt=json&fl=title,nsuid_txt,system_names_txt,url,dates_released_dts,image_url_h2x1_s,image_url_sq_s`;
+  const url = `https://searching.nintendo-europe.com/es/select?q=${encodeURIComponent(j.titulo)}&fq=type:GAME&fq=nsuid_txt:*&rows=20&wt=json&fl=title,nsuid_txt,system_names_txt,url,dates_released_dts,image_url_h2x1_s,image_url_sq_s,image_url`;
   const docs = ((await (await pedir(url)).json()).response?.docs || []).filter((d) => parecido(j.titulo, String(d.title).replace(/[–-]\s*Nintendo Switch 2 Edition/i, "")) > 0.5);
   if (!docs.length) return 0;
   const precios = await preciosEshop(docs.map((d) => d.nsuid_txt[0]));
@@ -452,6 +453,7 @@ async function fichaGame(url) {
   const fl = flightNext(html);
   const m = fl.match(/"platformName":"([^"]*)"[^{}]*?"price":([\d.]+),"recommendedPrice":("?[^,"]*)/);
   return {
+    imagen: /^https:\/\/media\.game\.es\//.test([].concat(ld.image || [])[0] || "") ? [].concat(ld.image)[0] : null,
     nombre: html2txt(ld.name || ""), precio: Number(of.price), stock: /InStock|PreOrder/i.test(of.availability || ""),
     usado: /Used/i.test(of.itemCondition || ""), plataformaTxt: m ? m[1] : "", regular: m && /^[\d.]+$/.test(m[3]) ? Number(m[3]) : 0,
   };
@@ -468,6 +470,7 @@ async function game(j, fichas) {
     if (!plat) continue;
     if (!j) j = juego(nombreGame(r.nombre));
     if (!j) continue;
+    if (r.imagen) ponerImagen(j, "game", null, r.imagen); // carátula de la caja (vertical)
     const usado = f.usado || r.usado, antes = j.ofertas.length;
     ofertar(j, {
       tienda: usado ? "gameseminuevos" : "game", plataforma: plat, formato: "fisico", estado: usado ? "usado" : "nuevo",
@@ -1096,6 +1099,11 @@ async function main() {
   // Fecha de lanzamiento: la oficial; si no, la de Instant Gaming; si esta vez no ha salido ninguna, la que ya teníamos
   const fechaAnterior = new Map((anterior.juegos || []).map((j) => [j.id, j.lanzamiento]));
   const imgAnterior = new Map((anterior.juegos || []).map((j) => [j.id, [j.img, j.cov]]));
+  // Juegos sin imagen que se venden en Steam: su imagen sale del número de app del enlace
+  for (const j of juegos.values()) if (!j._img && !j._cov) {
+    const app = j.ofertas.map((o) => String(o.url || "").match(/store\.steampowered\.com\/app\/(\d+)/)).find(Boolean);
+    if (app) ponerImagen(j, "steam", "s:" + app[1], "s:" + app[1]);
+  }
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
     .map(({ _buscarEn, _pvpFijo, _fechaOf, _fechaIG, _img, _imgP, _cov, _covP, plataformas, revisado, ...j }) => {
       const lanzamiento = _fechaOf || _fechaIG || fechaAnterior.get(j.id) || undefined;
