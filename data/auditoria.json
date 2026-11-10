@@ -1,37 +1,37 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 3890,
+   "pendientes": 4032,
    "ejemplos": [
-    "iRacing Arcade",
-    "Escape from Tarkov",
-    "Attack on Titan 3 / A.O.T. 3",
-    "Outer Wilds",
-    "Paralives"
+    "Princess Peach: Showtime!",
+    "Euro Truck Simulator 2 - Nordic Horizons",
+    "Super Mario Maker 2",
+    "LIVE A LIVE",
+    "Xenoblade Chronicles: Definitive Edition"
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 1649,
+   "pendientes": 2517,
    "ejemplos": [
-    "TEKKEN 8: Pase de personajes de la temporada 2",
-    "TEKKEN 8: Pase de personajes y escenarios de la temporada 2",
-    "TEKKEN 8: Pase de personajes y escenarios de la temporada 1",
-    "TEKKEN 8: Pase de personajes de la temporada 1",
-    "The Crew Motorfest Ultimate Year 2 Edition"
+    "Dragon Quest Builders",
+    "DAEMON X MACHINA",
+    "UNCHARTED: Colección Legado de los Ladrones",
+    "Nocturnal 2",
+    "Astro Colony"
    ]
   },
   "game (consola)": {
-   "pendientes": 12206,
+   "pendientes": 14735,
    "ejemplos": [
     "EA Sports FC 27 Ultimate Edition",
     "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo",
     "Final Fantasy VII Rebirth Digital Deluxe Edition",
     "NBA 2K27 Deluxe Edition",
-    "Hogwarts Legacy Deluxe Edition"
+    "Minecraft Dungeons II - Deluxe Edition"
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 358,
+   "pendientes": 429,
    "ejemplos": [
     "Football Manager 27",
     "NBA 2K27",
@@ -41,64 +41,71 @@
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 15004,
+   "pendientes": 14880,
    "ejemplos": [
-    "ARC Raiders - Frozen Trail Collector Set",
-    "EA SPORTS Madden NFL 27 Deluxe Edition",
-    "Attack on Titan 3 / A.O.T. 3",
-    "Assassin's Creed Unity",
-    "Streets of Rage 4"
+    "Super Mario RPG",
+    "Splatoon 3",
+    "DC Super Hero Girls: Teen Power",
+    "Part Time UFO",
+    "Metroid Dread"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 358,
-  "sinFicha": 343,
+  "sinPrecio": 429,
+  "sinFicha": 414,
   "fichasEncontradas": 295
  },
  "fotos": {
   "juego": {
-   "total": 18470,
-   "con": 16238,
-   "porcentaje": 88
+   "total": 19524,
+   "con": 17044,
+   "porcentaje": 87
   },
   "edicion": {
-   "total": 1073,
-   "con": 805,
-   "porcentaje": 75
+   "total": 1212,
+   "con": 836,
+   "porcentaje": 69
   },
   "dlc": {
-   "total": 869,
-   "con": 647,
-   "porcentaje": 74
+   "total": 1107,
+   "con": 838,
+   "porcentaje": 76
   },
   "tarjeta": {
-   "total": 256,
+   "total": 295,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 3778,
+   "total": 2546,
    "probadas": 12,
-   "fallan": 6,
+   "fallan": 3,
    "ejemplos": [
-    "MD Engine → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3706620/header.jpg",
-    "Backrooms: Code Yellow → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4694270/header.jpg",
-    "Demon General Kirsten → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4112840/header.jpg"
+    "Beholder: The Landlord's Handbook - Digital Comic → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5405460/header.jpg",
+    "Swarmslam → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4794170/header.jpg",
+    "Pioneers of Pagonia - Echoes of Aldramar → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5070310/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 0
+   "total": 1750,
+   "probadas": 12,
+   "fallan": 12,
+   "ejemplos": [
+    "Forgotten Realms: Demon Stone → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3843530/b2840bf3e84f1c26d85502b50caed1c10adfc71b/capsule_616x353.jpg",
+    "CarX Street → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1114150/4f5b553a6bac0c536a7ce8c1266f1ce30751531c/capsule_616x353.jpg",
+    "Road to Vostok → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1963610/28148123f92e62b6a2911eb2f4bab8d8539528de/capsule_616x353.jpg"
+   ]
   },
   "nintendo": {
-   "total": 8028,
+   "total": 8270,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 5883,
+   "total": 6151,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
@@ -112,62 +119,67 @@
  },
  "enlaces": {
   "steam": {
-   "ofertas": 4358,
+   "ofertas": 5143,
    "probadas": 6,
    "fallan": 0,
+   "bloqueados": 0,
    "ejemplos": []
   },
   "game": {
-   "ofertas": 996,
+   "ofertas": 1102,
    "probadas": 6,
    "fallan": 0,
+   "bloqueados": 0,
    "ejemplos": []
   },
   "xbox": {
-   "ofertas": 9623,
+   "ofertas": 9939,
    "probadas": 6,
    "fallan": 0,
+   "bloqueados": 0,
    "ejemplos": []
   },
   "instantgaming": {
-   "ofertas": 1574,
+   "ofertas": 2119,
    "probadas": 6,
    "fallan": 0,
+   "bloqueados": 0,
    "ejemplos": []
   },
   "eshop": {
-   "ofertas": 16081,
+   "ofertas": 16179,
    "probadas": 6,
    "fallan": 0,
+   "bloqueados": 0,
    "ejemplos": []
   },
   "gameseminuevos": {
-   "ofertas": 228,
+   "ofertas": 244,
    "probadas": 6,
    "fallan": 0,
+   "bloqueados": 0,
    "ejemplos": []
   },
   "psstore": {
    "ofertas": 217,
    "probadas": 6,
    "fallan": 0,
+   "bloqueados": 0,
    "ejemplos": []
   },
   "alcampo": {
-   "ofertas": 6,
+   "ofertas": 7,
    "probadas": 6,
    "fallan": 0,
+   "bloqueados": 0,
    "ejemplos": []
   },
   "ebay": {
-   "ofertas": 807,
+   "ofertas": 993,
    "probadas": 6,
-   "fallan": 6,
-   "ejemplos": [
-    "Wunderling → 403",
-    "Farming Simulator 20 → 403",
-    "Tennis World Tour 2 → 403"
-   ]
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
   }
  },
  "afiliados": {
@@ -178,29 +190,29 @@
   "ejemplos": []
  },
  "actualizado": {
-  "precios": "2026-11-10T15:49:13.705Z",
-  "diasDesdeLaUltima": 0.14
+  "precios": "2026-11-10T19:52:02.809Z",
+  "diasDesdeLaUltima": 0.04
  },
  "red": {
-  "comprobadas": 91,
+  "comprobadas": 103,
   "sinRespuesta": 0,
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 20668,
-  "ofertas": 63547,
+  "juegos": 22138,
+  "ofertas": 70653,
   "tiendas": 39,
-  "conFoto": "86 %"
+  "conFoto": "85 %"
  },
- "fecha": "2026-11-10T19:04:22.113Z",
+ "fecha": "2026-11-10T20:53:30.450Z",
  "graves": [
-  "ebay: fallan todos los enlaces probados (Wunderling → 403)"
+  "fotos de steam (nuevas): fallan 12 de 12 (Forgotten Realms: Demon Stone → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3843530/b2840bf3e84f1c26d85502b50caed1c10adfc71b/capsule_616x353.jpg)"
  ],
  "avisos": [
-  "instantgaming (clave digital): 153 juegos populares aún sin consultar (p. ej. iRacing Arcade, Escape from Tarkov, Attack on Titan 3 / A.O.T. 3)",
-  "game (consola): 431 juegos populares aún sin consultar (p. ej. EA Sports FC 27 Ultimate Edition, Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo, Final Fantasy VII Rebirth Digital Deluxe Edition)",
-  "psstore (PS4 o PS5): 52 juegos populares aún sin consultar (p. ej. Football Manager 27, NBA 2K27, Mortal Shell II)",
-  "ebay (consola, 2ª mano): 504 juegos populares aún sin consultar (p. ej. ARC Raiders - Frozen Trail Collector Set, EA SPORTS Madden NFL 27 Deluxe Edition, Attack on Titan 3 / A.O.T. 3)",
-  "fotos: 301 juegos populares sin foto (p. ej. Phantom Blade Zero Digital Deluxe Edition, NBA 2K27 Deluxe Edition, Hogwarts Legacy Deluxe Edition)"
+  "instantgaming (clave digital): 198 juegos populares aún sin consultar (p. ej. Princess Peach: Showtime!, Euro Truck Simulator 2 - Nordic Horizons, Super Mario Maker 2)",
+  "game (consola): 409 juegos populares aún sin consultar (p. ej. EA Sports FC 27 Ultimate Edition, Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo, Final Fantasy VII Rebirth Digital Deluxe Edition)",
+  "psstore (PS4 o PS5): 56 juegos populares aún sin consultar (p. ej. Football Manager 27, NBA 2K27, Mortal Shell II)",
+  "ebay (consola, 2ª mano): 284 juegos populares aún sin consultar (p. ej. Super Mario RPG, Splatoon 3, DC Super Hero Girls: Teen Power)",
+  "fotos: 260 juegos populares sin foto (p. ej. Phantom Blade Zero Digital Deluxe Edition, NBA 2K27 Deluxe Edition, Hogwarts Legacy Deluxe Edition)"
  ]
 }
