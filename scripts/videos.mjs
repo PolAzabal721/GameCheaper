@@ -54,7 +54,7 @@ const STEAM = "https://shared.akamai.steamstatic.com/store_item_assets/steam/app
 const urlImagen = (j) => {
   const v = j.img || j.cov;
   if (!v) return null;
-  if (v.startsWith("sc:")) return STEAM + v.slice(3) + "/capsule_616x353.jpg";
+  if (v.startsWith("sc:")) return STEAM + v.slice(3) + "/header.jpg";
   if (v.startsWith("s:")) return STEAM + v.slice(2) + "/header.jpg";
   return /^https:\/\//.test(v) ? v : null;
 };

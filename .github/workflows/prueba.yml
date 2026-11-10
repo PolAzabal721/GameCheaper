@@ -8,16 +8,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Ver las direcciones de las fotos de Steam
+      - uses: actions/checkout@v5
+      - name: Comprobar la foto que da la ficha oficial
         run: |
-          set -x
-          curl -s -A "Mozilla/5.0" "https://store.steampowered.com/search/results/?query&start=0&count=20&cc=es&l=spanish&infinite=1&specials=1" -o busq.json
-          grep -o 'store_item_assets/steam/apps/[0-9]*/[0-9a-f]*/[a-zA-Z0-9_.?=]*' busq.json | sed 's/\\\\//g' | sort -u | head -20
-          echo "=== pagina de producto 3843530 ==="
-          curl -s -A "Mozilla/5.0" -b "birthtime=0; lastagecheckage=1-0-1970; wants_mature_content=1" "https://store.steampowered.com/app/3843530/?cc=es&l=spanish" -o ficha.html
-          grep -o 'store_item_assets/steam/apps/3843530/[^"'"'"' ]*' ficha.html | sort -u | head -20
-          echo "=== probar variantes ==="
-          for f in capsule_616x353.jpg capsule_231x87.jpg header.jpg library_600x900.jpg capsule_616x353_alt_assets_0.jpg; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3843530/b2840bf3e84f1c26d85502b50caed1c10adfc71b/$f")
-            echo "$f -> $code"
-          done
+          node -e '
+          const ids=["3843530","4530370","3669620","2272360","3115160"];
+          (async()=>{
+            const d=await (await fetch("https://store.steampowered.com/api/appdetails?appids="+ids.join(",")+"&cc=es&filters=price_overview,basic")).json();
+            for(const id of ids){
+              const h=d[id]?.data?.header_image||"(nada)";
+              const m=String(h).match(/\/apps\/(\d+)\/([0-9a-f]{8,64})\/header\.jpg/);
+              const u=m?`https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${m[1]}/${m[2]}/header.jpg`:h.split("?")[0];
+              const r=await fetch(u,{method:"HEAD"});
+              console.log(id, m?"sc:"+m[1]+"/"+m[2]:"(sin carpeta)", r.status);
+            }
+          })()'

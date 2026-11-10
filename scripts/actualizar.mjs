@@ -136,6 +136,12 @@ const HOY = new Date().toISOString().slice(0, 10);
 // Steam se guarda como «s:<número del juego>» y la web forma las direcciones (ocupa mucho menos).
 // Prioridad: Steam > Microsoft Store > Nintendo eShop (de cada una, la primera que llegue).
 const PRIO_IMG = { steam: 3, xbox: 2, eshop: 1 };
+// Desde 2025 Steam sirve cada foto en su propia carpeta: apps/<id>/<carpeta>/header.jpg.
+// La carpeta buena solo la da la ficha oficial (header_image); la del listado es la de la miniatura y no vale.
+function imagenSteam(d, id) {
+  const m = String(d?.header_image || "").match(/\/apps\/(\d+)\/([0-9a-f]{8,64})\/header\.jpg/);
+  return m && m[1] === String(id) ? `sc:${m[1]}/${m[2]}` : null;
+}
 function ponerImagen(j, fuente, img, cov) {
   if (!j) return;
   const p = PRIO_IMG[fuente] || 0;
@@ -173,10 +179,7 @@ function leerFilasSteam(html) {
     if (precio > 150) continue; // hardware (Steam Deck, mandos…), no juegos
     if (/^(steam (deck|controller|machine|frame|link)|valve index)/i.test(html2txt(titulo[1]))) continue;
     const fecha = fechaSteam((trozo.match(/search_released[^>]*>\s*([^<]*)</) || [])[1] || "");
-    // Desde 2025 Steam sirve las imágenes de los juegos nuevos con una carpeta extra: apps/<id>/<clave>/capsule…
-    const cap = trozo.match(/store_item_assets\/steam\/apps\/(\d+)\/([0-9a-f]{8,64})\/capsule/);
-    filas.push({ appid: app[1], titulo: html2txt(titulo[1]), precio, regular: dto ? precio / (1 - dto / 100) : precio, fecha,
-      img: cap && cap[1] === app[1] ? `sc:${cap[1]}/${cap[2]}` : null });
+    filas.push({ appid: app[1], titulo: html2txt(titulo[1]), precio, regular: dto ? precio / (1 - dto / 100) : precio, fecha });
   }
   return filas;
 }
@@ -210,12 +213,15 @@ async function steamMasVendidos() {
 
   // El listado a veces enseña el precio de una mejora de pago de un juego gratuito (p. ej. Counter-Strike 2 «Prime»).
   // Confirmamos cada precio con la ficha oficial de Steam (100 juegos por consulta) y descartamos los gratuitos.
-  const oficial = new Map();
+  const oficial = new Map(), fotos = new Map();
   for (let i = 0; i < filas.length; i += 100) {
     const ids = filas.slice(i, i + 100).map((f) => f.appid).join(",");
     try {
-      const d = await (await pedir(`https://store.steampowered.com/api/appdetails?appids=${ids}&cc=es&filters=price_overview`)).json();
-      for (const [id, v] of Object.entries(d)) if (v?.success) oficial.set(id, v.data?.price_overview || null);
+      const d = await (await pedir(`https://store.steampowered.com/api/appdetails?appids=${ids}&cc=es&filters=price_overview,basic`)).json();
+      for (const [id, v] of Object.entries(d)) if (v?.success) {
+        oficial.set(id, v.data?.price_overview || null);
+        const f = imagenSteam(v.data, id); if (f) fotos.set(id, f);
+      }
     } catch (e) { /* si falla, nos quedamos con el precio del listado */ }
     await esperar(1500);
   }
@@ -231,7 +237,7 @@ async function steamMasVendidos() {
     const j = juego(f.titulo, { pop: f.puesto });
     ofertar(j, { tienda: "steam", plataforma: "PC", precio, regular, url: `https://store.steampowered.com/app/${f.appid}/`, fuente: "steam" });
     fechar(j, f.fecha);
-    ponerImagen(j, "steam", f.img || "s:" + f.appid, "s:" + f.appid);
+    ponerImagen(j, "steam", fotos.get(f.appid) || "s:" + f.appid, "s:" + f.appid);
     n++;
   }
   console.log(`Steam: ${n} juegos de pago, ${gratis} gratuitos descartados`);
@@ -240,11 +246,11 @@ async function steamMasVendidos() {
 async function steamUno(j, extra) {
   if (j.ofertas.some((o) => o.tienda === "steam")) return 0;
   if (extra.steamAppId) {
-    const d = await (await pedir(`https://store.steampowered.com/api/appdetails?appids=${extra.steamAppId}&cc=es&l=spanish&filters=price_overview`)).json();
+    const d = await (await pedir(`https://store.steampowered.com/api/appdetails?appids=${extra.steamAppId}&cc=es&l=spanish&filters=price_overview,basic`)).json();
     const p = d[extra.steamAppId]?.success && d[extra.steamAppId].data?.price_overview;
     if (!p || p.currency !== "EUR") return 0;
     ofertar(j, { tienda: "steam", plataforma: "PC", precio: p.final / 100, regular: p.initial / 100, url: `https://store.steampowered.com/app/${extra.steamAppId}/`, fuente: "steam" });
-    ponerImagen(j, "steam", "s:" + extra.steamAppId, "s:" + extra.steamAppId);
+    ponerImagen(j, "steam", imagenSteam(d[extra.steamAppId].data, extra.steamAppId) || "s:" + extra.steamAppId, "s:" + extra.steamAppId);
     return 1;
   }
   const d = await (await pedir(`https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(j.titulo)}&l=spanish&cc=ES`)).json();

@@ -58,6 +58,7 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 const imagen = (j) => {
   const u = j.img || j.cov;
   if (!u) return null;
+  if (u.startsWith("sc:")) return `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${u.slice(3)}/header.jpg`;
   if (u.startsWith("s:")) return `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${u.slice(2)}/header.jpg`;
   return /^https:\/\//.test(u) ? u : null;
 };

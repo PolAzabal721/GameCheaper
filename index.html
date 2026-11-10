@@ -977,7 +977,10 @@ button { cursor: pointer; }
   // Direcciones a probar, por orden: «s:<id>» = imagen de Steam por el número del juego;
   // «sc:<id>/<clave>» = la de los juegos nuevos, que llevan una carpeta extra
   function urlsDe(v, vertical) {
-    if (v.slice(0, 3) === "sc:") return [STEAM_IMG + v.slice(3) + "/capsule_616x353.jpg"];
+    if (v.slice(0, 3) === "sc:") {
+      var ap = v.slice(3).split("/")[0], nueva = STEAM_IMG + v.slice(3) + "/header.jpg";
+      return vertical ? [nueva, STEAM_IMG + ap + "/library_600x900.jpg", STEAM_IMG + ap + "/header.jpg"] : [nueva, STEAM_IMG + ap + "/header.jpg"];
+    }
     if (v.slice(0, 2) === "s:") {
       var id = v.slice(2), h = STEAM_IMG + id + "/header.jpg";
       return vertical ? [STEAM_IMG + id + "/library_600x900.jpg", h] : [h];
