@@ -1,5 +1,5 @@
 {
- "fecha": "2026-11-10T20:47:30.210Z",
+ "fecha": "2026-11-10T20:53:02.667Z",
  "videos": [
   {
    "archivo": "videos/2026-11-10-1.mp4",
@@ -8,6 +8,50 @@
    "antes": 49.99,
    "dto": 83,
    "tienda": "GamesPlanet US",
+   "plataforma": "PC",
+   "minimo": false,
+   "url": "https://pillaojuegos.com/?q=EVERSPACE%202"
+  },
+  {
+   "archivo": "videos/2026-11-10-2.mp4",
+   "juego": "Tyrant's Blessing",
+   "precio": 3.13,
+   "antes": 18.49,
+   "dto": 83,
+   "tienda": "GamesPlanet US",
+   "plataforma": "PC",
+   "minimo": false,
+   "url": "https://pillaojuegos.com/?q=Tyrant's%20Blessing"
+  },
+  {
+   "archivo": "videos/2026-11-10-3.mp4",
+   "juego": "Creatures of Ava",
+   "precio": 4.47,
+   "antes": 24.99,
+   "dto": 82,
+   "tienda": "WinGameStore",
+   "plataforma": "PC",
+   "minimo": false,
+   "url": "https://pillaojuegos.com/?q=Creatures%20of%20Ava"
+  },
+  {
+   "archivo": "videos/2026-11-10-4.mp4",
+   "juego": "Pathfinder: Wrath of the Righteous - Enhanced Edition",
+   "precio": 3.57,
+   "antes": 19.99,
+   "dto": 82,
+   "tienda": "WinGameStore",
+   "plataforma": "PC",
+   "minimo": false,
+   "url": "https://pillaojuegos.com/?q=Pathfinder%3A%20Wrath%20of%20the%20Righteous%20-%20Enhanced%20Edition"
+  },
+  {
+   "archivo": "videos/2026-11-10-5.mp4",
+   "juego": "EVERSPACE 2",
+   "precio": 8.88,
+   "antes": 49.99,
+   "dto": 82,
+   "tienda": "IndieGala Store",
    "plataforma": "PC",
    "minimo": false,
    "url": "https://pillaojuegos.com/?q=EVERSPACE%202"
