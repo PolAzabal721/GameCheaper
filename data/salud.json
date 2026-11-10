@@ -1,17 +1,15 @@
 {
- "revisado": "2026-11-09T22:27",
+ "revisado": "2026-11-10T07:26",
  "referencia": {
-  "steam": 1847,
-  "game": 561,
-  "xbox": 3768,
-  "itad": 12355,
-  "eshop": 4705,
-  "gameseminuevos": 100,
-  "instantgaming": 425,
-  "psstore": 180,
+  "steam": 1828,
+  "game": 312,
+  "xbox": 8851,
+  "itad": 27411,
+  "eshop": 4671,
+  "gameseminuevos": 50,
+  "instantgaming": 344,
+  "psstore": 217,
   "alcampo": 6
  },
- "problemas": [
-  "ebay: la fuente se ha parado por errores"
- ]
+ "problemas": []
 }
