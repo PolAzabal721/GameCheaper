@@ -12,6 +12,46 @@ import { createHash } from "node:crypto";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SALIDA = join(RAIZ, "_site");
+
+// ---------- precios.json más ligero para la web (sobre todo para móviles) ----------
+// Quita lo que la web no usa (fuente, hora de cada precio) y lo que vale lo de siempre (digital, nuevo, con stock,
+// sin rebaja, sin envío), y acorta el principio de las direcciones repetidas: «~3…» = PREFIJOS[3] + «…».
+// La web lo deshace al cargar (index.html, función expandir). Los demás programas usan el precios.json completo.
+const PREFIJOS = ["https://store.steampowered.com/app/", "https://www.instant-gaming.com/es/", "https://www.nintendo.com/es-es/Juegos/",
+  "https://www.game.es/", "https://www.xbox.com/es-ES/games/store/p/", "https://itad.link/", "https://store.playstation.com/es-es/concept/",
+  "https://www.ebay.es/itm/", "https://www.compraonline.alcampo.es/products/", "https://store-images.s-microsoft.com/image/apps.",
+  "https://www.nintendo.com/eu/media/images/10_share_images/games_15/", "https://www.nintendo.com/eu/media/images/11_square_images/games_18/",
+  "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/", "https://www.nintendo.com/eu/media/images/assets/nintendo_switch_2_games/",
+  "https://assets.nintendo.eu/image/private/f_auto,q_auto,w_500/", "https://media.game.es/", "https://store.playstation.com/es-es/product/",
+  "https://www.xbox.com/es-ES/games/"];
+function comprimir(datos) {
+  const corta = (u) => {
+    if (typeof u !== "string") return u;
+    let mejor = -1;
+    PREFIJOS.forEach((p, i) => { if (u.startsWith(p) && (mejor < 0 || p.length > PREFIJOS[mejor].length)) mejor = i; });
+    return mejor < 0 ? u : "~" + mejor.toString(36) + u.slice(PREFIJOS[mejor].length);
+  };
+  const juegos = datos.juegos.map(({ revisado, ...j }) => {
+    const r = { ...j };
+    if (revisado?.length) r.revisado = revisado;
+    if (r.img) r.img = corta(r.img);
+    if (r.cov) r.cov = corta(r.cov === r.img ? r.cov : r.cov);
+    if (j.cov && j.cov === j.img) r.cov = 1; // la misma imagen: no se repite
+    r.ofertas = j.ofertas.map(({ fuente, t, ...o }) => {
+      const x = { ...o };
+      if (x.formato === "digital") delete x.formato;
+      if (x.estado === "nuevo") delete x.estado;
+      if (x.stock !== false) delete x.stock;
+      if (!(x.regular > x.precio + 0.001)) delete x.regular;
+      if (!x.envio) delete x.envio;
+      // el código de afiliado de Instant Gaming lo vuelve a poner la web
+      x.url = corta(String(x.url || "").replace(/\?igr=gamer-681806$/, ""));
+      return x;
+    });
+    return r;
+  });
+  return { ...datos, paginas: true, prefijos: PREFIJOS, juegos };
+}
 const SITIO = (process.env.SITIO_URL || "https://polazabal721.github.io/GameCheaper/").replace(/\/?$/, "/");
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -162,7 +202,11 @@ async function main() {
     else if (/\.(html|txt)$/.test(f) || f === "minimos.json") await cp(join(RAIZ, f), join(SALIDA, f));
   }
   for (const d of ["fonts", "data/historial"]) if (existsSync(join(RAIZ, d))) await cp(join(RAIZ, d), join(SALIDA, d), { recursive: true });
-  await writeFile(join(SALIDA, "precios.json"), JSON.stringify({ ...datos, paginas: true }) + "\n");
+  // En dos partes: los 3.000 más populares (la web los enseña al momento) y el resto, que llega justo después
+  const ligero = comprimir(datos), PRIMEROS = 3000;
+  const resto = ligero.juegos.slice(PRIMEROS);
+  await writeFile(join(SALIDA, "precios.json"), JSON.stringify({ ...ligero, juegos: ligero.juegos.slice(0, PRIMEROS), resto: resto.length ? "precios-2.json" : undefined }) + "\n");
+  await writeFile(join(SALIDA, "precios-2.json"), JSON.stringify({ prefijos: ligero.prefijos, juegos: resto }) + "\n");
   await writeFile(join(SALIDA, ".nojekyll"), "");
   await writeFile(join(SALIDA, "paginas.css"), estilos());
 

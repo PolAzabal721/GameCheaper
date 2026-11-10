@@ -647,9 +647,26 @@ button { cursor: pointer; }
   function norm(s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
 
   // ---------- Validación del JSON ----------
+  // Deshace el precios.json ligero (scripts/paginas.mjs, función comprimir): principio de las direcciones e imágenes repetidas
+  function expandir(d) {
+    if (!d || !Array.isArray(d.prefijos) || !Array.isArray(d.juegos)) return d;
+    var P = d.prefijos;
+    var larga = function (u) { return typeof u === "string" && u.charAt(0) === "~" ? (P[parseInt(u.charAt(1), 36)] || "") + u.slice(2) : u; };
+    d.juegos.forEach(function (j) {
+      if (j.img) j.img = larga(j.img);
+      if (j.cov === 1) j.cov = j.img; else if (j.cov) j.cov = larga(j.cov);
+      (j.ofertas || []).forEach(function (o) {
+        o.url = larga(o.url);
+        if (o.tienda === "instantgaming" && o.url && o.url.indexOf("igr=") < 0) o.url += (o.url.indexOf("?") < 0 ? "?" : "&") + "igr=gamer-681806";
+      });
+    });
+    delete d.prefijos;
+    return d;
+  }
   function validar(d) {
     if (!d || typeof d !== "object") throw new Error("El JSON tiene que ser un objeto con una lista \"juegos\".");
     if (!Array.isArray(d.juegos)) throw new Error("Falta la lista \"juegos\".");
+    expandir(d);
     var avisos = 0;
     d.tiendas = Array.isArray(d.tiendas) ? d.tiendas : [];
     d.juegos = d.juegos.filter(function (j, i) {
@@ -691,6 +708,22 @@ button { cursor: pointer; }
     buscarEnVivo();
   }
 
+  // El catálogo llega en dos partes: los más populares primero (se ven al momento) y el resto justo después
+  function cargarResto(archivo) {
+    if (!archivo || !datos) return;
+    fetch(archivo, { cache: "no-cache" })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (r) {
+        var v = validar({ juegos: r.juegos || [], tiendas: [], prefijos: r.prefijos });
+        v.tiendas.forEach(function (t) { if (!tiendaPorId[t.id]) { datos.tiendas.push(t); tiendaPorId[t.id] = t; } });
+        var ya = {}; datos.juegos.forEach(function (j) { ya[j.id] = 1; });
+        v.juegos.forEach(function (j) { if (!ya[j.id]) datos.juegos.push(j); });
+        VOCAB = {};
+        pintarControles(); pintar();
+      })
+      .catch(function () { /* sin el resto se sigue viendo lo más popular */ });
+  }
+
   // ---------- Carga y refresco ----------
   function leerServidor(manual) {
     if (origen === "propio" && !manual) return;
@@ -698,7 +731,7 @@ button { cursor: pointer; }
     // «no-cache»: el navegador pregunta si hay precios nuevos y solo los descarga si han cambiado
     fetch("precios.json", { cache: "no-cache" })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-      .then(function (d) { usarDatos(d, "servidor"); })
+      .then(function (d) { usarDatos(d, "servidor"); cargarResto(d.resto); })
       .catch(function () {
         if (!datos) {
           try { usarDatos(JSON.parse($("datos-incrustados").textContent), "incrustado"); }
