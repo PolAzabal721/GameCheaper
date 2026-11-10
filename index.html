@@ -160,6 +160,28 @@ button { cursor: pointer; }
 .pt-img img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .pt-img.vacia { display: grid; place-items: center; color: var(--muted); }
 .pt-img.vacia svg { width: 34%; max-width: 44px; opacity: .55; }
+/* Tarjetas regalo dibujadas: cabecera, icono y el importe en grande; los tamaños siguen al hueco (cqw) */
+.tj-arte { container-type: size; display: flex; flex-direction: column; justify-content: space-between; padding: 8px 9px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.25); }
+.tj-arte::after { content: ""; position: absolute; right: -22%; top: -30%; width: 75%; aspect-ratio: 1; border-radius: 50%; background: rgba(255,255,255,.12); }
+.tj-cab { position: relative; z-index: 1; flex-shrink: 0; font-weight: 800; font-size: clamp(9px, 10cqw, 15px); line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tj-ico { position: relative; z-index: 1; display: block; width: clamp(16px, 16cqw, 34px); line-height: 0; }
+.tj-ico svg { width: 100%; height: auto; }
+/* La moneda, el calendario y el tiburón van a la derecha, para que quepan cabecera e importe aunque el hueco sea bajo */
+.tj-con-moneda .tj-ico, .tj-con-calendario .tj-ico { position: absolute; right: 9%; bottom: 12%; width: clamp(18px, 20cqw, 40px); opacity: .95; }
+.tj-con-tiburon .tj-ico { position: absolute; z-index: 0; right: 5%; top: 30%; transform: translateY(-50%); width: clamp(36px, 42cqw, 96px); opacity: .85; }
+.tj-val { position: relative; z-index: 1; flex-shrink: 0; line-height: 1; }
+.tj-val b { display: block; font-family: var(--f-display); font-weight: 800; font-size: clamp(14px, 19cqw, 34px); letter-spacing: -.01em; }
+.cuadro-img.tj-arte { padding: 12px 14px; }
+/* Miniaturas pequeñas (lista del móvil): solo el importe y su moneda */
+@container (max-width: 80px) {
+  .tj-cab, .tj-ico { display: none; }
+  .tj-val b { font-size: 15px; }
+  .tj-val small { font-size: 8.5px; }
+  .tj-largo b { font-size: 10px; }
+}
+.tj-largo b { font-size: clamp(12px, 15cqw, 28px); }
+@media (max-width: 560px) { .j-cov.tj-arte { padding: 6px; justify-content: flex-end; } }
+.tj-val small { display: block; margin-top: 2px; font-weight: 700; font-size: clamp(8px, 9cqw, 14px); opacity: .9; }
 .j-izq { display: flex; gap: 16px; align-items: stretch; min-width: 0; flex: 1; }
 /* La carátula baja hasta el final del texto cuando la ficha es más alta (Novedad, Mínimo histórico…) */
 .j-cov { width: 96px; height: auto; min-height: 128px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.18); }
@@ -925,8 +947,66 @@ button { cursor: pointer; }
     }
     return [v];
   }
+  // ---------- Tarjetas regalo dibujadas (las tiendas no dan imagen y no usamos logos oficiales) ----------
+  var TJ_ICONO = {
+    chip: '<svg viewBox="0 0 28 20"><rect x="1" y="1" width="26" height="18" rx="4" fill="#e9c46a"/><path d="M1 7h8M1 13h8M19 7h8M19 13h8M9 1v18M19 1v18" stroke="#b8902f" stroke-width="1.4" fill="none"/></svg>',
+    moneda: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ffd23f"/><circle cx="12" cy="12" r="7" fill="none" stroke="#c99a12" stroke-width="1.6"/><path d="M12 8v8M9.5 10.5h5M9.5 13.5h5" stroke="#9a7300" stroke-width="1.6" stroke-linecap="round"/></svg>',
+    calendario: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+    tiburon: '<svg viewBox="0 0 64 32"><path d="M2 19c9-7 21-10 33-9l7-9 3 10c7 1 13 4 17 8-4 2-9 4-15 4l-4 7-3-6c-12 1-27-1-38-5z" fill="#cfe9f5"/><path d="M4 19c11 3 25 4 38 3" stroke="#7fb3c9" stroke-width="1.4" fill="none"/><circle cx="50" cy="17" r="1.6" fill="#0b2233"/><path d="M53 21l3 1.2 2.6-1.4" stroke="#0b2233" stroke-width="1.2" fill="none"/></svg>'
+  };
+  // Familias de monedas y suscripciones: [patrón del nombre, cabecera, unidad, colores, icono]
+  var TJ_FAMILIAS = [
+    [/tibur[oó]n/i, "GTA Online", "", ["#062a3a", "#0e7490"], "tiburon"],
+    [/fc points/i, null, "FC Points", ["#0f5132", "#16a34a"], "moneda"],
+    [/v[- ]?bucks?/i, "Fortnite", "V-Bucks", ["#3b1d8f", "#2563eb"], "moneda"],
+    [/robux/i, "Roblox", "Robux", ["#14532d", "#22c55e"], "moneda"],
+    [/call of duty|\bcod\b/i, null, "Puntos COD", ["#1c1917", "#ea580c"], "moneda"],
+    [/monedas apex/i, "Apex Legends", "monedas Apex", ["#450a0a", "#dc2626"], "moneda"],
+    [/overwatch/i, "Overwatch", "monedas", ["#1f2937", "#f97316"], "moneda"],
+    [/minecoins/i, "Minecraft", "Minecoins", ["#365314", "#65a30d"], "moneda"],
+    [/platino/i, "Diablo IV", "de Platino", ["#3f0d12", "#991b1b"], "moneda"],
+    [/[aá]tomos/i, "Fallout 76", "átomos", ["#1e3a5f", "#ca8a04"], "moneda"],
+    [/\buc\b/i, "PUBG Mobile", "UC", ["#422006", "#d97706"], "moneda"],
+    [/\bnc\b/i, "PUBG New State", "NC", ["#172554", "#4f46e5"], "moneda"],
+    [/gems?\b/i, null, "gemas", ["#164e63", "#0891b2"], "moneda"],
+    [/game pass/i, "Xbox Game Pass", "", ["#0b5a0b", "#1a9b1a"], "calendario"],
+    [/ea play/i, null, "", ["#7c2d12", "#ea580c"], "calendario"],
+    [/playstation plus/i, "PlayStation Plus", "", ["#1c1917", "#ca8a04"], "calendario"]
+  ];
+  var TJ_MARCAS = { "PlayStation": ["#003791", "#0070d1"], "Xbox": ["#0b5a0b", "#1a9b1a"], "Nintendo eShop": ["#a3000e", "#e60012"], "Steam": ["#171a21", "#2a475e"],
+    "Google Play": ["#0b8043", "#34a853"], "Netflix": ["#141414", "#b20710"], "Amazon": ["#131921", "#ff9900"], "Apple": ["#1f2937", "#6b7280"], "Spotify": ["#0b3b1f", "#1db954"] };
+  var TJ_RESERVA = [["#4c1d95", "#db2777"], ["#0f766e", "#0284c7"], ["#7c2d12", "#d97706"], ["#1e3a8a", "#7c3aed"], ["#064e3b", "#0d9488"]];
+  function tarjetaArte(j, clase) {
+    var t = j.titulo || "", cab, grande, unidad = "", col, ico = "chip", m;
+    if (j.marca) { cab = j.marca; grande = (j.valor || "") + " €"; col = TJ_MARCAS[j.marca]; }
+    else {
+      var fam = null; for (var i = 0; i < TJ_FAMILIAS.length; i++) if (TJ_FAMILIAS[i][0].test(t)) { fam = TJ_FAMILIAS[i]; break; }
+      // Cabecera: lo que va antes de « - » o «:» («EA Sports FC 27 - 2800 FC Points» → «EA Sports FC 27»), o antes del número
+      var antesNum = (/\s[-–]\s|:\s/.test(t) ? t.split(/\s[-–]\s|:\s/)[0] : t.split(/\s\d/)[0]).replace(/^tarjeta regalo\s+/i, "").trim();
+      if (fam && fam[4] === "tiburon") {
+        cab = "GTA Online"; unidad = "Tarjeta Tiburón";
+        grande = (t.match(/(gran tibur[oó]n blanco|megalod[oó]n|ballena|tigre|toro|martillo|blanco)/i) || ["", "Tiburón"])[1];
+        grande = grande.charAt(0).toUpperCase() + grande.slice(1);
+      } else if ((m = t.match(/(\d+)\s*(mes(?:es)?|d[ií]as|month)/i))) {
+        cab = (fam && fam[1]) || antesNum; grande = m[1] + " " + (/^d/i.test(m[2]) ? "días" : +m[1] === 1 ? "mes" : "meses");
+      } else if ((m = t.match(/(\d+)\s*€/))) { cab = antesNum.replace(/gift card/i, "").trim(); grande = m[1] + " €"; }
+      else {
+        // El número que va pegado a la moneda («2800 FC Points», no el 27 de «FC 27»); si no, el primero
+        m = (fam && fam[2] && t.match(new RegExp("(\\d{1,3}(?:[ .,]\\d{3})+|\\d+)\\s*(?:de\\s+)?(?:" + fam[0].source + ")", "i"))) || t.match(/(\d{1,3}(?:[ .,]\d{3})+|\d+)/);
+        grande = m ? m[1].replace(/[ .,]/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ".") : "";
+        unidad = fam ? fam[2] : ""; cab = (fam && fam[1]) || antesNum;
+      }
+      if (fam) { col = fam[3]; ico = fam[4]; }
+    }
+    if (!col) { var h = 0; for (var k = 0; k < t.length; k++) h = (h * 31 + t.charCodeAt(k)) >>> 0; col = TJ_RESERVA[h % TJ_RESERVA.length]; }
+    if (!grande) grande = "Tarjeta";
+    return '<div class="pt-img tj-arte tj-con-' + ico + " " + clase + '" style="background:linear-gradient(135deg,' + col[0] + "," + col[1] + ')" aria-hidden="true">' +
+      '<span class="tj-cab">' + esc(cab) + '</span><span class="tj-ico tj-' + ico + '">' + TJ_ICONO[ico] + "</span>" +
+      '<span class="tj-val' + (grande.length > 7 ? " tj-largo" : "") + '"><b>' + esc(grande) + "</b>" + (unidad ? "<small>" + esc(unidad) + "</small>" : "") + "</span></div>";
+  }
   function imagenJuego(j, vertical, clase) {
     var u = urlsImagen(j, vertical);
+    if (!u && j.tipo === "tarjeta") return tarjetaArte(j, clase);
     if (!u) return '<div class="pt-img vacia ' + clase + '">' + ICONO_MANDO + "</div>";
     return '<div class="pt-img ' + clase + '"><img src="' + esc(u[0]) + '"' + (u[1] ? ' data-alt="' + esc(u[1]) + '"' : "") + ' alt="" loading="lazy" decoding="async"></div>';
   }
