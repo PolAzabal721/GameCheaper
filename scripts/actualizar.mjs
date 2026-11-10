@@ -1205,6 +1205,23 @@ async function main() {
     }
     console.log(`Fotos de Steam al día: ${arregladas} de ${porApp.size} juegos consultados (quedan ${Math.max(0, viejas.length - porApp.size)}).`);
   }
+  // Ediciones, DLC y demás que no tienen foto propia (solo se venden en tiendas que no la dan):
+  // se les pone la del juego base, que es la carátula que la gente espera ver.
+  const SOBRAS = /\s*[-–:,(]*\s*\b(digital\s+)?(deluxe|ultimate|gold|premium|standard|complete|definitive|special|collector'?s?|anniversary|legendary|game of the year|goty|remastered|enhanced|cross-?gen|next\s*gen)?\s*(edition|edición|bundle|pack|upgrade|season pass|pase de temporada|contenido adicional)\b.*$/i;
+  const base = new Map();
+  for (const j of juegos.values()) if ((j._img || j._cov) && j.tipo !== "tarjeta") { const k = llave(j.titulo); if (!base.has(k)) base.set(k, j); }
+  let heredadas = 0;
+  for (const j of juegos.values()) {
+    if (j._img || j._cov || j.tipo === "tarjeta") continue;
+    const raiz = j.titulo.replace(SOBRAS, "").trim();
+    if (!raiz || raiz.length < 3 || llave(raiz) === llave(j.titulo)) continue;
+    const b = base.get(llave(raiz));
+    if (!b) continue;
+    if (b._img) { j._img = b._img; j._imgP = 0; }
+    if (b._cov) { j._cov = b._cov; j._covP = 0; }
+    heredadas++;
+  }
+  if (heredadas) console.log(`Fotos heredadas del juego base: ${heredadas} ediciones y extras.`);
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
     .map(({ _buscarEn, _pvpFijo, _fechaOf, _fechaIG, _img, _imgP, _cov, _covP, plataformas, revisado, ...j }) => {
       const lanzamiento = _fechaOf || _fechaIG || fechaAnterior.get(j.id) || undefined;
