@@ -129,10 +129,10 @@ function pantalla(c, n) {
 }
 
 // 3b. La voz que lo cuenta (Piper: funciona sin conexión y sin pagar nada; si no está, el vídeo sale sin voz)
-const PIPER = ENV.PIPER_BIN || "piper";
-const VOZ = ENV.PIPER_VOZ || "voz/es_ES-davefx-medium.onnx";
-const hayVoz = existsSync(VOZ);
-if (!hayVoz) console.log("Sin voz: no encuentro el modelo en " + VOZ);
+const PIPER = (ENV.PIPER_CMD || "piper").split(" ");
+const VOZ = ENV.PIPER_VOZ || "es_ES-davefx-medium";
+const VOZ_DIR = ENV.PIPER_DIR || "voz";
+const hayVoz = !!ENV.PIPER_CMD;
 // «8,47 €» se lee mejor como «8 euros con 47»
 const enVoz = (n) => {
   const e = Math.floor(n + 1e-6), c = Math.round((n - e) * 100);
@@ -149,8 +149,8 @@ function guion(c) {
 async function narrar(texto, salida) {
   if (!hayVoz) return 0;
   try {
-    const datosVoz = ENV.PIPER_DATOS && existsSync(ENV.PIPER_DATOS) ? ["--espeak_data", ENV.PIPER_DATOS] : [];
-    await ejecutar(PIPER, ["--model", VOZ, "--output_file", salida, "--length_scale", "1.0", ...datosVoz], { input: texto, maxBuffer: 1 << 28 });
+    await ejecutar(PIPER[0], [...PIPER.slice(1), "-m", VOZ, "--data-dir", VOZ_DIR, "--download-dir", VOZ_DIR, "-f", salida],
+      { input: texto, maxBuffer: 1 << 28 });
     const { stdout } = await ejecutar("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", salida]);
     return Math.max(0, parseFloat(stdout.trim()) || 0);
   } catch (e) { console.warn("voz: " + (e.stderr || e.message || "").toString().split("\n").slice(0, 3).join(" | ")); return 0; }

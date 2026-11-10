@@ -31,11 +31,10 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Preparar la voz
         run: |
+          python3 -m pip install --quiet piper-tts
           mkdir -p voz
-          curl -sL https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz | tar xz
-          curl -sL -o voz/es_ES-davefx-medium.onnx https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/davefx/medium/es_ES-davefx-medium.onnx
-          curl -sL -o voz/es_ES-davefx-medium.onnx.json https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/davefx/medium/es_ES-davefx-medium.onnx.json
-          ls -la voz piper | head -12
+          echo "Hola" | python3 -m piper -m es_ES-davefx-medium --data-dir voz --download-dir voz -f voz/prueba.wav
+          ls -la voz
       - name: Preparar el navegador
         # La versión más nueva de Playwright es la que trae navegador para este Ubuntu
         run: |
@@ -44,10 +43,9 @@ jobs:
       - name: Hacer los vídeos
         env:
           VIDEOS_MAX: ${{ inputs.maximo || '5' }}
-          PIPER_BIN: ./piper/piper
-          PIPER_VOZ: voz/es_ES-davefx-medium.onnx
-          PIPER_DATOS: piper/espeak-ng-data
-          LD_LIBRARY_PATH: ${{ github.workspace }}/piper
+          PIPER_CMD: python3 -m piper
+          PIPER_VOZ: es_ES-davefx-medium
+          PIPER_DIR: voz
           VIDEOS_TELEGRAM: ${{ vars.VIDEOS_TELEGRAM }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CANAL: ${{ secrets.TELEGRAM_CANAL }}
@@ -62,7 +60,7 @@ jobs:
         run: |
           git config user.name "pillao-bot"
           git config user.email "pillao-bot@users.noreply.github.com"
-          rm -rf voz piper
+          rm -rf voz
           git add -A videos
           git diff --cached --quiet && exit 0
           git commit -m "Vídeos de los chollos de hoy"
