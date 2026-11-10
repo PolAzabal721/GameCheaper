@@ -1631,10 +1631,17 @@ button { cursor: pointer; }
     var palabras = q.split(/\s+/).filter(Boolean);
     var filas = [], vistos = {};
     var porFecha = f.orden === "recientes" ? esReciente : f.orden === "proximos" ? esProximo : null;
-    if (vivo.q === qTxt) vivo.juegos.forEach(function (j) { if (porFecha && !porFecha(j)) return; var r = fila(j); if (r) { filas.push(r); vistos[norm(j.titulo)] = 1; } });
-    datos.juegos.forEach(function (j) {
+    // Juegos, DLC o tarjetas regalo: el filtro vale igual para lo del catálogo y para lo que acaban de traer las tiendas
+    var esDelTipo = function (j) {
       var tipoJ = (j.tipo === "edicion" ? "juego" : j.tipo) || "juego"; // las ediciones especiales son juegos
-      if (f.tipo && f.tipo !== "todos" && f.tipo !== "edicion" && tipoJ !== f.tipo) return;
+      return !f.tipo || f.tipo === "todos" || f.tipo === "edicion" || tipoJ === f.tipo;
+    };
+    if (vivo.q === qTxt) vivo.juegos.forEach(function (j) {
+      if (!esDelTipo(j) || (porFecha && !porFecha(j))) return;
+      var r = fila(j); if (r) { filas.push(r); vistos[norm(j.titulo)] = 1; }
+    });
+    datos.juegos.forEach(function (j) {
+      if (!esDelTipo(j)) return;
       var nota = palabras.length ? notaBusq(qTxt, j) : 1;
       if (!nota) return;
       if (porFecha && !porFecha(j)) return;
@@ -1646,8 +1653,8 @@ button { cursor: pointer; }
     var hayParecidos = false;
     if (!filas.length && palabras.length && !porFecha && !vivo.cargando) {
       parecidos(qTxt, datos.juegos).forEach(function (x) {
-        var j = x[1], tipoJ = (j.tipo === "edicion" ? "juego" : j.tipo) || "juego";
-        if (f.tipo && f.tipo !== "todos" && f.tipo !== "edicion" && tipoJ !== f.tipo) return;
+        var j = x[1];
+        if (!esDelTipo(j)) return;
         var r = fila(j); if (r) { r.nota = x[0]; filas.push(r); }
       });
       filas.sort(function (a, b) { return b.nota - a.nota || (TIPO_ORDEN[a.j.tipo] || 0) - (TIPO_ORDEN[b.j.tipo] || 0) || (a.j.pop || 99999) - (b.j.pop || 99999); });
