@@ -202,7 +202,7 @@ async function main() {
     if (/^(index|legal)\.html$/.test(f)) await writeFile(join(SALIDA, f), proteger(await readFile(join(RAIZ, f), "utf8"), datos.buscador));
     else if (/\.(html|txt|svg|png|ico)$/.test(f) || f === "minimos.json") await cp(join(RAIZ, f), join(SALIDA, f));
   }
-  for (const d of ["fonts", "data/historial", "videos"]) if (existsSync(join(RAIZ, d))) await cp(join(RAIZ, d), join(SALIDA, d), { recursive: true });
+  for (const d of ["fonts", "data/historial"]) if (existsSync(join(RAIZ, d))) await cp(join(RAIZ, d), join(SALIDA, d), { recursive: true });
   // Todo el catálogo en un solo archivo (ligero), para que la web lo enseñe entero de una vez
   await writeFile(join(SALIDA, "precios.json"), JSON.stringify(comprimir(datos)) + "\n");
   await writeFile(join(SALIDA, ".nojekyll"), "");

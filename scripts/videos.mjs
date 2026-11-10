@@ -128,6 +128,33 @@ function pantalla(c, n) {
 </style></head><body>${fondo}<div class="capa"></div><div class="todo">${cuerpo}</div></body></html>`;
 }
 
+// 3b. La voz que lo cuenta (Piper: funciona sin conexión y sin pagar nada; si no está, el vídeo sale sin voz)
+const PIPER = ENV.PIPER_BIN || "piper";
+const VOZ = ENV.PIPER_VOZ || "voz/es_ES-davefx-medium.onnx";
+const hayVoz = existsSync(VOZ);
+if (!hayVoz) console.log("Sin voz: no encuentro el modelo en " + VOZ);
+// «8,47 €» se lee mejor como «8 euros con 47»
+const enVoz = (n) => {
+  const e = Math.floor(n + 1e-6), c = Math.round((n - e) * 100);
+  return c ? `${e} euros con ${c}` : `${e} euros`;
+};
+function guion(c) {
+  const partes = [`Chollo de hoy en Pillao.`, `${c.j.titulo}, para ${c.o.plataforma || "PC"}.`];
+  partes.push(`Costaba ${enVoz(c.antes)} y ahora está en ${enVoz(c.precio)}.`);
+  partes.push(`Un ${c.dto} por ciento menos en ${c.nombre}.`);
+  if (c.minimo) partes.push("Es su precio más bajo hasta ahora.");
+  partes.push("Compara todas las tiendas en pillaojuegos punto com.");
+  return partes.join(" ");
+}
+async function narrar(texto, salida) {
+  if (!hayVoz) return 0;
+  try {
+    await ejecutar(PIPER, ["--model", VOZ, "--output_file", salida, "--length_scale", "1.0"], { input: texto, maxBuffer: 1 << 28 });
+    const { stdout } = await ejecutar("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", salida]);
+    return Math.max(0, parseFloat(stdout.trim()) || 0);
+  } catch (e) { console.warn("voz: " + e.message.split("\n")[0]); return 0; }
+}
+
 const navegador = await chromium.launch();
 const pagina = await navegador.newPage({ viewport: { width: 1080, height: 1920 } });
 await mkdir("videos", { recursive: true });
@@ -143,18 +170,24 @@ for (let i = 0; i < elegidos.length; i++) {
     await pagina.screenshot({ path: f });
     pngs.push(f);
   }
+  // La voz manda: el vídeo dura lo que tarda en contarse
+  const wav = join("tmp-videos", `voz-${i}.wav`);
+  const segundos = await narrar(guion(c), wav);
+  const total = Math.max(11, Math.min(34, segundos ? segundos + 1.2 : 12.5));
+  const dur = [total * 0.3, total * 0.45, total * 0.25].map((x) => Math.round(x * 10) / 10);
   // Cada pantalla con un zoom lento y un fundido entre ellas
   const salida = join("videos", `${hoy}-${i + 1}.mp4`);
-  const dur = [4, 5.5, 4];
   const args = [];
   pngs.forEach((f, n) => args.push("-loop", "1", "-t", String(dur[n] + 1), "-i", f));
   const filtros = pngs.map((_, n) =>
     `[${n}:v]scale=1188:2112,zoompan=z='min(zoom+0.0006,1.10)':d=${Math.round((dur[n] + 1) * 30)}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920:fps=30,setsar=1[v${n}]`);
   filtros.push(`[v0][v1]xfade=transition=fade:duration=0.5:offset=${dur[0] - 0.5}[a]`);
   filtros.push(`[a][v2]xfade=transition=fade:duration=0.5:offset=${dur[0] + dur[1] - 1}[v]`);
-  await ejecutar("ffmpeg", ["-y", ...args, "-filter_complex", filtros.join(";"), "-map", "[v]",
+  const largo = dur[0] + dur[1] + dur[2] - 1;
+  await ejecutar("ffmpeg", ["-y", ...args, ...(segundos ? ["-i", wav] : []), "-filter_complex", filtros.join(";"), "-map", "[v]",
+    ...(segundos ? ["-map", String(pngs.length) + ":a", "-c:a", "aac", "-b:a", "128k", "-af", "adelay=300|300,apad"] : []),
     "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", "-r", "30",
-    "-t", String(dur[0] + dur[1] + dur[2] - 1), "-movflags", "+faststart", salida], { maxBuffer: 1 << 28 });
+    "-t", String(largo), "-movflags", "+faststart", salida], { maxBuffer: 1 << 28 });
   hechos.push({ archivo: salida.replace(/\\/g, "/"), juego: c.j.titulo, precio: c.precio, antes: c.antes, dto: c.dto,
     tienda: c.nombre, plataforma: c.o.plataforma || "", minimo: !!c.minimo, url: `https://${SITIO}/?q=${encodeURIComponent(c.j.titulo)}` });
   console.log(`  ${salida} · ${c.j.titulo} · ${eur(c.precio)} (−${c.dto} %)`);
@@ -162,24 +195,7 @@ for (let i = 0; i < elegidos.length; i++) {
 await navegador.close();
 await rm("tmp-videos", { recursive: true, force: true });
 
-// 4. Una página sencilla para descargarlos desde el móvil
-const paginaLista = (lista) => `<!doctype html><html lang="es"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Vídeos de hoy | Pillao</title>
-<meta name="robots" content="noindex"><link rel="icon" href="../favicon.svg" type="image/svg+xml">
-<style>body{margin:0;background:#0e1120;color:#e8ebf6;font-family:system-ui,sans-serif;padding:20px;max-width:760px;margin:auto}
-h1{font-size:22px}article{background:#161a2c;border:1px solid #2a3150;border-radius:14px;padding:14px;margin-bottom:14px}
-video{width:100%;max-width:280px;border-radius:10px;display:block;margin-bottom:10px}
-b{color:#ffd23f}a{display:inline-block;background:#ffd23f;color:#1d1600;font-weight:700;text-decoration:none;padding:10px 16px;border-radius:10px}
-p{color:#98a0bf;font-size:14px}</style></head><body><h1>Vídeos de hoy</h1>
-<p>Descárgalos y súbelos a TikTok o a Reels. Añade allí el audio de moda, que ayuda a que lleguen a más gente.</p>
-${lista.map((v) => `<article><video src="${v.archivo.replace("videos/", "")}" controls preload="metadata"></video>
-<div><b>${esc(v.juego)}</b> · ${eur(v.precio)} (−${v.dto} %) en ${esc(v.tienda)}</div>
-<p>${esc(v.plataforma)}${v.minimo ? " · Mínimo histórico" : ""}</p>
-<a href="${v.archivo.replace("videos/", "")}" download>Descargar vídeo</a></article>`).join("")}
-</body></html>`;
-await writeFile(join("videos", "index.html"), paginaLista(hechos));
-
-// 5. Aviso en Telegram con los enlaces, si está encendido (VIDEOS_TELEGRAM=1)
+// 4. Aviso en Telegram con los enlaces, si está encendido (VIDEOS_TELEGRAM=1)
 if (ENV.VIDEOS_TELEGRAM === "1" && ENV.TELEGRAM_BOT_TOKEN && ENV.TELEGRAM_CANAL) {
   const texto = `🎬 <b>Vídeos de hoy listos</b>\n\n${hechos.map((v) => `· ${v.juego} — ${eur(v.precio)} (−${v.dto} %)`).join("\n")}\n\n<a href="https://${SITIO}/videos/">Descargarlos para TikTok y Reels</a>`;
   try {
@@ -189,7 +205,7 @@ if (ENV.VIDEOS_TELEGRAM === "1" && ENV.TELEGRAM_BOT_TOKEN && ENV.TELEGRAM_CANAL)
   } catch (e) { console.warn("Telegram: " + e.message); }
 }
 
-// 6. Solo se guardan los últimos vídeos, para que la carpeta no crezca sin parar
+// 5. Solo se guardan los últimos vídeos, para que la carpeta no crezca sin parar
 const todos = (await readdir("videos")).filter((f) => f.endsWith(".mp4")).sort();
 for (const f of todos.slice(0, Math.max(0, todos.length - GUARDAR))) await rm(join("videos", f), { force: true });
 await writeFile(join("videos", "index.json"), JSON.stringify({ fecha: new Date().toISOString(), videos: hechos }, null, 1) + "\n");
