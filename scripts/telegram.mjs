@@ -13,7 +13,6 @@ const ENV = process.env;
 const TOKEN = (ENV.TELEGRAM_BOT_TOKEN || "").trim(), CANAL = (ENV.TELEGRAM_CANAL || "").trim();
 const POPULARES = +(ENV.TG_POPULARES || 2000), MAXIMO = ENV.TG_EJEMPLO ? 1 : +(ENV.TG_MAXIMO || 5), DIAS = 7;
 const SITIO = "https://polazabal721.github.io/GameCheaper/";
-const AFILIADO_G2A = "gname=reflink-ad5993112c";
 if (!TOKEN || !CANAL) { console.log("Telegram: faltan TELEGRAM_BOT_TOKEN o TELEGRAM_CANAL; no publico nada."); process.exit(0); }
 
 const leer = async (r, d) => { try { return JSON.parse(await readFile(r, "utf8")); } catch { return d; } };
@@ -62,7 +61,14 @@ const imagen = (j) => {
   if (u.startsWith("s:")) return `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${u.slice(2)}/header.jpg`;
   return /^https:\/\//.test(u) ? u : null;
 };
-const enlace = (o) => (o.tienda === "g2a" && !/gname=/.test(o.url) ? o.url + (o.url.includes("?") ? "&" : "?") + AFILIADO_G2A : o.url);
+// Todos los enlaces a Instant Gaming y G2A salen con nuestro código de afiliado (si traen otro, se cambia por el nuestro)
+const enlace = (o) => {
+  let u; try { u = new URL(o.url); } catch { return o.url; }
+  if (/(^|\.)instant-gaming\.com$/.test(u.hostname)) u.searchParams.set("igr", "gamer-681806");
+  else if (/(^|\.)g2a\.com$/.test(u.hostname)) u.searchParams.set("gname", "reflink-ad5993112c");
+  else return o.url;
+  return u.toString();
+};
 
 async function telegram(metodo, datos) {
   if (ENV.TG_PRUEBA) { console.log(`--- ${metodo}${datos.photo ? " (foto: " + datos.photo + ")" : ""}\n${datos.caption || datos.text}`); return; }
