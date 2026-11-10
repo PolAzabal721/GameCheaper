@@ -1,60 +1,31 @@
 {
- "fecha": "2026-11-10T20:55:47.439Z",
+ "fecha": "2026-11-10T22:56:43.940Z",
  "videos": [
   {
    "archivo": "videos/2026-11-10-1.mp4",
-   "juego": "EVERSPACE 2",
-   "precio": 8.48,
-   "antes": 49.99,
-   "dto": 83,
-   "tienda": "GamesPlanet US",
+   "juego": "Euro Truck Simulator 2",
+   "precio": 4.99,
+   "antes": 19.99,
+   "dto": 75,
+   "tienda": "Steam",
    "plataforma": "PC",
    "minimo": false,
-   "url": "https://pillaojuegos.com/?q=EVERSPACE%202"
+   "guion": "Chollo de hoy en Pillao. Euro Truck Simulator 2, para PC. Costaba 19 euros con 99 y ahora está en 4 euros con 99. Un 75 por ciento menos en Steam. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 16.2,
+   "url": "https://pillaojuegos.com/?q=Euro%20Truck%20Simulator%202"
   },
   {
    "archivo": "videos/2026-11-10-2.mp4",
-   "juego": "Tyrant's Blessing",
-   "precio": 3.13,
-   "antes": 18.49,
-   "dto": 83,
-   "tienda": "GamesPlanet US",
+   "juego": "Clair Obscur: Expedition 33",
+   "precio": 22.79,
+   "antes": 50.9,
+   "dto": 55,
+   "tienda": "Instant Gaming",
    "plataforma": "PC",
-   "minimo": false,
-   "url": "https://pillaojuegos.com/?q=Tyrant's%20Blessing"
-  },
-  {
-   "archivo": "videos/2026-11-10-3.mp4",
-   "juego": "Creatures of Ava",
-   "precio": 4.47,
-   "antes": 24.99,
-   "dto": 82,
-   "tienda": "WinGameStore",
-   "plataforma": "PC",
-   "minimo": false,
-   "url": "https://pillaojuegos.com/?q=Creatures%20of%20Ava"
-  },
-  {
-   "archivo": "videos/2026-11-10-4.mp4",
-   "juego": "Pathfinder: Wrath of the Righteous - Enhanced Edition",
-   "precio": 3.57,
-   "antes": 19.99,
-   "dto": 82,
-   "tienda": "WinGameStore",
-   "plataforma": "PC",
-   "minimo": false,
-   "url": "https://pillaojuegos.com/?q=Pathfinder%3A%20Wrath%20of%20the%20Righteous%20-%20Enhanced%20Edition"
-  },
-  {
-   "archivo": "videos/2026-11-10-5.mp4",
-   "juego": "My Time at Portia",
-   "precio": 5.39,
-   "antes": 29.99,
-   "dto": 82,
-   "tienda": "Fanatical",
-   "plataforma": "PC",
-   "minimo": false,
-   "url": "https://pillaojuegos.com/?q=My%20Time%20at%20Portia"
+   "minimo": true,
+   "guion": "Chollo de hoy en Pillao. Clair Obscur: Expedition 33, para PC. Costaba 50 euros con 90 y ahora está en 22 euros con 79. Un 55 por ciento menos en Instant Gaming. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 19.8,
+   "url": "https://pillaojuegos.com/?q=Clair%20Obscur%3A%20Expedition%2033"
   }
  ]
 }
