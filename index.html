@@ -971,14 +971,23 @@ button { cursor: pointer; }
   var STEAM_IMG = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/";
   var ICONO_MANDO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7.5 7h9a4.5 4.5 0 0 1 4.4 3.6l.9 5.1a2.4 2.4 0 0 1-4.2 2L15.8 15H8.2l-1.8 2.7a2.4 2.4 0 0 1-4.2-2l.9-5.1A4.5 4.5 0 0 1 7.5 7z"/></svg>';
   // vertical: carátula (lista); si no, la horizontal (cuadrícula y móvil)
-  function urlsImagen(j, vertical) {
-    var v = vertical ? (j.cov || j.img) : (j.img || j.cov);
-    if (!v) return null;
+  // Direcciones a probar, por orden: «s:<id>» = imagen de Steam por el número del juego;
+  // «sc:<id>/<clave>» = la de los juegos nuevos, que llevan una carpeta extra
+  function urlsDe(v, vertical) {
+    if (v.slice(0, 3) === "sc:") return [STEAM_IMG + v.slice(3) + "/capsule_616x353.jpg"];
     if (v.slice(0, 2) === "s:") {
       var id = v.slice(2), h = STEAM_IMG + id + "/header.jpg";
       return vertical ? [STEAM_IMG + id + "/library_600x900.jpg", h] : [h];
     }
     return [v];
+  }
+  function urlsImagen(j, vertical) {
+    var lista = [];
+    [vertical ? j.cov : j.img, vertical ? j.img : j.cov].forEach(function (v) {
+      if (!v) return;
+      urlsDe(v, vertical).forEach(function (u) { if (lista.indexOf(u) < 0) lista.push(u); });
+    });
+    return lista.length ? lista : null;
   }
   // ---------- Tarjetas regalo dibujadas (las tiendas no dan imagen y no usamos logos oficiales) ----------
   var TJ_ICONO = {
@@ -1047,13 +1056,18 @@ button { cursor: pointer; }
     var u = urlsImagen(j, vertical);
     if (!u && j.tipo === "tarjeta") return tarjetaArte(j, clase);
     if (!u) return '<div class="pt-img vacia ' + clase + '">' + ICONO_MANDO + "</div>";
-    return '<div class="pt-img ' + clase + '"><img src="' + esc(u[0]) + '"' + (u[1] ? ' data-alt="' + esc(u[1]) + '"' : "") + ' alt="" loading="lazy" decoding="async"></div>';
+    return '<div class="pt-img ' + clase + '"><img src="' + esc(u[0]) + '"' + (u.length > 1 ? ' data-alt="' + esc(u.slice(1).join("|")) + '"' : "") + ' alt="" loading="lazy" decoding="async"></div>';
   }
   // Si una imagen no carga: probamos la alternativa y, si tampoco, dejamos el hueco con el icono
   document.addEventListener("error", function (e) {
     var im = e.target;
     if (!im || im.tagName !== "IMG" || !im.parentNode || !im.parentNode.classList || !im.parentNode.classList.contains("pt-img")) return;
-    if (im.dataset.alt) { var alt = im.dataset.alt; delete im.dataset.alt; im.src = alt; return; }
+    if (im.dataset.alt) {
+      var resto = im.dataset.alt.split("|");
+      var siguiente = resto.shift();
+      if (resto.length) im.dataset.alt = resto.join("|"); else delete im.dataset.alt;
+      im.src = siguiente; return;
+    }
     var c = im.parentNode; c.classList.add("vacia"); c.innerHTML = ICONO_MANDO;
   }, true);
 

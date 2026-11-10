@@ -173,7 +173,10 @@ function leerFilasSteam(html) {
     if (precio > 150) continue; // hardware (Steam Deck, mandos…), no juegos
     if (/^(steam (deck|controller|machine|frame|link)|valve index)/i.test(html2txt(titulo[1]))) continue;
     const fecha = fechaSteam((trozo.match(/search_released[^>]*>\s*([^<]*)</) || [])[1] || "");
-    filas.push({ appid: app[1], titulo: html2txt(titulo[1]), precio, regular: dto ? precio / (1 - dto / 100) : precio, fecha });
+    // Desde 2025 Steam sirve las imágenes de los juegos nuevos con una carpeta extra: apps/<id>/<clave>/capsule…
+    const cap = trozo.match(/store_item_assets\/steam\/apps\/(\d+)\/([0-9a-f]{8,64})\/capsule/);
+    filas.push({ appid: app[1], titulo: html2txt(titulo[1]), precio, regular: dto ? precio / (1 - dto / 100) : precio, fecha,
+      img: cap && cap[1] === app[1] ? `sc:${cap[1]}/${cap[2]}` : null });
   }
   return filas;
 }
@@ -228,7 +231,7 @@ async function steamMasVendidos() {
     const j = juego(f.titulo, { pop: f.puesto });
     ofertar(j, { tienda: "steam", plataforma: "PC", precio, regular, url: `https://store.steampowered.com/app/${f.appid}/`, fuente: "steam" });
     fechar(j, f.fecha);
-    ponerImagen(j, "steam", "s:" + f.appid, "s:" + f.appid);
+    ponerImagen(j, "steam", f.img || "s:" + f.appid, "s:" + f.appid);
     n++;
   }
   console.log(`Steam: ${n} juegos de pago, ${gratis} gratuitos descartados`);

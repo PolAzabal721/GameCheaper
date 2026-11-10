@@ -6,37 +6,10 @@ permissions:
 jobs:
   prueba:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with: { node-version: 20 }
-      - name: Imagenes
+      - name: HTTP a HTTPS
         run: |
-          cat > p.mjs <<'X'
-          const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)","Accept-Language":"es-ES,es;q=0.9"};
-          for (const id of ["4530370","3669620"]) for (const u of [
-            `https://cdn.akamai.steamstatic.com/steam/apps/${id}/header.jpg`,
-            `https://cdn.cloudflare.steamstatic.com/steam/apps/${id}/header.jpg`,
-            `https://steamcdn-a.akamaihd.net/steam/apps/${id}/header.jpg`,
-            `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${id}/header.jpg`,
-            `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${id}/header.jpg`]) {
-            const r=await fetch(u,{headers:H,method:"HEAD"}); console.log("IMG",r.status,(r.headers.get("content-length")||"-").padEnd(8),u);
-          }
-          // que trae la busqueda de Steam en cada fila
-          const h=await (await fetch("https://store.steampowered.com/search/results/?query&start=0&count=20&filter=topsellers&cc=es&l=spanish&infinite=1",{headers:H})).json();
-          const html=h.results_html||"";
-          const imgs=[...html.matchAll(/<img[^>]+src="([^"]+)"/g)].map(m=>m[1]).slice(0,6);
-          console.log("BUSQUEDA imgs:\n  "+imgs.join("\n  "));
-          // appdetails de varios a la vez, sin filtro
-          for (const ids of ["4530370,3669620","4530370"]) {
-            const r=await fetch(`https://store.steampowered.com/api/appdetails?appids=${ids}&cc=es&l=spanish`,{headers:H});
-            const d=await r.json(); console.log("APPDETAILS",ids,r.status,Object.keys(d).map(k=>k+":"+(d[k].success?(d[k].data?.header_image?"header ok":"sin header"):"fail")).join(" "));
-          }
-          // FM27 en playstation.com
-          for (const u of ["https://www.playstation.com/es-es/games/football-manager-27/","https://www.playstation.com/es-es/games/football-manager/","https://www.playstation.com/es-es/games/ea-sports-fc-27/"]) {
-            const r=await fetch(u,{headers:H}); const b=await r.text();
-            console.log("PS", u, r.status, b.length, [...new Set([...b.matchAll(/concept\/(\d+)/g)].map(m=>m[1]))].slice(0,5).join(","));
-            await new Promise(x=>setTimeout(x,5000));
-          }
-          X
-          node p.mjs
+          echo "== HTTP"; curl -sI http://pillaojuegos.com/ | head -4
+          echo "== HTTP www"; curl -sI http://www.pillaojuegos.com/ | head -4
+          echo "== HTTPS"; curl -sI https://pillaojuegos.com/ | head -3
