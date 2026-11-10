@@ -969,6 +969,11 @@ button { cursor: pointer; }
     [/\buc\b/i, "PUBG Mobile", "UC", ["#422006", "#d97706"], "moneda"],
     [/\bnc\b/i, "PUBG New State", "NC", ["#172554", "#4f46e5"], "moneda"],
     [/gems?\b/i, null, "gemas", ["#164e63", "#0891b2"], "moneda"],
+    [/cr[eé]ditos r6/i, "Rainbow Six Siege", "créditos R6", ["#0f172a", "#2563eb"], "moneda"],
+    [/helix/i, null, "créditos Helix", ["#3b0764", "#b91c1c"], "moneda"],
+    [/skull and bones/i, "Skull and Bones", "de oro", ["#1c1917", "#a16207"], "moneda"],
+    [/far cry/i, null, "créditos", ["#7c2d12", "#db2777"], "moneda"],
+    [/fichas/i, null, "fichas", ["#083344", "#0ea5e9"], "moneda"],
     [/game pass/i, "Xbox Game Pass", "", ["#0b5a0b", "#1a9b1a"], "calendario"],
     [/ea play/i, null, "", ["#7c2d12", "#ea580c"], "calendario"],
     [/playstation plus/i, "PlayStation Plus", "", ["#1c1917", "#ca8a04"], "calendario"]
@@ -991,8 +996,8 @@ button { cursor: pointer; }
         cab = (fam && fam[1]) || antesNum; grande = m[1] + " " + (/^d/i.test(m[2]) ? "días" : +m[1] === 1 ? "mes" : "meses");
       } else if ((m = t.match(/(\d+)\s*€/))) { cab = antesNum.replace(/gift card/i, "").trim(); grande = m[1] + " €"; }
       else {
-        // El número que va pegado a la moneda («2800 FC Points», no el 27 de «FC 27»); si no, el primero
-        m = (fam && fam[2] && t.match(new RegExp("(\\d{1,3}(?:[ .,]\\d{3})+|\\d+)\\s*(?:de\\s+)?(?:" + fam[0].source + ")", "i"))) || t.match(/(\d{1,3}(?:[ .,]\d{3})+|\d+)/);
+        // El número que va pegado a la moneda («2800 FC Points», no el 27 de «FC 27»); si no, el número más grande
+        m = (fam && fam[2] && t.match(new RegExp("(\\d{1,3}(?:[ .,]\\d{3})+|\\d+)\\s*(?:de\\s+)?(?:" + fam[0].source + ")", "i"))) || (t.match(/\d{1,3}(?:[ .,]\d{3})+|\d+/g) || []).map(function (x) { return [x, x]; }).sort(function (a, b) { return +b[0].replace(/\D/g, "") - +a[0].replace(/\D/g, ""); })[0];
         grande = m ? m[1].replace(/[ .,]/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ".") : "";
         unidad = fam ? fam[2] : ""; cab = (fam && fam[1]) || antesNum;
       }

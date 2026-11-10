@@ -690,7 +690,7 @@ const MARCAS_SALDO = [
 const BUSQUEDAS_IG = ["nintendo eshop", "tarjeta playstation", "playstation plus", "tarjeta xbox", "xbox game pass", "steam tarjeta regalo",
   "v-bucks", "robux", "fc points", "call of duty puntos", "apex monedas", "overwatch monedas", "minecraft minecoins", "gta online tarjeta",
   "diablo platino", "ea play", "nintendo switch online", "valorant", "league of legends", "riot", "genshin", "pubg", "candy crush",
-  "fallout 76 atomos", "elder scrolls online coronas", "guild wars gemas", "amazon", "google play", "apple", "spotify", "netflix", "tarjeta regalo"];
+  "fallout 76 atomos", "elder scrolls online coronas", "guild wars gemas", "creditos r6", "tarjeta ubisoft", "amazon", "google play", "apple", "spotify", "netflix", "tarjeta regalo"];
 const valorEuros = (txt) => { const m = String(txt).match(/(\d+(?:[.,]\d+)?)\s*(€|eur\b|euros?\b)/i); return m ? parseFloat(m[1].replace(",", ".")) : 0; };
 // Tarjeta de saldo de una tienda (p. ej. «Tarjeta regalo PlayStation 50 €»): una ficha por marca y valor
 // En qué plataformas se usa el saldo de cada marca (para el filtro de plataformas de la web)
