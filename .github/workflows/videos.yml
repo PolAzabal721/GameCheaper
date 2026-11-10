@@ -33,7 +33,8 @@ jobs:
         run: |
           python3 -m pip install --quiet piper-tts
           mkdir -p voz
-          echo "Hola" | python3 -m piper -m es_ES-davefx-medium --data-dir voz --download-dir voz -f voz/prueba.wav
+          python3 -m piper.download_voices es_ES-davefx-medium --download-dir voz
+          echo "Hola, esto es una prueba." | python3 -m piper -m es_ES-davefx-medium --data-dir voz -f voz/prueba.wav
           ls -la voz
       - name: Preparar el navegador
         # La versión más nueva de Playwright es la que trae navegador para este Ubuntu

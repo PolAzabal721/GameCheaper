@@ -149,7 +149,7 @@ function guion(c) {
 async function narrar(texto, salida) {
   if (!hayVoz) return 0;
   try {
-    await ejecutar(PIPER[0], [...PIPER.slice(1), "-m", VOZ, "--data-dir", VOZ_DIR, "--download-dir", VOZ_DIR, "-f", salida],
+    await ejecutar(PIPER[0], [...PIPER.slice(1), "-m", VOZ, "--data-dir", VOZ_DIR, "-f", salida],
       { input: texto, maxBuffer: 1 << 28 });
     const { stdout } = await ejecutar("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", salida]);
     return Math.max(0, parseFloat(stdout.trim()) || 0);
