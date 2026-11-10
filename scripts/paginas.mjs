@@ -115,6 +115,7 @@ function plantilla({ titulo, descripcion, canonica, raiz, cuerpo, jsonld }) {
 <title>${esc(titulo)}</title><meta name="description" content="${esc(descripcion)}">
 <link rel="canonical" href="${canonica}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(titulo)}">
 <meta property="og:description" content="${esc(descripcion)}"><meta property="og:url" content="${canonica}"><meta property="og:locale" content="es_ES"><meta property="og:site_name" content="Pillao">
+<link rel="icon" href="${raiz}favicon.svg" type="image/svg+xml"><link rel="alternate icon" href="${raiz}favicon.ico" sizes="any"><link rel="apple-touch-icon" href="${raiz}icono-180.png">
 <link rel="stylesheet" href="${raiz}fonts/fuentes.css"><link rel="stylesheet" href="${raiz}paginas.css">
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>` : ""}
 </head><body><header><div class="wrap"><a class="logo" href="${raiz}">Pillao<span>€</span></a><a class="ir-app" href="${raiz}">Ir al comparador →</a></div></header>
@@ -199,7 +200,7 @@ async function main() {
   // 1. La web de siempre
   for (const f of await readdir(RAIZ)) {
     if (/^(index|legal)\.html$/.test(f)) await writeFile(join(SALIDA, f), proteger(await readFile(join(RAIZ, f), "utf8"), datos.buscador));
-    else if (/\.(html|txt)$/.test(f) || f === "minimos.json") await cp(join(RAIZ, f), join(SALIDA, f));
+    else if (/\.(html|txt|svg|png|ico)$/.test(f) || f === "minimos.json") await cp(join(RAIZ, f), join(SALIDA, f));
   }
   for (const d of ["fonts", "data/historial"]) if (existsSync(join(RAIZ, d))) await cp(join(RAIZ, d), join(SALIDA, d), { recursive: true });
   // Todo el catálogo en un solo archivo (ligero), para que la web lo enseñe entero de una vez
