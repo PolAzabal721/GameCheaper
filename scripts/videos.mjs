@@ -63,16 +63,23 @@ for (const c of elegidos) {
   try {
     const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)" } });
     if (!r.ok) continue;
-    const f = join("tmp-videos", `img-${c.j.id.slice(0, 40)}.jpg`);
-    await writeFile(f, Buffer.from(await r.arrayBuffer()));
-    c.imagen = "file://" + join(process.cwd(), f);
+    const tipo = (r.headers.get("content-type") || "image/jpeg").split(";")[0];
+    c.imagen = `data:${tipo};base64,${Buffer.from(await r.arrayBuffer()).toString("base64")}`;
   } catch { /* sin imagen: fondo de color */ }
 }
 
 // 3. Las tres pantallas de cada vídeo
 const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-const fuentes = "file://" + join(process.cwd(), "fonts", "fuentes.css");
+// Las letras de Pillao, incrustadas (una página hecha con setContent no puede leer archivos del disco)
+const fuentes = await (async () => {
+  let css = await readFile(join("fonts", "fuentes.css"), "utf8");
+  for (const f of (await readdir("fonts")).filter((x) => x.endsWith(".woff2"))) {
+    const datos = await readFile(join("fonts", f));
+    css = css.replaceAll(`url(${f})`, `url(data:font/woff2;base64,${datos.toString("base64")})`);
+  }
+  return css;
+})();
 function pantalla(c, n) {
   const fondo = c.imagen
     ? `<div class="fondo" style="background-image:url('${c.imagen}')"></div>`
@@ -96,8 +103,7 @@ function pantalla(c, n) {
       <div class="precios"><b>${eur(c.precio)}</b></div>
       <div class="cta">Compáralo en <b>${SITIO}</b></div>
       <div class="canal">Más chollos cada día en Telegram ${CANAL}</div>`;
-  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="stylesheet" href="${fuentes}">
-<style>
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><style>${fuentes}
   *{box-sizing:border-box;margin:0}
   html,body{width:1080px;height:1920px;overflow:hidden;background:#0e1120;color:#e8ebf6;font-family:"Figtree",sans-serif}
   .fondo{position:absolute;inset:-80px;background-size:cover;background-position:center;filter:blur(60px) saturate(1.4) brightness(.55)}
