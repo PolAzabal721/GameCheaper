@@ -27,7 +27,7 @@ const STEAM_PAGINAS = +(ENV.STEAM_PAGINAS || 20);   // los 2.000 más vendidos, 
 const STEAM_ROTA = +(ENV.STEAM_ROTA || 10);         // + 1.000 más en cada ejecución, rotando…
 const STEAM_MAX_PAGINAS = +(ENV.STEAM_MAX_PAGINAS || 150); // …hasta los 15.000 más vendidos
 const ESHOP_ROTA = +(ENV.ESHOP_ROTA || 2500);       // eShop: además de los populares, un bloque nuevo cada vez
-const IG_ROTA = +(ENV.IG_ROTA || 900);   // con 17.000 juegos en su mapa, así se recorren todos en unos 4 días
+const IG_ROTA = +(ENV.IG_ROTA || 1500);  // con 17.000 juegos en su mapa, así se recorren todos en unos 3 días
 const MS_ROTA = +(ENV.MS_ROTA || 300);
 const CONSERVAR_DIAS = 7;                            // un precio no revisado en una ejecución se conserva hasta 7 días
 const AHORA = new Date().toISOString().slice(0, 16);
@@ -41,7 +41,7 @@ const ESHOP_MAX = +(ENV.ESHOP_MAX || 2500);
 const EBAY_MAX = +(ENV.EBAY_MAX || 250);     // eBay: los juegos de consola más populares en cada ejecución…
 const EBAY_ROTA = +(ENV.EBAY_ROTA || 450);   // …y un bloque nuevo del resto, rotando (eBay permite unas 5.000 consultas al día)
 const GAME_MAX = +(ENV.GAME_MAX || 150);
-const IG_MAX = +(ENV.IG_MAX || 200);
+const IG_MAX = +(ENV.IG_MAX || 600);
 const MS_MAX = +(ENV.MS_MAX || 400);
 // GAME: además de los GAME_MAX más populares, en cada ejecución revisa un bloque distinto del resto (GAME_ROTA juegos),
 // así en un día y medio pasa por todo el catálogo de consola. Lo que no toca en una ejecución conserva su último precio.

@@ -1,0 +1,47 @@
+name: Repaso del catálogo
+
+# Una vez al día revisa todo: cobertura por tienda, fotos, enlaces, afiliados y precios raros.
+# Si algo va mal, la ejecución sale en rojo y GitHub manda un correo.
+on:
+  schedule:
+    - cron: "23 5 * * *"   # 6:23 (hora de España)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auditoria
+  cancel-in-progress: false
+
+jobs:
+  repasar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+      - name: Repasar
+        id: repaso
+        continue-on-error: true
+        run: node scripts/auditoria.mjs
+      - name: Guardar el informe
+        run: |
+          git config user.name "pillao-bot"
+          git config user.email "pillao-bot@users.noreply.github.com"
+          git add data/auditoria.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Repaso del catálogo"
+          for i in 1 2 3; do
+            git pull --rebase -X theirs origin main && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep 10
+          done
+          exit 1
+      - name: Avisar si hay problemas
+        if: steps.repaso.outcome == 'failure'
+        run: |
+          echo "::error::El repaso del catálogo ha encontrado problemas. Mira el resumen de la ejecución."
+          exit 1
