@@ -30,7 +30,7 @@ const tienda = Object.fromEntries((precios.tiendas || []).map((t) => [t.id, t]))
 const porId = new Map(precios.juegos.map((j) => [j.id, j]));
 
 // 1. Qué chollos salen: los publicados en Telegram hace poco, el mayor descuento primero
-const chollos = [];
+let chollos = [];
 for (const [clave, v] of Object.entries(estado.publicados || {})) {
   if (Date.now() - Date.parse(v.fecha) > HORAS * 3600000) continue;
   const [id, idTienda, plataforma, formato] = clave.split("|");
@@ -73,13 +73,21 @@ const foto = async (j) => {
     return `data:${tipo};base64,${b.toString("base64")}`;
   } catch { return null; }
 };
+// Si se piden juegos concretos (VIDEOS_JUEGOS), solo esos y por delante de todo
+const pedidos = (ENV.VIDEOS_JUEGOS || "").split(",").map((t) => t.trim().toLowerCase()).filter(Boolean);
+const pedido = (j) => pedidos.some((t) => j.titulo.toLowerCase().includes(t) || j.id.includes(t.replace(/\s+/g, "-")));
+if (pedidos.length) {
+  const fuera = chollos.filter((c) => !pedido(c.j)).length;
+  chollos = chollos.filter((c) => pedido(c.j));
+  console.log(`Solo los pedidos (${pedidos.join(", ")}): ${chollos.length} chollos; ${fuera} descartados.`);
+}
 const yaVisto = new Set(), elegidos = [];
 let sinFoto = 0, repetidos = 0;
 for (const c of chollos) {
   if (elegidos.length >= MAX) break;
   if (yaVisto.has(c.j.id)) continue;
   yaVisto.add(c.j.id);
-  if (hechosAntes.hechos[c.j.id]) { repetidos++; continue; }
+  if (hechosAntes.hechos[c.j.id] && !pedidos.length) { repetidos++; continue; }
   const img = await foto(c.j);
   if (!img) { sinFoto++; console.log(`  sin foto, lo salto: ${c.j.titulo}`); continue; }
   c.imagen = img;

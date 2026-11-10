@@ -7,6 +7,9 @@ on:
     - cron: "41 8 * * *"   # 9:41 (hora de España)
   workflow_dispatch:
     inputs:
+      juegos:
+        description: "Juegos concretos de los que grabar (separados por comas); si se deja vacío, los de mayor descuento"
+        required: false
       maximo:
         description: "Cuántos vídeos hacer"
         default: "5"
@@ -45,6 +48,7 @@ jobs:
       - name: Hacer los vídeos
         env:
           VIDEOS_MAX: ${{ inputs.maximo || '5' }}
+          VIDEOS_JUEGOS: ${{ inputs.juegos }}
           VIDEOS_VOZ: ${{ vars.VIDEOS_VOZ }}
           PIPER_CMD: python3 -m piper
           PIPER_VOZ: es_ES-davefx-medium
@@ -66,7 +70,7 @@ jobs:
           git config user.name "pillao-bot"
           git config user.email "pillao-bot@users.noreply.github.com"
           rm -rf voz
-          git add -A videos
+          git add -A videos data/videos.json
           git diff --cached --quiet && exit 0
           git commit -m "Vídeos de los chollos de hoy"
           for i in 1 2 3; do
