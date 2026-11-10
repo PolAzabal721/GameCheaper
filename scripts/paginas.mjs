@@ -202,11 +202,8 @@ async function main() {
     else if (/\.(html|txt)$/.test(f) || f === "minimos.json") await cp(join(RAIZ, f), join(SALIDA, f));
   }
   for (const d of ["fonts", "data/historial"]) if (existsSync(join(RAIZ, d))) await cp(join(RAIZ, d), join(SALIDA, d), { recursive: true });
-  // En dos partes: los 3.000 más populares (la web los enseña al momento) y el resto, que llega justo después
-  const ligero = comprimir(datos), PRIMEROS = 3000;
-  const resto = ligero.juegos.slice(PRIMEROS);
-  await writeFile(join(SALIDA, "precios.json"), JSON.stringify({ ...ligero, juegos: ligero.juegos.slice(0, PRIMEROS), resto: resto.length ? "precios-2.json" : undefined }) + "\n");
-  await writeFile(join(SALIDA, "precios-2.json"), JSON.stringify({ prefijos: ligero.prefijos, juegos: resto }) + "\n");
+  // Todo el catálogo en un solo archivo (ligero), para que la web lo enseñe entero de una vez
+  await writeFile(join(SALIDA, "precios.json"), JSON.stringify(comprimir(datos)) + "\n");
   await writeFile(join(SALIDA, ".nojekyll"), "");
   await writeFile(join(SALIDA, "paginas.css"), estilos());
 
