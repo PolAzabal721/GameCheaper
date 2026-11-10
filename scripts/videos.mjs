@@ -217,7 +217,7 @@ for (let i = 0; i < elegidos.length; i++) {
   const total = Math.max(11, Math.min(34, segundos ? segundos + 1.2 : leido));
   const dur = [total * 0.3, total * 0.45, total * 0.25].map((x) => Math.round(x * 10) / 10);
   // Cada pantalla con un zoom lento y un fundido entre ellas
-  const salida = join("videos", `${hoy}-${i + 1}.mp4`);
+  const salida = join("videos", `${hoy}-${c.j.id.slice(0, 40)}.mp4`);
   const args = [];
   pngs.forEach((f, n) => args.push("-loop", "1", "-t", String(dur[n] + 1), "-i", f));
   const filtros = pngs.map((_, n) =>
@@ -252,6 +252,10 @@ const todos = (await readdir("videos")).filter((f) => f.endsWith(".mp4")).sort()
 for (const f of todos.slice(0, Math.max(0, todos.length - GUARDAR))) await rm(join("videos", f), { force: true });
 await writeFile(join("videos", "index.json"), JSON.stringify({ fecha: new Date().toISOString(), videos: hechos }, null, 1) + "\n");
 // Los diálogos, para ponerles la voz con otra herramienta
-await writeFile(join("videos", `${hoy}-guiones.txt`),
-  hechos.map((v) => `### ${v.archivo}  ·  ${v.juego}  ·  ${v.segundos} s\n${v.guion}`).join("\n\n") + "\n");
+const rutaGuiones = join("videos", `${hoy}-guiones.txt`);
+const antesGuiones = (await readFile(rutaGuiones, "utf8").catch(() => "")).split(/\n\n(?=### )/).filter(Boolean);
+const nuevos = hechos.map((v) => `### ${v.archivo}  ·  ${v.juego}  ·  ${v.segundos} s\n${v.guion}`);
+const porArchivo = new Map();
+for (const b of [...antesGuiones, ...nuevos]) porArchivo.set(b.split("\n")[0].split("·")[0].trim(), b.trim());
+await writeFile(rutaGuiones, [...porArchivo.values()].join("\n\n") + "\n");
 console.log(`Listos ${hechos.length} vídeos en videos/.`);
