@@ -4,50 +4,31 @@ on:
 jobs:
   mirar:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
-      - name: Fichas de las tiendas candidatas
+      - name: Euros en Driffle, Difmark y K4G
         run: |
           cat > p.mjs <<'JS'
           const UA={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)","Accept-Language":"es-ES,es;q=0.9"};
           const esperar=(ms)=>new Promise(r=>setTimeout(r,ms));
-          const locs=(t)=>[...t.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map(m=>m[1]);
-          async function txt(u){ const r=await fetch(u,{headers:UA,redirect:"follow"}); return [r.status, await r.text()]; }
-          function precio(t){
-            const ld=[...t.matchAll(/<script[^>]*ld\+json[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
-            const prod=ld.find(b=>/"Product"/.test(b))||"";
-            const g=(re)=>(prod.match(re)||t.match(re)||[])[1];
-            return {ld:ld.length, nombre:g(/"name"\s*:\s*"([^"]{3,120})"/), precio:g(/"price"\s*:\s*"?([0-9.,]+)/), moneda:g(/"priceCurrency"\s*:\s*"([A-Z]{3})"/), stock:g(/"availability"\s*:\s*"[^"]*\/(\w+)"/)};
-          }
-          const tiendas=[
-            ["driffle","https://driffle.com/sitemaps/products-sitemap-1.xml", /\/[a-z0-9-]+-p\d+|driffle\.com\/(es\/)?[a-z0-9-]+-key/],
-            ["difmark","https://difmark.com/sitemaps/sitemap-es-1.xml", /buy-.*-key-\d+/],
-            ["keys4us","https://keys4us.com/sitemap_index.xml", /product/],
-            ["bitcodes","https://bitcodes.co/wp-sitemap.xml", /product/],
-            ["gameseal","https://gameseal.com/es/sitemaps/sitemap.xml", /./],
-            ["k4g","https://cdn.k4g.com/files/sitemap/sitemap.xml", /./],
-            ["gamingdragons","https://www.gamingdragons.com/sitemap.xml", /./],
+          const ver=(t)=>{ const m=t.match(/"price"\s*:\s*"?([0-9.,]+)"?\s*,\s*"priceCurrency"\s*:\s*"([A-Z]{3})"/)||t.match(/"priceCurrency"\s*:\s*"([A-Z]{3})"\s*,\s*"price"\s*:\s*"?([0-9.,]+)/); return m?m.slice(1,3).join(" "):"-"; };
+          const pruebas=[
+            ["driffle base","https://driffle.com/007-first-light-deluxe-edition-europe-pc-steam-digital-key-p9995900",{}],
+            ["driffle ?currency=EUR","https://driffle.com/007-first-light-deluxe-edition-europe-pc-steam-digital-key-p9995900?currency=EUR",{}],
+            ["driffle cookie","https://driffle.com/007-first-light-deluxe-edition-europe-pc-steam-digital-key-p9995900",{Cookie:"currency=EUR; country=ES"}],
+            ["driffle /es/","https://driffle.com/es/007-first-light-deluxe-edition-europe-pc-steam-digital-key-p9995900",{}],
+            ["difmark es","https://difmark.com/es/buy-cheap-csgolive-key-100-usd-12533",{}],
+            ["difmark ?currency=EUR","https://difmark.com/es/buy-cheap-csgolive-key-100-usd-12533?currency=EUR",{}],
+            ["difmark cookie","https://difmark.com/es/buy-cheap-csgolive-key-100-usd-12533",{Cookie:"currency=EUR"}],
+            ["difmark ?cur=eur","https://difmark.com/es/buy-cheap-csgolive-key-100-usd-12533?cur=EUR",{}],
           ];
-          for(const [n,mapa,filtro] of tiendas){
-            try{
-              let [st,t]=await txt(mapa); let us=locs(t);
-              console.log(`=== ${n} ${mapa} -> ${st} ${us.length} entradas`);
-              // si es índice de mapas, entrar en el primero que parezca de productos
-              if(us.length && /\.xml(\.gz)?$/.test(us[0])){
-                const sub=us.find(u=>/product/i.test(u)&&/es|spa/i.test(u))||us.find(u=>/product/i.test(u))||us[0];
-                console.log(`   submapas ej: ${us.slice(0,6).join(" | ")}`);
-                await esperar(1200); [st,t]=await txt(sub); us=locs(t); console.log(`   entro en ${sub} -> ${st} ${us.length} urls`);
-                if(us.length && /\.xml(\.gz)?$/.test(us[0])){ const sub2=us[0]; await esperar(1200); [st,t]=await txt(sub2); us=locs(t); console.log(`   y en ${sub2} -> ${us.length} urls`); }
-              }
-              const prods=us.filter(u=>filtro.test(u)&&!/\.xml/.test(u)&&!/account|cuenta/i.test(u));
-              console.log(`   ej urls: ${prods.slice(0,3).join(" | ")}`);
-              for(const u of prods.slice(5,7)){
-                await esperar(1500);
-                const [s2,h]=await txt(u);
-                console.log(`   FICHA ${s2} ${u} ${JSON.stringify(precio(h))}`);
-              }
-            }catch(e){ console.log(`=== ${n} ERROR ${e.message}`); }
-            await esperar(1000);
+          for(const [n,u,h] of pruebas){
+            try{ const r=await fetch(u,{headers:{...UA,...h}}); const t=await r.text(); console.log(`${n} -> ${r.status} ${ver(t)}`); }
+            catch(e){ console.log(`${n} ERROR ${e.message}`); }
+            await esperar(1500);
           }
+          // K4G: donde está el precio
+          const r=await fetch("https://k4g.com/product/age-of-empires-ii-steam-global-cd-key-definitive-edition-cd-key-3161EFB6",{headers:UA}); const t=await r.text();
+          for(const k of ['"price"','price','€','EUR','"offers"','data-price','__NEXT_DATA__','window.__']){ const i=t.indexOf(k); console.log("K4G "+k+" -> "+(i<0?"no":t.slice(Math.max(0,i-80),i+160).replace(/\s+/g," "))); }
           JS
           node p.mjs
