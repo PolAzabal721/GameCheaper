@@ -9,13 +9,13 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
-      - name: Imágenes de FC 27 desde Steam
+      - name: Imágenes del juego desde Steam
         run: |
           mkdir -p promo
           node -e '
           const fs=require("fs");
           (async()=>{
-            const input={ids:[{appid:4080220}],context:{language:"spanish",country_code:"ES"},data_request:{include_assets:true}};
+            const input={ids:[{appid:1903340}],context:{language:"spanish",country_code:"ES"},data_request:{include_assets:true}};
             const d=await (await fetch("https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?input_json="+encodeURIComponent(JSON.stringify(input)))).json();
             const a=d.response.store_items[0].assets; console.log(JSON.stringify(a));
             const base="https://shared.akamai.steamstatic.com/store_item_assets/"+a.asset_url_format.split("${FILENAME}")[0];
@@ -23,7 +23,7 @@ jobs:
               if(!f) continue;
               const r=await fetch(base+f); const b=Buffer.from(await r.arrayBuffer());
               const ext=f.split(".").pop().split("?")[0];
-              fs.writeFileSync("promo/fc27-"+k+"."+ext,b); console.log(k,r.status,b.length);
+              fs.writeFileSync("promo/e33-"+k+"."+ext,b); console.log(k,r.status,b.length);
             }
           })()'
       - name: Subir a una rama aparte
