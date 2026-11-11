@@ -418,11 +418,13 @@ button { cursor: pointer; }
 .pie-izq { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 /* Móvil: todo centrado y el canal de Telegram entre el texto y los enlaces */
 @media (max-width: 700px) {
-  .pie-in { flex-direction: column; gap: 12px; text-align: center; }
+  .pie-in { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 14px 12px; text-align: center; }
   .pie-izq { display: contents; }
-  .pie-in p { order: 1; }
-  .pie-tg { order: 2; text-align: left; }
-  .pie-in nav { order: 3; justify-content: center; }
+  .pie-in p { order: 1; flex-basis: 100%; }
+  .pie-tiendas, .pie-tg { order: 2; width: 52px; height: 52px; padding: 0; justify-content: center; align-self: center; border-radius: 14px; gap: 0; }
+  .pie-tiendas svg, .pie-tg .pie-tg-ico { width: 26px; height: 26px; }
+  .pie-tiendas .txt, .pie-tg > span { display: none; }
+  .pie-in nav { order: 3; flex-basis: 100%; justify-content: center; }
 }
 .pie-in p { margin: 0; max-width: 80ch; }
 .pie-tg { display: flex; align-items: center; gap: 12px; max-width: 420px; flex-shrink: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); color: var(--muted); text-decoration: none; }
@@ -562,17 +564,16 @@ button { cursor: pointer; }
   <div class="wrap pie-in">
     <div class="pie-izq">
       <p><strong>Pillao</strong> compara precios de videojuegos y no vende productos. Los precios son orientativos y se actualizan varias veces al día: el precio válido es siempre el de cada tienda. Algunos enlaces son de afiliado: si compras tras pulsarlos, la tienda puede pagarnos una pequeña comisión, sin coste para ti.</p>
-      <button type="button" class="pie-tiendas" id="pie-tiendas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9h18"/><path d="M9 20v-6h6v6"/></svg>Tiendas que comparamos</button>
+      <button type="button" class="pie-tiendas" id="pie-tiendas" aria-label="Tiendas que comparamos" title="Tiendas que comparamos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9h18"/><path d="M9 20v-6h6v6"/></svg><span class="txt">Tiendas que comparamos</span></button>
       <nav aria-label="Información legal">
         <a href="legal.html#aviso-legal">Aviso legal</a>
         <a href="legal.html#condiciones">Condiciones de uso</a>
         <a href="legal.html#privacidad">Privacidad</a>
         <a href="legal.html#cookies">Cookies</a>
-        <a href="juegos/">Lista de juegos</a>
         <button type="button" id="pie-cookies">Configurar cookies</button>
       </nav>
     </div>
-    <a class="pie-tg" href="https://t.me/pillaoChollos" target="_blank" rel="noopener">
+    <a class="pie-tg" href="https://t.me/pillaoChollos" target="_blank" rel="noopener" aria-label="Telegram de ofertas: Pillao Chollos" title="Telegram de ofertas: Pillao Chollos">
       <svg class="pie-tg-ico" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
       <span><b>Telegram de ofertas: Pillao Chollos</b>Te avisamos de las bajadas de precio más fuertes en cuanto aparecen. Gratis y sin spam.</span>
       <span class="pie-tg-btn">Unirme →</span>
