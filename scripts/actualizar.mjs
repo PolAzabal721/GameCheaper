@@ -761,6 +761,100 @@ async function kinguinUno(j, p) {
   return 1;
 }
 
+// ---------- Driffle y K4G (mercados de claves; sus mapas de productos) ----------
+// Las dos dejan leer las fichas en su robots.txt. Driffle da el precio en euros con ?currency=EUR (datos estructurados)
+// y K4G lo lleva en euros (en céntimos) dentro de la página. Solo claves de Europa o globales, sin cuentas ni PlayStation.
+const MK_MAX = +(ENV.MK_MAX || 100), MK_ROTA = +(ENV.MK_ROTA || 150), MK_ESPERA = +(ENV.MK_ESPERA || 1300);
+const MK_REGION_OK = /^(europe|eu|global|worldwide|spain|emea)$/;
+const MK_PC = /^(steam|ea-app|origin|uplay|ubisoft-connect|gog|epic-games|battle-net|rockstar|microsoft-store|windows)$/;
+const quitarCola = (t) => t.replace(/\b(standard edition|edicion estandar)\b/gi, "").replace(/\s+/g, " ").trim();
+// Driffle: «007-first-light-deluxe-edition-europe-pc-steam-digital-key-p9995900»
+function leerDriffle(u) {
+  const slug = (u.match(/driffle\.com\/([a-z0-9-]+)-p\d+$/) || [])[1];
+  if (!slug || ES_CUENTA.test(slug.replace(/-/g, " "))) return null;
+  const m = slug.match(/^(.*?)-(europe|eu|global|row|united-states|north-america|us|uk|united-kingdom|latam|asia|turkey|india|argentina|brazil|japan|middle-east|russia|cis|poland|germany|france|italy|spain|canada|australia|mexico|south-africa|emea)-(pc|xbox-series-xs|xbox-one|ps5|ps4|nintendo-switch|switch|mac|android|ios)(?:-([a-z-]+?))?-(digital-key|cd-key|key|gift-card|top-up|account)$/);
+  if (!m || !MK_REGION_OK.test(m[2])) return null;
+  let plat = null;
+  if (m[3] === "pc" && (!m[4] || MK_PC.test(m[4]))) plat = "PC";
+  else if (/^xbox/.test(m[3])) plat = "Xbox Series";
+  if (!plat || m[5] !== "digital-key" && m[5] !== "cd-key" && m[5] !== "key") return null;
+  return { url: u, llave: llave(quitarCola(m[1].replace(/-/g, " "))), plat, region: m[2] };
+}
+// K4G: «age-of-empires-ii-steam-global-cd-key-definitive-edition-cd-key-3161EFB6»
+function leerK4G(u) {
+  const slug = (u.match(/k4g\.com\/product\/([a-z0-9-]+)-[A-F0-9]{8}$/) || [])[1];
+  if (!slug || ES_CUENTA.test(slug.replace(/-/g, " "))) return null;
+  const m = slug.match(/^(.*?)-(steam|ea-app|origin|uplay|ubisoft-connect|gog|epic-games|battle-net|rockstar-games|microsoft-store|xbox-live|xbox-series-x-s|xbox-one)-(europe|eu|global|worldwide|[a-z-]+?)-(?:instant-)?cd-key-(.*?)-cd-key$/);
+  if (!m || !MK_REGION_OK.test(m[3])) return null;
+  const edicion = /^standard-edition$/.test(m[4]) ? "" : " " + m[4].replace(/-/g, " ");
+  return { url: u, llave: llave(quitarCola((m[1] + edicion).replace(/-/g, " "))), plat: /xbox/.test(m[2]) ? "Xbox Series" : "PC", region: m[3], drm: m[2] };
+}
+const MERCADOS = {
+  driffle: {
+    nombre: "Driffle", mapa: "https://driffle.com/sitemap.xml", submapas: (us) => us.filter((u) => /products-sitemap-\d+\.xml$/.test(u)).slice(0, +(ENV.DRIFFLE_MAPAS || 6)),
+    leer: leerDriffle,
+    async ficha(p) {
+      const h = await (await pedir(p.url + "?currency=EUR")).text();
+      const m = h.match(/"price"\s*:\s*"?([0-9.]+)"?\s*,\s*"priceCurrency"\s*:\s*"EUR"/) || h.match(/"priceCurrency"\s*:\s*"EUR"\s*,\s*"price"\s*:\s*"?([0-9.]+)/);
+      if (!m) return null;
+      return { precio: Number(m[1]), stock: !/OutOfStock/.test(h.slice(0, 200000)) };
+    },
+  },
+  k4g: {
+    nombre: "K4G", mapa: "https://cdn.k4g.com/files/sitemap/sitemap.xml", submapas: (us) => us.filter((u) => /\d+-products\.xml$/.test(u)).slice(0, +(ENV.K4G_MAPAS || 30)),
+    leer: leerK4G,
+    async ficha(p) {
+      const h = await (await pedir(p.url)).text();
+      const m = h.match(/"price"\s*:\s*\{\s*"EUR"\s*:\s*(\d+)/);
+      if (!m) return null;
+      return { precio: Number(m[1]) / 100, stock: true };
+    },
+  },
+};
+async function mapaMercado(id) {
+  const t = MERCADOS[id];
+  const indice = [...(await (await pedir(t.mapa)).text()).matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((m) => m[1]);
+  const productos = [];
+  for (const sm of t.submapas(indice)) {
+    for (const u of [...(await (await pedir(sm)).text()).matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((m) => m[1])) {
+      const p = t.leer(u); if (p) productos.push(p);
+    }
+    await esperar(800);
+  }
+  if (productos.length < 500) throw new Error(`el mapa de ${t.nombre} trae muy pocas claves válidas (${productos.length})`);
+  return productos;
+}
+async function recorrerMercado(id, juegos, cuenta, avisos, caidas) {
+  const t = MERCADOS[id];
+  const productos = await mapaMercado(id);
+  // Por juego y plataforma, una ficha (las globales y europeas valen igual en España)
+  const porLlave = new Map();
+  for (const p of productos) { const k = p.llave + "|" + p.plat; if (!porLlave.has(k)) porLlave.set(k, p); }
+  const enCat = [];
+  for (const j of juegos.values()) {
+    if (j.tipo === "tarjeta") continue;
+    for (const plat of ["PC", "Xbox Series"]) { const p = porLlave.get(llave(j.titulo) + "|" + plat); if (p) enCat.push({ j, p, pop: j.pop }); }
+  }
+  enCat.sort((a, b) => a.pop - b.pop);
+  const lista = [...enCat.slice(0, MK_MAX), ...ventana(enCat.slice(MK_MAX), MK_ROTA)];
+  console.log(`${t.nombre}: ${productos.length} claves válidas en su mapa; ${enCat.length} coinciden con el catálogo; ${lista.length} en esta ejecución`);
+  let n = 0, fallos = 0;
+  for (const x of lista) {
+    try {
+      const f = await t.ficha(x.p);
+      if (f && f.precio > 0) {
+        const antes = x.j.ofertas.length;
+        ofertar(x.j, { tienda: id, plataforma: x.p.plat, precio: f.precio, stock: f.stock, drm: x.p.drm || undefined,
+          condicion: `Clave ${x.p.drm || (x.p.plat === "PC" ? "PC" : "Xbox")} · ${x.p.region === "global" ? "Global" : "Europa"}`, url: x.p.url, fuente: id });
+        if (x.j.ofertas.length >= antes) n++;
+      }
+    } catch (e) { if (++fallos <= 3) avisos.push(`${id}: ${e.message}`); if (fallos >= 8) { avisos.push(`${id}: demasiados fallos, paro`); caidas.add(id); break; } }
+    x.j.revisado.add(id); visitar(id, x.j);
+    await esperar(MK_ESPERA);
+  }
+  cuenta[id] = n;
+}
+
 // ---------- Alcampo (juegos en disco) ----------
 // Su tienda online tiene un buscador con los datos de cada producto (nombre, precio, disponibilidad y sección).
 // Su robots.txt permite consultarlo. Solo cogemos productos de la sección «Videojuegos» que no sean consolas ni accesorios,
@@ -1188,6 +1282,11 @@ async function main() {
       }
       cuenta.kinguin = nKin;
     } catch (e) { avisos.push(`kinguin: ${e.message}`); caidas.add("kinguin"); }
+  }
+  for (const id of Object.keys(MERCADOS)) {
+    if (ENV["SIN_" + id.toUpperCase()] === "1") continue;
+    try { await recorrerMercado(id, juegos, cuenta, avisos, caidas); }
+    catch (e) { avisos.push(`${id}: ${e.message}`); caidas.add(id); }
   }
   if (!(await intentar("alcampo", () => alcampo((j) => visitar("alcampo", j))))) caidas.add("alcampo");
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");

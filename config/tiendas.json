@@ -194,5 +194,23 @@
    "fisico"
   ],
   "busqueda": "https://www.ebay.es/sch/i.html?_nkw={q}&LH_ItemCondition=3000"
+ },
+ {
+  "id": "driffle",
+  "nombre": "Driffle",
+  "tipo": "marketplace",
+  "formatos": [
+   "digital"
+  ],
+  "busqueda": "https://driffle.com/search?q={q}"
+ },
+ {
+  "id": "k4g",
+  "nombre": "K4G",
+  "tipo": "marketplace",
+  "formatos": [
+   "digital"
+  ],
+  "busqueda": "https://k4g.com/store/games?q={q}"
  }
 ]
