@@ -1,16 +1,18 @@
 {
- "revisado": "2026-11-11T19:40",
+ "revisado": "2026-11-11T21:08",
  "referencia": {
-  "steam": 1857,
-  "game": 302,
-  "xbox": 11260,
-  "itad": 45160,
+  "steam": 1836,
+  "game": 304,
+  "xbox": 11333,
+  "itad": 44870,
   "eshop": 4712,
-  "gameseminuevos": 49,
-  "instantgaming": 1274,
+  "gameseminuevos": 50,
+  "instantgaming": 1146,
   "psstore": 397,
   "alcampo": 7,
-  "ebay": 201
+  "ebay": 195
  },
- "problemas": []
+ "problemas": [
+  "kinguin: la fuente se ha parado por errores"
+ ]
 }
