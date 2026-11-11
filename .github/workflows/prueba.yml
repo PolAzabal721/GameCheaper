@@ -4,36 +4,50 @@ on:
 jobs:
   mirar:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
-      - name: Estructura de Driffle y Difmark
+      - name: Fichas de las tiendas candidatas
         run: |
-          node -e '
+          cat > p.mjs <<'JS'
           const UA={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)","Accept-Language":"es-ES,es;q=0.9"};
           const esperar=(ms)=>new Promise(r=>setTimeout(r,ms));
-          const locs=(t)=>[...t.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
-          async function ficha(u, etiqueta){
-            const t=await (await fetch(u,{headers:UA})).text();
+          const locs=(t)=>[...t.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map(m=>m[1]);
+          async function txt(u){ const r=await fetch(u,{headers:UA,redirect:"follow"}); return [r.status, await r.text()]; }
+          function precio(t){
             const ld=[...t.matchAll(/<script[^>]*ld\+json[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
-            console.log(etiqueta+" FICHA "+u+" bytes "+t.length+" ld "+ld.length);
-            for(const b of ld) console.log("   LD: "+b.slice(0,600).replace(/\s+/g," "));
+            const prod=ld.find(b=>/"Product"/.test(b))||"";
+            const g=(re)=>(prod.match(re)||t.match(re)||[])[1];
+            return {ld:ld.length, nombre:g(/"name"\s*:\s*"([^"]{3,120})"/), precio:g(/"price"\s*:\s*"?([0-9.,]+)/), moneda:g(/"priceCurrency"\s*:\s*"([A-Z]{3})"/), stock:g(/"availability"\s*:\s*"[^"]*\/(\w+)"/)};
           }
-          (async()=>{
-            // DRIFFLE
-            const d=locs(await (await fetch("https://driffle.com/sitemap.xml",{headers:UA})).text());
-            console.log("DRIFFLE mapas: "+d.length); console.log(d.slice(0,8).join("\n")); console.log("..."); console.log(d.filter(u=>/product|game|es/i.test(u)).slice(0,8).join("\n"));
-            const dm=d.find(u=>/product/i.test(u)&&/es/i.test(u))||d.find(u=>/product/i.test(u))||d[0];
-            await esperar(1500);
-            const dp=locs(await (await fetch(dm,{headers:UA})).text());
-            console.log("DRIFFLE mapa "+dm+" -> "+dp.length+" urls"); console.log(dp.slice(0,4).join("\n"));
-            for(const u of dp.slice(0,2)){ await esperar(1500); await ficha(u,"DRIFFLE"); }
-            // DIFMARK
-            await esperar(1500);
-            const f=locs(await (await fetch("https://difmark.com/sitemap.xml",{headers:UA})).text());
-            console.log("DIFMARK mapas: "+f.length); console.log(f.slice(0,15).join("\n"));
-            const fm=f.find(u=>/product|key|game/i.test(u)&&/en|es/i.test(u))||f.find(u=>/product/i.test(u))||f[0];
-            await esperar(1500);
-            const fp=locs(await (await fetch(fm,{headers:UA})).text());
-            console.log("DIFMARK mapa "+fm+" -> "+fp.length+" urls"); console.log(fp.slice(0,6).join("\n"));
-            for(const u of fp.filter(u=>!/account/i.test(u)).slice(0,2)){ await esperar(1500); await ficha(u,"DIFMARK"); }
-          })()'
+          const tiendas=[
+            ["driffle","https://driffle.com/sitemaps/products-sitemap-1.xml", /\/[a-z0-9-]+-p\d+|driffle\.com\/(es\/)?[a-z0-9-]+-key/],
+            ["difmark","https://difmark.com/sitemaps/sitemap-es-1.xml", /buy-.*-key-\d+/],
+            ["keys4us","https://keys4us.com/sitemap_index.xml", /product/],
+            ["bitcodes","https://bitcodes.co/wp-sitemap.xml", /product/],
+            ["gameseal","https://gameseal.com/es/sitemaps/sitemap.xml", /./],
+            ["k4g","https://cdn.k4g.com/files/sitemap/sitemap.xml", /./],
+            ["gamingdragons","https://www.gamingdragons.com/sitemap.xml", /./],
+          ];
+          for(const [n,mapa,filtro] of tiendas){
+            try{
+              let [st,t]=await txt(mapa); let us=locs(t);
+              console.log(`=== ${n} ${mapa} -> ${st} ${us.length} entradas`);
+              // si es índice de mapas, entrar en el primero que parezca de productos
+              if(us.length && /\.xml(\.gz)?$/.test(us[0])){
+                const sub=us.find(u=>/product/i.test(u)&&/es|spa/i.test(u))||us.find(u=>/product/i.test(u))||us[0];
+                console.log(`   submapas ej: ${us.slice(0,6).join(" | ")}`);
+                await esperar(1200); [st,t]=await txt(sub); us=locs(t); console.log(`   entro en ${sub} -> ${st} ${us.length} urls`);
+                if(us.length && /\.xml(\.gz)?$/.test(us[0])){ const sub2=us[0]; await esperar(1200); [st,t]=await txt(sub2); us=locs(t); console.log(`   y en ${sub2} -> ${us.length} urls`); }
+              }
+              const prods=us.filter(u=>filtro.test(u)&&!/\.xml/.test(u)&&!/account|cuenta/i.test(u));
+              console.log(`   ej urls: ${prods.slice(0,3).join(" | ")}`);
+              for(const u of prods.slice(5,7)){
+                await esperar(1500);
+                const [s2,h]=await txt(u);
+                console.log(`   FICHA ${s2} ${u} ${JSON.stringify(precio(h))}`);
+              }
+            }catch(e){ console.log(`=== ${n} ERROR ${e.message}`); }
+            await esperar(1000);
+          }
+          JS
+          node p.mjs
