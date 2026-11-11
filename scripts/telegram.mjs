@@ -5,13 +5,13 @@
 //   - el precio ha BAJADO respecto a la actualización anterior (así no se anuncian ofertas que ya existían),
 //   - y queda al menos un 50 % por debajo de su precio normal, o es su mínimo histórico con al menos un 30 % menos;
 //   - solo juegos conocidos (los POPULARES primeros del catálogo), nuevos y con stock; ni tarjetas regalo ni DLC sueltos.
-// Como mucho MAXIMO mensajes por actualización, y el mismo juego en la misma tienda no se repite en 7 días salvo que baje más.
+// Como mucho MAXIMO mensajes por actualización, y un juego ya publicado no vuelve a salir en 15 días (en ninguna tienda, aunque baje más).
 import { readFile, writeFile } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 
 const ENV = process.env;
 const TOKEN = (ENV.TELEGRAM_BOT_TOKEN || "").trim(), CANAL = (ENV.TELEGRAM_CANAL || "").trim();
-const POPULARES = +(ENV.TG_POPULARES || 2000), MAXIMO = ENV.TG_EJEMPLO ? 1 : +(ENV.TG_MAXIMO || 5), DIAS = 7;
+const POPULARES = +(ENV.TG_POPULARES || 2000), MAXIMO = ENV.TG_EJEMPLO ? 1 : +(ENV.TG_MAXIMO || 5), DIAS = 15;
 const SITIO = "https://pillaojuegos.com/";
 if (!TOKEN || !CANAL) { console.log("Telegram: faltan TELEGRAM_BOT_TOKEN o TELEGRAM_CANAL; no publico nada."); process.exit(0); }
 
@@ -28,6 +28,13 @@ const clave = (j, o) => `${j.id}|${o.tienda}|${o.plataforma}|${o.formato}`;
 const previo = new Map();
 for (const j of antes.juegos) for (const o of j.ofertas) if (o.estado !== "usado") previo.set(clave(j, o), total(o));
 
+// Días desde que se publicó por última vez cualquier oferta de ese juego (Infinity si nunca)
+const ultimoPorJuego = new Map();
+for (const [k, v] of Object.entries(estado.publicados || {})) {
+  const id = k.split("|")[0], t = Date.parse(v.fecha);
+  if (!(ultimoPorJuego.get(id) > t)) ultimoPorJuego.set(id, t);
+}
+const publicadoHace = (id) => (ultimoPorJuego.has(id) ? (Date.now() - ultimoPorJuego.get(id)) / 86400000 : Infinity);
 const candidatos = [];
 for (const j of ahora.juegos) {
   if ((j.pop || 99999) > POPULARES || j.tipo === "tarjeta" || j.tipo === "dlc") continue;
@@ -42,8 +49,7 @@ for (const j of ahora.juegos) {
     const dto = 1 - p / ref, minimo = j.minimo && p <= j.minimo + 0.01;
     if (!(dto >= 0.5 || (minimo && dto >= 0.3))) continue;
     if (ref > p * 6) continue;                                  // un «precio normal» 6 veces mayor es un dato erróneo
-    const ya = estado.publicados[clave(j, o)];
-    if (ya && Date.now() - Date.parse(ya.fecha) < DIAS * 86400000 && p >= ya.precio - 0.01) continue;
+    if (publicadoHace(j.id) < DIAS) continue;               // el mismo juego no se repite en 15 días
     candidatos.push({ j, o, p, ref, dto, minimo, nota: dto * 100 + (minimo ? 15 : 0) + Math.max(0, 20 - (j.pop || 99999) / 100) });
   }
 }
@@ -100,7 +106,7 @@ for (const { j, o, p, ref, dto, minimo } of elegidos) {
   } catch (e) { console.warn(`  no se ha podido publicar «${j.titulo}»: ${e.message}`); if (/chat not found|not enough rights|bot was kicked|Unauthorized/i.test(e.message)) break; }
   await new Promise((r) => setTimeout(r, 3500)); // Telegram limita los mensajes seguidos a un canal
 }
-// Olvida lo publicado hace más de 7 días
+// Olvida lo publicado hace más de 15 días
 for (const [k, v] of Object.entries(estado.publicados)) if (Date.now() - Date.parse(v.fecha) > DIAS * 86400000) delete estado.publicados[k];
 if (!ENV.TG_EJEMPLO) await writeFile("data/telegram.json", JSON.stringify(estado) + "\n");
 console.log(`Telegram: ${enviados} mensajes publicados en ${CANAL}.`);
