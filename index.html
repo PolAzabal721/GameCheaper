@@ -397,6 +397,10 @@ button { cursor: pointer; }
   .av-precio input { width: 110px; }
 }
 .of-p s.antes { color: var(--muted); text-decoration-thickness: 1.5px; }
+.premio-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #c9b8ff; background: #2b2152; padding: 2px 7px; border-radius: 4px; }
+.premio-tag.oro { color: #1d1600; background: linear-gradient(90deg, #ffd23f, #ffb703); }
+.premio-tag.mas { background: transparent; border: 1px solid #3b3170; }
+.premios { display: flex; flex-wrap: wrap; gap: 5px; }
 .minimo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--tag-ink); background: var(--tag); padding: 2px 7px; border-radius: 4px; }
 .tipo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
 .tipo-tag.t-tarjeta { background: var(--good-soft); color: var(--good); }
@@ -544,6 +548,7 @@ button { cursor: pointer; }
             <option value="proximos">Próximos lanzamientos</option>
             <option value="barato">Más barato</option>
             <option value="descuento">Mayor descuento</option>
+            <option value="premiados">Premiados</option>
             <option value="az">A–Z</option>
           </select>
         </label>
@@ -1229,6 +1234,7 @@ button { cursor: pointer; }
       (enGrid ? '<div class="exp-barra"><button type="button" class="btn-menos" data-cerrar="' + esc(j.id) + '" aria-label="Ver en pequeño" title="Ver en pequeño"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"/></svg></button></div>' : "") +
       '<div class="j-cab"><div class="j-izq">' + imagenJuego(j, true, "j-cov") + '<div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") + etiquetaFecha(j) +
       (enMinimo ? '<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>' : "") +
+      etiquetaPremio(j) +
       (j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo" }[j.tipo] || "") + "</span>" : "") + campanaTitulo(j) + '<div class="plats">' +
       j.plataformas.filter(function (p) { return p !== "Tarjeta regalo"; }).map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
       (r.nuevo != null || r.usado != null || j.pvp ? '<div class="resumen">' +
@@ -1745,7 +1751,7 @@ button { cursor: pointer; }
     var qTxt = f.q.trim(), q = norm(qTxt);
     var palabras = q.split(/\s+/).filter(Boolean);
     var filas = [], vistos = {};
-    var porFecha = f.orden === "recientes" ? esReciente : f.orden === "proximos" ? esProximo : null;
+    var porFecha = f.orden === "recientes" ? esReciente : f.orden === "proximos" ? esProximo : f.orden === "premiados" ? function (j) { return !!premio(j); } : null;
     // Juegos, DLC o tarjetas regalo: el filtro vale igual para lo del catálogo y para lo que acaban de traer las tiendas
     var esDelTipo = function (j) {
       var tipoJ = (j.tipo === "edicion" ? "juego" : j.tipo) || "juego"; // las ediciones especiales son juegos
@@ -1783,6 +1789,7 @@ button { cursor: pointer; }
       if (f.orden === "recientes") return (b.j.lanzamiento || "").localeCompare(a.j.lanzamiento || "") || (a.j.pop || 99999) - (b.j.pop || 99999);
       if (f.orden === "proximos") return (a.j.lanzamiento || "9999").localeCompare(b.j.lanzamiento || "9999") || (a.j.pop || 99999) - (b.j.pop || 99999);
       if (f.orden === "descuento") return b.dto - a.dto;
+      if (f.orden === "premiados") return puntosPremio(b.j) - puntosPremio(a.j) || (TIPO_ORDEN[a.j.tipo] || 0) - (TIPO_ORDEN[b.j.tipo] || 0) || (a.j.pop || 99999) - (b.j.pop || 99999);
       if (f.orden === "az") return a.j.titulo.localeCompare(b.j.titulo, "es");
       if (f.orden === "barato") return total(a.mejor) - total(b.mejor);
       return (a.j.pop || 99999) - (b.j.pop || 99999);
@@ -1807,6 +1814,96 @@ button { cursor: pointer; }
     lista.classList.toggle("cuadricula", f.vista === "cuadricula");
     lista.innerHTML = estadoVivo + filas.slice(0, mostrar).map(function (r) { return f.vista === "cuadricula" && !abiertosGrid[r.j.id] ? mini(r) : tarjeta(r); }).join("") +
       (resto > 0 ? '<button type="button" class="btn mas-juegos" data-mas-juegos>Ver más juegos <span>(quedan ' + resto.toLocaleString("es-ES") + ")</span></button>" : "");
+  }
+
+  // ---------- Juegos premiados ----------
+  // The Game Awards (Juego del Año: ganador y nominados; y ganadores por categoría), BAFTA (Mejor juego) y DICE (Juego del Año).
+  // El año es el del juego (la ceremonia de BAFTA y DICE es al año siguiente). Comprobado en noviembre de 2026.
+  var GOTY = {
+    2025: ["Clair Obscur: Expedition 33", "Death Stranding 2: On the Beach", "Donkey Kong Bananza", "Hades II", "Hollow Knight: Silksong", "Kingdom Come: Deliverance II"],
+    2024: ["Astro Bot", "Balatro", "Black Myth: Wukong", "Elden Ring: Shadow of the Erdtree", "Final Fantasy VII Rebirth", "Metaphor: ReFantazio"],
+    2023: ["Baldur's Gate 3", "Alan Wake 2", "Marvel's Spider-Man 2", "Resident Evil 4", "Super Mario Bros. Wonder", "The Legend of Zelda: Tears of the Kingdom"],
+    2022: ["Elden Ring", "A Plague Tale: Requiem", "God of War Ragnarök", "Horizon Forbidden West", "Stray", "Xenoblade Chronicles 3"],
+    2021: ["It Takes Two", "Deathloop", "Metroid Dread", "Psychonauts 2", "Ratchet & Clank: Rift Apart", "Resident Evil Village"],
+    2020: ["The Last of Us Part II", "Animal Crossing: New Horizons", "Doom Eternal", "Final Fantasy VII Remake", "Ghost of Tsushima", "Hades"],
+    2019: ["Sekiro: Shadows Die Twice", "Control", "Death Stranding", "Resident Evil 2", "Super Smash Bros. Ultimate", "The Outer Worlds"],
+    2018: ["God of War", "Assassin's Creed Odyssey", "Celeste", "Marvel's Spider-Man", "Monster Hunter: World", "Red Dead Redemption 2"],
+    2017: ["The Legend of Zelda: Breath of the Wild", "Horizon Zero Dawn", "Persona 5", "PlayerUnknown's Battlegrounds", "Super Mario Odyssey"],
+    2016: ["Overwatch", "Doom", "Inside", "Titanfall 2", "Uncharted 4: A Thief's End"],
+    2015: ["The Witcher 3: Wild Hunt", "Bloodborne", "Fallout 4", "Metal Gear Solid V: The Phantom Pain", "Super Mario Maker"],
+    2014: ["Dragon Age: Inquisition", "Bayonetta 2", "Dark Souls II", "Hearthstone: Heroes of Warcraft", "Middle-earth: Shadow of Mordor"]
+  };
+  // Ganadores por categoría en The Game Awards: [año, categoría, juego]
+  var TGA_CAT = {
+    dir: "Mejor dirección", nar: "Mejor narrativa", arte: "Mejor dirección de arte", indie: "Mejor indie", acc: "Mejor juego de acción",
+    aav: "Mejor acción/aventura", rpg: "Mejor RPG", luc: "Mejor juego de lucha", fam: "Mejor juego familiar", est: "Mejor estrategia/simulación",
+    dep: "Mejor deportes/conducción", mul: "Mejor multijugador"
+  };
+  var TGA = [
+    [2025, "dir nar arte indie rpg", "Clair Obscur: Expedition 33"], [2025, "acc", "Hades II"], [2025, "aav", "Hollow Knight: Silksong"], [2025, "luc", "Fatal Fury: City of the Wolves"],
+    [2025, "fam", "Donkey Kong Bananza"], [2025, "est", "Final Fantasy Tactics: The Ivalice Chronicles"], [2025, "dep", "Mario Kart World"], [2025, "mul", "ARC Raiders"],
+    [2024, "dir aav fam", "Astro Bot"], [2024, "nar arte rpg", "Metaphor: ReFantazio"], [2024, "indie", "Balatro"], [2024, "acc", "Black Myth: Wukong"], [2024, "luc", "Tekken 8"],
+    [2024, "est", "Frostpunk 2"], [2024, "dep", "EA Sports FC 25"], [2024, "mul", "Helldivers 2"],
+    [2023, "dir nar arte", "Alan Wake 2"], [2023, "indie", "Sea of Stars"], [2023, "aav", "The Legend of Zelda: Tears of the Kingdom"], [2023, "rpg mul", "Baldur's Gate 3"],
+    [2023, "fam", "Super Mario Bros. Wonder"], [2023, "est", "Pikmin 4"], [2023, "acc", "Armored Core VI: Fires of Rubicon"], [2023, "luc", "Street Fighter 6"], [2023, "dep", "Forza Motorsport"],
+    [2022, "dir arte rpg", "Elden Ring"], [2022, "nar aav", "God of War Ragnarök"], [2022, "indie", "Stray"], [2022, "fam", "Kirby and the Forgotten Land"],
+    [2022, "est", "Mario + Rabbids Sparks of Hope"], [2022, "mul", "Splatoon 3"], [2022, "acc", "Bayonetta 3"], [2022, "luc", "MultiVersus"], [2022, "dep", "Gran Turismo 7"],
+    [2021, "dir arte", "Deathloop"], [2021, "indie", "Kena: Bridge of Spirits"], [2021, "aav", "Metroid Dread"], [2021, "fam mul", "It Takes Two"], [2021, "dep", "Forza Horizon 5"],
+    [2021, "nar", "Marvel's Guardians of the Galaxy"], [2021, "acc", "Returnal"], [2021, "rpg", "Tales of Arise"], [2021, "luc", "Guilty Gear -Strive-"], [2021, "est", "Age of Empires IV"],
+    [2020, "dir nar aav", "The Last of Us Part II"], [2020, "indie acc", "Hades"], [2020, "rpg", "Final Fantasy VII Remake"], [2020, "mul", "Among Us"], [2020, "arte", "Ghost of Tsushima"],
+    [2020, "luc", "Mortal Kombat 11 Ultimate"], [2020, "fam", "Animal Crossing: New Horizons"], [2020, "est", "Microsoft Flight Simulator"], [2020, "dep", "Tony Hawk's Pro Skater 1 + 2"],
+    [2019, "dir", "Death Stranding"], [2019, "nar indie rpg", "Disco Elysium"], [2019, "arte", "Control"], [2019, "acc", "Devil May Cry 5"], [2019, "aav", "Sekiro: Shadows Die Twice"],
+    [2019, "luc", "Super Smash Bros. Ultimate"], [2019, "fam", "Luigi's Mansion 3"], [2019, "est", "Fire Emblem: Three Houses"], [2019, "dep", "Crash Team Racing Nitro-Fueled"], [2019, "mul", "Apex Legends"],
+    [2018, "dir aav", "God of War"], [2018, "nar", "Red Dead Redemption 2"], [2018, "arte", "Return of the Obra Dinn"], [2018, "indie", "Celeste"], [2018, "acc", "Dead Cells"],
+    [2018, "rpg", "Monster Hunter: World"], [2018, "luc", "Dragon Ball FighterZ"], [2018, "fam", "Overcooked 2"], [2018, "est", "Into the Breach"], [2018, "dep", "Forza Horizon 4"], [2018, "mul", "Fortnite"],
+    [2017, "dir", "The Legend of Zelda: Breath of the Wild"], [2017, "nar", "What Remains of Edith Finch"], [2017, "arte indie", "Cuphead"], [2017, "acc", "Wolfenstein II: The New Colossus"],
+    [2017, "rpg", "Persona 5"], [2017, "luc", "Injustice 2"], [2017, "fam", "Super Mario Odyssey"], [2017, "est", "Mario + Rabbids Kingdom Battle"], [2017, "dep", "Forza Motorsport 7"],
+    [2016, "dir mul", "Overwatch"], [2016, "nar", "Uncharted 4: A Thief's End"], [2016, "arte indie", "Inside"], [2016, "acc", "Doom"], [2016, "aav", "Dishonored 2"],
+    [2016, "rpg", "The Witcher 3: Wild Hunt – Blood and Wine"], [2016, "luc", "Street Fighter V"], [2016, "est", "Sid Meier's Civilization VI"], [2016, "dep", "Forza Horizon 3"],
+    [2015, "nar", "Her Story"], [2015, "arte", "Ori and the Blind Forest"], [2015, "indie dep", "Rocket League"], [2015, "aav", "Metal Gear Solid V: The Phantom Pain"],
+    [2015, "rpg", "The Witcher 3: Wild Hunt"], [2015, "luc", "Mortal Kombat X"], [2015, "fam", "Super Mario Maker"], [2015, "mul", "Splatoon"],
+    [2014, "indie", "Shovel Knight"], [2014, "luc", "Super Smash Bros. for Wii U"], [2014, "fam dep", "Mario Kart 8"]
+  ];
+  var BAFTA = { 2025: "Clair Obscur: Expedition 33", 2024: "Astro Bot", 2023: "Baldur's Gate 3", 2022: "Vampire Survivors", 2021: "Returnal", 2020: "Hades", 2019: "Outer Wilds",
+    2018: "God of War", 2017: "What Remains of Edith Finch", 2016: "Uncharted 4: A Thief's End", 2015: "Fallout 4" };
+  var DICE = { 2025: "Clair Obscur: Expedition 33", 2024: "Astro Bot", 2023: "Baldur's Gate 3", 2022: "Elden Ring", 2021: "It Takes Two", 2020: "Hades", 2019: "Untitled Goose Game",
+    2018: "God of War", 2017: "The Legend of Zelda: Breath of the Wild", 2016: "Overwatch", 2015: "Fallout 4" };
+  // Mismo juego con otro nombre en las tiendas
+  var PREMIO_ALIAS = { "alan wake ii": "alan wake 2", "wolfenstein 2 the new colossus": "wolfenstein ii the new colossus", "civilization vi": "sid meier s civilization vi",
+    "doom 2016": "doom", "tony hawk s pro skater 1 2": "tony hawk s pro skater 1 2", "armored core 6 fires of rubicon": "armored core vi fires of rubicon" };
+  var PREMIO_DE = null;
+  // Cada premio: { t: texto de la etiqueta, p: peso para ordenar, g: ganador de Juego del Año }
+  function premiosDe(j) {
+    if (!PREMIO_DE) {
+      PREMIO_DE = {};
+      var poner = function (titulo, pr) { var k = claveTitulo(titulo); (PREMIO_DE[k] = PREMIO_DE[k] || []).push(pr); };
+      Object.keys(GOTY).forEach(function (a) { GOTY[a].forEach(function (t, i) {
+        poner(t, i === 0 ? { t: "🏆 Juego del Año " + a, p: 100 + (+a - 2000) / 100, g: 1, a: +a } : { t: "Nominado Juego del Año " + a, p: 20 + (+a - 2000) / 100, a: +a });
+      }); });
+      Object.keys(BAFTA).forEach(function (a) { poner(BAFTA[a], { t: "BAFTA Mejor juego " + a, p: 80 + (+a - 2000) / 100, g: 1, a: +a }); });
+      Object.keys(DICE).forEach(function (a) { poner(DICE[a], { t: "DICE Juego del Año " + a, p: 80 + (+a - 2000) / 100, g: 1, a: +a }); });
+      TGA.forEach(function (x) { x[1].split(" ").forEach(function (c) { poner(x[2], { t: TGA_CAT[c] + " " + x[0], p: 30 + (x[0] - 2000) / 100, a: x[0] }); }); });
+      Object.keys(PREMIO_DE).forEach(function (k) { PREMIO_DE[k].sort(function (a, b) { return b.p - a.p; }); });
+    }
+    if (j._premios !== undefined) return j._premios;
+    var k = claveTitulo(j.titulo); k = PREMIO_ALIAS[k] || k;
+    var ps = PREMIO_DE[k] || null;
+    // Ediciones del mismo juego («The Witcher 3: Wild Hunt Game of the Year Edition»)
+    // (el resto del nombre tiene que ser solo «edición»: así «Elden Ring Nightreign» no cuenta como Elden Ring)
+    if (!ps && j.tipo === "edicion") {
+      var mejor = "";
+      for (var b in PREMIO_DE) if (k.indexOf(b + " ") === 0 && b.length > mejor.length &&
+        /^(digital|deluxe|ultimate|gold|complete|completa|definitive|definitiva|game of the year|goty|premium|standard|collector s|collectors|edition|edicion|bundle|enhanced|director s cut|remastered|\s)+$/.test(k.slice(b.length + 1))) mejor = b;
+      if (mejor) ps = PREMIO_DE[mejor];
+    }
+    return (j._premios = ps);
+  }
+  function premio(j) { var ps = premiosDe(j); return ps ? ps[0] : null; }
+  function puntosPremio(j) { var ps = premiosDe(j); return ps ? ps.reduce(function (s, p) { return s + p.p; }, 0) : 0; }
+  // Etiquetas: como mucho las 3 más importantes, en cualquier vista (con más, la ficha queda recargada)
+  function etiquetaPremio(j) {
+    var ps = premiosDe(j); if (!ps) return "";
+    return '<div class="premios">' + ps.slice(0, 3).map(function (p) { return '<span class="premio-tag' + (p.g ? " oro" : "") + '">' + esc(p.t) + "</span>"; }).join("") + "</div>";
   }
 
   function claveTitulo(t) { return norm(String(t).replace(/[™®©]/g, "")).replace(/[^a-z0-9]+/g, " ").trim(); }
