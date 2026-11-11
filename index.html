@@ -304,6 +304,32 @@ button { cursor: pointer; }
 .m-cab h2 { margin: 0; font-family: var(--f-display); font-size: 22px; line-height: 1.15; letter-spacing: -.01em; }
 .m-cab p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
 .m-cerrar { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface-2); font-size: 20px; line-height: 1; padding: 0; }
+
+/* Estrellas de Trustpilot y fichas de tienda */
+.tp { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); white-space: nowrap; text-decoration: none; }
+.tp:hover { color: var(--ink); }
+.tp-est { position: relative; display: inline-block; font-size: 12px; letter-spacing: 1px; line-height: 1; color: var(--line); }
+.tp-est::before { content: "★★★★★"; }
+.tp-est i { position: absolute; inset: 0 auto 0 0; overflow: hidden; color: #00b67a; font-style: normal; white-space: nowrap; }
+.tp-est i::before { content: "★★★★★"; }
+.pie-tiendas { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2); color: var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
+.pie-tiendas:hover { border-color: var(--accent); }
+.pie-tiendas svg { width: 18px; height: 18px; color: var(--accent); }
+.ti-grupo { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.ti-lista { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.ti { border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.ti-cab { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.ti-cab b { font-size: 15.5px; }
+.ti p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.ti ul { margin: 0; padding: 0; list-style: none; font-size: 13.5px; display: grid; gap: 3px; }
+.ti li { padding-left: 20px; position: relative; }
+.ti li::before { position: absolute; left: 0; font-weight: 700; }
+.ti .si li::before { content: "✓"; color: #22a86d; }
+.ti .no li::before { content: "✗"; color: #d9712e; }
+.ti-pie { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.ti-pie a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.ti-of { font-size: 12px; color: var(--muted); }
+.ti-nota { font-size: 12.5px; color: var(--muted); margin: 0; }
 .h-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .h-stats div { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 0; }
 .h-stats span { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
@@ -529,6 +555,7 @@ button { cursor: pointer; }
   <div class="wrap pie-in">
     <div class="pie-izq">
       <p><strong>Pillao</strong> compara precios de videojuegos y no vende productos. Los precios son orientativos y se actualizan varias veces al día: el precio válido es siempre el de cada tienda. Algunos enlaces son de afiliado: si compras tras pulsarlos, la tienda puede pagarnos una pequeña comisión, sin coste para ti.</p>
+      <button type="button" class="pie-tiendas" id="pie-tiendas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9h18"/><path d="M9 20v-6h6v6"/></svg>Tiendas que comparamos</button>
       <nav aria-label="Información legal">
         <a href="legal.html#aviso-legal">Aviso legal</a>
         <a href="legal.html#condiciones">Condiciones de uso</a>
@@ -565,6 +592,9 @@ button { cursor: pointer; }
   </div>
 </div>
 
+<div class="modal" id="modal-ti" role="dialog" aria-modal="true" aria-labelledby="ti-tit" hidden>
+  <div class="modal-in" id="modal-ti-in" style="max-width: 980px"></div>
+</div>
 <div class="modal" id="modal-av" role="dialog" aria-modal="true" aria-labelledby="av-tit" hidden>
   <div class="modal-in" id="modal-in"></div>
 </div>
@@ -599,6 +629,55 @@ button { cursor: pointer; }
   }
   var consent = leerConsent();
   function prefsOk() { return !!(consent && consent.preferencias); }
+
+  // ---------- Fichas de tienda y notas de Trustpilot (consultadas a mano el 11 de noviembre de 2026) ----------
+  // tp: [nota, número de reseñas, página en Trustpilot]; of: tienda oficial de la plataforma o de la editora
+  var TIENDAS_INFO = {"steam":{"d":"La tienda de PC de Valve, donde se activan la mayoría de claves de PC.","v":["Tienda oficial: el juego va directo a tu biblioteca","Rebajas frecuentes y muy grandes (verano, invierno, otoño)","Reembolso en 14 días si has jugado menos de 2 horas"],"x":["Fuera de rebajas suele estar a precio completo","Solo juegos de PC"],"of":1,"tp":[2.0,539,"https://www.trustpilot.com/review/store.steampowered.com"]},"eshop":{"d":"La tienda digital oficial de Nintendo para Switch y Switch 2.","v":["Tienda oficial: descarga inmediata en tu consola","Ofertas semanales y demos gratuitas"],"x":["Rebajas más pequeñas que en PC","Por norma general no hay reembolsos"],"of":1,"tp":[1.3,1433,"https://www.trustpilot.com/review/www.nintendo.com"]},"xbox":{"d":"La tienda oficial de Microsoft para Xbox y PC.","v":["Tienda oficial","Muchos juegos entran en Game Pass","Un mismo juego vale a veces en Xbox y PC (Play Anywhere)"],"x":["Precios altos fuera de oferta"],"of":1},"psstore":{"d":"La tienda digital oficial de Sony para PS5 y PS4.","v":["Tienda oficial","Ofertas cada semana y rebajas grandes en temporadas"],"x":["Precios altos fuera de oferta","Sin reembolso una vez descargado el juego"],"of":1},"itad-epicgamestore":{"d":"La tienda de PC de Epic Games (Fortnite, Unreal).","v":["Juegos gratis cada semana","Cupones de descuento en sus rebajas"],"x":["Menos funciones que Steam (comunidad, logros)"],"of":1,"tp":[1.3,7453,"https://www.trustpilot.com/review/www.epicgames.com"]},"itad-gog":{"d":"Tienda de PC de CD Projekt, famosa por vender juegos sin DRM.","v":["Juegos sin DRM: son tuyos para siempre","Reembolso hasta 30 días","Muchos clásicos actualizados para PCs modernos"],"x":["Catálogo más pequeño que Steam"],"of":1,"tp":[4.5,3818,"https://www.trustpilot.com/review/www.gog.com"]},"itad-ubisoftstore":{"d":"La tienda oficial de Ubisoft (Assassin's Creed, Far Cry…).","v":["Oficial de la editora","Descuentos extra con puntos de Ubisoft Connect"],"x":["Solo juegos de Ubisoft"],"of":1},"itad-eastore":{"d":"La tienda oficial de Electronic Arts (EA App).","v":["Oficial de la editora","Muchos juegos entran en EA Play"],"x":["Solo juegos de EA"],"of":1},"itad-blizzard":{"d":"La tienda oficial de Blizzard (Battle.net).","v":["Oficial de la editora"],"x":["Solo juegos de Blizzard y Activision"],"of":1},"instantgaming":{"d":"Tienda de claves francesa que compra en grandes cantidades a distribuidores y vende más barato.","v":["Precios muy por debajo del oficial","Entrega inmediata de la clave","Una de las tiendas de claves mejor valoradas"],"x":["Las claves pueden ser de otra región: revisa que valga en España","Soporte solo por tickets"],"tp":[4.7,844405,"https://www.trustpilot.com/review/instant-gaming.com"]},"kinguin":{"d":"Mercado de claves donde venden muchos vendedores distintos.","v":["Precios muy bajos y catálogo enorme","Muy bien valorada en Trustpilot"],"x":["Vende gente de terceros: mira la valoración del vendedor","Suma comisiones al pagar: revisa el total final"],"tp":[4.6,125615,"https://www.trustpilot.com/review/kinguin.net"]},"eneba":{"d":"Mercado de claves lituano con vendedores de todo el mundo.","v":["Precios muy bajos","Muy bien valorada en Trustpilot"],"x":["Vende gente de terceros","Comisión de servicio al pagar"],"tp":[4.4,330501,"https://www.trustpilot.com/review/eneba.com"]},"g2a":{"d":"El mercado de claves más grande, con vendedores de todo el mundo.","v":["De los precios más bajos","Catálogo enorme"],"x":["Vende gente de terceros: mira la valoración del vendedor","Comisión de servicio al pagar"],"tp":[4.0,350930,"https://www.trustpilot.com/review/g2a.com"]},"itad-humblestore":{"d":"Tienda de claves oficiales; parte de lo que pagas va a beneficencia.","v":["Claves oficiales de las editoras","Bundles muy baratos y donación a ONG"],"x":["Muchas quejas por la suscripción Humble Choice"],"tp":[1.9,2163,"https://www.trustpilot.com/review/www.humblebundle.com"]},"itad-fanatical":{"d":"Tienda británica de claves oficiales, autorizada por las editoras.","v":["Claves oficiales","Bundles y rebajas muy fuertes","Muy bien valorada"],"x":["Algunas claves tienen restricción de región"],"tp":[4.7,84363,"https://www.trustpilot.com/review/www.fanatical.com"]},"itad-greenmangaming":{"d":"Tienda británica de claves oficiales, autorizada por más de 1.000 editoras.","v":["Claves oficiales","Programa de puntos y descuentos para miembros"],"x":["Algunas claves tienen restricción de región"],"tp":[4.7,64541,"https://www.trustpilot.com/review/www.greenmangaming.com"]},"itad-gamesplanetuk":{"d":"Tienda de claves oficiales con versiones por país (Reino Unido, Francia, Alemania y EE. UU.).","v":["Claves oficiales","Rebajas frecuentes"],"x":["Cada versión cobra en su moneda: mira el precio final"],"tp":[4.6,743,"https://www.trustpilot.com/review/www.gamesplanet.com"]},"itad-gamersgate":{"d":"Tienda sueca de claves oficiales, de las más veteranas.","v":["Claves oficiales","Muchos juegos indie y de nicho"],"x":["Tienda pequeña: menos reseñas"],"tp":[4.5,705,"https://www.trustpilot.com/review/www.gamersgate.com"]},"itad-gamebillet":{"d":"Tienda de claves oficiales con programa de puntos.","v":["Claves oficiales","Muy bien valorada"],"x":["Tienda pequeña: menos reseñas"],"tp":[4.8,550,"https://au.trustpilot.com/review/gamebillet.com"]},"itad-allyouplay":{"d":"Tienda alemana de claves oficiales.","v":["Claves oficiales","Ofertas diarias"],"x":["Web y soporte en inglés o alemán"],"tp":[4.4,2264,"https://www.trustpilot.com/review/allyouplay.com"]},"itad-wingamestore":{"d":"Tienda estadounidense de claves oficiales para PC.","v":["Claves oficiales","Muy bien valorada"],"x":["Tienda pequeña: menos reseñas"],"tp":[4.7,393,"https://www.trustpilot.com/review/wingamestore.com"]},"itad-indiegalastore":{"d":"Tienda de bundles y juegos indie, con regalos gratis a menudo.","v":["Bundles muy baratos","Juegos gratis de vez en cuando"],"x":["Valoración regular en Trustpilot"],"tp":[3.6,2739,"https://www.trustpilot.com/review/www.indiegala.com"]},"itad-planetplay":{"d":"Tienda pequeña de claves oficiales.","v":["Claves oficiales"],"x":["Pocas reseñas todavía"],"tp":[4.6,44,"https://www.trustpilot.com/review/planetplay.com"]},"itad-dlgamer":{"d":"Tienda francesa de claves oficiales.","v":["Claves oficiales"],"x":["Valoración floja en Trustpilot"],"tp":[2.9,5180,"https://www.trustpilot.com/review/www.dlgamer.com"]},"itad-gamesporium":{"d":"Tienda pequeña de claves oficiales.","v":["Claves oficiales"],"x":["Muy pocas reseñas"],"tp":[4.6,24,"https://www.trustpilot.com/review/gamesporium.com"]},"itad-playsum":{"d":"Tienda pequeña de claves oficiales.","v":["Claves oficiales"],"x":["Pocas reseñas todavía"],"tp":[4.6,94,"https://www.trustpilot.com/review/playsum.live"]},"itad-playerland":{"d":"Tienda pequeña de claves oficiales.","v":["Claves oficiales","Buena valoración"],"x":["Pocas reseñas todavía"],"tp":[4.6,125,"https://www.trustpilot.com/review/player.land"]},"itad-zapagames":{"d":"Tienda pequeña de claves oficiales.","v":["Claves oficiales"],"x":["Sin reseñas en Trustpilot"]},"itad-dreamgame":{"d":"Tienda neerlandesa de claves oficiales.","v":["Claves oficiales"],"x":["Tienda pequeña"],"tp":[4.0,437,"https://www.trustpilot.com/review/dreamgame.com"]},"itad-gamesload":{"d":"Tienda alemana de claves oficiales.","v":["Claves oficiales"],"x":["Muy pocas reseñas y nota baja"],"tp":[2.3,15,"https://www.trustpilot.com/review/gamesload.eu"]},"itad-muve":{"d":"Tienda polaca de claves oficiales.","v":["Claves oficiales"],"x":["Muy pocas reseñas y nota baja","Web en polaco o inglés"],"tp":[2.7,14,"https://pl.trustpilot.com/review/muve.pl"]},"itad-macgamestore":{"d":"Tienda especializada en juegos para Mac.","v":["Claves oficiales","Juegos que funcionan en Mac"],"x":["Muy pocas reseñas"],"tp":[4.6,22,"https://www.trustpilot.com/review/www.macgamestore.com"]},"itad-fortunadigital":{"d":"Tienda pequeña de claves oficiales.","v":["Claves oficiales","Buena valoración"],"x":["Pocas reseñas todavía"],"tp":[4.7,61,"https://www.trustpilot.com/review/fortunadigital.net"]},"itad-zoomplatform":{"d":"Tienda de juegos clásicos sin DRM.","v":["Juegos sin DRM","Clásicos difíciles de encontrar"],"x":["Catálogo pequeño"]},"itad-fireflower":{"d":"Tienda pequeña de juegos indie.","v":["Juegos indie"],"x":["Casi sin reseñas"],"tp":[4.0,4,"https://www.trustpilot.com/review/fireflowergames.com"]},"game":{"d":"La cadena española de tiendas de videojuegos.","v":["Tiendas físicas por toda España","Puedes recoger en tienda","Precios de reserva y packs exclusivos"],"x":["Precios de lanzamiento altos","Envío de pago en pedidos pequeños"],"tp":[3.9,3810,"https://www.trustpilot.com/review/game.es"]},"gameseminuevos":{"d":"Los juegos de segunda mano de GAME, revisados por la tienda.","v":["Segunda mano con garantía de GAME","Mucho más barato que nuevo"],"x":["Stock limitado y cambia cada día"],"tp":[3.9,3810,"https://www.trustpilot.com/review/game.es"]},"ebay":{"d":"Compraventa entre particulares y tiendas, nuevo y de segunda mano.","v":["Juegos en disco muy baratos","Protección al comprador de eBay"],"x":["Vendedores particulares: mira su valoración","Gastos de envío aparte (ya los sumamos)"],"tp":[1.2,19482,"https://es.trustpilot.com/review/ebay.com"]},"alcampo":{"d":"Hipermercado con sección de videojuegos en disco.","v":["Ofertas puntuales muy buenas en disco"],"x":["Catálogo de juegos muy pequeño"],"tp":[1.5,108,"https://es.trustpilot.com/review/alcampo.es"]},"itad-gamesplanetfr":{"d":"Tienda de claves oficiales con versiones por país (Reino Unido, Francia, Alemania y EE. UU.).","v":["Claves oficiales","Rebajas frecuentes"],"x":["Cada versión cobra en su moneda: mira el precio final"],"tp":[4.6,743,"https://www.trustpilot.com/review/www.gamesplanet.com"]},"itad-gamesplanetde":{"d":"Tienda de claves oficiales con versiones por país (Reino Unido, Francia, Alemania y EE. UU.).","v":["Claves oficiales","Rebajas frecuentes"],"x":["Cada versión cobra en su moneda: mira el precio final"],"tp":[4.6,743,"https://www.trustpilot.com/review/www.gamesplanet.com"]},"itad-gamesplanetus":{"d":"Tienda de claves oficiales con versiones por país (Reino Unido, Francia, Alemania y EE. UU.).","v":["Claves oficiales","Rebajas frecuentes"],"x":["Cada versión cobra en su moneda: mira el precio final"],"tp":[4.6,743,"https://www.trustpilot.com/review/www.gamesplanet.com"]}};
+  var TP_FECHA = "11 de noviembre de 2026";
+  var TP_MIN_RESENAS = 30;   // por debajo de esto la nota no dice nada
+  function estrellas(id, conTexto) {
+    var i = TIENDAS_INFO[id];
+    if (!i || !i.tp || i.of || i.tp[1] < TP_MIN_RESENAS) return "";
+    var n = i.tp[0], r = i.tp[1];
+    var tit = n.toFixed(1).replace(".", ",") + " de 5 en Trustpilot (" + r.toLocaleString("es-ES") + " reseñas)";
+    return '<a class="tp" href="' + esc(i.tp[2]) + '" target="_blank" rel="noopener noreferrer" title="' + tit + '" aria-label="' + tit + '">' +
+      '<span class="tp-est"><i style="width:' + Math.round(n / 5 * 100) + '%"></i></span>' + (conTexto ? "<b>" + n.toFixed(1).replace(".", ",") + "</b> · " + r.toLocaleString("es-ES") + " reseñas" : n.toFixed(1).replace(".", ",")) + "</a>";
+  }
+  function pintarTiendas() {
+    if (!datos) return;
+    var conOf = {};
+    datos.juegos.forEach(function (j) { j.ofertas.forEach(function (o) { conOf[o.tienda] = (conOf[o.tienda] || 0) + 1; }); });
+    var grupos = [["Tiendas oficiales", function (t, i) { return i && i.of; }],
+      ["Revendedores de claves", function (t, i) { return t.tipo === "revendedor" && !(i && i.of); }],
+      ["Mercados de claves", function (t) { return t.tipo === "marketplace"; }],
+      ["Tiendas físicas y segunda mano", function (t, i) { return !(i && i.of) && (t.tipo === "tienda" || t.tipo === "particulares" || t.tipo === "segundamano"); }]];
+    var vistas = {};
+    var tarjeta = function (t) {
+      var i = TIENDAS_INFO[t.id] || {};
+      var nota = i.tp ? (i.tp[1] < TP_MIN_RESENAS ? '<span class="ti-of">Pocas reseñas en Trustpilot (' + i.tp[1] + ")</span>" : estrellas(t.id, true) ||
+        '<a class="tp" href="' + esc(i.tp[2]) + '" target="_blank" rel="noopener noreferrer"><span class="tp-est"><i style="width:' + Math.round(i.tp[0] / 5 * 100) + '%"></i></span><b>' + i.tp[0].toFixed(1).replace(".", ",") + "</b> · " + i.tp[1].toLocaleString("es-ES") + " reseñas</a>")
+        : '<span class="ti-of">' + (i.of ? "Tienda oficial" : "Sin nota en Trustpilot") + "</span>";
+      return '<article class="ti"><div class="ti-cab"><b>' + esc(t.nombre) + "</b>" + nota + "</div>" +
+        (i.d ? "<p>" + esc(i.d) + "</p>" : "") +
+        (i.v && i.v.length ? '<ul class="si">' + i.v.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>" : "") +
+        (i.x && i.x.length ? '<ul class="no">' + i.x.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>" : "") +
+        '<div class="ti-pie"><span class="ti-of">' + (conOf[t.id] ? conOf[t.id].toLocaleString("es-ES") + " ofertas ahora" : "Solo enlace de búsqueda") + "</span>" +
+        (conOf[t.id] ? '<a href="?tienda=' + encodeURIComponent(t.id) + '">Ver sus juegos →</a>' : "") + "</div></article>";
+    };
+    var html = '<div class="m-cab"><div><h2 id="ti-tit">Tiendas que comparamos</h2><p>Qué es cada una, lo bueno, lo malo y su nota en Trustpilot.</p></div>' +
+      '<button type="button" class="m-cerrar" data-ti="cerrar" aria-label="Cerrar">×</button></div>';
+    grupos.forEach(function (g) {
+      var ts = datos.tiendas.filter(function (t) { return !vistas[t.id] && (conOf[t.id] || TIENDAS_INFO[t.id]) && g[1](t, TIENDAS_INFO[t.id]); })
+        .sort(function (a, b) { return (conOf[b.id] || 0) - (conOf[a.id] || 0); });
+      if (!ts.length) return;
+      ts.forEach(function (t) { vistas[t.id] = 1; });
+      html += '<h3 class="ti-grupo">' + g[0] + '</h3><div class="ti-lista">' + ts.map(tarjeta).join("") + "</div>";
+    });
+    html += '<p class="ti-nota">Notas de Trustpilot consultadas el ' + TP_FECHA + ". En las tiendas oficiales no las ponemos junto a las ofertas: casi nadie deja reseña cuando todo va bien, así que su nota la hacen sobre todo las quejas (cuentas, soporte) y no refleja si la compra llega bien. En tiendas con menos de " + TP_MIN_RESENAS + " reseñas tampoco, porque la nota aún no es fiable.</p>";
+    $("modal-ti-in").innerHTML = html;
+  }
+  function abrirTiendas() { pintarTiendas(); $("modal-ti").hidden = false; document.body.style.overflow = "hidden"; var c = $("modal-ti-in").querySelector(".m-cerrar"); if (c) c.focus(); }
+  function cerrarTiendas() { $("modal-ti").hidden = true; document.body.style.overflow = ""; }
 
   // Revendedores de claves que van a la vista y cuentan de serie; el resto queda en el desplegable, apagado
   var REV_FIJOS = ["instantgaming", "kinguin"];
@@ -1169,7 +1248,7 @@ button { cursor: pointer; }
             (o.condicion ? "<span>·</span><span>" + esc(o.condicion) + "</span>" : "") +
             (o.envio ? "<span>·</span><span>" + eur.format(o.precio) + " + " + eur.format(o.envio) + " envío</span>" : "") +
             (o.stock ? "" : '<span class="agotado">· Agotado</span>');
-        var fila = '<li class="of' + (g.ofs.indexOf(m) >= 0 ? " mejor" : "") + '"><div class="of-t"><strong>' + esc(t.nombre) + '</strong><span class="badge b-' + t.tipo + '">' + (g.claves ? "Claves" : TIPOS[t.tipo]) + "</span>" +
+        var fila = '<li class="of' + (g.ofs.indexOf(m) >= 0 ? " mejor" : "") + '"><div class="of-t"><strong>' + esc(t.nombre) + '</strong>' + estrellas(o.tienda) + '<span class="badge b-' + t.tipo + '">' + (g.claves ? "Claves" : TIPOS[t.tipo]) + "</span>" +
           (n === 1 && o.estado === "usado" ? '<span class="usado">Usado</span>' : "") +
           (n > 1 ? '<button type="button" class="desp" data-grupo="' + esc(clave) + '" aria-expanded="' + !!abierto + '">' + (abierto ? "▴ " : "▾ ") + (g.claves ? n + " ofertas de " + g.nTiendas + " tiendas" : g.id === "ebay" ? n + " anuncios" : n + (plats.length === n ? " plataformas" : " opciones")) + "</button>" : "") + "</div>" +
           '<div class="of-d">' + detalle + "</div>" +
@@ -1180,7 +1259,7 @@ button { cursor: pointer; }
           var tx = tiendaPorId[x.tienda] || { nombre: x.tienda };
           // En eBay cada línea es un estado distinto del juego (como nuevo, muy bueno…)
           var calX = g.id === "ebay" ? calidadDe(x) : null, esEb = !!calX, resto = esEb ? (x.condicion || "").replace(calX, "").replace(/^\s*·\s*/, "") : x.condicion;
-          return '<li class="of sub' + (x === m ? " mejor" : "") + '"><div class="of-t"><span>' + esc(g.claves ? tx.nombre : esEb ? calX : (x.plataforma || "—")) + "</span>" + (x.estado === "usado" && !esEb ? '<span class="usado">Usado</span>' : "") + "</div>" +
+          return '<li class="of sub' + (x === m ? " mejor" : "") + '"><div class="of-t"><span>' + esc(g.claves ? tx.nombre : esEb ? calX : (x.plataforma || "—")) + "</span>" + (g.claves ? estrellas(x.tienda) : "") + (x.estado === "usado" && !esEb ? '<span class="usado">Usado</span>' : "") + "</div>" +
             '<div class="of-d"><span>' + (g.claves || esEb ? esc(x.plataforma || "—") : (x.formato === "fisico" ? "En disco" : "Digital")) + "</span>" + (resto ? "<span>·</span><span>" + esc(resto) + "</span>" : "") +
             (x.envio ? "<span>·</span><span>+ " + eur.format(x.envio) + " envío</span>" : "") + (x.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
             '<div class="of-p"><b>' + eur.format(total(x)) + "</b>" + (antes(x, j) ? "<small>" + antes(x, j).replace(/ · $/, "") + "</small>" : "") + "</div>" +
@@ -1946,6 +2025,12 @@ button { cursor: pointer; }
   leerServidor(false);
   setInterval(function () { leerServidor(false); }, REFRESCO_MS);
   setInterval(pintarEstado, 60 * 1000);
+
+  $("pie-tiendas").addEventListener("click", abrirTiendas);
+  $("modal-ti").addEventListener("click", function (e) {
+    if (e.target === $("modal-ti") || e.target.closest("[data-ti=cerrar]")) cerrarTiendas();
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("modal-ti").hidden) cerrarTiendas(); });
 
   // ---------- Recuento propio de visitas y clics ----------
   // Solo cuenta cuántas veces se ha visto la web y en qué tienda se pulsa. Ni cookies, ni terceros,
