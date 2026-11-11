@@ -1,0 +1,39 @@
+name: Prueba
+on:
+  workflow_dispatch:
+jobs:
+  mirar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Estructura de Driffle y Difmark
+        run: |
+          node -e '
+          const UA={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)","Accept-Language":"es-ES,es;q=0.9"};
+          const esperar=(ms)=>new Promise(r=>setTimeout(r,ms));
+          const locs=(t)=>[...t.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
+          async function ficha(u, etiqueta){
+            const t=await (await fetch(u,{headers:UA})).text();
+            const ld=[...t.matchAll(/<script[^>]*ld\+json[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
+            console.log(etiqueta+" FICHA "+u+" bytes "+t.length+" ld "+ld.length);
+            for(const b of ld) console.log("   LD: "+b.slice(0,600).replace(/\s+/g," "));
+          }
+          (async()=>{
+            // DRIFFLE
+            const d=locs(await (await fetch("https://driffle.com/sitemap.xml",{headers:UA})).text());
+            console.log("DRIFFLE mapas: "+d.length); console.log(d.slice(0,8).join("\n")); console.log("..."); console.log(d.filter(u=>/product|game|es/i.test(u)).slice(0,8).join("\n"));
+            const dm=d.find(u=>/product/i.test(u)&&/es/i.test(u))||d.find(u=>/product/i.test(u))||d[0];
+            await esperar(1500);
+            const dp=locs(await (await fetch(dm,{headers:UA})).text());
+            console.log("DRIFFLE mapa "+dm+" -> "+dp.length+" urls"); console.log(dp.slice(0,4).join("\n"));
+            for(const u of dp.slice(0,2)){ await esperar(1500); await ficha(u,"DRIFFLE"); }
+            // DIFMARK
+            await esperar(1500);
+            const f=locs(await (await fetch("https://difmark.com/sitemap.xml",{headers:UA})).text());
+            console.log("DIFMARK mapas: "+f.length); console.log(f.slice(0,15).join("\n"));
+            const fm=f.find(u=>/product|key|game/i.test(u)&&/en|es/i.test(u))||f.find(u=>/product/i.test(u))||f[0];
+            await esperar(1500);
+            const fp=locs(await (await fetch(fm,{headers:UA})).text());
+            console.log("DIFMARK mapa "+fm+" -> "+fp.length+" urls"); console.log(fp.slice(0,6).join("\n"));
+            for(const u of fp.filter(u=>!/account/i.test(u)).slice(0,2)){ await esperar(1500); await ficha(u,"DIFMARK"); }
+          })()'
