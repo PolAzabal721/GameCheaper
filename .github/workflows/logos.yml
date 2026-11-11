@@ -1,7 +1,7 @@
 name: Logos de tiendas
 
-# Descarga una vez el icono de cada tienda (desde el buscador de iconos de Google, a 64 px) y lo guarda en logos/,
-# para servirlo desde nuestra web sin cargar nada de terceros. Se lanza a mano cuando añadimos tiendas.
+# Descarga una vez el icono de cada tienda y lo guarda en logos/ (64 px, PNG), para servirlo desde nuestra web
+# sin cargar nada de terceros. Prueba varias fuentes por si alguna no tiene el icono. Se lanza a mano al añadir tiendas.
 on:
   workflow_dispatch:
 
@@ -16,22 +16,42 @@ jobs:
       - uses: actions/checkout@v5
       - name: Descargar iconos
         run: |
-          mkdir -p logos
+          sudo apt-get install -y -qq imagemagick >/dev/null 2>&1 || true
+          mkdir -p logos tmp-logos
           node -e '
-          const fs=require("fs");
+          const fs=require("fs"), { execFileSync }=require("child_process");
           const mapa=JSON.parse(fs.readFileSync("config/logos.json","utf8"));
+          const UA={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)"};
+          const fuentes=(d)=>[
+            "https://www.google.com/s2/favicons?domain="+d+"&sz=64",
+            "https://icons.duckduckgo.com/ip3/"+d+".ico",
+            "https://"+d+"/apple-touch-icon.png",
+            "https://www."+d+"/apple-touch-icon.png",
+            "https://"+d+"/favicon.ico",
+            "https://www."+d+"/favicon.ico",
+          ];
           (async()=>{
             for(const dom of [...new Set(Object.values(mapa))]){
-              const f="logos/"+dom.replace(/[^a-z0-9.-]/g,"")+".png";
-              try{
-                const r=await fetch("https://www.google.com/s2/favicons?domain="+dom+"&sz=64");
-                const b=Buffer.from(await r.arrayBuffer());
-                if(r.ok && b.length>200){ fs.writeFileSync(f,b); console.log("ok   "+dom+" "+b.length+" b"); }
-                else console.log("MAL  "+dom+" "+r.status+" "+b.length+" b");
-              }catch(e){ console.log("ERR  "+dom+" "+e.message); }
+              const dest="logos/"+dom.replace(/[^a-z0-9.-]/g,"")+".png";
+              if(fs.existsSync(dest) && fs.statSync(dest).size>300){ continue; }
+              let hecho=false;
+              for(const u of fuentes(dom)){
+                try{
+                  const r=await fetch(u,{headers:UA,redirect:"follow"});
+                  const b=Buffer.from(await r.arrayBuffer());
+                  if(!r.ok || b.length<300) continue;
+                  const tmp="tmp-logos/x";
+                  fs.writeFileSync(tmp,b);
+                  // a PNG de 64 px (vale para .ico, .png y .svg)
+                  execFileSync("convert",[tmp+"[0]","-background","none","-resize","64x64","-gravity","center","-extent","64x64",dest]);
+                  if(fs.statSync(dest).size>200){ console.log("ok   "+dom+" desde "+u); hecho=true; break; }
+                }catch(e){}
+              }
+              if(!hecho) console.log("MAL  "+dom);
               await new Promise(r=>setTimeout(r,300));
             }
           })()'
+          rm -rf tmp-logos
       - name: Guardar
         run: |
           git config user.name "pillao-bot"
