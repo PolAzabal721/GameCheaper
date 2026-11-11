@@ -1,0 +1,33 @@
+name: Prueba
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  traer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Imágenes de FC 27 desde Steam
+        run: |
+          mkdir -p promo
+          node -e '
+          const fs=require("fs");
+          (async()=>{
+            const input={ids:[{appid:4080220}],context:{language:"spanish",country_code:"ES"},data_request:{include_assets:true}};
+            const d=await (await fetch("https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?input_json="+encodeURIComponent(JSON.stringify(input)))).json();
+            const a=d.response.store_items[0].assets; console.log(JSON.stringify(a));
+            const base="https://shared.akamai.steamstatic.com/store_item_assets/"+a.asset_url_format.split("${FILENAME}")[0];
+            for(const [k,f] of Object.entries({capsula:a.main_capsule,vertical:a.library_capsule||a.library_capsule_2x,hero:a.library_hero||a.hero_capsule,logo:a.library_logo})){
+              if(!f) continue;
+              const r=await fetch(base+f); const b=Buffer.from(await r.arrayBuffer());
+              const ext=f.split(".").pop().split("?")[0];
+              fs.writeFileSync("promo/fc27-"+k+"."+ext,b); console.log(k,r.status,b.length);
+            }
+          })()'
+      - name: Subir a una rama aparte
+        run: |
+          git config user.name "pillao-bot"; git config user.email "pillao-bot@users.noreply.github.com"
+          git checkout -b promo-tmp
+          git add promo && git commit -m "Imágenes para el vídeo promocional" && git push -f origin promo-tmp
