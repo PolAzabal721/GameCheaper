@@ -6,29 +6,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - name: Datos de una ficha de Kinguin
+      - name: De donde sacar el precio en Kinguin
         run: |
           node -e '
           const UA={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)","Accept-Language":"es-ES,es;q=0.9"};
-          const esperar=(ms)=>new Promise(r=>setTimeout(r,ms));
           (async()=>{
-            const idx=await (await fetch("https://static.kinguin.net/media/sitemap/sitemap.xml",{headers:UA})).text();
-            const mapas=[...idx.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
-            console.log("mapas:", mapas.length);
-            console.log(mapas.filter(u=>/es_ES|en_US/.test(u)).slice(0,12).join("\n"));
-            const uno=mapas.find(u=>/product.*es_ES/.test(u))||mapas.find(u=>/product/.test(u))||mapas[0];
-            await esperar(2500);
-            const m=await (await fetch(uno,{headers:UA})).text();
-            const urls=[...m.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x=>x[1]);
-            console.log("MAPA ELEGIDO", uno, "->", urls.length, "urls");
-            console.log(urls.slice(0,3).join("\n"));
-            for(const u of urls.slice(0,2)){
-              await esperar(2500);
-              const t=await (await fetch(u,{headers:UA})).text();
-              const bloques=[...t.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(x=>x[1]);
-              console.log("=== "+u);
-              for(const b of bloques) console.log("   LD: "+b.slice(0,500).replace(/\s+/g," "));
-              const reg=t.match(/"regionalLimitations?"\s*:\s*"([^"]+)"/i)||t.match(/Region[^<]{0,40}/i);
-              console.log("   region: "+(reg?reg[0].slice(0,80):"?"));
+            const u="https://www.kinguin.net/es/category/1000/command-and-conquer-the-ultimate-collection-pc-ea-app-cd-key";
+            const t=await (await fetch(u,{headers:UA})).text();
+            console.log("bytes", t.length);
+            for(const re of [/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/g]){
+              for(const m of t.matchAll(re)) console.log("LD >>> "+m[1].slice(0,700).replace(/\s+/g," "));
+            }
+            for(const clave of ["\"price\"","\"lowestPrice\"","\"priceCurrency\"","\"offers\"","\"activePreorder\"","\"platform\"","\"regionalLimitations\":\"","\"name\":\""]){
+              const i=t.indexOf(clave);
+              console.log("CLAVE "+clave+" -> "+(i<0?"no":t.slice(i-60,i+220).replace(/\s+/g," ")));
             }
           })()'
