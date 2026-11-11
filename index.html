@@ -900,7 +900,7 @@ button { cursor: pointer; }
     $("tiendas").innerHTML = BLOQUES.map(function (bl) {
       // eBay va con las tiendas de segunda mano (con su desplegable de estados), tenga ya precios o no
       var ebay = tiendaPorId.ebay;
-      var ts = datos.tiendas.filter(function (t) { return t.id !== "ebay" && bl.tipos.indexOf(t.tipo) >= 0 && (conOfertas[t.id] || esRevFijo(t.id)); });
+      var ts = datos.tiendas.filter(function (t) { return t.id !== "ebay" && bl.tipos.indexOf(t.tipo) >= 0 && (conOfertas[t.id] || t.id === "instantgaming"); });
       if (bl.id === "segundamano" && ebay) ts.push(ebay);
       if (!ts.length) return "";
       ts.sort(function (a, b) { return (REV_FIJOS.indexOf(b.id) >= 0) - (REV_FIJOS.indexOf(a.id) >= 0) || REV_FIJOS.indexOf(a.id) - REV_FIJOS.indexOf(b.id) || conOfertas[b.id] - conOfertas[a.id] || a.nombre.localeCompare(b.nombre); });

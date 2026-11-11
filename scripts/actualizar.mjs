@@ -1260,7 +1260,8 @@ async function main() {
     cuenta.instantgaming = nIG;
   }
   // Kinguin: solo juegos que ya tenemos en el catálogo (su mapa trae muchísimo ruido de cuentas y DLC sueltos)
-  if (ENV.KINGUIN !== "0") {
+  // Kinguin bloquea con 403 a los servidores de GitHub (protección antibot): apagado hasta tener su API de afiliados
+  if (ENV.KINGUIN === "1") {
     try {
       const productosKin = await mapaKinguin();
       const porLlaveKin = new Map();
