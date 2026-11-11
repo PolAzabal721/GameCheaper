@@ -6,19 +6,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - name: De donde sacar el precio en Kinguin
+      - name: Kinguin en euros
         run: |
           node -e '
-          const UA={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)","Accept-Language":"es-ES,es;q=0.9"};
+          const base="https://www.kinguin.net/es/category/1000/command-and-conquer-the-ultimate-collection-pc-ea-app-cd-key";
+          const pruebas=[
+            ["es + cookie EUR", base, {Cookie:"currency=EUR; country=ES"}],
+            ["es + ?currency=EUR", base+"?currency=EUR", {}],
+            ["es + cookie kinguin", base, {Cookie:"kinguin_currency=EUR; kinguin_country=ES"}],
+            ["es sin nada", base, {}],
+          ];
           (async()=>{
-            const u="https://www.kinguin.net/es/category/1000/command-and-conquer-the-ultimate-collection-pc-ea-app-cd-key";
-            const t=await (await fetch(u,{headers:UA})).text();
-            console.log("bytes", t.length);
-            for(const re of [/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/g]){
-              for(const m of t.matchAll(re)) console.log("LD >>> "+m[1].slice(0,700).replace(/\s+/g," "));
-            }
-            for(const clave of ["\"price\"","\"lowestPrice\"","\"priceCurrency\"","\"offers\"","\"activePreorder\"","\"platform\"","\"regionalLimitations\":\"","\"name\":\""]){
-              const i=t.indexOf(clave);
-              console.log("CLAVE "+clave+" -> "+(i<0?"no":t.slice(i-60,i+220).replace(/\s+/g," ")));
+            for(const [nombre,u,extra] of pruebas){
+              try{
+                const t=await (await fetch(u,{headers:{"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)","Accept-Language":"es-ES,es;q=0.9",...extra}})).text();
+                const m=t.match(/"@type":"AggregateOffer","price":([0-9.]+),"priceCurrency":"([A-Z]+)"[^}]*"offerCount":(\d+)/);
+                const plat=t.match(/"platform":\{"name":"([^"]+)"/), reg=t.match(/"region":\{"displayName":[^,]*,"name":"([^"]+)"/);
+                console.log(nombre+" -> "+(m?m[1]+" "+m[2]+" ofertas:"+m[3]:"sin precio")+" | plataforma "+(plat?plat[1]:"?")+" | region "+(reg?reg[1]:"?"));
+              }catch(e){console.log(nombre+" ERROR "+e.message)}
+              await new Promise(r=>setTimeout(r,2500));
             }
           })()'
