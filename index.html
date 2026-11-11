@@ -2113,6 +2113,8 @@ button { cursor: pointer; }
     var t = tiendaPorId[tiendaUrl];
     if (!t) return;
     tiendaPuesta = true;
+    // Se aplica una vez y se quita de la dirección: si luego cambias los filtros y recargas, se quedan tus filtros
+    try { var u = new URL(location.href); u.searchParams.delete("tienda"); history.replaceState(null, "", u.pathname + u.search + u.hash); } catch (e) {}
     f.fuera = datos.tiendas.map(function (x) { return x.id; }).filter(function (id) { return id !== t.id; });
     f.revOff = [];
     if (t.tipo === "marketplace") f.mkt = true;
