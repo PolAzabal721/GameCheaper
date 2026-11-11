@@ -6,33 +6,33 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Mirar robots y fichas
+      - name: Kinguin, Eneba y gamespsn
         run: |
           node -e '
-          const sitios=["https://gameboost.com","https://gamespsn.com","https://gocdkeys.es","https://www.kinguin.net","https://www.eneba.com","https://www.g2a.com"];
-          const fichas=["https://gameboost.com/forza-horizon-6-xbox-series-xs-windows-10-xbox-live-key-global-1-00-69375","https://gamespsn.com/product/ea-sports-fc-27-ps5/","https://gocdkeys.es/comprar-forza-horizon-6-pc-cd-key"];
-          const UA={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)"};
+          const UA={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)","Accept-Language":"es-ES,es;q=0.9"};
+          const esperar=(ms)=>new Promise(r=>setTimeout(r,ms));
           (async()=>{
-            for(const s of sitios){
-              try{
-                const r=await fetch(s+"/robots.txt",{headers:UA});
-                const t=await r.text();
-                console.log("=== "+s+" robots "+r.status+" ("+t.length+" bytes)");
-                console.log(t.split("\n").slice(0,40).join("\n"));
-              }catch(e){console.log("=== "+s+" robots ERROR "+e.message)}
+            // Kinguin: su mapa del sitio y una ficha (robots pide 2 s entre peticiones)
+            for(const u of ["https://static.kinguin.net/media/sitemap/sitemap.xml","https://www.kinguin.net/category/5/hogwarts-legacy-steam-key"]){
+              try{ const r=await fetch(u,{headers:UA}); const t=await r.text();
+                console.log("KINGUIN "+u+" -> "+r.status+" bytes "+t.length+" ldjson "+((t.match(/ld\+json/g)||[]).length));
+                console.log("   "+t.slice(0,300).replace(/\s+/g," "));
+              }catch(e){console.log("KINGUIN "+u+" ERROR "+e.message)}
+              await esperar(2500);
             }
-            for(const u of fichas){
-              try{
-                const r=await fetch(u,{headers:UA});
-                const t=await r.text();
-                const ld=(t.match(/application\/ld\+json/g)||[]).length;
-                const precio=(t.match(/"price"\s*:\s*"?[0-9.,]+/g)||[]).slice(0,3);
-                console.log("--- FICHA "+u+" -> HTTP "+r.status+" bytes "+t.length+" ldjson "+ld+" precios "+JSON.stringify(precio));
-              }catch(e){console.log("--- FICHA "+u+" ERROR "+e.message)}
+            // Eneba: una ficha de producto
+            for(const u of ["https://www.eneba.com/es/steam-hogwarts-legacy-steam-key-global","https://www.eneba.com/sitemap.xml"]){
+              try{ const r=await fetch(u,{headers:UA}); const t=await r.text();
+                console.log("ENEBA "+u+" -> "+r.status+" bytes "+t.length+" ldjson "+((t.match(/ld\+json/g)||[]).length)+" precio "+JSON.stringify((t.match(/"price"\s*:\s*"?[0-9.,]+/g)||[]).slice(0,2)));
+              }catch(e){console.log("ENEBA "+u+" ERROR "+e.message)}
+              await esperar(1500);
             }
-            // APIs publicas conocidas
-            for(const u of ["https://api.kinguin.net/integration/v1/products?limit=1","https://www.eneba.com/graphql/"]){
-              try{ const r=await fetch(u,{headers:UA}); console.log("API "+u+" -> "+r.status+" "+(await r.text()).slice(0,160).replace(/\n/g," ")); }
-              catch(e){ console.log("API "+u+" ERROR "+e.message) }
+            // gamespsn: su mapa del sitio y cuantos productos tiene
+            for(const u of ["https://gamespsn.com/sitemap_index.xml","https://gamespsn.com/product-sitemap.xml"]){
+              try{ const r=await fetch(u,{headers:UA}); const t=await r.text();
+                console.log("GAMESPSN "+u+" -> "+r.status+" urls "+((t.match(/<loc>/g)||[]).length));
+                console.log("   "+t.slice(0,400).replace(/\s+/g," "));
+              }catch(e){console.log("GAMESPSN "+u+" ERROR "+e.message)}
+              await esperar(1000);
             }
           })()'
