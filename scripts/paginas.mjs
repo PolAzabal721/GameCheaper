@@ -17,6 +17,16 @@ const SALIDA = join(RAIZ, "_site");
 // Quita lo que la web no usa (fuente, hora de cada precio) y lo que vale lo de siempre (digital, nuevo, con stock,
 // sin rebaja, sin envío), y acorta el principio de las direcciones repetidas: «~3…» = PREFIJOS[3] + «…».
 // La web lo deshace al cargar (index.html, función expandir). Los demás programas usan el precios.json completo.
+// «sc:<id>/<carpeta>/<fichero>» y «s:<id>» son las dos formas de guardar las fotos de Steam
+const STEAM_IMG = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/";
+function imagenDe(j) {
+  const v = j.img || j.cov;
+  if (!v) return null;
+  if (v.startsWith("sc:")) return STEAM_IMG + v.slice(3);
+  if (v.startsWith("s:")) return STEAM_IMG + v.slice(2) + "/header.jpg";
+  return /^https:\/\//.test(v) ? v : null;
+}
+
 const PREFIJOS = ["https://store.steampowered.com/app/", "https://www.instant-gaming.com/es/", "https://www.nintendo.com/es-es/Juegos/",
   "https://www.game.es/", "https://www.xbox.com/es-ES/games/store/p/", "https://itad.link/", "https://store.playstation.com/es-es/concept/",
   "https://www.ebay.es/itm/", "https://www.compraonline.alcampo.es/products/", "https://store-images.s-microsoft.com/image/apps.",
@@ -149,11 +159,23 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
     (minimo ? `; mínimo histórico ${eur(minimo)}` : "") + ". Precios digitales, en disco y de segunda mano actualizados cada pocas horas.";
   const canonica = `${SITIO}juego/${j.id}/`;
   const nuevos = conStock.filter((o) => o.estado !== "usado").map(total);
+  // Caducidad del precio: Google pide hasta cuándo vale; se actualiza varias veces al día, damos dos días de margen
+  const valeHasta = new Date(Date.parse(actualizado) + 2 * 86400000).toISOString().slice(0, 10);
+  const ofertasLD = ofs.slice(0, 20).map((o) => {
+    const t = tiendaPorId[o.tienda], url = enlaceOferta(o, j, tiendaPorId);
+    return {
+      "@type": "Offer", priceCurrency: "EUR", price: total(o).toFixed(2), priceValidUntil: valeHasta,
+      availability: o.stock === false ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+      itemCondition: o.estado === "usado" ? "https://schema.org/UsedCondition" : "https://schema.org/NewCondition",
+      ...(url ? { url } : {}), ...(t?.nombre ? { seller: { "@type": "Organization", name: t.nombre } } : {}),
+    };
+  });
   const jsonld = [{
-    "@context": "https://schema.org", "@type": "Product", name: j.titulo,
+    "@context": "https://schema.org", "@type": "Product", name: j.titulo, url: canonica, description: descripcion,
+    ...(imagenDe(j) ? { image: [imagenDe(j)] } : {}),
     ...(j.tipo === "tarjeta" && j.marca ? { brand: { "@type": "Brand", name: j.marca } } : {}),
     offers: { "@type": "AggregateOffer", priceCurrency: "EUR", lowPrice: Math.min(...(nuevos.length ? nuevos : [total(mejor)])).toFixed(2),
-      highPrice: Math.max(...(nuevos.length ? nuevos : [total(mejor)])).toFixed(2), offerCount: ofs.length },
+      highPrice: Math.max(...(nuevos.length ? nuevos : [total(mejor)])).toFixed(2), offerCount: ofs.length, offers: ofertasLD },
   }, {
     "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
       { "@type": "ListItem", position: 1, name: "Pillao", item: SITIO },
