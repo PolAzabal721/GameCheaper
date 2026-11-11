@@ -1,0 +1,27 @@
+name: Prueba
+on:
+  workflow_dispatch:
+jobs:
+  mirar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Driffle y Difmark
+        run: |
+          node -e '
+          const UA={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)","Accept-Language":"es-ES,es;q=0.9"};
+          const esperar=(ms)=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            for(const s of ["https://driffle.com","https://difmark.com"]){
+              try{ const r=await fetch(s+"/robots.txt",{headers:UA}); const t=await r.text();
+                console.log("=== "+s+" robots "+r.status+"\n"+t.split("\n").slice(0,30).join("\n"));
+              }catch(e){console.log("=== "+s+" ERROR "+e.message)}
+              await esperar(1500);
+            }
+            for(const u of ["https://driffle.com/es","https://driffle.com/es/sitemap.xml","https://driffle.com/sitemap.xml","https://difmark.com/en/buy-console-account-forza-horizon-6-steam-account-180597","https://difmark.com/sitemap.xml"]){
+              try{ const r=await fetch(u,{headers:UA}); const t=await r.text();
+                console.log("--- "+u+" -> "+r.status+" bytes "+t.length+" ldjson "+((t.match(/ld\+json/g)||[]).length)+" precios "+JSON.stringify((t.match(/"price"\s*:\s*"?[0-9.,]+/g)||[]).slice(0,2))+" urls "+((t.match(/<loc>/g)||[]).length));
+              }catch(e){console.log("--- "+u+" ERROR "+e.message)}
+              await esperar(1500);
+            }
+          })()'
