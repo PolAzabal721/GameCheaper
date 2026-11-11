@@ -4,8 +4,8 @@
 //   Repartido en TROZOS ficheros para que la web solo descargue el trozo del juego que abres.
 // - minimos.json: el precio nuevo más barato de cada juego ahora mismo (lo lee el buscador para mandar los avisos).
 //
-// Qué precios cuentan: nuevos, con stock, en las tiendas que la web enseña por defecto
-// (de los revendedores de claves, solo Instant Gaming; el resto está desmarcado de serie).
+// Qué precios cuentan: nuevos y con stock, en todas las tiendas que la web enseña por defecto
+// (los revendedores de claves vienen todos marcados de serie).
 
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
@@ -25,8 +25,6 @@ const r2 = (n) => Math.round(n * 100) / 100;
 export function preciosQueCuentan(j, tiendaPorId) {
   return (j.ofertas || []).filter((o) => {
     if (!o.stock || o.estado === "usado") return false;
-    const t = tiendaPorId[o.tienda];
-    if (t && t.tipo === "revendedor" && !["instantgaming", "kinguin"].includes(o.tienda)) return false;
     return o.precio > 0;
   }).map((o) => ({ total: o.precio + (o.envio || 0), tienda: o.tienda }));
 }

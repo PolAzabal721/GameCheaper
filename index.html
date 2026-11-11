@@ -607,7 +607,7 @@ button { cursor: pointer; }
   var f = cargarFiltros();
 
   function cargarFiltros() {
-    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: "populares", vista: "lista", calOff: [] };
+    var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOff: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: "populares", vista: "lista", calOff: [] };
     if (!prefsOk()) return base;
     try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g) base[k] = g[k]; } catch (e) {}
     return base;
@@ -780,7 +780,7 @@ button { cursor: pointer; }
       if (f.fuera.indexOf(o.tienda) >= 0) return false;
       var cal = calidadDe(o);
       if (cal && f.calOff.indexOf(cal) >= 0) return false;
-      if (t.tipo === "revendedor" && !esRevFijo(o.tienda) && f.revOn.indexOf(o.tienda) < 0) return false;
+      if (t.tipo === "revendedor" && f.revOff.indexOf(o.tienda) >= 0) return false;
       if (!f.mkt && t.tipo === "marketplace") return false;
       if (!f.part && t.tipo === "particulares") return false;
       if (f.stock && !o.stock) return false;
@@ -789,7 +789,7 @@ button { cursor: pointer; }
     }).sort(function (a, b) { return (b.stock - a.stock) || (total(a) - total(b)); });
   }
   function nActivos() {
-    return (f.formato !== "todos") + (f.estado !== "todos") + (f.plats.length > 0) + (f.fuera.length > 0) + (f.revOn.length > 0) + ((f.tipo || "todos") !== "todos") + (!f.mkt) + (!f.part) + f.stock + (f.pmax != null);
+    return (f.formato !== "todos") + (f.estado !== "todos") + (f.plats.length > 0) + (f.fuera.length > 0) + (f.revOff.length > 0) + ((f.tipo || "todos") !== "todos") + (!f.mkt) + (!f.part) + f.stock + (f.pmax != null);
   }
 
   function pintarControles() {
@@ -823,7 +823,7 @@ button { cursor: pointer; }
       ts.sort(function (a, b) { return (REV_FIJOS.indexOf(b.id) >= 0) - (REV_FIJOS.indexOf(a.id) >= 0) || REV_FIJOS.indexOf(a.id) - REV_FIJOS.indexOf(b.id) || conOfertas[b.id] - conOfertas[a.id] || a.nombre.localeCompare(b.nombre); });
       var activa = function (t) { return f.fuera.indexOf(t.id) < 0 && !(t.tipo === "particulares" && !f.part); };
       var chip = function (t) { return '<button type="button" class="chip" data-t="' + esc(t.id) + '" aria-pressed="' + activa(t) + '">' + esc(t.nombre) + "</button>"; };
-      var chipRev = function (t) { return '<button type="button" class="chip" data-rev="' + esc(t.id) + '" aria-pressed="' + (f.revOn.indexOf(t.id) >= 0) + '">' + esc(t.nombre) + "</button>"; };
+      var chipRev = function (t) { return '<button type="button" class="chip" data-rev="' + esc(t.id) + '" aria-pressed="' + (f.revOff.indexOf(t.id) < 0) + '">' + esc(t.nombre) + "</button>"; };
       var fijos = ts.filter(function (t) { return esRevFijo(t.id); }), otros = ts.filter(function (t) { return !esRevFijo(t.id); });
       // Revendedores de claves: Instant Gaming a la vista y el resto dentro de su desplegable
       // Entre particulares: eBay con un desplegable para elegir el estado de los juegos
@@ -841,12 +841,12 @@ button { cursor: pointer; }
       if (bl.id !== "claves" || !fijos.length || !otros.length)
         return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + ts.map(chip).join("") + "</div></div>";
       var abierto = !!bloquesAbiertos.claves;
-      var marcados = otros.filter(function (t) { return f.revOn.indexOf(t.id) >= 0; }).length;
-      return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + fijos.slice(0, -1).map(chip).join("") +
-        '<span class="chip-grupo' + (abierto ? " abierto" : "") + '">' + chip(fijos[fijos.length - 1]) +
-        '<button type="button" class="chip-caret" data-sub-abrir="claves" aria-expanded="' + abierto + '" aria-label="Más revendedores">' +
-        "+" + (marcados ? marcados + "/" + otros.length : otros.length) + " " + (abierto ? "▴" : "▾") + "</button></span></div>" +
-        (abierto ? '<div class="sub-panel"><div class="sub-cab"><span class="sub-tit">Más revendedores <small>(desmarcados por defecto)</small></span>' +
+      var marcados = otros.filter(function (t) { return f.revOff.indexOf(t.id) < 0; }).length;
+      // Instant Gaming y Kinguin sueltos, y un botón aparte para desplegar el resto
+      return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + fijos.map(chip).join("") +
+        '<button type="button" class="chip mini" data-sub-abrir="claves" aria-expanded="' + abierto + '" aria-label="Más revendedores">' +
+        "+" + (marcados === otros.length ? otros.length : marcados + "/" + otros.length) + " más " + (abierto ? "▴" : "▾") + "</button></div>" +
+        (abierto ? '<div class="sub-panel"><div class="sub-cab"><span class="sub-tit">Más revendedores</span>' +
           '<button type="button" class="chip mini" data-todos="claves-otros">' + (marcados === otros.length ? "Quitar todos" : "Marcar todos") + "</button></div>" +
           '<div class="chips">' + otros.map(chipRev).join("") + "</div></div>" : "") + "</div>";
     }).join("");
@@ -1263,7 +1263,7 @@ button { cursor: pointer; }
   function precioAhora(j) {
     var ps = j.ofertas.filter(function (o) {
       var t = tiendaPorId[o.tienda];
-      return o.stock && o.estado !== "usado" && !(t && t.tipo === "revendedor" && !esRevFijo(o.tienda));
+      return o.stock && o.estado !== "usado";
     }).map(total).sort(function (a, b) { return a - b; });
     return ps.length ? ps[0] : null;
   }
@@ -1820,15 +1820,15 @@ button { cursor: pointer; }
     }
     if (b.dataset.todos === "calidades") { f.calOff = f.calOff.length ? [] : CALIDADES.slice(); pintarControles(); cambio(); return; }
     if (b.dataset.rev) {
-      var ir = f.revOn.indexOf(b.dataset.rev);
-      if (ir >= 0) f.revOn.splice(ir, 1); else f.revOn.push(b.dataset.rev);
+      var ir = f.revOff.indexOf(b.dataset.rev);
+      if (ir >= 0) f.revOff.splice(ir, 1); else f.revOff.push(b.dataset.rev);
       pintarControles(); cambio(); return;
     }
     if (b.dataset.todos) {
       if (b.dataset.todos === "claves-otros") {
         var otrosIds = tiendasDeBloque("claves").filter(function (id) { return !esRevFijo(id); });
-        var todosOn = otrosIds.every(function (id) { return f.revOn.indexOf(id) >= 0; });
-        f.revOn = todosOn ? [] : otrosIds.slice();
+        var todosOn = otrosIds.every(function (id) { return f.revOff.indexOf(id) < 0; });
+        f.revOff = todosOn ? otrosIds.slice() : [];
         pintarControles(); cambio(); return;
       }
       var ids = tiendasDeBloque(b.dataset.todos);
@@ -1867,7 +1867,7 @@ button { cursor: pointer; }
     var d = e.target.closest("[data-grupo]");
     if (d) { desplegados[d.dataset.grupo] = !desplegados[d.dataset.grupo]; pintar(); return; }
     if (e.target.closest("[data-mas-juegos]")) { mostrar += PAGINA; pintar(); return; }
-    if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOn: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: f.orden, vista: f.vista, calOff: [] }; pintarControles(); cambio(); }
+    if (e.target.closest("[data-limpiar]")) { f = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOff: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: f.orden, vista: f.vista, calOff: [] }; pintarControles(); cambio(); }
   });
   $("recargar").addEventListener("click", function () { leerServidor(true); });
   function abrirEnGrid(id) {
@@ -1934,7 +1934,7 @@ button { cursor: pointer; }
     if (!t) return;
     tiendaPuesta = true;
     f.fuera = datos.tiendas.map(function (x) { return x.id; }).filter(function (id) { return id !== t.id; });
-    if (t.tipo === "revendedor" && !esRevFijo(t.id)) f.revOn = [t.id];
+    f.revOff = [];
     if (t.tipo === "marketplace") f.mkt = true;
     if (t.tipo === "particulares") f.part = true;
     f.fueraSub = [];
