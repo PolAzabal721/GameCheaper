@@ -1,0 +1,27 @@
+name: Prueba
+on:
+  workflow_dispatch:
+jobs:
+  mirar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Tiendas de ITAD
+        env:
+          ITAD_KEY: ${{ secrets.ITAD_KEY }}
+        run: |
+          node -e '
+          const key=encodeURIComponent(process.env.ITAD_KEY.trim());
+          (async()=>{
+            const r=await fetch(`https://api.isthereanydeal.com/service/shops/v1?country=ES&key=${key}`);
+            const d=await r.json();
+            console.log("tiendas ES:", d.length);
+            for(const s of d) if(/kinguin|eneba|g2a|gamivo|hrk|cdkey|difmark/i.test(s.title||s.name||"")) console.log("ENCONTRADA", JSON.stringify(s));
+            const ids=d.filter(s=>/kinguin|eneba|g2a/i.test(s.title||"")).map(s=>s.id);
+            if(ids.length){
+              const l=await (await fetch(`https://api.isthereanydeal.com/lookup/id/title/v1?key=${key}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(["Hogwarts Legacy"])})).json();
+              const gid=Object.values(l)[0];
+              const p=await (await fetch(`https://api.isthereanydeal.com/games/prices/v3?key=${key}&country=ES&shops=${ids.join(",")}&nondeals=true`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify([gid])})).json();
+              console.log("precios con esas tiendas:", JSON.stringify(p).slice(0,900));
+            }
+          })()'
