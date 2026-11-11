@@ -31,7 +31,13 @@ jobs:
         with:
           node-version: 20
       - name: Preparar ffmpeg
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+        # Los servidores de Ubuntu fallan de vez en cuando: se reintenta antes de darse por vencido
+        run: |
+          for i in 1 2 3; do
+            sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg && exit 0
+            echo "Reintento $i…"; sleep 20
+          done
+          exit 1
       - name: Preparar la voz
         if: vars.VIDEOS_VOZ == '1'
         run: |
