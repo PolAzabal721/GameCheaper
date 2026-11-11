@@ -4,35 +4,31 @@ on:
 jobs:
   mirar:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
-      - name: Kinguin, Eneba y gamespsn
+      - name: Datos de una ficha de Kinguin
         run: |
           node -e '
           const UA={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)","Accept-Language":"es-ES,es;q=0.9"};
           const esperar=(ms)=>new Promise(r=>setTimeout(r,ms));
           (async()=>{
-            // Kinguin: su mapa del sitio y una ficha (robots pide 2 s entre peticiones)
-            for(const u of ["https://static.kinguin.net/media/sitemap/sitemap.xml","https://www.kinguin.net/category/5/hogwarts-legacy-steam-key"]){
-              try{ const r=await fetch(u,{headers:UA}); const t=await r.text();
-                console.log("KINGUIN "+u+" -> "+r.status+" bytes "+t.length+" ldjson "+((t.match(/ld\+json/g)||[]).length));
-                console.log("   "+t.slice(0,300).replace(/\s+/g," "));
-              }catch(e){console.log("KINGUIN "+u+" ERROR "+e.message)}
+            const idx=await (await fetch("https://static.kinguin.net/media/sitemap/sitemap.xml",{headers:UA})).text();
+            const mapas=[...idx.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
+            console.log("mapas:", mapas.length);
+            console.log(mapas.filter(u=>/es_ES|en_US/.test(u)).slice(0,12).join("\n"));
+            const uno=mapas.find(u=>/product.*es_ES/.test(u))||mapas.find(u=>/product/.test(u))||mapas[0];
+            await esperar(2500);
+            const m=await (await fetch(uno,{headers:UA})).text();
+            const urls=[...m.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x=>x[1]);
+            console.log("MAPA ELEGIDO", uno, "->", urls.length, "urls");
+            console.log(urls.slice(0,3).join("\n"));
+            for(const u of urls.slice(0,2)){
               await esperar(2500);
-            }
-            // Eneba: una ficha de producto
-            for(const u of ["https://www.eneba.com/es/steam-hogwarts-legacy-steam-key-global","https://www.eneba.com/sitemap.xml"]){
-              try{ const r=await fetch(u,{headers:UA}); const t=await r.text();
-                console.log("ENEBA "+u+" -> "+r.status+" bytes "+t.length+" ldjson "+((t.match(/ld\+json/g)||[]).length)+" precio "+JSON.stringify((t.match(/"price"\s*:\s*"?[0-9.,]+/g)||[]).slice(0,2)));
-              }catch(e){console.log("ENEBA "+u+" ERROR "+e.message)}
-              await esperar(1500);
-            }
-            // gamespsn: su mapa del sitio y cuantos productos tiene
-            for(const u of ["https://gamespsn.com/sitemap_index.xml","https://gamespsn.com/product-sitemap.xml"]){
-              try{ const r=await fetch(u,{headers:UA}); const t=await r.text();
-                console.log("GAMESPSN "+u+" -> "+r.status+" urls "+((t.match(/<loc>/g)||[]).length));
-                console.log("   "+t.slice(0,400).replace(/\s+/g," "));
-              }catch(e){console.log("GAMESPSN "+u+" ERROR "+e.message)}
-              await esperar(1000);
+              const t=await (await fetch(u,{headers:UA})).text();
+              const bloques=[...t.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(x=>x[1]);
+              console.log("=== "+u);
+              for(const b of bloques) console.log("   LD: "+b.slice(0,500).replace(/\s+/g," "));
+              const reg=t.match(/"regionalLimitations?"\s*:\s*"([^"]+)"/i)||t.match(/Region[^<]{0,40}/i);
+              console.log("   region: "+(reg?reg[0].slice(0,80):"?"));
             }
           })()'
