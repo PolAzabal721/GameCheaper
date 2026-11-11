@@ -703,6 +703,7 @@ button { cursor: pointer; }
     origen = de;
     tiendaPorId = {};
     datos.tiendas.forEach(function (t) { tiendaPorId[t.id] = t; });
+    aplicarTiendaDeLaUrl();
     $("aviso").hidden = !datos.ejemplo;
     $("json-reset").hidden = de !== "propio";
     pintarControles();
@@ -1917,6 +1918,22 @@ button { cursor: pointer; }
   // Panel de pruebas oculto al público: solo aparece abriendo la web con ?datos al final de la dirección
   if (/[?&]datos\b/.test(location.search)) $("grupo-datos").hidden = false;
   $("json-reset").addEventListener("click", function () { origen = "servidor"; msg("", true); leerServidor(true); });
+
+  // ?tienda=instantgaming en la dirección: se entra con el filtro de esa tienda ya puesto
+  // (lo usan las páginas de cada tienda; se aplica una sola vez, al cargar el catálogo)
+  var tiendaUrl = (new URLSearchParams(location.search).get("tienda") || "").trim().toLowerCase().slice(0, 40);
+  var tiendaPuesta = false;
+  function aplicarTiendaDeLaUrl() {
+    if (!tiendaUrl || tiendaPuesta || !datos || !datos.tiendas.length) return;
+    var t = tiendaPorId[tiendaUrl];
+    if (!t) return;
+    tiendaPuesta = true;
+    f.fuera = datos.tiendas.map(function (x) { return x.id; }).filter(function (id) { return id !== t.id; });
+    if (t.tipo === "revendedor" && t.id !== "instantgaming") f.revOn = [t.id];
+    if (t.tipo === "marketplace") f.mkt = true;
+    if (t.tipo === "particulares") f.part = true;
+    f.fueraSub = [];
+  }
 
   // ?q=nombre en la dirección: llega desde la página de un juego
   var qUrl = new URLSearchParams(location.search).get("q");
