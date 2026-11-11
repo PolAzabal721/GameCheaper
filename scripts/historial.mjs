@@ -26,7 +26,7 @@ export function preciosQueCuentan(j, tiendaPorId) {
   return (j.ofertas || []).filter((o) => {
     if (!o.stock || o.estado === "usado") return false;
     const t = tiendaPorId[o.tienda];
-    if (t && t.tipo === "revendedor" && o.tienda !== "instantgaming") return false;
+    if (t && t.tipo === "revendedor" && !["instantgaming", "kinguin"].includes(o.tienda)) return false;
     return o.precio > 0;
   }).map((o) => ({ total: o.precio + (o.envio || 0), tienda: o.tienda }));
 }

@@ -600,6 +600,10 @@ button { cursor: pointer; }
   var consent = leerConsent();
   function prefsOk() { return !!(consent && consent.preferencias); }
 
+  // Revendedores de claves que van a la vista y cuentan de serie; el resto queda en el desplegable, apagado
+  var REV_FIJOS = ["instantgaming", "kinguin"];
+  var esRevFijo = function (id) { return REV_FIJOS.indexOf(id) >= 0; };
+
   var f = cargarFiltros();
 
   function cargarFiltros() {
@@ -776,7 +780,7 @@ button { cursor: pointer; }
       if (f.fuera.indexOf(o.tienda) >= 0) return false;
       var cal = calidadDe(o);
       if (cal && f.calOff.indexOf(cal) >= 0) return false;
-      if (t.tipo === "revendedor" && o.tienda !== "instantgaming" && f.revOn.indexOf(o.tienda) < 0) return false;
+      if (t.tipo === "revendedor" && !esRevFijo(o.tienda) && f.revOn.indexOf(o.tienda) < 0) return false;
       if (!f.mkt && t.tipo === "marketplace") return false;
       if (!f.part && t.tipo === "particulares") return false;
       if (f.stock && !o.stock) return false;
@@ -816,11 +820,11 @@ button { cursor: pointer; }
       var ts = datos.tiendas.filter(function (t) { return t.id !== "ebay" && bl.tipos.indexOf(t.tipo) >= 0 && conOfertas[t.id]; });
       if (bl.id === "segundamano" && ebay) ts.push(ebay);
       if (!ts.length) return "";
-      ts.sort(function (a, b) { return (b.id === "instantgaming") - (a.id === "instantgaming") || conOfertas[b.id] - conOfertas[a.id] || a.nombre.localeCompare(b.nombre); });
+      ts.sort(function (a, b) { return (REV_FIJOS.indexOf(b.id) >= 0) - (REV_FIJOS.indexOf(a.id) >= 0) || REV_FIJOS.indexOf(a.id) - REV_FIJOS.indexOf(b.id) || conOfertas[b.id] - conOfertas[a.id] || a.nombre.localeCompare(b.nombre); });
       var activa = function (t) { return f.fuera.indexOf(t.id) < 0 && !(t.tipo === "particulares" && !f.part); };
       var chip = function (t) { return '<button type="button" class="chip" data-t="' + esc(t.id) + '" aria-pressed="' + activa(t) + '">' + esc(t.nombre) + "</button>"; };
       var chipRev = function (t) { return '<button type="button" class="chip" data-rev="' + esc(t.id) + '" aria-pressed="' + (f.revOn.indexOf(t.id) >= 0) + '">' + esc(t.nombre) + "</button>"; };
-      var ig = ts[0].id === "instantgaming" ? ts[0] : null, otros = ig ? ts.slice(1) : ts;
+      var fijos = ts.filter(function (t) { return esRevFijo(t.id); }), otros = ts.filter(function (t) { return !esRevFijo(t.id); });
       // Revendedores de claves: Instant Gaming a la vista y el resto dentro de su desplegable
       // Entre particulares: eBay con un desplegable para elegir el estado de los juegos
       var eb = bl.id === "segundamano" && ts.filter(function (t) { return t.id === "ebay"; })[0];
@@ -834,11 +838,12 @@ button { cursor: pointer; }
             '<button type="button" class="chip mini" data-todos="calidades">' + (quitados ? "Marcar todos" : "Quitar todos") + "</button></div>" +
             '<div class="chips">' + CALIDADES.map(function (c) { return '<button type="button" class="chip" data-cal="' + c + '" aria-pressed="' + (activa(eb) && f.calOff.indexOf(c) < 0) + '">' + c + "</button>"; }).join("") + "</div></div>" : "") + "</div>";
       }
-      if (bl.id !== "claves" || !ig || !otros.length)
+      if (bl.id !== "claves" || !fijos.length || !otros.length)
         return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + ts.map(chip).join("") + "</div></div>";
       var abierto = !!bloquesAbiertos.claves;
       var marcados = otros.filter(function (t) { return f.revOn.indexOf(t.id) >= 0; }).length;
-      return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips"><span class="chip-grupo' + (abierto ? " abierto" : "") + '">' + chip(ig) +
+      return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + fijos.slice(0, -1).map(chip).join("") +
+        '<span class="chip-grupo' + (abierto ? " abierto" : "") + '">' + chip(fijos[fijos.length - 1]) +
         '<button type="button" class="chip-caret" data-sub-abrir="claves" aria-expanded="' + abierto + '" aria-label="Más revendedores">' +
         "+" + (marcados ? marcados + "/" + otros.length : otros.length) + " " + (abierto ? "▴" : "▾") + "</button></span></div>" +
         (abierto ? '<div class="sub-panel"><div class="sub-cab"><span class="sub-tit">Más revendedores <small>(desmarcados por defecto)</small></span>' +
@@ -1258,7 +1263,7 @@ button { cursor: pointer; }
   function precioAhora(j) {
     var ps = j.ofertas.filter(function (o) {
       var t = tiendaPorId[o.tienda];
-      return o.stock && o.estado !== "usado" && !(t && t.tipo === "revendedor" && o.tienda !== "instantgaming");
+      return o.stock && o.estado !== "usado" && !(t && t.tipo === "revendedor" && !esRevFijo(o.tienda));
     }).map(total).sort(function (a, b) { return a - b; });
     return ps.length ? ps[0] : null;
   }
@@ -1821,7 +1826,7 @@ button { cursor: pointer; }
     }
     if (b.dataset.todos) {
       if (b.dataset.todos === "claves-otros") {
-        var otrosIds = tiendasDeBloque("claves").filter(function (id) { return id !== "instantgaming"; });
+        var otrosIds = tiendasDeBloque("claves").filter(function (id) { return !esRevFijo(id); });
         var todosOn = otrosIds.every(function (id) { return f.revOn.indexOf(id) >= 0; });
         f.revOn = todosOn ? [] : otrosIds.slice();
         pintarControles(); cambio(); return;
@@ -1929,7 +1934,7 @@ button { cursor: pointer; }
     if (!t) return;
     tiendaPuesta = true;
     f.fuera = datos.tiendas.map(function (x) { return x.id; }).filter(function (id) { return id !== t.id; });
-    if (t.tipo === "revendedor" && t.id !== "instantgaming") f.revOn = [t.id];
+    if (t.tipo === "revendedor" && !esRevFijo(t.id)) f.revOn = [t.id];
     if (t.tipo === "marketplace") f.mkt = true;
     if (t.tipo === "particulares") f.part = true;
     f.fueraSub = [];

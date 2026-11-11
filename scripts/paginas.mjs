@@ -144,7 +144,7 @@ function enlaceOferta(o, j, tiendaPorId) {
 
 function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
   // Mismas tiendas que la web enseña por defecto (de los revendedores de claves, solo Instant Gaming)
-  const ofs = j.ofertas.filter((o) => { const t = tiendaPorId[o.tienda]; return !(t?.tipo === "revendedor" && o.tienda !== "instantgaming"); })
+  const ofs = j.ofertas.filter((o) => { const t = tiendaPorId[o.tienda]; return !(t?.tipo === "revendedor" && !["instantgaming", "kinguin"].includes(o.tienda)); })
     .sort((a, b) => (b.stock - a.stock) || (total(a) - total(b)));
   if (!ofs.length) return null;
   const conStock = ofs.filter((o) => o.stock), mejor = conStock[0] || ofs[0];

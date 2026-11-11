@@ -685,7 +685,7 @@ const regionValeIG = (r) => !r || /(españa|espana|europe|europa|worldwide|globa
 async function productoIG(j, p) {
   const f = await fichaIG(p.url);
   await esperar(600);
-  if (!f || !(f.precio > 0) || !regionValeIG(f.region)) return { j, n: 0 };
+  if (!f || !(f.precio > 0) || !regionValeIG(f.region) || ES_CUENTA.test(f.nombre)) return { j, n: 0 };
   if (!j) {
     if (NO_PRODUCTO.test(limpiar(f.nombre))) return { j, n: 0 };
     j = juego(f.nombre, { pop: 99999, tipo: DLC_RE.test(limpiar(f.nombre)) ? "dlc" : tipoDe(f.nombre) });
@@ -701,6 +701,10 @@ async function productoIG(j, p) {
   }
   return { j, n };
 }
+
+// Cuentas (compartidas o «de primera mano»): van contra las condiciones de Steam, Sony y Microsoft y acaban en baneo.
+// En Pillao solo entran claves y juegos en disco.
+const ES_CUENTA = /\b(accounts?|cuentas?|shared|compartid[ao]s?|offline activation|activacion offline|primary|secondary|primaria|secundaria)\b/i;
 
 // ---------- Kinguin (claves, su mapa de productos) ----------
 // Su robots.txt deja leer las fichas pidiendo 2 segundos entre peticiones, y los precios salen en euros con ?currency=EUR.
@@ -725,6 +729,7 @@ async function mapaKinguin() {
     const xml = await (await pedir(m)).text();
     for (const u of [...xml.matchAll(/<loc>(https:\/\/www\.kinguin\.net\/es\/category\/\d+\/[^<]+)<\/loc>/g)].map((x) => x[1])) {
       const slug = u.split("/").pop().replace(/-/g, " ");
+      if (ES_CUENTA.test(slug)) continue;
       const titulo = slug.replace(KIN_COLA, " ").replace(/\s+/g, " ").trim();
       if (titulo.length < 3) continue;
       productos.push({ url: u, llave: llave(titulo) });
@@ -748,7 +753,7 @@ async function fichaKinguin(url) {
 async function kinguinUno(j, p) {
   const f = await fichaKinguin(p.url);
   await esperar(KIN_ESPERA);
-  if (!f || !(f.precio > 0) || !kinRegionVale(f.region)) return 0;
+  if (!f || !(f.precio > 0) || !kinRegionVale(f.region) || ES_CUENTA.test(f.nombre)) return 0;
   const plataforma = KIN_PLAT[f.plat.toLowerCase()] || (/xbox/i.test(f.plat) ? "Xbox Series" : /play ?station|psn/i.test(f.plat) ? null : "PC");
   if (!plataforma) return 0;   // las claves de PlayStation de reventa son de cuenta y de región: no las ponemos
   ofertar(j, { tienda: "kinguin", plataforma, precio: f.precio, stock: f.stock, drm: f.plat || undefined,
