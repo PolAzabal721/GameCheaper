@@ -38,7 +38,11 @@ export async function rutasContador(req, env, ctx, url) {
     return new Response(PIXEL, { headers: { "Content-Type": "image/gif", "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" } });
   }
   if (url.pathname === "/panel") {
-    if (!env.PANEL_TOKEN || url.searchParams.get("k") !== env.PANEL_TOKEN) return new Response("No", { status: 403 });
+    // Mensajes distintos para saber qué falla sin enseñar nada
+    if (!env.PANEL_TOKEN) return new Response("Falta el secreto PANEL_TOKEN en el Worker.", { status: 503 });
+    const dado = url.searchParams.get("k");
+    if (!dado) return new Response("Añade ?k=tu-token al final de la dirección.", { status: 401 });
+    if (dado.trim() !== String(env.PANEL_TOKEN).trim()) return new Response("Ese token no es el bueno.", { status: 403 });
     const dias = Math.min(90, Math.max(1, +url.searchParams.get("dias") || 14));
     const fechas = [...Array(dias).keys()].map((i) => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Madrid" }).format(new Date(Date.now() - i * 86400000))).reverse();
     const visitas = {}, clics = {}, paginas = {}, origen = {}, juegos = {};
