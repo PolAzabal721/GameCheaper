@@ -549,7 +549,6 @@ button { cursor: pointer; }
             <option value="barato">Más barato</option>
             <option value="descuento">Mayor descuento</option>
             <option value="premiados">Premiados</option>
-            <option value="az">A–Z</option>
           </select>
         </label>
         <button type="button" class="btn-vista" id="vista" aria-pressed="false" aria-label="Ver en cuadrícula" title="Ver en cuadrícula"></button>
@@ -698,6 +697,7 @@ button { cursor: pointer; }
     var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOff: [], tipo: "todos", mkt: true, part: true, stock: false, pmax: null, orden: "populares", vista: "lista", calOff: [] };
     if (!prefsOk()) return base;
     try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g) base[k] = g[k]; } catch (e) {}
+    if (base.orden === "az") base.orden = "populares";
     return base;
   }
   function guardarFiltros() { if (!prefsOk()) return; try { localStorage.setItem("pillao-filtros", JSON.stringify(f)); } catch (e) {} }
@@ -1790,7 +1790,6 @@ button { cursor: pointer; }
       if (f.orden === "proximos") return (a.j.lanzamiento || "9999").localeCompare(b.j.lanzamiento || "9999") || (a.j.pop || 99999) - (b.j.pop || 99999);
       if (f.orden === "descuento") return b.dto - a.dto;
       if (f.orden === "premiados") return puntosPremio(b.j) - puntosPremio(a.j) || (TIPO_ORDEN[a.j.tipo] || 0) - (TIPO_ORDEN[b.j.tipo] || 0) || (a.j.pop || 99999) - (b.j.pop || 99999);
-      if (f.orden === "az") return a.j.titulo.localeCompare(b.j.titulo, "es");
       if (f.orden === "barato") return total(a.mejor) - total(b.mejor);
       return (a.j.pop || 99999) - (b.j.pop || 99999);
     });
