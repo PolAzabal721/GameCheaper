@@ -1,0 +1,38 @@
+name: Prueba
+on:
+  workflow_dispatch:
+jobs:
+  mirar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Mirar robots y fichas
+        run: |
+          node -e '
+          const sitios=["https://gameboost.com","https://gamespsn.com","https://gocdkeys.es","https://www.kinguin.net","https://www.eneba.com","https://www.g2a.com"];
+          const fichas=["https://gameboost.com/forza-horizon-6-xbox-series-xs-windows-10-xbox-live-key-global-1-00-69375","https://gamespsn.com/product/ea-sports-fc-27-ps5/","https://gocdkeys.es/comprar-forza-horizon-6-pc-cd-key"];
+          const UA={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)"};
+          (async()=>{
+            for(const s of sitios){
+              try{
+                const r=await fetch(s+"/robots.txt",{headers:UA});
+                const t=await r.text();
+                console.log("=== "+s+" robots "+r.status+" ("+t.length+" bytes)");
+                console.log(t.split("\n").slice(0,40).join("\n"));
+              }catch(e){console.log("=== "+s+" robots ERROR "+e.message)}
+            }
+            for(const u of fichas){
+              try{
+                const r=await fetch(u,{headers:UA});
+                const t=await r.text();
+                const ld=(t.match(/application\/ld\+json/g)||[]).length;
+                const precio=(t.match(/"price"\s*:\s*"?[0-9.,]+/g)||[]).slice(0,3);
+                console.log("--- FICHA "+u+" -> HTTP "+r.status+" bytes "+t.length+" ldjson "+ld+" precios "+JSON.stringify(precio));
+              }catch(e){console.log("--- FICHA "+u+" ERROR "+e.message)}
+            }
+            // APIs publicas conocidas
+            for(const u of ["https://api.kinguin.net/integration/v1/products?limit=1","https://www.eneba.com/graphql/"]){
+              try{ const r=await fetch(u,{headers:UA}); console.log("API "+u+" -> "+r.status+" "+(await r.text()).slice(0,160).replace(/\n/g," ")); }
+              catch(e){ console.log("API "+u+" ERROR "+e.message) }
+            }
+          })()'
