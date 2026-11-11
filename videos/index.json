@@ -1,70 +1,18 @@
 {
- "fecha": "2026-11-11T17:37:24.409Z",
+ "fecha": "2026-11-11T18:18:33.353Z",
  "videos": [
   {
-   "archivo": "videos/2026-11-11-the-elder-scrolls-v-skyrim-special-editi.mp4",
-   "juego": "The Elder Scrolls V: Skyrim Special Edition",
-   "precio": 6.67,
-   "antes": 39.99,
-   "dto": 83,
-   "tienda": "GamesPlanet US",
+   "archivo": "videos/2026-11-11-final-fantasy-xvi-complete-edition.mp4",
+   "juego": "Final Fantasy XVI Complete Edition",
+   "precio": 25.89,
+   "antes": 69.99,
+   "dto": 63,
+   "tienda": "Instant Gaming",
    "plataforma": "PC",
-   "minimo": false,
-   "guion": "Chollo de hoy en Pillao. The Elder Scrolls V: Skyrim Special Edition, para PC. Costaba 39 euros con 99 y ahora está en 6 euros con 67. Un 83 por ciento menos en GamesPlanet US. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 18.4,
-   "url": "https://pillaojuegos.com/?q=The%20Elder%20Scrolls%20V%3A%20Skyrim%20Special%20Edition"
-  },
-  {
-   "archivo": "videos/2026-11-11-torchlight-ii.mp4",
-   "juego": "Torchlight II",
-   "precio": 3.43,
-   "antes": 18.99,
-   "dto": 82,
-   "tienda": "Zapagames",
-   "plataforma": "PC",
-   "minimo": false,
-   "guion": "Chollo de hoy en Pillao. Torchlight II, para PC. Costaba 18 euros con 99 y ahora está en 3 euros con 43. Un 82 por ciento menos en Zapagames. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 15.9,
-   "url": "https://pillaojuegos.com/?q=Torchlight%20II"
-  },
-  {
-   "archivo": "videos/2026-11-11-nba-2k26.mp4",
-   "juego": "NBA 2K26",
-   "precio": 14.99,
-   "antes": 79.99,
-   "dto": 81,
-   "tienda": "GAME",
-   "plataforma": "PS4",
-   "minimo": false,
-   "guion": "Chollo de hoy en Pillao. NBA 2K26, para PS4. Costaba 79 euros con 99 y ahora está en 14 euros con 99. Un 81 por ciento menos en GAME. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 15.3,
-   "url": "https://pillaojuegos.com/?q=NBA%202K26"
-  },
-  {
-   "archivo": "videos/2026-11-11-smoke-and-sacrifice.mp4",
-   "juego": "Smoke And Sacrifice",
-   "precio": 4.99,
-   "antes": 24.99,
-   "dto": 80,
-   "tienda": "IndieGala Store",
-   "plataforma": "PC",
-   "minimo": false,
-   "guion": "Chollo de hoy en Pillao. Smoke And Sacrifice, para PC. Costaba 24 euros con 99 y ahora está en 4 euros con 99. Un 80 por ciento menos en IndieGala Store. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 16.7,
-   "url": "https://pillaojuegos.com/?q=Smoke%20And%20Sacrifice"
-  },
-  {
-   "archivo": "videos/2026-11-11-for-the-king.mp4",
-   "juego": "For The King",
-   "precio": 3.99,
-   "antes": 19.99,
-   "dto": 80,
-   "tienda": "IndieGala Store",
-   "plataforma": "PC",
-   "minimo": false,
-   "guion": "Chollo de hoy en Pillao. For The King, para PC. Costaba 19 euros con 99 y ahora está en 3 euros con 99. Un 80 por ciento menos en IndieGala Store. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 16.2,
-   "url": "https://pillaojuegos.com/?q=For%20The%20King"
+   "minimo": true,
+   "guion": "Chollo de hoy en Pillao. Final Fantasy XVI Complete Edition, para PC. Costaba 69 euros con 99 y ahora está en 25 euros con 89. Un 63 por ciento menos en Instant Gaming. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 20.3,
+   "url": "https://pillaojuegos.com/?q=Final%20Fantasy%20XVI%20Complete%20Edition"
   }
  ]
 }
