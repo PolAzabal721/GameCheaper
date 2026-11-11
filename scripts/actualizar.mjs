@@ -702,6 +702,60 @@ async function productoIG(j, p) {
   return { j, n };
 }
 
+// ---------- Kinguin (claves, su mapa de productos) ----------
+// Su robots.txt deja leer las fichas pidiendo 2 segundos entre peticiones, y los precios salen en euros con ?currency=EUR.
+// Como en Instant Gaming: los juegos más buscados en cada ejecución y un bloque rotatorio del resto.
+const KIN_MAX = +(ENV.KIN_MAX || 150);
+const KIN_ROTA = +(ENV.KIN_ROTA || 250);
+const KIN_ESPERA = +(ENV.KIN_ESPERA || 2200);   // su robots pide 2 s
+const KIN_MAPAS = +(ENV.KIN_MAPAS || 3);
+// Lo que va detrás del título en sus direcciones: plataforma y «cd key»
+const KIN_COLA = /\s*\b(pc|ps4|ps5|playstation( [45])?|xbox( (one|series( x\|s| x s)?|live|game pass))?|nintendo( switch)?|switch|steam|epic games?|ea app|origin|uplay|ubisoft connect|gog|battle ?net|rockstar( games)?|microsoft|windows( 10| 11)?|global|eu|europe|row|account|gift card|digital download|cd key|key|código|codigo)\b/gi;
+const KIN_PLAT = { steam: "PC", "ea app": "PC", origin: "PC", uplay: "PC", "ubisoft connect": "PC", gog: "PC", "epic games": "PC", epic: "PC",
+  "battle.net": "PC", battlenet: "PC", "rockstar games": "PC", rockstar: "PC", microsoft: "PC", windows: "PC", "xbox live": "Xbox Series", xbox: "Xbox Series" };
+const kinRegionVale = (r) => !r || /(region free|global|worldwide|europe|european union|\beu\b|spain|españa|espana|emea)/i.test(r);
+
+let PRODUCTOS_KIN = null;
+async function mapaKinguin() {
+  if (PRODUCTOS_KIN) return PRODUCTOS_KIN;
+  const indice = await (await pedir("https://static.kinguin.net/media/sitemap/sitemap.xml")).text();
+  const mapas = [...indice.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]).filter((u) => /product_section_es_ES_\d+\.xml$/.test(u)).slice(0, KIN_MAPAS);
+  const productos = [];
+  for (const m of mapas) {
+    const xml = await (await pedir(m)).text();
+    for (const u of [...xml.matchAll(/<loc>(https:\/\/www\.kinguin\.net\/es\/category\/\d+\/[^<]+)<\/loc>/g)].map((x) => x[1])) {
+      const slug = u.split("/").pop().replace(/-/g, " ");
+      const titulo = slug.replace(KIN_COLA, " ").replace(/\s+/g, " ").trim();
+      if (titulo.length < 3) continue;
+      productos.push({ url: u, llave: llave(titulo) });
+    }
+    await esperar(1200);
+  }
+  if (productos.length < 5000) throw new Error(`el mapa de Kinguin trae muy pocos productos (${productos.length})`);
+  PRODUCTOS_KIN = productos;
+  return productos;
+}
+// Una ficha: precio en euros, plataforma, región y si hay stock
+async function fichaKinguin(url) {
+  const html = await (await pedir(url + "?currency=EUR")).text();
+  const of = html.match(/"@type":"AggregateOffer","price":([0-9.]+),"priceCurrency":"([A-Z]+)"[^}]*?"availability":"([^"]+)"/);
+  if (!of || of[2] !== "EUR") return null;
+  const nombre = html2txt((html.match(/"@type":"Product","name":"([^"]+)"/) || [])[1] || "");
+  const plat = (html.match(/"platform":\{"name":"([^"]+)"/) || [])[1] || "";
+  const region = (html.match(/"region":\{"displayName":[^,]*,"name":"([^"]+)"/) || [])[1] || "";
+  return { nombre, precio: Number(of[1]), stock: /InStock/.test(of[3]), plat, region };
+}
+async function kinguinUno(j, p) {
+  const f = await fichaKinguin(p.url);
+  await esperar(KIN_ESPERA);
+  if (!f || !(f.precio > 0) || !kinRegionVale(f.region)) return 0;
+  const plataforma = KIN_PLAT[f.plat.toLowerCase()] || (/xbox/i.test(f.plat) ? "Xbox Series" : /play ?station|psn/i.test(f.plat) ? null : "PC");
+  if (!plataforma) return 0;   // las claves de PlayStation de reventa son de cuenta y de región: no las ponemos
+  ofertar(j, { tienda: "kinguin", plataforma, precio: f.precio, stock: f.stock, drm: f.plat || undefined,
+    condicion: `Clave ${f.plat || ""} · ${f.region || "Region free"}`.replace(/\s+·/, " ·"), url: p.url, fuente: "kinguin" });
+  return 1;
+}
+
 // ---------- Alcampo (juegos en disco) ----------
 // Su tienda online tiene un buscador con los datos de cada producto (nombre, precio, disponibilidad y sección).
 // Su robots.txt permite consultarlo. Solo cogemos productos de la sección «Videojuegos» que no sean consolas ni accesorios,
@@ -1105,6 +1159,30 @@ async function main() {
       if (j) { j.revisado.add("instantgaming"); visitar("instantgaming", j); }
     }
     cuenta.instantgaming = nIG;
+  }
+  // Kinguin: solo juegos que ya tenemos en el catálogo (su mapa trae muchísimo ruido de cuentas y DLC sueltos)
+  if (ENV.KINGUIN !== "0") {
+    try {
+      const productosKin = await mapaKinguin();
+      const porLlaveKin = new Map();
+      for (const p of productosKin) if (!porLlaveKin.has(p.llave)) porLlaveKin.set(p.llave, p);
+      const enKin = [];
+      for (const j of juegos.values()) {
+        if (j.tipo === "tarjeta") continue;
+        const p = porLlaveKin.get(llave(j.titulo));
+        if (p) enKin.push({ j, p, pop: j.pop });
+      }
+      enKin.sort((a, b) => a.pop - b.pop);
+      const listaKin = [...enKin.slice(0, KIN_MAX), ...ventana(enKin.slice(KIN_MAX), KIN_ROTA)];
+      console.log(`Kinguin: ${productosKin.length} fichas en su mapa; ${enKin.length} coinciden con el catálogo; ${listaKin.length} en esta ejecución`);
+      let nKin = 0, fallosKin = 0;
+      for (const x of listaKin) {
+        try { nKin += await kinguinUno(x.j, x.p); }
+        catch (e) { if (++fallosKin <= 3) avisos.push(`kinguin: ${e.message}`); if (fallosKin >= 8) { avisos.push("kinguin: demasiados fallos, paro"); caidas.add("kinguin"); break; } }
+        x.j.revisado.add("kinguin"); visitar("kinguin", x.j);
+      }
+      cuenta.kinguin = nKin;
+    } catch (e) { avisos.push(`kinguin: ${e.message}`); caidas.add("kinguin"); }
   }
   if (!(await intentar("alcampo", () => alcampo((j) => visitar("alcampo", j))))) caidas.add("alcampo");
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");

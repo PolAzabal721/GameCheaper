@@ -44,6 +44,15 @@
   "busqueda": "https://www.instant-gaming.com/es/busquedas/?query={q}&igr=gamer-681806"
  },
  {
+  "id": "kinguin",
+  "nombre": "Kinguin",
+  "tipo": "revendedor",
+  "formatos": [
+   "digital"
+  ],
+  "busqueda": "https://www.kinguin.net/listing?active=1&phrase={q}"
+ },
+ {
   "id": "eneba",
   "nombre": "Eneba",
   "tipo": "marketplace",
