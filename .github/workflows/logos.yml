@@ -1,0 +1,42 @@
+name: Logos de tiendas
+
+# Descarga una vez el icono de cada tienda (desde el buscador de iconos de Google, a 64 px) y lo guarda en logos/,
+# para servirlo desde nuestra web sin cargar nada de terceros. Se lanza a mano cuando añadimos tiendas.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  logos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Descargar iconos
+        run: |
+          mkdir -p logos
+          node -e '
+          const fs=require("fs");
+          const mapa=JSON.parse(fs.readFileSync("config/logos.json","utf8"));
+          (async()=>{
+            for(const dom of [...new Set(Object.values(mapa))]){
+              const f="logos/"+dom.replace(/[^a-z0-9.-]/g,"")+".png";
+              try{
+                const r=await fetch("https://www.google.com/s2/favicons?domain="+dom+"&sz=64");
+                const b=Buffer.from(await r.arrayBuffer());
+                if(r.ok && b.length>200){ fs.writeFileSync(f,b); console.log("ok   "+dom+" "+b.length+" b"); }
+                else console.log("MAL  "+dom+" "+r.status+" "+b.length+" b");
+              }catch(e){ console.log("ERR  "+dom+" "+e.message); }
+              await new Promise(r=>setTimeout(r,300));
+            }
+          })()'
+      - name: Guardar
+        run: |
+          git config user.name "pillao-bot"
+          git config user.email "pillao-bot@users.noreply.github.com"
+          git add logos
+          git diff --cached --quiet && exit 0
+          git commit -m "Logos de las tiendas"
+          git pull --rebase origin main && git push

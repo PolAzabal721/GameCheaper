@@ -1,0 +1,13 @@
+{
+ "steam": "store.steampowered.com", "eshop": "nintendo.com", "xbox": "xbox.com", "psstore": "playstation.com",
+ "itad-epicgamestore": "epicgames.com", "itad-gog": "gog.com", "itad-ubisoftstore": "ubisoft.com", "itad-eastore": "ea.com", "itad-blizzard": "blizzard.com",
+ "instantgaming": "instant-gaming.com", "kinguin": "kinguin.net", "eneba": "eneba.com", "g2a": "g2a.com", "driffle": "driffle.com", "k4g": "k4g.com",
+ "itad-humblestore": "humblebundle.com", "itad-fanatical": "fanatical.com", "itad-greenmangaming": "greenmangaming.com",
+ "itad-gamesplanetuk": "gamesplanet.com", "itad-gamesplanetfr": "gamesplanet.com", "itad-gamesplanetde": "gamesplanet.com", "itad-gamesplanetus": "gamesplanet.com",
+ "itad-gamersgate": "gamersgate.com", "itad-gamebillet": "gamebillet.com", "itad-allyouplay": "allyouplay.com", "itad-wingamestore": "wingamestore.com",
+ "itad-indiegalastore": "indiegala.com", "itad-planetplay": "planetplay.com", "itad-dlgamer": "dlgamer.com", "itad-gamesporium": "gamesporium.com",
+ "itad-playsum": "playsum.live", "itad-playerland": "player.land", "itad-zapagames": "zapagames.com", "itad-dreamgame": "dreamgame.com",
+ "itad-gamesload": "gamesload.eu", "itad-muve": "muve.pl", "itad-macgamestore": "macgamestore.com", "itad-fortunadigital": "fortunadigital.net",
+ "itad-zoomplatform": "zoom-platform.com", "itad-fireflower": "fireflowergames.com",
+ "game": "game.es", "gameseminuevos": "game.es", "ebay": "ebay.es", "alcampo": "alcampo.es"
+}
