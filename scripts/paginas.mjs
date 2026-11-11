@@ -75,7 +75,7 @@ function proteger(html, buscador) {
   const huellas = [...html.matchAll(/<script(?![^>]*\bsrc=)(?![^>]*type="application\/(?:ld\+)?json")[^>]*>([\s\S]*?)<\/script>/g)]
     .map((m) => `'sha256-${createHash("sha256").update(m[1], "utf8").digest("base64")}'`);
   const csp = [
-    "default-src 'self'", `script-src 'self' ${huellas.join(" ")}`.trim(), "style-src 'self' 'unsafe-inline'", "img-src 'self' data: https://shared.akamai.steamstatic.com https://cdn.akamai.steamstatic.com https://fs-prod-cdn.nintendo-europe.com https://www.nintendo.com https://assets.nintendo.eu https://store-images.s-microsoft.com https://image.api.playstation.com https://media.game.es",
+    "default-src 'self'", `script-src 'self' ${huellas.join(" ")}`.trim(), "style-src 'self' 'unsafe-inline'", `img-src 'self' data:${buscador ? " " + new URL(buscador).origin : ""} https://shared.akamai.steamstatic.com https://cdn.akamai.steamstatic.com https://fs-prod-cdn.nintendo-europe.com https://www.nintendo.com https://assets.nintendo.eu https://store-images.s-microsoft.com https://image.api.playstation.com https://media.game.es`,
     "font-src 'self'", `connect-src 'self'${buscador ? " " + new URL(buscador).origin : ""}`, "object-src 'none'", "base-uri 'self'",
     "form-action 'self'", "upgrade-insecure-requests",
   ].join("; ");
@@ -125,7 +125,7 @@ function plantilla({ titulo, descripcion, canonica, raiz, cuerpo, jsonld }) {
 <title>${esc(titulo)}</title><meta name="description" content="${esc(descripcion)}">
 <link rel="canonical" href="${canonica}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(titulo)}">
 <meta property="og:description" content="${esc(descripcion)}"><meta property="og:url" content="${canonica}"><meta property="og:locale" content="es_ES"><meta property="og:site_name" content="Pillao">
-<link rel="icon" href="${raiz}favicon.svg" type="image/svg+xml"><link rel="alternate icon" href="${raiz}favicon.ico" sizes="any"><link rel="apple-touch-icon" href="${raiz}icono-180.png">
+<link rel="icon" href="${raiz}favicon.svg" type="image/svg+xml"><link rel="alternate icon" href="${raiz}favicon.ico" sizes="any"><link rel="icon" href="${raiz}icono-192.png" type="image/png" sizes="192x192"><link rel="apple-touch-icon" href="${raiz}icono-180.png">
 <link rel="stylesheet" href="${raiz}fonts/fuentes.css"><link rel="stylesheet" href="${raiz}paginas.css">
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>` : ""}
 </head><body><header><div class="wrap"><a class="logo" href="${raiz}">Pillao<span>€</span></a><a class="ir-app" href="${raiz}">Ir al comparador →</a></div></header>

@@ -9,6 +9,7 @@
 // Necesita un espacio KV enlazado como PILLAO. eBay es opcional (EBAY_CLIENT_ID / EBAY_CLIENT_SECRET).
 
 import { rutasAvisos, revisarAvisos } from "./avisos.js";
+import { rutasContador } from "./contador.js";
 
 const CACHE_SEG = 3 * 3600;      // una misma búsqueda se reutiliza 3 horas
 const MAX_JUEGOS = 8;
@@ -195,6 +196,8 @@ export default {
     try {
       const av = await rutasAvisos(req, env, ctx, url);
       if (av) return av;
+      const cn = await rutasContador(req, env, ctx, url);
+      if (cn) return cn;
       if (url.pathname === "/buscar") {
         const q = (url.searchParams.get("q") || "").replace(/\s+/g, " ").trim().slice(0, 80);
         if (limpiar(q).length < 3) return json({ error: "Escribe al menos 3 letras." }, 400);

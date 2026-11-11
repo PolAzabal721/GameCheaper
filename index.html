@@ -8,7 +8,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Compara precios de videojuegos digitales y físicos en tiendas españolas.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="alternate icon" href="favicon.ico" sizes="any">
+<link rel="alternate icon" href="favicon.ico" sizes="any"><link rel="icon" href="icono-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="icono-180.png">
 <link rel="stylesheet" href="fonts/fuentes.css">
 <style>
@@ -1168,7 +1168,7 @@ button { cursor: pointer; }
           (n > 1 ? '<button type="button" class="desp" data-grupo="' + esc(clave) + '" aria-expanded="' + !!abierto + '">' + (abierto ? "▴ " : "▾ ") + (g.claves ? n + " ofertas de " + g.nTiendas + " tiendas" : g.id === "ebay" ? n + " anuncios" : n + (plats.length === n ? " plataformas" : " opciones")) + "</button>" : "") + "</div>" +
           '<div class="of-d">' + detalle + "</div>" +
           '<div class="of-p"><b>' + eur.format(total(o)) + "</b><small>" + antes(o, j) + (dif > 0.004 ? "+" + eur.format(dif) : "el más barato") + "</small></div>" +
-          (url ? '<a class="ir" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + (o.url ? "Ver oferta" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
+          (url ? '<a class="ir" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" data-t="' + esc(o.tienda) + '" data-j="' + esc(j.id) + '">' + (o.url ? "Ver oferta" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
         if (n > 1 && abierto) fila += g.ofs.map(function (x) {
           var u = enlace(x, j);
           var tx = tiendaPorId[x.tienda] || { nombre: x.tienda };
@@ -1178,13 +1178,13 @@ button { cursor: pointer; }
             '<div class="of-d"><span>' + (g.claves || esEb ? esc(x.plataforma || "—") : (x.formato === "fisico" ? "En disco" : "Digital")) + "</span>" + (resto ? "<span>·</span><span>" + esc(resto) + "</span>" : "") +
             (x.envio ? "<span>·</span><span>+ " + eur.format(x.envio) + " envío</span>" : "") + (x.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
             '<div class="of-p"><b>' + eur.format(total(x)) + "</b>" + (antes(x, j) ? "<small>" + antes(x, j).replace(/ · $/, "") + "</small>" : "") + "</div>" +
-            (u ? '<a class="ir" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + (x.url ? "Ver" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
+            (u ? '<a class="ir" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer" data-t="' + esc(x.tienda) + '" data-j="' + esc(j.id) + '">' + (x.url ? "Ver" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
         }).join("");
         return fila;
       }).join("") + "</ol>" +
       (grupos.length > VISIBLES ? '<button type="button" class="mas" data-mas="' + esc(j.id) + '">' + (todas ? "Ver menos" : "Ver las " + grupos.length + " tiendas") + "</button>" : "") +
       (otras.length ? '<div class="otras"><span>Sin precio automático. Búscalo en:</span>' + otras.map(function (t) {
-        return '<a href="' + esc(t.busqueda.replace("{q}", encodeURIComponent(j.titulo))) + '" target="_blank" rel="noopener noreferrer">' + esc(t.nombre) + " ↗</a>";
+        return '<a href="' + esc(t.busqueda.replace("{q}", encodeURIComponent(j.titulo))) + '" target="_blank" rel="noopener noreferrer" data-t="' + esc(t.id) + '" data-j="' + esc(j.id) + '">' + esc(t.nombre) + " ↗</a>";
       }).join("") + "</div>" : "") +
       "</article>";
   }
@@ -1924,6 +1924,28 @@ button { cursor: pointer; }
   leerServidor(false);
   setInterval(function () { leerServidor(false); }, REFRESCO_MS);
   setInterval(pintarEstado, 60 * 1000);
+
+  // ---------- Recuento propio de visitas y clics ----------
+  // Solo cuenta cuántas veces se ha visto la web y en qué tienda se pulsa. Ni cookies, ni terceros,
+  // ni nada que identifique a nadie: es un número por día guardado en nuestro propio servidor.
+  function contar(ruta) {
+    if (!datos || !datos.buscador) return;
+    try { new Image().src = datos.buscador.replace(/\/$/, "") + ruta; } catch (e) { /* da igual si falla */ }
+  }
+  var contada = false;
+  var contarVisita = function () {
+    if (contada || !datos || !datos.buscador) return;
+    contada = true;
+    var de = "";
+    try { de = document.referrer ? new URL(document.referrer).hostname : ""; } catch (e) { de = ""; }
+    if (de === location.hostname) de = "";
+    contar("/v?p=" + encodeURIComponent(location.pathname.slice(0, 60)) + (de ? "&r=" + encodeURIComponent(de) : ""));
+  };
+  setTimeout(contarVisita, 1500);
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest ? e.target.closest("a[data-t]") : null;
+    if (a) contar("/c?t=" + encodeURIComponent(a.dataset.t) + "&j=" + encodeURIComponent(a.dataset.j || ""));
+  }, true);
 })();
 </script>
 
