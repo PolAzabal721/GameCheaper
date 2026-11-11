@@ -1394,11 +1394,23 @@ async function main() {
   const base = new Map();
   for (const j of juegos.values()) if ((j._img || j._cov) && j.tipo !== "tarjeta") { const k = llave(j.titulo); if (!base.has(k)) base.set(k, j); }
   let heredadas = 0;
+  // Posibles nombres del juego base: sin la coletilla de edición, cortando por «:» o « - » (los DLC suelen ir así:
+  // «Dying Light - The Bozak Horde», «Borderlands 2: Headhunter 4…») y sin «DLC…» al final («Minecraft Dungeons Ultimate DLC Bundle»).
+  const raicesDe = (t) => {
+    const out = [t.replace(SOBRAS, ""), t.replace(/\s+(ultimate\s+|complete\s+)?dlc\b.*$/i, "")];
+    const partes = t.split(/\s*(?::|\s[-–—]\s)\s*/);
+    for (let i = partes.length - 1; i >= 1; i--) out.push(partes.slice(0, i).join(": "));
+    // Contenido descargable sin separador («Crusader Kings III Content Creator Pack»): se van quitando palabras del final
+    if (/\b(dlc|pack|bundle|season pass|chapter|expansion|soundtrack|ost|skin|costume|upgrade|kit|set)\b/i.test(t)) {
+      const pal = partes[0].split(/\s+/);
+      for (let n = pal.length - 1; n >= 2; n--) out.push(pal.slice(0, n).join(" "));
+    }
+    return out.map((x) => x.trim()).filter((x) => x.length >= 3 && llave(x) !== llave(t));
+  };
   for (const j of juegos.values()) {
     if (j._img || j._cov || j.tipo === "tarjeta") continue;
-    const raiz = j.titulo.replace(SOBRAS, "").trim();
-    if (!raiz || raiz.length < 3 || llave(raiz) === llave(j.titulo)) continue;
-    const b = base.get(llave(raiz));
+    let b = null;
+    for (const r of raicesDe(j.titulo)) { b = base.get(llave(r)); if (b) break; }
     if (!b) continue;
     if (b._img) { j._img = b._img; j._imgP = 0; }
     if (b._cov) { j._cov = b._cov; j._covP = 0; }
