@@ -131,7 +131,7 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;paddin
 .volver:hover{border-color:var(--accent)}
 .mas-ch{margin-top:26px}.saltos.otras{gap:10px 12px;margin:0 0 36px}.saltos.otras a{padding:8px 16px}
 .faq{margin-bottom:8px}
-.banners{display:grid;grid-template-columns:1fr;gap:14px}
+.banners{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:14px}
 .banner{position:relative;display:flex;align-items:center;gap:16px;min-height:150px;padding:22px;border-radius:18px;overflow:hidden;text-decoration:none;color:#fff;background:linear-gradient(120deg,var(--c1),var(--c2));box-shadow:0 10px 28px rgba(0,0,0,.18);transition:transform .15s}
 .banner:hover{transform:translateY(-2px)}
 .b-logo{flex-shrink:0;width:64px;height:64px;border-radius:16px;background:#fff;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.2);position:relative;z-index:1}
