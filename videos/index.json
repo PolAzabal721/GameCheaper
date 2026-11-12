@@ -1,18 +1,18 @@
 {
- "fecha": "2026-11-12T17:07:27.701Z",
+ "fecha": "2026-11-12T18:57:56.738Z",
  "videos": [
   {
-   "archivo": "videos/2026-11-12-red-dead-redemption-2.mp4",
-   "juego": "Red Dead Redemption 2",
-   "precio": 15,
-   "antes": 59.99,
-   "dto": 75,
-   "tienda": "GamersGate",
+   "archivo": "videos/2026-11-12-far-cry-4.mp4",
+   "juego": "Far Cry 4",
+   "precio": 6,
+   "antes": 29.99,
+   "dto": 80,
+   "tienda": "Ubisoft Store",
    "plataforma": "PC",
    "minimo": false,
-   "guion": "Chollo de hoy en Pillao. Red Dead Redemption 2, para PC. Costaba 59 euros con 99 y ahora está en 15 euros. Un 75 por ciento menos en GamersGate. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 16.1,
-   "url": "https://pillaojuegos.com/?q=Red%20Dead%20Redemption%202"
+   "guion": "Chollo de hoy en Pillao. Far Cry 4, para PC. Costaba 29 euros con 99 y ahora está en 6 euros. Un 80 por ciento menos en Ubisoft Store. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 13,
+   "url": "https://pillaojuegos.com/?q=Far%20Cry%204"
   }
  ]
 }
