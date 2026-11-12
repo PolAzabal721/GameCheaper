@@ -7,11 +7,13 @@
 //   - solo juegos conocidos (los POPULARES primeros del catálogo), nuevos y con stock; ni tarjetas regalo ni DLC sueltos.
 // Como mucho MAXIMO mensajes por actualización, y un juego ya publicado no vuelve a salir en 15 días (en ninguna tienda, aunque baje más).
 import { readFile, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { tarjetaHTML } from "./tg-tarjeta.mjs";
 import { execFileSync } from "node:child_process";
 
 const ENV = process.env;
 const TOKEN = (ENV.TELEGRAM_BOT_TOKEN || "").trim(), CANAL = (ENV.TELEGRAM_CANAL || "").trim();
-const POPULARES = +(ENV.TG_POPULARES || 2000), MAXIMO = ENV.TG_EJEMPLO ? 1 : +(ENV.TG_MAXIMO || 5), DIAS = 15;
+const POPULARES = +(ENV.TG_POPULARES || 2000), MAXIMO = +(ENV.TG_MAXIMO || (ENV.TG_EJEMPLO ? 1 : 5)), DIAS = 15;
 const SITIO = "https://pillaojuegos.com/";
 if (!TOKEN || !CANAL) { console.log("Telegram: faltan TELEGRAM_BOT_TOKEN o TELEGRAM_CANAL; no publico nada."); process.exit(0); }
 
@@ -84,29 +86,74 @@ async function telegram(metodo, datos) {
   if (!d.ok) throw new Error(`Telegram ${metodo}: ${d.description || r.status}`);
 }
 
+// La imagen de Pillao de cada chollo (tg-tarjeta.mjs), hecha con Playwright; si no se puede, va la foto del juego tal cual
+const LOGOS = await leer("config/logos.json", {});
+let navegador = null;
+try { const { chromium } = await import("playwright"); navegador = await chromium.launch(); } catch (e) { console.log("Telegram: sin navegador para las imágenes (" + e.message.split("\n")[0] + "); van las fotos de las tiendas."); }
+let fuentes = "";
+try {
+  fuentes = (await readFile("fonts/fuentes.css", "utf8")).replace(/url\(([a-z0-9]+\.woff2)\)/g, (m, f) => { try { return `url(data:font/woff2;base64,${execFileSync("base64", ["-w0", "fonts/" + f]).toString()})`; } catch { return m; } });
+} catch {}
+const comoDato = async (url) => {
+  const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)" } });
+  if (!r.ok) throw new Error("imagen " + r.status);
+  const tipo = (r.headers.get("content-type") || "image/jpeg").split(";")[0];
+  return `data:${tipo};base64,${Buffer.from(await r.arrayBuffer()).toString("base64")}`;
+};
+async function tarjeta(j, o, p, ref, minimo, nombre) {
+  if (!navegador || !imagen(j)) return null;
+  try {
+    const dom = LOGOS[o.tienda];
+    const logo = dom && existsSync(`logos/${dom}.png`) ? `data:image/png;base64,${(await readFile(`logos/${dom}.png`)).toString("base64")}` : "";
+    const pagina = await navegador.newPage({ viewport: { width: 1280, height: 720 } });
+    await pagina.setContent(tarjetaHTML({ titulo: j.titulo, plataforma: o.plataforma, formato: o.formato, antes: ref, precio: p, tienda: nombre, logo, arte: await comoDato(imagen(j)), minimo, fuentes }), { waitUntil: "load" });
+    await pagina.waitForTimeout(300);
+    const png = await pagina.screenshot({ type: "png" });
+    await pagina.close();
+    return png;
+  } catch (e) { console.warn(`  imagen de «${j.titulo}»: ${e.message}`); return null; }
+}
+async function enviarFoto(png, datos) {
+  if (ENV.TG_PRUEBA) { await writeFile(`tg-prueba-${Date.now()}.png`, png); console.log(`--- sendPhoto (imagen de Pillao)\n${datos.caption}`); return; }
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(datos)) fd.append(k, typeof v === "string" ? v : JSON.stringify(v));
+  fd.append("photo", new Blob([png], { type: "image/png" }), "chollo.png");
+  const r = await fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, { method: "POST", body: fd });
+  const d = await r.json().catch(() => ({}));
+  if (!d.ok) throw new Error(`Telegram sendPhoto: ${d.description || r.status}`);
+}
+const etiqueta = (s) => "#" + String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9]/g, "");
+
 let enviados = 0;
 for (const { j, o, p, ref, dto, minimo } of elegidos) {
   const t = tienda[o.tienda] || { nombre: o.tienda };
+  // Lo que cuesta en una tienda oficial de la misma plataforma, para que se vea que es un chollo de verdad
+  const oficial = j.ofertas.filter((x) => x.plataforma === o.plataforma && x.tienda !== o.tienda && x.estado !== "usado" && (tienda[x.tienda] || {}).tipo === "oficial" && total(x) > p + 0.5)
+    .sort((a, b) => total(a) - total(b))[0];
   const texto = [
-    `🔥 <b>${esc(j.titulo)}</b> · ${esc(o.plataforma || "")}`,
-    `<s>${eur(ref)}</s> → <b>${eur(p)}</b> (−${Math.round(dto * 100)} %)${minimo ? " · 📉 Mínimo histórico" : ""}`,
-    `🛒 ${esc(t.nombre)} · ${o.formato === "fisico" ? "Disco nuevo" : "Digital"}${o.envio ? ` (envío incluido)` : ""}`,
-    `👉 <a href="${esc(enlace(o))}">Ver oferta</a>`,
-    `🔎 <a href="${SITIO}?q=${encodeURIComponent(j.titulo)}">Compara todas las tiendas en Pillao</a>`,
-  ].join("\n");
+    `🔥 <b>${esc(j.titulo)}</b> por <b>${eur(p)}</b> en ${esc(t.nombre)}`,
+    `💸 −${Math.round(dto * 100)} % · te ahorras ${eur(ref - p)}${o.envio ? " (envío incluido)" : ""}`,
+    minimo ? "📉 Su precio más bajo hasta ahora" : "",
+    oficial ? `📊 En ${esc((tienda[oficial.tienda] || {}).nombre || oficial.tienda)} cuesta ${eur(total(oficial))}` : "",
+    "",
+    [etiqueta(o.plataforma || "PC"), etiqueta(t.nombre), "#chollo"].join(" "),
+  ].filter((l, i, a) => l || (i > 0 && a[i - 1])).join("\n");
+  const botones = { inline_keyboard: [[{ text: `🛒 Ver oferta en ${t.nombre}`, url: enlace(o) }], [{ text: "🔎 Comparar precios en Pillao", url: `${SITIO}?q=${encodeURIComponent(j.titulo)}` }]] };
   try {
+    const png = await tarjeta(j, o, p, ref, minimo, t.nombre);
     const foto = imagen(j);
-    if (foto) {
-      try { await telegram("sendPhoto", { chat_id: CANAL, photo: foto, caption: texto, parse_mode: "HTML" }); }
-      catch { await telegram("sendMessage", { chat_id: CANAL, text: texto, parse_mode: "HTML", link_preview_options: { is_disabled: true } }); }
-    } else await telegram("sendMessage", { chat_id: CANAL, text: texto, parse_mode: "HTML", link_preview_options: { is_disabled: true } });
+    let hecho = false;
+    if (png) { try { await enviarFoto(png, { chat_id: CANAL, caption: texto, parse_mode: "HTML", reply_markup: botones }); hecho = true; } catch (e) { console.warn("  " + e.message); } }
+    if (!hecho && foto) { try { await telegram("sendPhoto", { chat_id: CANAL, photo: foto, caption: texto, parse_mode: "HTML", reply_markup: botones }); hecho = true; } catch {} }
+    if (!hecho) await telegram("sendMessage", { chat_id: CANAL, text: texto, parse_mode: "HTML", reply_markup: botones, link_preview_options: { is_disabled: true } });
     estado.publicados[clave(j, o)] = { precio: p, fecha: new Date().toISOString() };
     enviados++;
     console.log(`  publicado: ${j.titulo} · ${t.nombre} · ${eur(p)} (−${Math.round(dto * 100)} %)`);
   } catch (e) { console.warn(`  no se ha podido publicar «${j.titulo}»: ${e.message}`); if (/chat not found|not enough rights|bot was kicked|Unauthorized/i.test(e.message)) break; }
   await new Promise((r) => setTimeout(r, 3500)); // Telegram limita los mensajes seguidos a un canal
 }
+if (navegador) await navegador.close();
 // Olvida lo publicado hace más de 15 días
 for (const [k, v] of Object.entries(estado.publicados)) if (Date.now() - Date.parse(v.fecha) > DIAS * 86400000) delete estado.publicados[k];
-if (!ENV.TG_EJEMPLO) await writeFile("data/telegram.json", JSON.stringify(estado) + "\n");
+if (!ENV.TG_EJEMPLO || ENV.TG_GUARDAR === "1") await writeFile("data/telegram.json", JSON.stringify(estado) + "\n");
 console.log(`Telegram: ${enviados} mensajes publicados en ${CANAL}.`);

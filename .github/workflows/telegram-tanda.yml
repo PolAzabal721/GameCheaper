@@ -1,0 +1,48 @@
+name: Tanda de chollos en Telegram
+
+# Publica ahora mismo en el canal los mejores chollos que haya (aunque no hayan bajado en la última actualización),
+# con las mismas reglas: juegos conocidos, −50 % o mínimo histórico, y sin repetir juego en 15 días.
+on:
+  workflow_dispatch:
+    inputs:
+      cantidad:
+        description: "Cuántos chollos publicar"
+        default: "4"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: telegram-tanda
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Navegador para las imágenes
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Publicar
+        run: node scripts/telegram.mjs
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CANAL: ${{ secrets.TELEGRAM_CANAL }}
+          TG_EJEMPLO: "1"
+          TG_GUARDAR: "1"
+          TG_MAXIMO: ${{ inputs.cantidad }}
+      - name: Guardar lo publicado
+        run: |
+          git config user.name "pillao-bot"
+          git config user.email "pillao-bot@users.noreply.github.com"
+          git add data/telegram.json
+          git diff --cached --quiet && exit 0
+          git commit -qm "Telegram: tanda de chollos"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done
+          exit 1
