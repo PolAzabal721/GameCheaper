@@ -53,6 +53,15 @@
   "busqueda": "https://www.kinguin.net/listing?active=1&phrase={q}"
  },
  {
+  "id": "yuplay",
+  "nombre": "Yuplay",
+  "tipo": "revendedor",
+  "formatos": [
+   "digital"
+  ],
+  "busqueda": "https://www.yuplay.com/products/?search={q}&partner=3473557"
+ },
+ {
   "id": "eneba",
   "nombre": "Eneba",
   "tipo": "marketplace",
