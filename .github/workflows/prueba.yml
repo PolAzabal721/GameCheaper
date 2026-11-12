@@ -10,9 +10,9 @@ jobs:
       - name: Yuplay
         run: |
           UA="Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)"
-          curl -s -A "$UA" https://www.yuplay.com/robots.txt
-          echo; echo "== sitemap"; curl -s -A "$UA" -w ' HTTP %{http_code}\n' https://www.yuplay.com/sitemap.xml | head -c 1500
-          echo; echo "== portada"; curl -s -A "$UA" -o p.html -w 'HTTP %{http_code}\n' https://www.yuplay.com/; grep -o 'href="/product/[^"]*"' p.html | head -5
-          u=$(grep -o 'href="/product/[^"]*"' p.html | head -1 | cut -d'"' -f2); echo "== producto $u"
-          curl -s -A "$UA" -o prod.html -w 'HTTP %{http_code}\n' "https://www.yuplay.com$u"; grep -o '"@type":"Product".\{0,800\}' prod.html | head -c 1500; echo
-          grep -io 'region[^<]\{0,120\}' prod.html | head -5
+          curl -s -A "$UA" https://www.yuplay.com/sitemap.xml | grep -o '<loc>[^<]*' 
+          for sm in $(curl -s -A "$UA" https://www.yuplay.com/sitemap.xml | grep -o '<loc>[^<]*' | sed 's/<loc>//' | grep -i 'product\|yuplay'); do echo "== $sm"; curl -s -A "$UA" "$sm" | grep -o '<loc>[^<]*' | head -3; curl -s -A "$UA" "$sm" | grep -c '<loc>'; done
+          s="crimson-desert-enhanced-charting-the-unknown"
+          curl -s -A "$UA" -o prod.html -w 'HTTP %{http_code} %{size_download}\n' "https://www.yuplay.com/product/$s/"
+          grep -o '[^>]\{0,80\}€[^<]\{0,40\}' prod.html | head -5; grep -o 'application/ld+json[^<]*<[^<]\{0,600\}' prod.html | head -c 900; echo
+          for u in "api/products/$s/" "api/products/?slug=$s" "api/products/$s"; do echo "== $u"; curl -s -A "$UA" -w ' HTTP %{http_code}\n' "https://www.yuplay.com/$u" | head -c 1500; echo; done
