@@ -1,37 +1,37 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 3884,
+   "pendientes": 2322,
    "ejemplos": [
-    "SteamWorld Dig",
-    "Her Majesty's SPIFFING",
-    "Far Cry 4",
-    "Disc Jam",
-    "Cairn"
+    "Call of Duty: World at War",
+    "Atari 50: The Anniversary Celebration",
+    "Better Than Dead",
+    "Salt 2: Shores of Gold",
+    "Mycopunk"
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 3402,
+   "pendientes": 3450,
    "ejemplos": [
-    "LOST SPHEAR",
-    "Poly Bridge",
-    "Brawlout",
-    "Shu",
-    "Oh...Sir! The Insult Simulator"
+    "Chippy&Noppo",
+    "World of Goo",
+    "Euro Truck Simulator 2 - Farm Machinery",
+    "Rabi-Ribi",
+    "GoNNER"
    ]
   },
   "game (consola)": {
-   "pendientes": 13563,
+   "pendientes": 15321,
    "ejemplos": [
     "The Stretchers",
+    "The Legend of Zelda: Ocarina of Time",
     "Fire Emblem Engage",
     "EA Sports FC 27 Ultimate Edition",
-    "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo",
-    "Bayonetta Origins: Cereza and the Lost Demon"
+    "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo"
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 420,
+   "pendientes": 465,
    "ejemplos": [
     "Football Manager 27",
     "NBA 2K27",
@@ -41,7 +41,7 @@
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 15332,
+   "pendientes": 15963,
    "ejemplos": [
     "SNK HEROINES Tag Team Frenzy",
     "Vesta",
@@ -52,61 +52,61 @@
   }
  },
  "playstation": {
-  "sinPrecio": 420,
-  "sinFicha": 334,
-  "fichasEncontradas": 464
+  "sinPrecio": 465,
+  "sinFicha": 388,
+  "fichasEncontradas": 533
  },
  "fotos": {
   "juego": {
-   "total": 21803,
-   "con": 19044,
-   "porcentaje": 87
+   "total": 23729,
+   "con": 21484,
+   "porcentaje": 91
   },
   "edicion": {
-   "total": 1546,
-   "con": 1228,
-   "porcentaje": 79
+   "total": 1646,
+   "con": 1429,
+   "porcentaje": 87
   },
   "dlc": {
-   "total": 1332,
-   "con": 1007,
-   "porcentaje": 76
+   "total": 1408,
+   "con": 1322,
+   "porcentaje": 94
   },
   "tarjeta": {
-   "total": 318,
+   "total": 358,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 3150,
+   "total": 3525,
    "probadas": 12,
    "fallan": 2,
    "ejemplos": [
-    "Captain of Industry - Trains expanded → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4349830/header.jpg",
-    "Plague Inc: El juego de mesa → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5283340/header.jpg"
+    "Warhammer 40,000: Battlesector - Black Legion → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3577620/header.jpg",
+    "Black Friday Janitor: Clean the Whole Mall → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3396010/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 1457,
+   "total": 1756,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "nintendo": {
-   "total": 9244,
+   "total": 10659,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 7289,
+   "total": 8108,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "otras": {
-   "total": 139,
+   "total": 187,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
@@ -114,63 +114,77 @@
  },
  "enlaces": {
   "steam": {
-   "ofertas": 5722,
+   "ofertas": 6258,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "game": {
-   "ofertas": 1184,
+   "ofertas": 1286,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xbox": {
-   "ofertas": 11040,
+   "ofertas": 11883,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "instantgaming": {
-   "ofertas": 3537,
+   "ofertas": 4721,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "k4g": {
+   "ofertas": 135,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "eshop": {
-   "ofertas": 16954,
+   "ofertas": 18385,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "gameseminuevos": {
-   "ofertas": 276,
+   "ofertas": 311,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "psstore": {
-   "ofertas": 343,
+   "ofertas": 407,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "driffle": {
+   "ofertas": 205,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "alcampo": {
-   "ofertas": 7,
+   "ofertas": 8,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "ebay": {
-   "ofertas": 1156,
+   "ofertas": 1407,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
@@ -185,33 +199,32 @@
   "ejemplos": []
  },
  "actualizado": {
-  "precios": "2026-11-11T08:01:00.597Z",
+  "precios": "2026-11-12T09:04:12.730Z",
   "diasDesdeLaUltima": 0.2
  },
  "historial": {
-  "series": 24288,
+  "series": 26739,
   "rotas": 0,
-  "alDia": 24208,
-  "ultimoDia": "2026-11-11"
+  "alDia": 26705,
+  "ultimoDia": "2026-11-12"
  },
  "red": {
-  "comprobadas": 114,
+  "comprobadas": 126,
   "sinRespuesta": 0,
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 24999,
-  "ofertas": 86481,
-  "tiendas": 39,
-  "conFoto": "85 %"
+  "juegos": 27141,
+  "ofertas": 97129,
+  "tiendas": 41,
+  "conFoto": "89 %"
  },
- "fecha": "2026-11-11T12:52:16.729Z",
+ "fecha": "2026-11-12T13:54:32.754Z",
  "graves": [],
  "avisos": [
-  "xbox (PC o Xbox): 27 juegos populares aún sin consultar (p. ej. LOST SPHEAR, Poly Bridge, Brawlout)",
-  "game (consola): 653 juegos populares aún sin consultar (p. ej. The Stretchers, Fire Emblem Engage, EA Sports FC 27 Ultimate Edition)",
-  "psstore (PS4 o PS5): 53 juegos populares aún sin consultar (p. ej. Football Manager 27, NBA 2K27, Mortal Shell II)",
-  "ebay (consola, 2ª mano): 490 juegos populares aún sin consultar (p. ej. SNK HEROINES Tag Team Frenzy, Vesta, Ys VIII: Lacrimosa of DANA)",
-  "fotos: 188 juegos populares sin foto (p. ej. Minecraft Dungeons Ultimate DLC Bundle, Minecraft: Battle Map Pack Season Pass, Borderlands 2: Headhunter 4: Wedding Day Massacre)"
+  "game (consola): 658 juegos populares aún sin consultar (p. ej. The Stretchers, The Legend of Zelda: Ocarina of Time, Fire Emblem Engage)",
+  "psstore (PS4 o PS5): 50 juegos populares aún sin consultar (p. ej. Football Manager 27, NBA 2K27, Mortal Shell II)",
+  "ebay (consola, 2ª mano): 279 juegos populares aún sin consultar (p. ej. SNK HEROINES Tag Team Frenzy, Vesta, Ys VIII: Lacrimosa of DANA)",
+  "fotos: 58 juegos populares sin foto (p. ej. Crusader Kings II: Dynasty Shield III, Injustice: Gods Among Us Ultimate Edition, Country Pack - Hearts of Iron IV: Graveyard of Empires)"
  ]
 }
