@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#161a2c" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Pillao</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -450,7 +452,7 @@ button { cursor: pointer; }
 /* Chollos de hoy */
 .destacados { margin-bottom: 18px; }
 .dest-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-.dest-cab h2 { margin: 0; font-family: var(--f-display); font-size: 20px; }
+.dest-cab .dest-tit { margin: 0; font-weight: 800; font-family: var(--f-display); font-size: 20px; }
 .dest-cab a { color: var(--accent); font-weight: 700; text-decoration: none; white-space: nowrap; }
 .dest-lista { list-style: none; margin: 0; padding: 2px 2px 10px; display: flex; gap: 12px; overflow-x: auto; scrollbar-width: thin; }
 .dest-lista li { flex: 0 0 210px; }
@@ -1790,11 +1792,11 @@ button { cursor: pointer; }
   function pintarDestacados(filas, qTxt) {
     var caja = $("destacados");
     if (qTxt || nActivos() || f.orden !== "populares") { caja.hidden = true; return; }
-    var xs = filas.filter(function (r) { return (r.j.pop || 99999) <= 600 && r.dto >= 50 && (!r.j.tipo || r.j.tipo === "juego") && (urlsImagen(r.j, false) || []).length; })
+    var xs = filas.filter(function (r) { var tt = (tiendaPorId[r.mejor.tienda] || {}).tipo; return tt !== "particulares" && tt !== "marketplace" && r.mejor.estado !== "usado" && (r.j.pop || 99999) <= 600 && r.dto >= 50 && (!r.j.tipo || r.j.tipo === "juego") && (urlsImagen(r.j, false) || []).length; })
       .sort(function (a, b) { return b.dto - a.dto; }).slice(0, 10);
     if (xs.length < 4) { caja.hidden = true; return; }
     caja.hidden = false;
-    caja.innerHTML = '<div class="dest-cab"><h2>🔥 Chollos de hoy</h2><a href="chollos/">Ver todos →</a></div><ul class="dest-lista">' + xs.map(function (r) {
+    caja.innerHTML = '<div class="dest-cab"><p class="dest-tit">🔥 Chollos de hoy</p><a href="chollos/">Ver todos →</a></div><ul class="dest-lista">' + xs.map(function (r) {
       var m = r.mejor, t = tiendaPorId[m.tienda] || { nombre: m.tienda };
       return '<li><a href="juego/' + esc(r.j.id) + '/"><span class="dest-img"><img src="' + esc(urlsImagen(r.j, false)[0]) + '" alt="" loading="lazy" width="460" height="215"><em>−' + r.dto + '%</em></span>' +
         '<b>' + esc(r.j.titulo) + '</b><span class="dest-p"><strong>' + eur.format(total(m)) + '</strong> ' + logoT(m.tienda, "c-logo") + esc(t.nombre) + "</span></a></li>";
