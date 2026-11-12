@@ -58,6 +58,35 @@ const CABECERAS = {
   "User-Agent": "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)",
   "Accept-Language": "es-ES,es;q=0.9",
 };
+// Packs de juegos activos (IsThereAnyDeal /bundles/v1). Los precios en dólares o libras se pasan a euros con el cambio del BCE.
+async function packsITAD() {
+  const key = encodeURIComponent(ENV.ITAD_KEY.trim());
+  let cambio = { EUR: 1 };
+  try {
+    const xml = await (await pedir("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml")).text();
+    for (const m of xml.matchAll(/currency='([A-Z]{3})' rate='([0-9.]+)'/g)) cambio[m[1]] = 1 / +m[2];
+  } catch { cambio = { EUR: 1, USD: 0.86, GBP: 1.15 }; }
+  const todos = [];
+  for (let off = 0; off < 300; off += 50) {
+    const r = await pedir(`https://api.isthereanydeal.com/bundles/v1?key=${key}&country=ES&limit=50&offset=${off}`);
+    const lote = await r.json();
+    if (!Array.isArray(lote)) break;
+    todos.push(...lote);
+    if (lote.length < 50) break;
+  }
+  const limpio = (t) => String(t || "").replace(/[\u0000-\u001F\u007F-\u009F\uFFFD]/g, "").replace(/\s+/g, " ").trim();
+  const enEuros = (p) => (p && cambio[p.currency] ? Math.round(p.amount * cambio[p.currency] * 100) / 100 : null);
+  return todos.filter((b) => !b.isMature && b.counts?.games > 0).map((b) => {
+    const tiers = (b.tiers || []).map((t) => ({ precio: enEuros(t.price), aprox: t.price && t.price.currency !== "EUR" ? 1 : undefined,
+      juegos: (t.games || []).filter((g) => !g.mature).map((g) => limpio(g.title)) }));
+    const conPrecio = tiers.filter((t) => t.precio != null);
+    const portadas = (b.tiers || []).flatMap((t) => t.games || []).filter((g) => !g.mature && g.assets?.banner400).slice(0, 3).map((g) => g.assets.banner400);
+    return { id: b.id, titulo: limpio(b.title), tienda: b.page?.name || "", url: b.url, expira: b.expiry || undefined, juegos: b.counts.games,
+      desde: conPrecio.length ? Math.min(...conPrecio.map((t) => t.precio)) : null, hasta: conPrecio.length ? Math.max(...conPrecio.map((t) => t.precio)) : null,
+      aprox: conPrecio.some((t) => t.aprox) ? 1 : undefined, elige: conPrecio.length ? undefined : 1, tiers, portadas };
+  });
+}
+
 async function pedir(url, opciones = {}) {
   const r = await fetch(url, { ...opciones, headers: { ...CABECERAS, ...(opciones.headers || {}) } });
   if (!r.ok) {
@@ -1347,6 +1376,13 @@ async function main() {
     else dePC.forEach((j) => visitar("itad", j));
   }
 
+  // 4a. Packs (bundles) activos de Humble, Fanatical, IndieGala… según IsThereAnyDeal
+  let packs = anterior.packs || [];
+  if (ENV.ITAD_KEY) {
+    try { packs = await packsITAD(); console.log(`Packs: ${packs.length} activos.`); }
+    catch (e) { console.warn("Packs: " + e.message + " (se conservan los anteriores)"); }
+  }
+
   // 4b. Lo revisado en ejecuciones anteriores se conserva (GAME va rotando por bloques)
   const porId = new Map([...juegos.values()].map((j) => [j.id, j]));
   // (GAME se recalcula entero con su mapa de productos; lo de Microsoft anterior a la versión 2 se descarta porque
@@ -1477,7 +1513,7 @@ async function main() {
   const NOMBRES_ITAD = { "itad-dlgamer": "DLGamer" };
   for (const j of lista) for (const o of j.ofertas) if (!tiendas.some((t) => t.id === o.tienda) && o.tienda.startsWith("itad-"))
     tiendas.push({ id: o.tienda, nombre: NOMBRES_ITAD[o.tienda] || o.tienda.slice(5).replace(/^./, (c) => c.toUpperCase()), tipo: "revendedor", formatos: ["digital"] });
-  const salida = { actualizado: new Date().toISOString(), ejemplo: false, revisadoV: 2, caidas: caidas.size ? [...caidas] : undefined, buscador: buscador || undefined, tiendas, juegos: lista };
+  const salida = { actualizado: new Date().toISOString(), ejemplo: false, revisadoV: 2, caidas: caidas.size ? [...caidas] : undefined, buscador: buscador || undefined, tiendas, packs: packs.filter((p) => !p.expira || Date.parse(p.expira) > Date.now()), juegos: lista };
   await writeFile(join(RAIZ, "precios.json"), JSON.stringify(salida) + "\n");
   console.log(`precios.json listo: ${lista.length} juegos, ${total} ofertas.`);
   // Historial diario (gráfica de la web) y precios mínimos (avisos por email)

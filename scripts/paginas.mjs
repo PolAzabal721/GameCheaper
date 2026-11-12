@@ -75,7 +75,7 @@ function proteger(html, buscador) {
   const huellas = [...html.matchAll(/<script(?![^>]*\bsrc=)(?![^>]*type="application\/(?:ld\+)?json")[^>]*>([\s\S]*?)<\/script>/g)]
     .map((m) => `'sha256-${createHash("sha256").update(m[1], "utf8").digest("base64")}'`);
   const csp = [
-    "default-src 'self'", `script-src 'self' ${huellas.join(" ")}`.trim(), "style-src 'self' 'unsafe-inline'", `img-src 'self' data:${buscador ? " " + new URL(buscador).origin : ""} https://shared.akamai.steamstatic.com https://cdn.akamai.steamstatic.com https://fs-prod-cdn.nintendo-europe.com https://www.nintendo.com https://assets.nintendo.eu https://store-images.s-microsoft.com https://image.api.playstation.com https://media.game.es`,
+    "default-src 'self'", `script-src 'self' ${huellas.join(" ")}`.trim(), "style-src 'self' 'unsafe-inline'", `img-src 'self' data:${buscador ? " " + new URL(buscador).origin : ""} https://shared.akamai.steamstatic.com https://cdn.akamai.steamstatic.com https://fs-prod-cdn.nintendo-europe.com https://www.nintendo.com https://assets.nintendo.eu https://store-images.s-microsoft.com https://image.api.playstation.com https://media.game.es https://assets.isthereanydeal.com`,
     "font-src 'self'", `connect-src 'self'${buscador ? " " + new URL(buscador).origin : ""}`, "object-src 'none'", "base-uri 'self'",
     "form-action 'self'", "upgrade-insecure-requests",
   ].join("; ");
@@ -447,8 +447,15 @@ async function main() {
     else if (/\.(html|txt|svg|png|ico)$/.test(f) || f === "minimos.json") await cp(join(RAIZ, f), join(SALIDA, f));
   }
   for (const d of ["fonts", "data/historial", "logos"]) if (existsSync(join(RAIZ, d))) await cp(join(RAIZ, d), join(SALIDA, d), { recursive: true });
-  // Todo el catálogo en un solo archivo (ligero), para que la web lo enseñe entero de una vez
-  await writeFile(join(SALIDA, "precios.json"), JSON.stringify(comprimir(datos)) + "\n");
+  // El catálogo en dos partes: los juegos más populares (y las tiendas y packs) llegan primero y se ven al momento;
+  // el resto lo pide la web en segundo plano y lo añade sin que se note
+  const todo = comprimir(datos);
+  const PRIMEROS = 800;
+  const primeros = new Set([...todo.juegos].sort((a, b) => (a.pop || 99999) - (b.pop || 99999)).slice(0, PRIMEROS).map((j) => j.id));
+  // Los totales los calcula la web con todo el catálogo; aquí se guardan los de la última vez para enseñarlos desde el primer momento
+  const totales = { juegos: todo.juegos.filter((j) => j.ofertas.length).length, ofertas: todo.juegos.reduce((n, j) => n + j.ofertas.length, 0) };
+  await writeFile(join(SALIDA, "precios.json"), JSON.stringify({ ...todo, totales, juegos: todo.juegos.filter((j) => primeros.has(j.id)), resto: "precios-resto.json" }) + "\n");
+  await writeFile(join(SALIDA, "precios-resto.json"), JSON.stringify({ prefijos: todo.prefijos, juegos: todo.juegos.filter((j) => !primeros.has(j.id)) }) + "\n");
   await writeFile(join(SALIDA, ".nojekyll"), "");
   // Con dominio propio la web está en la raíz: aquí sí vale un robots.txt que indique el sitemap
   await writeFile(join(SALIDA, "robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${SITIO}sitemap.xml\n`);

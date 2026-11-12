@@ -473,6 +473,36 @@ button { cursor: pointer; }
 .dest-vacio b { font-size: 14px; }
 @media (max-width: 560px) { .dest-lista { margin-inline: -16px; padding-inline: 16px; } .dest-lista li { flex-basis: 170px; } }
 
+.dest-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.dest-tabs button { font: inherit; font-family: var(--f-display); font-weight: 800; font-size: 18px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease; }
+.dest-tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); border-color: var(--accent); }
+.dest-todos { color: var(--accent); font: inherit; font-weight: 700; text-decoration: none; white-space: nowrap; background: none; border: 0; cursor: pointer; padding: 0; }
+.dest-cab { align-items: center; }
+.pk-col { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr; }
+.pk-col.n0 { place-items: center; background: linear-gradient(135deg, #3b2bd6, #0e7490); color: #fff; }
+.pk-col.n0 > span { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 34px; line-height: 1; }
+.pk-col.n0 b { font-family: var(--f-display); font-size: 16px; }
+.pk-col.n2 { grid-template-columns: 1fr 1fr; } .pk-col.n3 { grid-template-columns: 1.4fr 1fr; grid-template-rows: 1fr 1fr; }
+.pk-col.n3 img:first-child { grid-row: span 2; }
+.pk-col img { width: 100%; height: 100%; object-fit: cover; display: block; border-right: 2px solid var(--surface); }
+.pack { display: grid; grid-template-columns: 260px minmax(0, 1fr) auto; gap: 18px; align-items: start; padding: 16px; margin-bottom: 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); transition: transform .18s ease, box-shadow .18s ease; }
+@media (hover: hover) { .pack:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,.22); } }
+.pk-img { position: relative; display: block; aspect-ratio: 460/215; border-radius: 10px; overflow: hidden; background: var(--surface-2); }
+.pk-cab { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.pk-fin { font-size: 13px; color: var(--muted); }
+.pack h2 { margin: 6px 0 4px; font-family: var(--f-display); font-size: 22px; line-height: 1.15; }
+.pk-tienda { margin: 0 0 8px; display: flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 600; }
+.pk-tiers { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
+.pk-tiers li { display: flex; gap: 10px; align-items: baseline; }
+.pk-precio { font-family: var(--f-mono); font-weight: 700; color: var(--ink); min-width: 74px; }
+.pk-nota { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+.pk-p { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; text-align: right; }
+.pk-p small { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: var(--muted); }
+.pk-p b { font-family: var(--f-mono); font-size: 30px; color: var(--ink); line-height: 1; }
+.pk-p .btn { text-decoration: none; }
+@media (max-width: 760px) { .pack { grid-template-columns: 1fr; } .pk-p { flex-direction: row; align-items: center; justify-content: space-between; text-align: left; } }
+@media (max-width: 560px) { .dest-tabs button { font-size: 15px; padding: 5px 11px; } }
+
 /* Logos de tiendas y movimiento */
 .t-logo { width: 20px; height: 20px; border-radius: 5px; background: #fff; object-fit: contain; padding: 1px; flex-shrink: 0; }
 .c-logo { width: 16px; height: 16px; border-radius: 4px; background: #fff; object-fit: contain; padding: 1px; margin-right: 6px; vertical-align: -3px; }
@@ -592,6 +622,7 @@ button { cursor: pointer; }
             <option value="barato">Más barato</option>
             <option value="descuento">Mayor descuento</option>
             <option value="premiados">Premiados</option>
+            <option value="packs">Packs y bundles</option>
           </select>
         </label>
         <button type="button" class="btn-vista" id="vista" aria-pressed="false" aria-label="Ver en cuadrícula" title="Ver en cuadrícula"></button>
@@ -848,19 +879,29 @@ button { cursor: pointer; }
   }
 
   // El catálogo llega en dos partes: los más populares primero (se ven al momento) y el resto justo después
+  var restoPendiente = false;
+  function traerResto(archivo) {
+    return fetch(archivo, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
+  }
+  function unirResto(r) {
+    var v = validar({ juegos: r.juegos || [], tiendas: [], prefijos: r.prefijos });
+    v.tiendas.forEach(function (t) { if (!tiendaPorId[t.id]) { datos.tiendas.push(t); tiendaPorId[t.id] = t; } });
+    var ya = {}; datos.juegos.forEach(function (j) { ya[j.id] = 1; });
+    v.juegos.forEach(function (j) { if (!ya[j.id]) datos.juegos.push(j); });
+    VOCAB = {};
+  }
+  // Se pide cuando la página ya está pintada y el navegador está libre; al llegar, solo cambia lo que tenga que cambiar
   function cargarResto(archivo) {
     if (!archivo || !datos) return;
-    fetch(archivo, { cache: "no-cache" })
-      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-      .then(function (r) {
-        var v = validar({ juegos: r.juegos || [], tiendas: [], prefijos: r.prefijos });
-        v.tiendas.forEach(function (t) { if (!tiendaPorId[t.id]) { datos.tiendas.push(t); tiendaPorId[t.id] = t; } });
-        var ya = {}; datos.juegos.forEach(function (j) { ya[j.id] = 1; });
-        v.juegos.forEach(function (j) { if (!ya[j.id]) datos.juegos.push(j); });
-        VOCAB = {};
-        pintarControles(); pintar();
-      })
-      .catch(function () { /* sin el resto se sigue viendo lo más popular */ });
+    var libre = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1); };
+    setTimeout(function () {
+      traerResto(archivo).then(function (r) {
+        libre(function () {
+          unirResto(r); restoPendiente = false;
+          suave = true; try { pintarControles(); pintar(); } finally { suave = false; }
+        }, { timeout: 2000 });
+      }).catch(function () { restoPendiente = false; pintar(); /* sin el resto se sigue viendo lo más popular */ });
+    }, 400);
   }
 
   // ---------- Carga y refresco ----------
@@ -870,7 +911,14 @@ button { cursor: pointer; }
     // «no-cache»: el navegador pregunta si hay precios nuevos y solo los descarga si han cambiado
     fetch("precios.json", { cache: "no-cache" })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-      .then(function (d) { usarDatos(d, "servidor"); cargarResto(d.resto); })
+      .then(function (d) {
+        // Primera vez: lo popular al momento y el resto por detrás
+        if (!datos || origen !== "servidor" || !d.resto) { restoPendiente = !!d.resto; usarDatos(d, "servidor"); cargarResto(d.resto); return; }
+        // Al refrescar: se trae todo y se cambia de una vez, sin que la lista se quede a medias
+        return traerResto(d.resto).then(function (r) {
+          suave = true; try { usarDatos(d, "servidor"); unirResto(r); pintarControles(); pintar(); } finally { suave = false; }
+        }, function () { pintarEstado(); });
+      })
       .catch(function () {
         if (!datos) {
           try { usarDatos(JSON.parse($("datos-incrustados").textContent), "incrustado"); }
@@ -930,10 +978,10 @@ button { cursor: pointer; }
     var orden = ["PC", "PS5", "PS4", "Xbox Series", "Xbox One", "Switch 2", "Switch"];
     plats.sort(function (a, b) { var ia = orden.indexOf(a), ib = orden.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b); });
     f.plats = f.plats.filter(function (p) { return plats.indexOf(p) >= 0; });
-    $("plataformas").innerHTML = plats.map(function (p) {
+    poner($("plataformas"), plats.map(function (p) {
       var ic = iconoPlat(p);
       return '<button type="button" class="chip chip-plat" data-p="' + esc(p) + '" aria-pressed="' + (f.plats.indexOf(p) >= 0) + '">' + ic + esc(p) + "</button>";
-    }).join("");
+    }).join(""));
     // tiendas agrupadas por tipo (solo las que tienen algún precio)
     conOfertas = {};
     datos.juegos.forEach(function (j) { j.ofertas.forEach(function (o) { conOfertas[o.tienda] = (conOfertas[o.tienda] || 0) + 1; }); });
@@ -946,7 +994,7 @@ button { cursor: pointer; }
       { id: "segundamano", titulo: "Tiendas de segunda mano", tipos: ["segundamano"] },
       { id: "particulares", titulo: "Entre particulares", tipos: ["particulares"] },
     ];
-    $("tiendas").innerHTML = BLOQUES.map(function (bl) {
+    poner($("tiendas"), BLOQUES.map(function (bl) {
       // eBay va con las tiendas de segunda mano (con su desplegable de estados), tenga ya precios o no
       var ebay = tiendaPorId.ebay;
       var ts = datos.tiendas.filter(function (t) { return t.id !== "ebay" && bl.tipos.indexOf(t.tipo) >= 0 && (conOfertas[t.id] || t.id === "instantgaming"); });
@@ -981,7 +1029,7 @@ button { cursor: pointer; }
         (abierto ? '<div class="sub-panel"><div class="sub-cab"><span class="sub-tit">Más revendedores</span>' +
           '<button type="button" class="chip mini" data-todos="claves-otros">' + (marcados === otros.length ? "Quitar todos" : "Marcar todos") + "</button></div>" +
           '<div class="chips">' + otros.map(chipRev).join("") + "</div></div>" : "") + "</div>";
-    }).join("");
+    }).join(""));
     tiendasDeBloque = function (id) {
       var bl = BLOQUES.filter(function (x) { return x.id === id; })[0];
       return datos.tiendas.filter(function (t) { return bl && (t.id === "ebay" ? id === "segundamano" : bl.tipos.indexOf(t.tipo) >= 0 && conOfertas[t.id]); }).map(function (t) { return t.id; });
@@ -1788,6 +1836,75 @@ button { cursor: pointer; }
     return res.filter(function (r) { return r[0] >= top - 0.12; });
   }
 
+  // Tarjeta del euro roto (sin chollos o sin packs con estos filtros)
+  function vacioHTML(tit, sub) {
+    return '<li class="dest-vacio"><div><span class="dest-img"><svg viewBox="0 0 120 60" aria-hidden="true">' +
+      '<g transform="translate(-6 2) rotate(-10 52 30)"><path d="M60 8 A22 22 0 0 0 60 52 L56 44 L62 36 L55 28 L61 20 L56 13 Z" fill="#ffd23f"/><text x="49" y="38" font-size="22" font-weight="800" fill="#1d1600" font-family="sans-serif">€</text></g>' +
+      '<g transform="translate(6 -2) rotate(12 68 30)"><path d="M60 8 A22 22 0 0 1 60 52 L56 44 L62 36 L55 28 L61 20 L56 13 Z" fill="#f2c21b"/></g>' +
+      '<path d="M57 6 l3 4 M64 50 l3 5 M52 54 l-2 4" stroke="#ffd23f" stroke-width="2" stroke-linecap="round"/></svg></span>' +
+      "<b>" + tit + '</b><span class="dest-p">' + sub + "</span></div></li>";
+  }
+  // Mientras llega el resto del catálogo, los cambios de pantalla se hacen solo si algo ha cambiado (sin parpadeos)
+  var suave = false;
+  function poner(el, html) { if (suave && el._h === html) return; el.innerHTML = html; el._h = html; }
+
+  // ---------- Packs (bundles) ----------
+  var destVista = "chollos";
+  // La tienda del pack, emparejada con las tiendas del comparador por el nombre (Fanatical, Humble, IndieGala…)
+  function tiendaDePack(p) {
+    var n = norm(p.tienda || "").replace(/\s+(bundle|store)$/, "");
+    if (!n) return null;
+    for (var i = 0; i < datos.tiendas.length; i++) { var t = datos.tiendas[i], m = norm(t.nombre).replace(/\s+(bundle|store)$/, ""); if (m === n || m.indexOf(n) === 0 || n.indexOf(m) === 0) return t; }
+    return null;
+  }
+  function packsFiltrados(qTxt) {
+    if (!datos || !Array.isArray(datos.packs)) return [];
+    // Los packs son claves digitales de PC: con otros filtros de formato, estado, tipo o plataforma no hay ninguno
+    if (f.formato === "fisico" || f.estado === "usado" || f.tipo === "dlc" || f.tipo === "tarjeta" || (f.plats.length && f.plats.indexOf("PC") < 0)) return [];
+    var q = norm(qTxt || "");
+    var ahora = Date.now();
+    return datos.packs.filter(function (p) {
+      if (p.expira && Date.parse(p.expira) < ahora) return false;
+      var t = tiendaDePack(p);
+      if (t && f.fuera.indexOf(t.id) >= 0) return false;
+      if (f.pmax != null && p.desde != null && p.desde > f.pmax) return false;
+      if (q) { var txt = norm(p.titulo + " " + p.tiers.map(function (x) { return x.juegos.join(" "); }).join(" ")); if (q.split(/\s+/).some(function (w) { return txt.indexOf(w) < 0; })) return false; }
+      return true;
+    }).sort(function (a, b) { return (a.desde == null) - (b.desde == null) || (a.desde || 0) - (b.desde || 0) || b.juegos - a.juegos; });
+  }
+  function precioPack(p) { return p.desde == null ? "Elige tú" : (p.aprox ? "≈ " : "") + eur.format(p.desde); }
+  function collage(p) {
+    var ims = (p.portadas || []).slice(0, 3);
+    if (!ims.length) return '<span class="pk-col n0"><span>📦<b>' + p.juegos + " juegos</b></span></span>";
+    return '<span class="pk-col n' + ims.length + '">' + ims.map(function (u) { return '<img src="' + esc(u) + '" alt="" loading="lazy" width="400" height="187">'; }).join("") + "</span>";
+  }
+  function tarjetaPackMini(p) {
+    var t = tiendaDePack(p);
+    return '<li><a href="' + esc(p.url) + '" target="_blank" rel="sponsored noopener"><span class="dest-img">' + collage(p) + "<em>" + p.juegos + " juegos</em></span>" +
+      "<b>" + esc(p.titulo) + '</b><span class="dest-p"><strong>' + (p.desde == null ? "" : "desde ") + precioPack(p) + "</strong> " + (t ? logoT(t.id, "c-logo") : "") + esc(p.tienda) + "</span></a></li>";
+  }
+  function fechaPack(iso) { var d = new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString("es-ES", { day: "numeric", month: "short" }); }
+  function tarjetaPack(p) {
+    var t = tiendaDePack(p);
+    var tiers = p.tiers.map(function (x, i) {
+      var nombres = x.juegos.slice(0, 6).map(esc).join(", ") + (x.juegos.length > 6 ? " y " + (x.juegos.length - 6) + " más" : "");
+      return '<li><span class="pk-precio">' + (x.precio == null ? "Elige" : (x.aprox ? "≈ " : "") + eur.format(x.precio)) + "</span><span>" + (p.tiers.length > 1 && i ? "+ " : "") + x.juegos.length + " juego" + (x.juegos.length === 1 ? "" : "s") + ": " + nombres + "</span></li>";
+    }).join("");
+    return '<article class="pack"><a class="pk-img" href="' + esc(p.url) + '" target="_blank" rel="sponsored noopener">' + collage(p) + "</a>" +
+      '<div class="pk-d"><div class="pk-cab"><span class="badge b-revendedor">Pack · ' + p.juegos + " juegos</span>" + (p.expira ? '<span class="pk-fin">Acaba el ' + fechaPack(p.expira) + "</span>" : "") + "</div>" +
+      "<h2>" + esc(p.titulo) + '</h2><p class="pk-tienda">' + (t ? logoT(t.id) : "") + esc(p.tienda) + "</p>" +
+      '<ul class="pk-tiers">' + tiers + "</ul>" +
+      (p.aprox ? '<p class="pk-nota">≈ Precio en dólares pasado a euros: el final lo marca la tienda.</p>' : "") + "</div>" +
+      '<div class="pk-p"><small>' + (p.desde == null ? "Arma tu pack" : "Desde") + "</small><b>" + precioPack(p) + '</b><a class="btn" href="' + esc(p.url) + '" target="_blank" rel="sponsored noopener">Ver pack ↗</a></div></article>';
+  }
+  function pintarPacks(qTxt) {
+    var lista = $("lista"), ps = packsFiltrados(qTxt);
+    $("destacados").hidden = true;
+    $("titulo-res").innerHTML = ps.length + " pack" + (ps.length === 1 ? "" : "s") + ' <span>· lotes de juegos de PC</span>';
+    lista.classList.remove("cuadricula");
+    poner(lista, ps.length ? ps.map(tarjetaPack).join("") : '<div class="vacio"><b>No hay packs con estos filtros</b>Los packs son de PC y digitales: quita los filtros de disco, segunda mano o consolas.<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button></div>');
+  }
+
   // Chollos de hoy: una tira con los juegos conocidos más rebajados, solo en la portada sin búsqueda ni filtros
   function pintarDestacados(filas, qTxt) {
     var caja = $("destacados");
@@ -1808,17 +1925,21 @@ button { cursor: pointer; }
       .sort(function (a, b) { return b.dto - a.dto; }).slice(0, 10);
     caja.hidden = false;
     // Con los filtros puestos puede que no quede ninguno: una tarjeta del mismo tamaño con el euro roto
-    var vacio = xs.length ? "" : '<li class="dest-vacio"><div><span class="dest-img"><svg viewBox="0 0 120 60" aria-hidden="true">' +
-      '<g transform="translate(-6 2) rotate(-10 52 30)"><path d="M60 8 A22 22 0 0 0 60 52 L56 44 L62 36 L55 28 L61 20 L56 13 Z" fill="#ffd23f"/><text x="49" y="38" font-size="22" font-weight="800" fill="#1d1600" font-family="sans-serif">€</text></g>' +
-      '<g transform="translate(6 -2) rotate(12 68 30)"><path d="M60 8 A22 22 0 0 1 60 52 L56 44 L62 36 L55 28 L61 20 L56 13 Z" fill="#f2c21b"/></g>' +
-      '<path d="M57 6 l3 4 M64 50 l3 5 M52 54 l-2 4" stroke="#ffd23f" stroke-width="2" stroke-linecap="round"/></svg></span>' +
-      '<b>No hay chollos con estos filtros</b><span class="dest-p">Prueba a marcar más tiendas o plataformas</span></div></li>';
-    caja.innerHTML = '<div class="dest-cab"><p class="dest-tit">🔥 Chollos de hoy</p><a href="chollos/">Ver todos →</a></div><ul class="dest-lista">' + xs.map(function (r) {
+    var vacio = xs.length ? "" : vacioHTML("No hay chollos con estos filtros", "Prueba a marcar más tiendas o plataformas");
+    var cab = '<div class="dest-cab"><div class="dest-tabs" role="tablist"><button type="button" role="tab" data-dest="chollos" aria-selected="' + (destVista === "chollos") + '">🔥 Chollos de hoy</button>' +
+      '<button type="button" role="tab" data-dest="packs" aria-selected="' + (destVista === "packs") + '">📦 Packs</button></div>' +
+      (destVista === "packs" ? '<button type="button" class="dest-todos" data-ver-packs>Ver todos →</button>' : '<a class="dest-todos" href="chollos/">Ver todos →</a>') + "</div>";
+    if (destVista === "packs") {
+      var ps = packsFiltrados(qTxt).slice(0, 10);
+      poner(caja, cab + '<ul class="dest-lista">' + ps.map(tarjetaPackMini).join("") + (ps.length ? "" : vacioHTML("No hay packs con estos filtros", "Los packs son de PC y digitales")) + "</ul>");
+      return;
+    }
+    poner(caja, cab + '<ul class="dest-lista">' + xs.map(function (r) {
       var m = r.mejor, t = tiendaPorId[m.tienda] || { nombre: m.tienda };
       return '<li><a href="juego/' + esc(r.j.id) + '/"><span class="dest-img">' + ((urlsImagen(r.j, false) || []).length ? '<img src="' + esc(urlsImagen(r.j, false)[0]) + '" alt="" loading="lazy" width="460" height="215">'
         : '<span class="dest-tj" style="background:linear-gradient(135deg,' + ((TJ_MARCAS[r.j.marca] || ["#3b2bd6", "#0e7490"]).join(",")) + ')"><small>' + esc(r.j.marca || "") + "</small>" + esc(r.j.valor ? r.j.valor + " €" : "") + "</span>") + '<em>−' + r.dto + '%</em></span>' +
         '<b>' + esc(r.j.titulo) + '</b><span class="dest-p"><strong>' + eur.format(total(m)) + '</strong> ' + logoT(m.tienda, "c-logo") + esc(t.nombre) + "</span></a></li>";
-    }).join("") + vacio + "</ul>";
+    }).join("") + vacio + "</ul>");
   }
 
   function pintar() {
@@ -1826,6 +1947,7 @@ button { cursor: pointer; }
     var n = nActivos(); var nb = $("nfiltros"); nb.hidden = !n; nb.textContent = n;
     if (!datos) { lista.innerHTML = '<div class="vacio"><b>No hay precios cargados</b>Vuelve a probar en unos minutos.</div>'; return; }
     var qTxt = f.q.trim(), q = norm(qTxt);
+    if (f.orden === "packs") { pintarPacks(qTxt); return; }
     var palabras = q.split(/\s+/).filter(Boolean);
     var filas = [], vistos = {};
     var porFecha = f.orden === "recientes" ? esReciente : f.orden === "proximos" ? esProximo : f.orden === "premiados" ? function (j) { return !!premio(j); } : null;
@@ -1873,7 +1995,10 @@ button { cursor: pointer; }
     try { pintarDestacados(filas, qTxt); } catch (e) { $("destacados").hidden = true; }
     var nf = filas.length.toLocaleString("es-ES");
     var nombreTipo = { juego: ["juego", "juegos"], dlc: ["DLC", "DLC"], tarjeta: ["tarjeta regalo", "tarjetas regalo"] }[f.tipo] || ["resultado", "resultados"];
-    $("titulo-res").innerHTML = nf + " " + nombreTipo[filas.length === 1 ? 0 : 1] + ' <span>· ' + filas.reduce(function (s, r) { return s + r.ofs.length; }, 0).toLocaleString("es-ES") + " ofertas</span>";
+    var nOf = filas.reduce(function (s, r) { return s + r.ofs.length; }, 0);
+    // Mientras llega el resto del catálogo, sin búsqueda ni filtros se enseñan ya los totales (así el número no salta)
+    if (restoPendiente && datos.totales && !qTxt && !nActivos() && f.orden === "populares") { nf = datos.totales.juegos.toLocaleString("es-ES"); nOf = datos.totales.ofertas; }
+    $("titulo-res").innerHTML = nf + " " + nombreTipo[filas.length === 1 ? 0 : 1] + ' <span>· ' + nOf.toLocaleString("es-ES") + " ofertas</span>";
     var estadoVivo = "";
     if (datos.buscador && q.length >= 3) {
       estadoVivo = vivo.cargando ? '<div class="busca-vivo">Buscando «' + esc(qTxt) + '» en las tiendas…</div>'
@@ -1881,6 +2006,7 @@ button { cursor: pointer; }
     }
     if (!filas.length) {
       lista.classList.toggle("cuadricula", f.vista === "cuadricula");
+      if (restoPendiente) { poner(lista, '<div class="vacio"><b>Buscando en todo el catálogo…</b>Un momento.</div>'); return; }
       lista.innerHTML = estadoVivo + (vivo.cargando ? "" : '<div class="vacio"><b>Nada con estos filtros</b>' +
         (f.orden === "recientes" ? "No hay lanzamientos de los últimos 30 días con estos filtros." : f.orden === "proximos" ? "No hay juegos en reserva con estos filtros." :
           q ? "No tenemos «" + esc(qTxt) + "» con estos filtros." : "Prueba a quitar alguno.") + '<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button></div>');
@@ -1889,8 +2015,8 @@ button { cursor: pointer; }
     if (hayParecidos) estadoVivo += '<div class="busca-vivo">No encontramos «' + esc(qTxt) + '» tal cual. Esto es lo que más se parece:</div>';
     var resto = filas.length - mostrar;
     lista.classList.toggle("cuadricula", f.vista === "cuadricula");
-    lista.innerHTML = estadoVivo + filas.slice(0, mostrar).map(function (r) { return f.vista === "cuadricula" && !abiertosGrid[r.j.id] ? mini(r) : tarjeta(r); }).join("") +
-      (resto > 0 ? '<button type="button" class="btn mas-juegos" data-mas-juegos>Ver más juegos <span>(quedan ' + resto.toLocaleString("es-ES") + ")</span></button>" : "");
+    poner(lista, estadoVivo + filas.slice(0, mostrar).map(function (r) { return f.vista === "cuadricula" && !abiertosGrid[r.j.id] ? mini(r) : tarjeta(r); }).join("") +
+      (resto > 0 ? '<button type="button" class="btn mas-juegos" data-mas-juegos>Ver más juegos <span>(quedan ' + resto.toLocaleString("es-ES") + ")</span></button>" : ""));
   }
 
   // ---------- Juegos premiados ----------
@@ -2112,6 +2238,12 @@ button { cursor: pointer; }
     $("pmax-out").textContent = f.pmax == null ? "Sin límite" : "Hasta " + eur.format(f.pmax); cambio();
   });
   $("orden").addEventListener("change", function (e) { f.orden = e.target.value; cambio(); });
+  // Pestañas de la tira de arriba: chollos o packs
+  $("destacados").addEventListener("click", function (e) {
+    var tab = e.target.closest("[data-dest]");
+    if (tab) { destVista = tab.dataset.dest; pintar(); return; }
+    if (e.target.closest("[data-ver-packs]")) { f.orden = "packs"; $("orden").value = "packs"; cambio(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  });
   $("lista").addEventListener("click", function (e) {
     var av = e.target.closest("[data-aviso]");
     if (av) { var ja = buscarJuego(av.dataset.aviso); if (ja) abrirAviso(ja, av); return; }
