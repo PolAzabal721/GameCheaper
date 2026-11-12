@@ -10,10 +10,16 @@ jobs:
       - name: Yuplay moneda
         run: |
           UA="Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)"
-          curl -s -A "$UA" -c cj.txt -o home.html https://www.yuplay.com/
-          echo "== menciones de currency en la portada"
-          grep -o '[^ ]\{0,120\}currenc[^ ]\{0,160\}' home.html | grep -v cookiebot | head -25
-          for js in $(grep -o 'src="[^"]*\.js[^"]*"' home.html | cut -d'"' -f2 | grep -v cookiebot | head -15); do
-            case "$js" in http*) u="$js";; *) u="https://www.yuplay.com$js";; esac
-            curl -s -A "$UA" "$u" | grep -o '.\{0,140\}currenc.\{0,200\}' | head -4 | sed "s|^|[$js] |"
-          done
+          curl -s -A "$UA" -c cj.txt -b cj.txt -o /dev/null -w 'portada %{http_code}\n' https://www.yuplay.com/
+          curl -s -A "$UA" -c cj.txt -b cj.txt -L -o /dev/null -w 'euro %{http_code} %{url_effective}\n' -H "Referer: https://www.yuplay.com/" https://www.yuplay.com/api/currency/euro/
+          cat cj.txt | grep -v '^#' | awk '{print $6"="substr($7,1,20)}'
+          curl -s -A "$UA" -b cj.txt "https://www.yuplay.com/api/products/?page=1" > l.json
+          python3 -c "
+          import json;d=json.load(open('l.json'));print('EXT',d['extensions']);print('N por página',len(d['products']))
+          for p in d['products'][:3]: print({k:p.get(k) for k in ['name','link','price','base_price','currency_code','discount','platform','drm','region','regions']}); 
+          print('CLAVES', list(d['products'][0].keys()))"
+          curl -s -A "$UA" -b cj.txt -o prod.html "https://www.yuplay.com/product/cities-in-motion-2/"
+          grep -o 'data-currency="[A-Z]*" data-sku="[^"]*" data-price="[^"]*"' prod.html | head -1
+          python3 -c "
+          import re;h=open('prod.html',encoding='utf-8',errors='ignore').read()
+          i=h.find('Can be activated in');print(re.sub(r'\s+',' ',h[max(0,i-1500):i+100])[-1600:])"
