@@ -42,6 +42,9 @@ for (const [clave, v] of Object.entries(estado.publicados || {})) {
   chollos.push({ j, o, precio: p, antes: ref, dto: Math.round((1 - p / ref) * 100), minimo: j.minimo && p <= j.minimo + 0.01,
     nombre: (tienda[o.tienda] || {}).nombre || o.tienda });
 }
+// GamesPlanet US: algunas de sus claves solo se activan en EE. UU., así que no sale en los vídeos
+const FUERA = new Set(["itad-gamesplanetus"]);
+chollos = chollos.filter((c) => !FUERA.has(c.o.tienda));
 chollos.sort((a, b) => b.dto - a.dto);
 console.log(`Chollos de las últimas ${HORAS} h: ${chollos.length}.`);
 
@@ -75,8 +78,21 @@ const foto = async (j) => {
 };
 // Si se piden juegos concretos (VIDEOS_JUEGOS), solo esos y por delante de todo
 const pedidos = (ENV.VIDEOS_JUEGOS || "").split(",").map((t) => t.trim().toLowerCase()).filter(Boolean);
-const pedido = (j) => pedidos.some((t) => j.titulo.toLowerCase().includes(t) || j.id.includes(t.replace(/\s+/g, "-")));
+const pedido = (j) => pedidos.some((t) => j.titulo.toLowerCase() === t || j.id === t);
 if (pedidos.length) {
+  // Un juego pedido que no ha salido en Telegram: se graba con su mejor precio de ahora mismo
+  for (const t of pedidos) {
+    if (chollos.some((c) => pedido(c.j) && (c.j.titulo.toLowerCase() === t || c.j.id === t))) continue;
+    const j = precios.juegos.find((x) => x.titulo.toLowerCase() === t || x.id === t);
+    if (!j) { console.log(`  no encuentro «${t}» en el catálogo`); continue; }
+    const ofs = j.ofertas.filter((o) => o.estado !== "usado" && o.stock !== false && o.precio > 0 && !FUERA.has(o.tienda));
+    if (!ofs.length) continue;
+    const o = ofs.reduce((a, b) => (b.precio + (b.envio || 0) < a.precio + (a.envio || 0) ? b : a));
+    const ref = Math.max(j.pvp || 0, o.regular || 0), p = o.precio + (o.envio || 0);
+    if (!(ref > p)) { console.log(`  «${j.titulo}» no tiene descuento ahora`); continue; }
+    chollos.push({ j, o, precio: p, antes: ref, dto: Math.round((1 - p / ref) * 100), minimo: j.minimo && p <= j.minimo + 0.01,
+      nombre: (tienda[o.tienda] || {}).nombre || o.tienda });
+  }
   const fuera = chollos.filter((c) => !pedido(c.j)).length;
   chollos = chollos.filter((c) => pedido(c.j));
   console.log(`Solo los pedidos (${pedidos.join(", ")}): ${chollos.length} chollos; ${fuera} descartados.`);
