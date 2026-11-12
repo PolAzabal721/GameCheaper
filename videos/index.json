@@ -1,70 +1,18 @@
 {
- "fecha": "2026-11-12T17:06:18.891Z",
+ "fecha": "2026-11-12T17:07:27.701Z",
  "videos": [
   {
-   "archivo": "videos/2026-11-12-everspace-2.mp4",
-   "juego": "EVERSPACE 2",
-   "precio": 9,
-   "antes": 49.99,
-   "dto": 82,
-   "tienda": "GreenManGaming",
-   "plataforma": "PC",
-   "minimo": false,
-   "guion": "Chollo de hoy en Pillao. EVERSPACE 2, para PC. Costaba 49 euros con 99 y ahora está en 9 euros. Un 82 por ciento menos en GreenManGaming. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 15.6,
-   "url": "https://pillaojuegos.com/?q=EVERSPACE%202"
-  },
-  {
-   "archivo": "videos/2026-11-12-primal-dinosaur-shooter-dino-killer.mp4",
-   "juego": "Primal Dinosaur Shooter - Dino Killer",
-   "precio": 2.99,
-   "antes": 15.99,
-   "dto": 81,
-   "tienda": "Nintendo eShop",
-   "plataforma": "Switch",
-   "minimo": false,
-   "guion": "Chollo de hoy en Pillao. Primal Dinosaur Shooter - Dino Killer, para Switch. Costaba 15 euros con 99 y ahora está en 2 euros con 99. Un 81 por ciento menos en Nintendo eShop. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 18.2,
-   "url": "https://pillaojuegos.com/?q=Primal%20Dinosaur%20Shooter%20-%20Dino%20Killer"
-  },
-  {
-   "archivo": "videos/2026-11-12-jojo-s-bizarre-adventure-all-star-battle.mp4",
-   "juego": "JoJo's Bizarre Adventure: All-Star Battle R",
-   "precio": 10,
-   "antes": 49.99,
-   "dto": 80,
+   "archivo": "videos/2026-11-12-red-dead-redemption-2.mp4",
+   "juego": "Red Dead Redemption 2",
+   "precio": 15,
+   "antes": 59.99,
+   "dto": 75,
    "tienda": "GamersGate",
    "plataforma": "PC",
    "minimo": false,
-   "guion": "Chollo de hoy en Pillao. JoJo's Bizarre Adventure: All-Star Battle R, para PC. Costaba 49 euros con 99 y ahora está en 10 euros. Un 80 por ciento menos en GamersGate. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 17.6,
-   "url": "https://pillaojuegos.com/?q=JoJo's%20Bizarre%20Adventure%3A%20All-Star%20Battle%20R"
-  },
-  {
-   "archivo": "videos/2026-11-12-one-piece-pirate-warriors-4-ultimate-edi.mp4",
-   "juego": "One Piece Pirate Warriors 4 Ultimate Edition",
-   "precio": 18,
-   "antes": 89.99,
-   "dto": 80,
-   "tienda": "GamersGate",
-   "plataforma": "PC",
-   "minimo": false,
-   "guion": "Chollo de hoy en Pillao. One Piece Pirate Warriors 4 Ultimate Edition, para PC. Costaba 89 euros con 99 y ahora está en 18 euros. Un 80 por ciento menos en GamersGate. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 17.7,
-   "url": "https://pillaojuegos.com/?q=One%20Piece%20Pirate%20Warriors%204%20Ultimate%20Edition"
-  },
-  {
-   "archivo": "videos/2026-11-12-that-time-i-got-reincarnated-as-a-slime-.mp4",
-   "juego": "That Time I Got Reincarnated as a Slime ISEKAI Chronicles",
-   "precio": 10,
-   "antes": 49.99,
-   "dto": 80,
-   "tienda": "GamersGate",
-   "plataforma": "PC",
-   "minimo": false,
-   "guion": "Chollo de hoy en Pillao. That Time I Got Reincarnated as a Slime ISEKAI Chronicles, para PC. Costaba 49 euros con 99 y ahora está en 10 euros. Un 80 por ciento menos en GamersGate. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 18.6,
-   "url": "https://pillaojuegos.com/?q=That%20Time%20I%20Got%20Reincarnated%20as%20a%20Slime%20ISEKAI%20Chronicles"
+   "guion": "Chollo de hoy en Pillao. Red Dead Redemption 2, para PC. Costaba 59 euros con 99 y ahora está en 15 euros. Un 75 por ciento menos en GamersGate. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 16.1,
+   "url": "https://pillaojuegos.com/?q=Red%20Dead%20Redemption%202"
   }
  ]
 }
