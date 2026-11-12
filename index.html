@@ -822,7 +822,7 @@ button { cursor: pointer; }
     });
     var conocidas = {};
     d.tiendas.forEach(function (t) { if (t && t.id) { t.tipo = TIPOS[t.tipo] ? t.tipo : "tienda"; t.nombre = t.nombre || t.id; conocidas[t.id] = t; } });
-    d.juegos.forEach(function (j) { j.ofertas.forEach(function (o) { if (!conocidas[o.tienda]) { conocidas[o.tienda] = { id: o.tienda, nombre: o.tienda, tipo: "tienda" }; d.tiendas.push(conocidas[o.tienda]); } }); });
+    d.juegos.forEach(function (j) { j.ofertas.forEach(function (o) { if (!conocidas[o.tienda]) { conocidas[o.tienda] = /^itad-/.test(o.tienda) ? { id: o.tienda, nombre: o.tienda === "itad-dlgamer" ? "DLGamer" : o.tienda.slice(5), tipo: "revendedor" } : { id: o.tienda, nombre: o.tienda, tipo: "tienda" }; d.tiendas.push(conocidas[o.tienda]); } }); });
     d._avisos = avisos;
     return d;
   }

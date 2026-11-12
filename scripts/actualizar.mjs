@@ -1472,6 +1472,11 @@ async function main() {
   console.log("Primeros del catálogo:", lista.slice(0, 15).map((j) => j.titulo).join(" | "));
   if (avisos.length) console.warn(`Avisos (${avisos.length}):\n - ` + avisos.slice(0, 40).join("\n - "));
   if (total === 0) { console.error("No se ha conseguido ningún precio. No toco precios.json."); process.exit(1); }
+  // Ofertas que se conservan de vueltas anteriores con una tienda de ITAD que esta vez no ha salido: la tienda se da de alta
+  // igual (como revendedor de claves digitales), para que la web no la tome por una tienda física sin nombre
+  const NOMBRES_ITAD = { "itad-dlgamer": "DLGamer" };
+  for (const j of lista) for (const o of j.ofertas) if (!tiendas.some((t) => t.id === o.tienda) && o.tienda.startsWith("itad-"))
+    tiendas.push({ id: o.tienda, nombre: NOMBRES_ITAD[o.tienda] || o.tienda.slice(5).replace(/^./, (c) => c.toUpperCase()), tipo: "revendedor", formatos: ["digital"] });
   const salida = { actualizado: new Date().toISOString(), ejemplo: false, revisadoV: 2, caidas: caidas.size ? [...caidas] : undefined, buscador: buscador || undefined, tiendas, juegos: lista };
   await writeFile(join(RAIZ, "precios.json"), JSON.stringify(salida) + "\n");
   console.log(`precios.json listo: ${lista.length} juegos, ${total} ofertas.`);
