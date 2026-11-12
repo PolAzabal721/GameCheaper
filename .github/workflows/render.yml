@@ -1,0 +1,76 @@
+name: Hacer vídeo con herramientas
+
+# Monta las herramientas de vídeo y ejecuta render/<proyecto>/render.sh. Lo que deje en render/<proyecto>/salida/ se guarda en el repo.
+#  · HyperFrames (HeyGen): HTML → MP4                         → comando `hyperframes`
+#  · Paper Shaders: fondos animados                            → en el HTML, import desde jsDelivr (@paper-design/shaders)
+#  · Claude Animation Base: dibujos pintados a mano (p5.brush) → $HERR/ClaudeAnimationBase
+#  · Lemo-Opuscar: estilos de película hechos con código        → $HERR/lemo-opuscar
+on:
+  workflow_dispatch:
+    inputs:
+      proyecto:
+        description: "Carpeta dentro de render/ con un render.sh"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: render
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      HERR: ${{ github.workspace }}/../herr
+      HYPERFRAMES_SKIP_SKILLS: "1"
+      LEMO_OPUSCAR_HOME: ${{ github.workspace }}/../herr/lemo-opuscar
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: ffmpeg y fuentes
+        run: |
+          for i in 1 2 3; do
+            sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg fonts-noto-color-emoji && exit 0
+            echo "Reintento $i…"; sleep 20
+          done
+          exit 1
+      - name: Navegador
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Herramientas
+        run: |
+          mkdir -p "$HERR"
+          npm install -g hyperframes
+          hyperframes --version
+          git clone -q --depth 1 https://github.com/JohnHeibel/ClaudeAnimationBase.git "$HERR/ClaudeAnimationBase"
+          (cd "$HERR/ClaudeAnimationBase" && npm ci --no-audit --no-fund)
+          git clone -q --depth 1 https://github.com/lemomo-ai/lemo-opuscar.git "$HERR/lemo-opuscar"
+          git -C "$HERR/lemo-opuscar" config lemo.managed true
+          sh "$HERR/lemo-opuscar/plugin/skills/lemo-opuscar/scripts/setup.sh" deps
+      - name: Hacer el vídeo
+        env:
+          P: ${{ inputs.proyecto }}
+        run: |
+          case "$P" in *..*|/*|"") echo "Proyecto no válido"; exit 1;; esac
+          D="render/$P"; [ -f "$D/render.sh" ] || { echo "No existe $D/render.sh"; exit 1; }
+          mkdir -p "$D/salida"
+          export SALIDA="$(pwd)/$D/salida"
+          (cd "$D" && bash render.sh)
+          ls -la "$D/salida"
+      - name: Guardar el resultado
+        env:
+          P: ${{ inputs.proyecto }}
+        run: |
+          git config user.name "pillao-bot"
+          git config user.email "pillao-bot@users.noreply.github.com"
+          git add "render/$P/salida"
+          git diff --cached --quiet && exit 0
+          git commit -qm "Vídeo hecho: $P"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done
+          exit 1

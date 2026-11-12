@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;width:1080px;height:1920px;background:#000}#f{position:fixed;inset:0}h1{position:fixed;left:0;right:0;top:820px;text-align:center;color:#fff;font:800 120px system-ui;text-shadow:0 8px 40px rgba(0,0,0,.4)}</style>
+<div id="f"></div><h1>Pillao</h1>
+<script type="module">
+import { ShaderMount, meshGradientFragmentShader, getShaderColorFromString } from "https://cdn.jsdelivr.net/npm/@paper-design/shaders@0.0.82/+esm";
+const colores = ["#ff5a00", "#c2185b", "#3b2bd6", "#ffd23f"].map(getShaderColorFromString);
+new ShaderMount(document.getElementById("f"), meshGradientFragmentShader,
+  { u_colors: colores, u_colorsCount: colores.length, u_distortion: 0.8, u_swirl: 0.6, u_grainMixer: 0, u_grainOverlay: 0, u_fit: 0, u_scale: 1, u_rotation: 0, u_offsetX: 0, u_offsetY: 0, u_originX: 0.5, u_originY: 0.5, u_worldWidth: 0, u_worldHeight: 0 }, undefined, 0.6);
+window.listo = true;
+</script>
