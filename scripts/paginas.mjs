@@ -86,12 +86,12 @@ function proteger(html, buscador) {
 function estilos() {
   return `:root{--bg:#eef0f5;--surface:#fff;--surface-2:#f6f7fb;--ink:#141a2e;--muted:#5a6280;--line:#d9dce8;--accent:#2741d6;--tag:#ffd23f;--tag-ink:#1d1600;--good:#11804a}
 @media (prefers-color-scheme:dark){:root{--bg:#0e1120;--surface:#161a2c;--surface-2:#1c2136;--ink:#e8ebf6;--muted:#98a0bf;--line:#2a3150;--accent:#8fa0ff;--good:#4fd18b;color-scheme:dark}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5}
 a{color:var(--accent)}.wrap{max-width:900px;margin:0 auto;padding:0 16px}
 header{background:var(--surface);border-bottom:1px solid var(--line)}header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;height:60px}
 .logo{font-family:"Bricolage Grotesque","Arial Black",sans-serif;font-weight:800;font-size:24px;color:var(--ink);text-decoration:none;letter-spacing:-.02em}
 .logo span{background:var(--tag);color:var(--tag-ink);border-radius:5px;font-size:13px;padding:1px 5px;margin-left:4px;vertical-align:4px}
-main{padding:24px 0 40px;display:flex;flex-direction:column;gap:18px}.migas{font-size:13px;color:var(--muted)}.migas a{color:var(--muted)}
+main.wrap{padding:24px 16px 56px;display:flex;flex-direction:column;gap:18px}.migas{font-size:13px;color:var(--muted)}.migas a{color:var(--muted)}
 .ficha{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:flex-start}.ficha>div:first-child{flex:1 1 380px;min-width:0}
 .tabla{overflow-x:auto;border-radius:14px}
 h1{font-family:"Bricolage Grotesque","Arial Black",sans-serif;font-size:30px;line-height:1.1;margin:0 0 8px;letter-spacing:-.01em}
@@ -127,7 +127,7 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;paddin
 .of-p s{color:var(--muted);font-size:13px}.of-p em{font-style:normal;font-weight:800;font-size:12px;background:var(--good);color:#fff;border-radius:5px;padding:1px 6px}
 .of-t{font-size:12.5px;color:var(--muted)}.of-t i{display:inline-block;margin-top:3px;font-style:normal;color:var(--tag-ink);background:var(--tag);border-radius:4px;padding:0 6px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
 .faq{display:flex;flex-direction:column;gap:8px}.faq details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}.faq summary{font-weight:700;cursor:pointer}.faq p{margin:8px 0 0;color:var(--muted)}
-.volver{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;font-weight:700;font-size:14px;margin:-4px 0 4px}
+.volver{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;font-weight:700;font-size:14px;margin:0 0 4px}
 .volver:hover{border-color:var(--accent)}
 .mas-ch{margin-top:26px}.saltos.otras{gap:10px 12px;margin:0 0 36px}.saltos.otras a{padding:8px 16px}
 .faq{margin-bottom:8px}
@@ -217,7 +217,7 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
     return `<tr${o === mejor ? ' class="mejor"' : ""}><td><b>${esc(t?.nombre || o.tienda)}</b>${o.stock ? "" : ' <span class="agotado">Agotado</span>'}</td><td>${esc(o.plataforma || "—")}</td><td>${forma}${o.condicion ? " · " + esc(o.condicion) : ""}</td>` +
       `<td class="p">${eur(total(o))}${o.envio ? ` <span class="agotado">(envío incl.)</span>` : ""}</td><td>${url ? `<a href="${esc(url)}" rel="nofollow sponsored noopener" target="_blank">Ver<span class="l"> oferta</span> ↗</a>` : ""}</td></tr>`;
   }).join("");
-  const cuerpo = `<nav class="migas"><a href="../../">Pillao</a> › <a href="../../juegos/">Juegos</a> › ${esc(j.titulo)}</nav>
+  const cuerpo = `${volver("../../")}
 <section class="ficha"><div>${j.tipo && TIPO[j.tipo] ? `<span class="tipo">${TIPO[j.tipo]}</span> ` : ""}<h1>${esc(j.titulo)}</h1>
 <div class="plats">${plats.map((p) => `<span class="plat">${esc(p)}</span>`).join("")}</div>
 <p class="resumen">Comparamos <b>${ofs.length} oferta${ofs.length === 1 ? "" : "s"}</b> de <b>${nTiendas} tienda${nTiendas === 1 ? "" : "s"}</b>.` +
@@ -234,7 +234,7 @@ function paginaLista(juegos) {
   const grupos = {};
   [...juegos].sort((a, b) => a.titulo.localeCompare(b.titulo, "es")).forEach((j) => (grupos[letra(j.titulo)] ||= []).push(j));
   const letras = Object.keys(grupos).sort((a, b) => (a === "#") - (b === "#") || a.localeCompare(b));
-  const cuerpo = `<nav class="migas"><a href="../">Pillao</a> › Todos los juegos</nav><h1>Todos los juegos</h1>
+  const cuerpo = `${volver("../")}<h1>Todos los juegos</h1>
 <p class="resumen">${juegos.length.toLocaleString("es-ES")} juegos, DLC y tarjetas regalo con precios comparados. Para filtrar por plataforma, tienda o precio, usa el <a href="../">comparador</a>.</p>
 <nav class="letras">${letras.map((l) => `<a href="#l-${l === "#" ? "num" : l}">${l}</a>`).join("")}</nav>
 ${letras.map((l) => `<h2 id="l-${l === "#" ? "num" : l}">${l}</h2><ul class="lista">${grupos[l].map((j) => `<li><a href="../juego/${j.id}/">${esc(j.titulo)}</a></li>`).join("")}</ul>`).join("\n")}`;
@@ -306,7 +306,7 @@ function paginaOfertas(datos, tiendaPorId, { ruta, titulo, h1, intro, plataforma
   const fecha = new Date(datos.actualizado).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Madrid" });
   const nTiendas = new Set(filas.flatMap((x) => x.j.ofertas.filter(vale).map((o) => o.tienda))).size;
   const otras = OFERTAS.filter((o) => o.ruta !== ruta).map((o) => `<a href="../${o.ruta}/">${esc(o.corto)}</a>`).join("");
-  const cuerpo = `<nav class="migas"><a href="../">Pillao</a> › ${esc(h1)}</nav>${volver("../chollos/")}
+  const cuerpo = `${volver("../chollos/")}
 <section class="hero"><h1>${esc(h1)}</h1><p class="resumen">${intro} Precios actualizados el ${fecha}${tienda ? "" : `, de ${nTiendas} tiendas`}.</p>
 <nav class="saltos">${secciones.map((s) => `<a href="#${s.id}">${s.t}</a>`).join("")}</nav></section>
 ${secciones.map((s) => `<h2 id="${s.id}">${s.t}</h2><ul class="ofertas">${s.xs.map(tarjeta).join("")}</ul>`).join("\n")}
@@ -401,7 +401,7 @@ function paginaChollos(datos) {
 <span class="b-txt"><b>${esc(b.t)}</b><small>${esc(b.sub)} · ${xs.length} chollos hoy, desde ${eur(desde)}</small><span class="b-ir">Ver chollos →</span></span>
 <span class="b-covs">${portadas.map((x) => `<img src="${esc(imagenDe(x.j))}" alt="" loading="lazy">`).join("")}</span></a>`;
   }).join("\n");
-  const cuerpo = `<nav class="migas"><a href="../">Pillao</a> › Chollos de hoy</nav>${volver("../")}
+  const cuerpo = `${volver("../")}
 <section class="hero"><h1>Chollos de hoy</h1><p class="resumen">Las mejores ofertas de videojuegos de hoy, por plataforma y por tienda. Se actualizan solas varias veces al día.</p></section>
 <div class="banners">${banners}</div>`;
   return plantilla({ titulo: "Chollos de videojuegos hoy: PC, PlayStation, Xbox, Switch e Instant Gaming | Pillao",
