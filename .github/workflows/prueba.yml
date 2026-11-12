@@ -18,8 +18,12 @@ jobs:
           import json;d=json.load(open('l.json'));print('EXT',d['extensions']);print('N por página',len(d['products']))
           for p in d['products'][:3]: print({k:p.get(k) for k in ['name','link','price','base_price','currency_code','discount','platform','drm','region','regions']}); 
           print('CLAVES', list(d['products'][0].keys()))"
-          curl -s -A "$UA" -b cj.txt -o prod.html "https://www.yuplay.com/product/cities-in-motion-2/"
-          grep -o 'data-currency="[A-Z]*" data-sku="[^"]*" data-price="[^"]*"' prod.html | head -1
           python3 -c "
-          import re;h=open('prod.html',encoding='utf-8',errors='ignore').read()
-          i=h.find('Can be activated in');print(re.sub(r'\s+',' ',h[max(0,i-1500):i+100])[-1600:])"
+          import json;d=json.load(open('l.json'))
+          for p in d['products'][:4]: print(p['name'],'|',json.dumps(p.get('activations'))[:900]); print('---', p.get('is_preorder'), p.get('note'), p.get('images'))"
+          curl -s -A "$UA" -b cj.txt "https://www.yuplay.com/api/products/?page=300" | python3 -c "
+          import json,sys;d=json.load(sys.stdin)
+          import collections;c=collections.Counter()
+          for p in d['products']:
+            a=p.get('activations') or {}
+            print(p['name'][:40],'|',json.dumps(a)[:300])"
