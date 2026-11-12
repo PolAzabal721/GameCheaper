@@ -1,0 +1,18 @@
+name: Prueba
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Yuplay
+        run: |
+          UA="Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)"
+          curl -s -A "$UA" https://www.yuplay.com/robots.txt
+          echo; echo "== sitemap"; curl -s -A "$UA" -w ' HTTP %{http_code}\n' https://www.yuplay.com/sitemap.xml | head -c 1500
+          echo; echo "== portada"; curl -s -A "$UA" -o p.html -w 'HTTP %{http_code}\n' https://www.yuplay.com/; grep -o 'href="/product/[^"]*"' p.html | head -5
+          u=$(grep -o 'href="/product/[^"]*"' p.html | head -1 | cut -d'"' -f2); echo "== producto $u"
+          curl -s -A "$UA" -o prod.html -w 'HTTP %{http_code}\n' "https://www.yuplay.com$u"; grep -o '"@type":"Product".\{0,800\}' prod.html | head -c 1500; echo
+          grep -io 'region[^<]\{0,120\}' prod.html | head -5
