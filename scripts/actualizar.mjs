@@ -791,7 +791,7 @@ function leerK4G(u) {
 }
 const MERCADOS = {
   driffle: {
-    nombre: "Driffle", mapa: "https://driffle.com/sitemap.xml", submapas: (us) => us.filter((u) => /products-sitemap-\d+\.xml$/.test(u)).slice(0, +(ENV.DRIFFLE_MAPAS || 6)),
+    nombre: "Driffle", mapa: "https://driffle.com/sitemap.xml", submapas: (us) => us.filter((u) => /products-sitemap-\d+\.xml$/.test(u)), porRonda: +(ENV.DRIFFLE_MAPAS || 45),
     leer: leerDriffle,
     async ficha(p) {
       const h = await (await pedir(p.url + "?currency=EUR")).text();
@@ -801,7 +801,7 @@ const MERCADOS = {
     },
   },
   k4g: {
-    nombre: "K4G", mapa: "https://cdn.k4g.com/files/sitemap/sitemap.xml", submapas: (us) => us.filter((u) => /\d+-products\.xml$/.test(u)).slice(0, +(ENV.K4G_MAPAS || 30)),
+    nombre: "K4G", mapa: "https://cdn.k4g.com/files/sitemap/sitemap.xml", submapas: (us) => us.filter((u) => /\d+-products\.xml$/.test(u)), porRonda: +(ENV.K4G_MAPAS || 200),
     leer: leerK4G,
     async ficha(p) {
       const h = await (await pedir(p.url)).text();
@@ -811,22 +811,43 @@ const MERCADOS = {
     },
   },
 };
-async function mapaMercado(id) {
+// Sus mapas de productos son enormes (Driffle tiene cientos de ficheros), así que en cada ejecución se leen unos cuantos
+// por turnos y lo que coincide con nuestro catálogo se guarda en data/mercados.json: en unos días están leídos todos.
+const CACHE_MERCADOS = join(RAIZ, "data", "mercados.json");
+let cacheMercados = null;
+async function mapaMercado(id, llavesCatalogo) {
   const t = MERCADOS[id];
+  if (!cacheMercados) { try { cacheMercados = JSON.parse(await readFile(CACHE_MERCADOS, "utf8")); } catch { cacheMercados = {}; } }
+  const c = cacheMercados[id] || (cacheMercados[id] = { leidos: {}, productos: {} });
   const indice = [...(await (await pedir(t.mapa)).text()).matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((m) => m[1]);
-  const productos = [];
-  for (const sm of t.submapas(indice)) {
-    for (const u of [...(await (await pedir(sm)).text()).matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((m) => m[1])) {
-      const p = t.leer(u); if (p) productos.push(p);
-    }
+  const todos = t.submapas(indice);
+  // Primero los que nunca se han leído, luego los más antiguos
+  const ronda = [...todos].sort((a, b) => (c.leidos[a] || "").localeCompare(c.leidos[b] || "")).slice(0, t.porRonda);
+  let nuevos = 0;
+  for (const sm of ronda) {
+    try {
+      for (const u of [...(await (await pedir(sm)).text()).matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((m) => m[1])) {
+        const p = t.leer(u);
+        if (!p || !llavesCatalogo.has(p.llave)) continue;
+        const k = p.llave + "|" + p.plat;
+        if (!c.productos[k]) nuevos++;
+        // Una ficha por juego y plataforma: mejor la europea que la global
+        if (!c.productos[k] || (p.region !== "global" && c.productos[k].region === "global")) c.productos[k] = p;
+      }
+      c.leidos[sm] = new Date().toISOString();
+    } catch (e) { /* ese fichero se intentará en la próxima ronda */ }
     await esperar(800);
   }
-  if (productos.length < 500) throw new Error(`el mapa de ${t.nombre} trae muy pocas claves válidas (${productos.length})`);
+  const productos = Object.values(c.productos);
+  console.log(`${t.nombre}: leídos ${ronda.length} de ${todos.length} ficheros de su mapa (${Object.keys(c.leidos).length} en total); ${nuevos} coincidencias nuevas, ${productos.length} guardadas`);
+  if (!productos.length) throw new Error(`el mapa de ${t.nombre} no trae ninguna clave del catálogo`);
   return productos;
 }
+async function guardarCacheMercados() { if (cacheMercados) await writeFile(CACHE_MERCADOS, JSON.stringify(cacheMercados)); }
 async function recorrerMercado(id, juegos, cuenta, avisos, caidas) {
   const t = MERCADOS[id];
-  const productos = await mapaMercado(id);
+  const llavesCatalogo = new Set([...juegos.values()].filter((j) => j.tipo !== "tarjeta").map((j) => llave(j.titulo)));
+  const productos = await mapaMercado(id, llavesCatalogo);
   // Por juego y plataforma, una ficha (las globales y europeas valen igual en España)
   const porLlave = new Map();
   for (const p of productos) { const k = p.llave + "|" + p.plat; if (!porLlave.has(k)) porLlave.set(k, p); }
@@ -1289,6 +1310,7 @@ async function main() {
     try { await recorrerMercado(id, juegos, cuenta, avisos, caidas); }
     catch (e) { avisos.push(`${id}: ${e.message}`); caidas.add(id); }
   }
+  await guardarCacheMercados();
   if (!(await intentar("alcampo", () => alcampo((j) => visitar("alcampo", j))))) caidas.add("alcampo");
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) {
