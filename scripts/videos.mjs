@@ -128,7 +128,8 @@ function pantalla(c, n) {
   const fondo = c.imagen
     ? `<div class="fondo" style="background-image:url('${c.imagen}')"></div>`
     : `<div class="fondo liso"></div>`;
-  const arte = c.imagen ? `<div class="arte" style="background-image:url('${c.imagen}')"></div>` : `<div class="arte liso"></div>`;
+  // La portada entera, con su forma (las de Steam antiguas son más alargadas y no se deben recortar)
+  const arte = c.imagen ? `<img class="arte" src="${c.imagen}" alt="">` : `<div class="arte liso"></div>`;
   const cuerpo = n === 0 ? `
       <div class="cinta">CHOLLO DE HOY</div>
       ${arte}
@@ -155,7 +156,8 @@ function pantalla(c, n) {
   .capa{position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,17,32,.35),rgba(14,17,32,.9))}
   .todo{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:110px 80px;text-align:center}
   .cinta{background:#ffd23f;color:#1d1600;font-weight:800;font-size:46px;letter-spacing:.08em;padding:18px 44px;border-radius:18px;transform:rotate(-2deg)}
-  .arte{width:860px;height:492px;border-radius:32px;background-size:cover;background-position:center;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+  .arte{width:860px;height:auto;max-height:560px;object-fit:cover;display:block;border-radius:32px;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+  div.arte{height:492px}
   h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:82px;line-height:1.08;letter-spacing:-.02em}
   h1.chico{font-size:62px;opacity:.95}
   .plat{font-size:42px;color:#98a0bf;font-weight:600}
