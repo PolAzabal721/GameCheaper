@@ -869,7 +869,7 @@ button { cursor: pointer; }
       if (f.fuera.indexOf(o.tienda) >= 0) return false;
       var cal = calidadDe(o);
       if (cal && f.calOff.indexOf(cal) >= 0) return false;
-      if ((t.tipo === "revendedor" || t.tipo === "marketplace") && f.revOff.indexOf(o.tienda) >= 0) return false;
+      if (t.tipo === "revendedor" && f.revOff.indexOf(o.tienda) >= 0) return false;
       if (!f.mkt && t.tipo === "marketplace") return false;
       if (!f.part && t.tipo === "particulares") return false;
       if (f.stock && !o.stock) return false;
@@ -898,7 +898,8 @@ button { cursor: pointer; }
     // Bloques de tiendas; los grandes (como los revendedores de claves) van plegados en un desplegable
     var BLOQUES = [
       { id: "oficial", titulo: "Oficiales", tipos: ["oficial"] },
-      { id: "claves", titulo: "Revendedores de claves", tipos: ["revendedor", "marketplace"], plegable: true },
+      { id: "claves", titulo: "Revendedores de claves", tipos: ["revendedor"], plegable: true },
+      { id: "mercados", titulo: "Mercados de claves", tipos: ["marketplace"] },
       { id: "tienda", titulo: "Tiendas físicas", tipos: ["tienda"] },
       { id: "segundamano", titulo: "Tiendas de segunda mano", tipos: ["segundamano"] },
       { id: "particulares", titulo: "Entre particulares", tipos: ["particulares"] },
