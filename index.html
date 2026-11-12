@@ -869,7 +869,7 @@ button { cursor: pointer; }
       if (f.fuera.indexOf(o.tienda) >= 0) return false;
       var cal = calidadDe(o);
       if (cal && f.calOff.indexOf(cal) >= 0) return false;
-      if (t.tipo === "revendedor" && f.revOff.indexOf(o.tienda) >= 0) return false;
+      if ((t.tipo === "revendedor" || t.tipo === "marketplace") && f.revOff.indexOf(o.tienda) >= 0) return false;
       if (!f.mkt && t.tipo === "marketplace") return false;
       if (!f.part && t.tipo === "particulares") return false;
       if (f.stock && !o.stock) return false;
