@@ -1,0 +1,28 @@
+name: Prueba
+on:
+  workflow_dispatch:
+jobs:
+  mirar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Direcciones de K4G que no entendemos
+        run: |
+          cat > p.mjs <<'JS'
+          const UA={"User-Agent":"Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)"};
+          const esperar=(ms)=>new Promise(r=>setTimeout(r,ms));
+          const locs=(t)=>[...t.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map(m=>m[1]);
+          const re=/^(.*?)-(steam|ea-app|origin|uplay|ubisoft-connect|gog|epic-games|battle-net|rockstar-games|microsoft-store|xbox-live|xbox-series-x-s|xbox-one)-(europe|eu|global|worldwide|[a-z-]+?)-(?:instant-)?cd-key-(.*?)-cd-key$/;
+          const idx=locs(await (await fetch("https://cdn.k4g.com/files/sitemap/sitemap.xml",{headers:UA})).text()).filter(u=>/\d+-products\.xml$/.test(u));
+          const todos=[]; for(const m of idx){ todos.push(...locs(await (await fetch(m,{headers:UA})).text())); await esperar(300); }
+          const slugs=todos.map(u=>(u.match(/k4g\.com\/product\/([a-z0-9-]+)-[A-F0-9]{8}$/)||[])[1]).filter(Boolean);
+          console.log("productos:",todos.length,"slugs:",slugs.length);
+          const no=slugs.filter(s=>!re.test(s)); console.log("no encajan:",no.length);
+          console.log("FM:",slugs.filter(s=>/football-manager/.test(s)).join(" | "));
+          // patrones: plataforma/region de los que no encajan
+          const pat={}; for(const s of no){ const k=s.replace(/^.*?-(pc|steam|xbox|ps[45]|playstation|nintendo|switch|ea|origin|uplay|ubisoft|gog|epic|battle|rockstar|microsoft)/,"$1").replace(/-[a-z0-9]+-edition.*$/,"").slice(0,40); pat[k]=(pat[k]||0)+1; }
+          console.log(Object.entries(pat).sort((a,b)=>b[1]-a[1]).slice(0,25).map(x=>x[1]+"× "+x[0]).join("\n"));
+          console.log("ejemplos:",no.slice(0,15).join("\n"));
+          JS
+          node p.mjs
