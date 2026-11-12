@@ -1,0 +1,21 @@
+[
+ {
+  "titulo": "Grand Theft Auto VI",
+  "pop": 3,
+  "plataformas": [
+   "PS5",
+   "Xbox Series"
+  ],
+  "lanzamiento": "2026-11-19"
+ },
+ {
+  "titulo": "Grand Theft Auto VI Ultimate Edition",
+  "pop": 40,
+  "tipo": "edicion",
+  "plataformas": [
+   "PS5",
+   "Xbox Series"
+  ],
+  "lanzamiento": "2026-11-19"
+ }
+]

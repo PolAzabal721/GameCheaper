@@ -1226,6 +1226,13 @@ async function main() {
   // Los juegos que ya teníamos de antes (sobre todo los que solo vienen de Instant Gaming, que se consulta después)
   // también se buscan en el mapa de Microsoft; si al final no tienen ningún precio, no salen
   for (const v of anterior.juegos || []) if (v.tipo !== "tarjeta") { const j = juego(v.titulo, { pop: v.pop, tipo: v.tipo }); if (j) (v.plataformas || []).forEach((p) => j.plataformas.add(p)); }
+  // Lanzamientos que no pueden faltar aunque todavía no estén en Steam (GTA VI…): se meten en el catálogo antes de leer
+  // los mapas de las tiendas, así Microsoft Store, Instant Gaming y compañía los buscan en la primera ronda.
+  // Si ninguna tienda les pone precio, no salen en la web.
+  for (const x of await leer("config/prioritarios.json", [])) {
+    const j = juego(x.titulo, { pop: x.pop || 50, tipo: x.tipo || "juego" });
+    if (j) { (x.plataformas || []).forEach((p) => j.plataformas.add(p)); if (x.lanzamiento) fechar(j, x.lanzamiento, false); }
+  }
   let mapaXbox = null;
   try { mapaXbox = await mapaMS(); } catch (e) { avisos.push(`xbox: ${e.message}`); }
   const enMapaMS = new Set();
