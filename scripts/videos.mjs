@@ -1,19 +1,15 @@
 // Vídeos verticales (TikTok / Reels) con los chollos que se han publicado en Telegram el último día.
-// Uso: node scripts/videos.mjs        (necesita ffmpeg y Playwright; en GitHub Actions ya están)
+// Uso: node scripts/videos.mjs        (necesita ffmpeg y HyperFrames: npm install -g hyperframes; en GitHub Actions ya están)
 //
 // Hace un vídeo por chollo (hasta VIDEOS_MAX), de unos 13 segundos y 1080x1920, con la imagen del juego,
 // el precio de antes tachado, el de ahora, el descuento y la tienda. Sin música: así cada quien le pone
 // el audio de moda al publicarlo, que es lo que más ayuda en TikTok y en Reels.
 // Los deja en videos/ y escribe videos/index.json con los datos de cada uno.
-import { readFile, writeFile, mkdir, rm, readdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir, rm, readdir, copyFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import { join } from "node:path";
-import { createRequire } from "node:module";
-// Playwright se busca donde esté instalado (en GitHub Actions, en la carpeta del proyecto)
-const require_ = createRequire(import.meta.url);
-const { chromium } = require_(process.env.PLAYWRIGHT_RUTA || "playwright");
 
 const ejecutar = promisify(execFile);
 const ENV = process.env;
@@ -112,67 +108,36 @@ for (const c of chollos) {
 console.log(`Hago vídeo de ${elegidos.length}${sinFoto ? `; ${sinFoto} saltados por no tener foto` : ""}${repetidos ? `; ${repetidos} ya tenían vídeo` : ""}.`);
 if (!elegidos.length) { console.log("Nada que contar hoy."); process.exit(0); }
 
-// 3. Las tres pantallas de cada vídeo
+// 3. Cada vídeo
 const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-// Las letras de Pillao, incrustadas (una página hecha con setContent no puede leer archivos del disco)
-const fuentes = await (async () => {
-  let css = await readFile(join("fonts", "fuentes.css"), "utf8");
-  for (const f of (await readdir("fonts")).filter((x) => x.endsWith(".woff2"))) {
-    const datos = await readFile(join("fonts", f));
-    css = css.replaceAll(`url(${f})`, `url(data:font/woff2;base64,${datos.toString("base64")})`);
-  }
-  return css;
-})();
-function pantalla(c, n) {
-  const fondo = c.imagen
-    ? `<div class="fondo" style="background-image:url('${c.imagen}')"></div>`
-    : `<div class="fondo liso"></div>`;
-  // La portada entera, con su forma (las de Steam antiguas son más alargadas y no se deben recortar)
-  const arte = c.imagen ? `<img class="arte" src="${c.imagen}" alt="">` : `<div class="arte liso"></div>`;
-  const cuerpo = n === 0 ? `
-      <div class="cinta">CHOLLO DE HOY</div>
-      ${arte}
-      <h1>${esc(c.j.titulo)}</h1>
-      <div class="plat">${esc(c.o.plataforma || "")} · ${esc(c.o.formato === "fisico" ? "En disco" : "Digital")}</div>`
-    : n === 1 ? `
-      ${arte}
-      <h1 class="chico">${esc(c.j.titulo)}</h1>
-      <div class="precios"><s>${eur(c.antes)}</s><b>${eur(c.precio)}</b></div>
-      <div class="dto">−${c.dto} %</div>
-      ${c.minimo ? '<div class="minimo">MÍNIMO HISTÓRICO</div>' : ""}
-      <div class="tienda">en ${esc(c.nombre)}</div>`
-    : `
-      <div class="logo"><span>€</span>Pillao</div>
-      <h1 class="chico">${esc(c.j.titulo)}</h1>
-      <div class="precios"><b>${eur(c.precio)}</b></div>
-      <div class="cta">Compáralo en <b>${SITIO}</b></div>
-      <div class="canal">Más chollos cada día en Telegram ${CANAL}</div>`;
-  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><style>${fuentes}
-  *{box-sizing:border-box;margin:0}
-  html,body{width:1080px;height:1920px;overflow:hidden;background:#0e1120;color:#e8ebf6;font-family:"Figtree",sans-serif}
-  .fondo{position:absolute;inset:-80px;background-size:cover;background-position:center;filter:blur(60px) saturate(1.4) brightness(.55)}
-  .fondo.liso,.arte.liso{background:linear-gradient(140deg,#1b2140,#3b1d8f 45%,#0e7490)}
-  .capa{position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,17,32,.35),rgba(14,17,32,.9))}
-  .todo{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:110px 80px;text-align:center}
-  .cinta{background:#ffd23f;color:#1d1600;font-weight:800;font-size:46px;letter-spacing:.08em;padding:18px 44px;border-radius:18px;transform:rotate(-2deg)}
-  .arte{width:860px;height:auto;max-height:560px;object-fit:cover;display:block;border-radius:32px;box-shadow:0 30px 80px rgba(0,0,0,.55)}
-  div.arte{height:492px}
-  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:82px;line-height:1.08;letter-spacing:-.02em}
-  h1.chico{font-size:62px;opacity:.95}
-  .plat{font-size:42px;color:#98a0bf;font-weight:600}
-  .precios{display:flex;align-items:baseline;gap:34px;justify-content:center;flex-wrap:wrap}
-  .precios s{font-size:62px;color:#98a0bf}
-  .precios b{font-family:"Bricolage Grotesque",sans-serif;font-size:150px;color:#ffd23f;line-height:1}
-  .dto{background:#4fd18b;color:#06301c;font-weight:800;font-size:66px;padding:14px 40px;border-radius:20px}
-  .minimo{background:#ffd23f;color:#1d1600;font-weight:800;font-size:44px;padding:14px 34px;border-radius:16px;letter-spacing:.04em}
-  .tienda{font-size:50px;color:#e8ebf6;font-weight:700}
-  .logo{display:flex;align-items:center;gap:22px;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:96px}
-  .logo span{background:#ffd23f;color:#1d1600;border-radius:22px;padding:6px 28px 14px;transform:rotate(-4deg)}
-  .cta{font-size:58px;line-height:1.3}.cta b{color:#ffd23f}
-  .canal{font-size:40px;color:#98a0bf}
-</style></head><body>${fondo}<div class="capa"></div><div class="todo">${cuerpo}</div></body></html>`;
+// Plantilla HyperFrames (HTML animado con GSAP → MP4): gancho, precio que baja contando, tienda con su logo y cierre con la marca.
+// Todo el texto va entre 168 y 1330 px de alto, la zona que TikTok y Reels no tapan con sus botones.
+const PLANTILLA = await readFile(join("scripts", "video-plantilla.html"), "utf8");
+const LOGOS = await leer("config/logos.json", {});
+const GSAP = await (await fetch("https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js")).text();
+const fuentesCss = await readFile(join("fonts", "fuentes.css"), "utf8");
+async function proyecto(c, dir) {
+  await mkdir(join(dir, "assets", "fonts"), { recursive: true }); await mkdir(join(dir, "assets", "lib"), { recursive: true });
+  await writeFile(join(dir, "assets", "lib", "gsap.min.js"), GSAP);
+  const ficheros = [];
+  const css = fuentesCss.replace(/url\(([a-z0-9]+\.woff2)\)/g, (m, f) => { ficheros.push(f); return `url(assets/fonts/${f})`; });
+  for (const f of ficheros) await copyFile(join("fonts", f), join(dir, "assets", "fonts", f));
+  await writeFile(join(dir, "assets", "arte.jpg"), Buffer.from(c.imagen.split(",")[1], "base64"));
+  await ejecutar("ffmpeg", ["-v", "error", "-y", "-i", join(dir, "assets", "arte.jpg"), "-vf", "scale=540:-2,boxblur=24:3,eq=saturation=1.3:brightness=-0.08", join(dir, "assets", "fondo.jpg")]);
+  let logo = "";
+  const dom = LOGOS[c.o.tienda];
+  if (dom && existsSync(join("logos", dom + ".png"))) { await copyFile(join("logos", dom + ".png"), join(dir, "assets", "logo.png")); logo = '<img src="assets/logo.png" alt="">'; }
+  const lineas = c.j.titulo.length > 26 ? 2 : 1, topTit = 980, topPre = topTit - 260 + lineas * 64 + 44, topTie = topPre + 360;
+  const html = PLANTILLA.replace("__FUENTES__", css)
+    .replaceAll("__ANTES__", eur(c.antes)).replace("__ANTES_N__", String(c.antes)).replace("__PRECIO_N__", String(c.precio))
+    .replace("__DTO__", String(c.dto)).replace("__AHORRO__", eur(c.antes - c.precio))
+    .replace("__TITULO__", esc(c.j.titulo)).replace("__TIENDA__", esc(c.nombre)).replace("__LOGO__", logo)
+    .replace("__SELLO__", c.minimo ? '<div class="capa sello" id="sello">MÍNIMO HISTÓRICO</div>' : "")
+    .replace("__TOPTIT__", String(topTit)).replace("__TOPPRE__", String(topPre)).replace("__TOPTIE__", String(topTie));
+  await writeFile(join(dir, "index.html"), html);
 }
+const LARGO = 13;   // segundos, los que marca la plantilla
 
 // 3b. La voz que lo cuenta (Piper: funciona sin conexión y sin pagar nada; si no está, el vídeo sale sin voz)
 const PIPER = (ENV.PIPER_CMD || "piper").split(" ");
@@ -212,47 +177,29 @@ async function narrar(texto, salida) {
 for (const c of elegidos) hechosAntes.hechos[c.j.id] = new Date().toISOString();
 await writeFile("data/videos.json", JSON.stringify(hechosAntes) + "\n");
 
-const navegador = await chromium.launch();
-const pagina = await navegador.newPage({ viewport: { width: 1080, height: 1920 } });
 await mkdir("videos", { recursive: true });
 const hoy = new Date().toISOString().slice(0, 10);
 const hechos = [];
 for (let i = 0; i < elegidos.length; i++) {
   const c = elegidos[i];
-  const pngs = [];
-  for (let n = 0; n < 3; n++) {
-    await pagina.setContent(pantalla(c, n), { waitUntil: "load" });
-    await pagina.waitForTimeout(250);
-    const f = join("tmp-videos", `p-${i}-${n}.png`);
-    await pagina.screenshot({ path: f });
-    pngs.push(f);
-  }
-  // La voz manda: el vídeo dura lo que tarda en contarse
-  const wav = join("tmp-videos", `voz-${i}.wav`);
-  const texto = guion(c);
-  const segundos = await narrar(texto, wav);
-  const leido = texto.length / 14 + 2;   // unos 14 caracteres por segundo al leerlo en voz alta
-  const total = Math.max(11, Math.min(34, segundos ? segundos + 1.2 : leido));
-  const dur = [total * 0.3, total * 0.45, total * 0.25].map((x) => Math.round(x * 10) / 10);
-  // Cada pantalla con un zoom lento y un fundido entre ellas
+  const dir = join("tmp-videos", `hf-${i}`);
   const salida = join("videos", `${hoy}-${c.j.id.slice(0, 40)}.mp4`);
-  const args = [];
-  pngs.forEach((f, n) => args.push("-loop", "1", "-t", String(dur[n] + 1), "-i", f));
-  const filtros = pngs.map((_, n) =>
-    `[${n}:v]scale=1188:2112,zoompan=z='min(zoom+0.0006,1.10)':d=${Math.round((dur[n] + 1) * 30)}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920:fps=30,setsar=1[v${n}]`);
-  filtros.push(`[v0][v1]xfade=transition=fade:duration=0.5:offset=${dur[0] - 0.5}[a]`);
-  filtros.push(`[a][v2]xfade=transition=fade:duration=0.5:offset=${dur[0] + dur[1] - 1}[v]`);
-  const largo = dur[0] + dur[1] + dur[2] - 1;
-  await ejecutar("ffmpeg", ["-y", ...args, ...(segundos ? ["-i", wav] : []), "-filter_complex", filtros.join(";"), "-map", "[v]",
-    ...(segundos ? ["-map", String(pngs.length) + ":a", "-c:a", "aac", "-b:a", "128k", "-af", "adelay=300|300,apad"] : []),
-    "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", "-r", "30",
-    "-t", String(largo), "-movflags", "+faststart", salida], { maxBuffer: 1 << 28 });
+  const texto = guion(c);
+  try {
+    await proyecto(c, dir);
+    const mudo = join("tmp-videos", `mudo-${i}.mp4`);
+    await ejecutar("hyperframes", ["render", "--output", join("..", "..", mudo)], { cwd: dir, maxBuffer: 1 << 28, env: { ...process.env, HYPERFRAMES_SKIP_SKILLS: "1" } });
+    // Con voz (VIDEOS_VOZ=1) se le pone encima; si no, sale mudo para ponerle el audio de moda al publicarlo
+    const wav = join("tmp-videos", `voz-${i}.wav`);
+    const segundos = await narrar(texto, wav);
+    if (segundos) await ejecutar("ffmpeg", ["-v", "error", "-y", "-i", mudo, "-i", wav, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-af", "adelay=300|300,apad", "-t", String(LARGO), "-movflags", "+faststart", salida]);
+    else await copyFile(mudo, salida);
+  } catch (e) { console.warn(`  no se ha podido hacer el vídeo de ${c.j.titulo}: ${(e.stderr || e.message || "").toString().split("\n").slice(-3).join(" | ")}`); continue; }
   hechos.push({ archivo: salida.replace(/\\/g, "/"), juego: c.j.titulo, precio: c.precio, antes: c.antes, dto: c.dto,
-    tienda: c.nombre, plataforma: c.o.plataforma || "", minimo: !!c.minimo, guion: texto, segundos: Math.round(total * 10) / 10,
+    tienda: c.nombre, plataforma: c.o.plataforma || "", minimo: !!c.minimo, guion: texto, segundos: LARGO,
     url: `https://${SITIO}/?q=${encodeURIComponent(c.j.titulo)}` });
   console.log(`  ${salida} · ${c.j.titulo} · ${eur(c.precio)} (−${c.dto} %)`);
 }
-await navegador.close();
 await rm("tmp-videos", { recursive: true, force: true });
 
 // 4. Aviso en Telegram con los enlaces, si está encendido (VIDEOS_TELEGRAM=1)

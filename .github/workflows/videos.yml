@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Preparar ffmpeg
         # Los servidores de Ubuntu fallan de vez en cuando: se reintenta antes de darse por vencido
         run: |
@@ -46,16 +46,19 @@ jobs:
           python3 -m piper.download_voices es_ES-davefx-medium --download-dir voz
           echo "Hola, esto es una prueba." | python3 -m piper -m es_ES-davefx-medium --data-dir voz -f voz/prueba.wav
           ls -la voz
-      - name: Preparar el navegador
-        # La versión más nueva de Playwright es la que trae navegador para este Ubuntu
+      - name: Preparar el navegador y HyperFrames
+        # Playwright instala las librerías del sistema que necesita el navegador; HyperFrames hace el vídeo a partir del HTML
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
+          npm install -g hyperframes
+          hyperframes --version
       - name: Hacer los vídeos
         env:
           VIDEOS_MAX: ${{ inputs.maximo || '5' }}
           VIDEOS_JUEGOS: ${{ inputs.juegos }}
           VIDEOS_VOZ: ${{ vars.VIDEOS_VOZ }}
+          HYPERFRAMES_SKIP_SKILLS: "1"
           PIPER_CMD: python3 -m piper
           PIPER_VOZ: es_ES-davefx-medium
           PIPER_DIR: voz

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080, initial-scale=1.0">
+<title>Chollo Pillao</title>
+<script src="assets/lib/gsap.min.js"></script>
+<style>
+__FUENTES__
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#0b0e1c}
+#main{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:"Figtree",sans-serif;color:#eef0fa}
+#fondo{position:absolute;inset:0;overflow:hidden}
+#fondo img{position:absolute;left:-10%;top:-5%;width:120%;height:110%;object-fit:cover;opacity:.55}
+.brillo{position:absolute;width:900px;height:900px;border-radius:50%;opacity:.55}
+#b1{left:-300px;top:900px;background:radial-gradient(closest-side,#3b2bd6,transparent)}
+#b2{left:480px;top:-200px;background:radial-gradient(closest-side,#ff5a00,transparent)}
+#velo{position:absolute;inset:0;background:radial-gradient(120% 70% at 50% 40%,rgba(11,14,28,.15),rgba(11,14,28,.78) 75%)}
+.capa{position:absolute;left:0;right:0}
+.gancho{top:190px;text-align:center}
+.gancho .l1,.gancho .l2{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;letter-spacing:-.02em;line-height:1}
+.gancho .l1{font-size:84px}
+.gancho .l2{font-size:108px;color:#ffd23f;margin-top:10px}
+.arte{top:430px;left:90px;width:900px;border-radius:34px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.55)}
+.arte img{display:block;width:100%;height:auto}
+.sello{top:560px;right:58px;left:auto;background:#ffd23f;color:#1d1600;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:38px;letter-spacing:.06em;padding:14px 26px;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.titulo{text-align:center;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:58px;line-height:1.08;padding:0 80px}
+.precios{text-align:center}
+.antes{position:relative;display:inline-block;font-family:"JetBrains Mono",monospace;font-weight:700;font-size:64px;color:#a3abc9}
+.raya{position:absolute;left:-6px;right:-6px;top:50%;height:8px;margin-top:-4px;background:#ff4d6d;border-radius:4px;transform-origin:left center}
+.ahora{display:block;font-family:"JetBrains Mono",monospace;font-weight:800;font-size:170px;line-height:1;color:#ffd23f;letter-spacing:-.04em;margin-top:6px;text-shadow:0 10px 40px rgba(255,210,63,.25)}
+.chapa{display:inline-block;margin-top:18px;background:#4fd18b;color:#06301c;font-weight:800;font-size:56px;padding:10px 30px;border-radius:18px}
+.ahorro{display:inline-block;margin:18px 0 0 16px;font-weight:700;font-size:44px;color:#c9cfe6}
+.tienda{display:flex;justify-content:center;align-items:center;gap:20px;font-size:50px;font-weight:700}
+.tienda img{width:76px;height:76px;border-radius:18px;background:#fff;padding:6px;box-sizing:border-box;object-fit:contain}
+.cierre{top:470px;text-align:center}
+.marca{display:inline-flex;align-items:center;gap:16px;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:150px;letter-spacing:-.03em}
+.marca i{font-style:normal;background:#ffd23f;color:#1d1600;font-size:80px;padding:6px 20px 10px;border-radius:18px;transform:rotate(-5deg);display:inline-block}
+.cierre p{margin:40px 0 0;font-size:54px;font-weight:700;line-height:1.25;color:#dfe3f3}
+.web{display:inline-block;margin-top:44px;background:#eef0fa;color:#111;font-weight:800;font-size:62px;padding:22px 44px;border-radius:24px}
+.tg{margin-top:34px;font-size:44px;font-weight:700;color:#9fb0ff}
+</style>
+</head>
+<body>
+<div id="main" data-composition-id="main" data-start="0" data-duration="13" data-width="1080" data-height="1920">
+  <div id="fondo" class="clip" data-start="0" data-duration="13" data-track-index="0"><img id="fondo-img" src="assets/fondo.jpg" alt=""><div class="brillo" id="b1"></div><div class="brillo" id="b2"></div></div>
+  <div id="velo" class="clip" data-start="0" data-duration="13" data-track-index="1"></div>
+
+  <div id="escena1" class="clip" data-start="0" data-duration="9.6" data-track-index="2" style="position:absolute;inset:0">
+    <div class="capa gancho" id="gancho"><div class="l1" id="g1">¿Pagar __ANTES__?</div><div class="l2" id="g2">Ni de broma.</div></div>
+    <div class="capa arte" id="arte"><img src="assets/arte.jpg" alt=""></div>
+    __SELLO__
+    <div class="capa titulo" id="titulo" style="top:__TOPTIT__px">__TITULO__</div>
+    <div class="capa precios" id="precios" style="top:__TOPPRE__px">
+      <span class="antes" id="antes">__ANTES__<span class="raya" id="raya"></span></span>
+      <span class="ahora" id="ahora">__ANTES__</span>
+      <span class="chapa" id="chapa">−__DTO__ %</span><span class="ahorro" id="ahorro">Ahorras __AHORRO__</span>
+    </div>
+    <div class="capa tienda" id="tienda" style="top:__TOPTIE__px">__LOGO__<span>en <b>__TIENDA__</b></span></div>
+  </div>
+
+  <div id="escena2" class="clip" data-start="9.6" data-duration="3.4" data-track-index="3" style="position:absolute;inset:0">
+    <div class="capa cierre">
+      <div class="marca" id="marca">Pillao<i>€</i></div>
+      <p id="c1">Compara el precio de cualquier<br>juego en más de 40 tiendas</p>
+      <div class="web" id="web">pillaojuegos.com</div>
+      <div class="tg" id="tg">Chollos al momento en Telegram · @pillaoChollos</div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+const tl = gsap.timeline({ paused: true });
+// Fondo: la portada desenfocada se acerca despacio y dos brillos de color se mueven
+tl.fromTo("#fondo-img", { scale: 1.05 }, { scale: 1.22, duration: 13, ease: "none" }, 0);
+tl.to("#b1", { x: 520, y: -380, duration: 13, ease: "sine.inOut" }, 0);
+tl.to("#b2", { x: -560, y: 520, duration: 13, ease: "sine.inOut" }, 0);
+// 1. Gancho: ya en pantalla en el fotograma 0 (miniatura de TikTok)
+tl.fromTo("#g2", { scale: .9 }, { scale: 1, duration: .5, ease: "back.out(3)" }, 0);
+tl.fromTo("#arte", { y: 30, scale: .97 }, { y: 0, scale: 1, duration: .8, ease: "power3.out" }, 0);
+tl.from("#titulo", { y: 30, opacity: 0, duration: .5, ease: "power2.out" }, .5);
+tl.to("#gancho", { y: -40, opacity: 0, duration: .45, ease: "power2.in" }, 2.8);
+tl.to("#arte", { y: -260, duration: .7, ease: "power3.inOut" }, 2.9);
+tl.to("#titulo", { y: -260, duration: .7, ease: "power3.inOut" }, 2.9);
+// 2. El precio: el de antes se tacha y el de ahora baja contando
+tl.from("#precios", { y: 60, opacity: 0, duration: .5, ease: "power2.out" }, 3.3);
+tl.fromTo("#raya", { scaleX: 0 }, { scaleX: 1, duration: .45, ease: "power2.inOut" }, 3.9);
+const cuenta = { v: __ANTES_N__ };
+tl.to(cuenta, { v: __PRECIO_N__, duration: 1.3, ease: "power3.out", onUpdate: () => { document.getElementById("ahora").textContent = eur(cuenta.v); } }, 4.2);
+tl.from("#chapa", { scale: 0, rotation: -12, duration: .5, ease: "back.out(2.5)" }, 5.4);
+tl.from("#ahorro", { x: 30, opacity: 0, duration: .4, ease: "power2.out" }, 5.7);
+// 3. Dónde
+tl.from("#tienda", { y: 30, opacity: 0, duration: .5, ease: "power2.out" }, 6.3);
+if (document.getElementById("sello")) tl.from("#sello", { scale: 2.2, rotation: 12, opacity: 0, duration: .45, ease: "power4.in" }, 7.0);
+tl.to("#escena1 .capa", { opacity: 0, y: -30, duration: .4, stagger: .03, ease: "power2.in" }, 9.1);
+// 4. Cierre
+tl.from("#marca", { scale: .6, opacity: 0, duration: .55, ease: "back.out(2)" }, 9.7);
+tl.from("#c1", { y: 30, opacity: 0, duration: .45 }, 10.1);
+tl.from("#web", { y: 30, opacity: 0, duration: .45, ease: "back.out(2)" }, 10.4);
+tl.from("#tg", { opacity: 0, duration: .45 }, 10.8);
+tl.to({}, { duration: .01 }, 12.99);
+window.__timelines = window.__timelines || {};
+window.__timelines["main"] = tl;
+</script>
+</body>
+</html>
