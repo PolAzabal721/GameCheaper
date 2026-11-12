@@ -1,0 +1,19 @@
+name: Prueba
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Bundles de ITAD e imágenes por nombre
+        env:
+          K: ${{ secrets.ITAD_KEY }}
+        run: |
+          K=$(printf '%s' "$K" | tr -d '[:space:]')
+          for p in bundles/v1 bundles/v2 bundles/v3; do echo "== $p"; curl -s -w ' HTTP %{http_code}\n' "https://api.isthereanydeal.com/$p?key=$K&country=ES&limit=3" | head -c 2500; echo; done
+          for q in "The Darkside Detective" "Holy Potatoes! What The Hell?!" "Piczle Cross: Rune Factory" "One Dog Story"; do
+            echo "== steam: $q"; curl -s "https://store.steampowered.com/api/storesearch/?term=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$q")&l=spanish&cc=ES" | head -c 500; echo
+            echo "== nintendo: $q"; curl -s "https://searching.nintendo-europe.com/es/select?q=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$q")&fq=type:GAME&rows=1&wt=json&fl=title,image_url,image_url_h2x1_s" | head -c 500; echo
+          done
