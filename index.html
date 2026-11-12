@@ -490,14 +490,8 @@ button { cursor: pointer; }
   .fondo.ver { display: block; position: fixed; inset: 0; background: rgba(8,10,20,.45); z-index: 40; }
 }
 @media (max-width: 560px) {
-  .logo { font-size: 21px; gap: 4px; }
-  .logo i { font-size: 13px; }
-  .top-row { gap: 8px; flex-wrap: wrap; padding-block: 10px 8px; }
-  .logo { margin-right: auto; }
-  .search { order: 5; flex: 1 1 100%; }
-  .quick { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start !important; margin-inline: -16px; padding-inline: 16px; -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
-  .quick > * { flex-shrink: 0; }
-  #plataformas { flex-wrap: nowrap; justify-content: flex-start !important; }
+  .logo span { display: none; }
+  .logo i { font-size: 16px; }
   .j-cab { flex-direction: column-reverse; }
   .etiqueta { align-self: stretch; align-items: flex-start; padding-left: 26px; transform: rotate(-.8deg); }
   .etiqueta .donde { text-align: left; }
