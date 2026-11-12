@@ -10,14 +10,15 @@ jobs:
       - name: Yuplay
         run: |
           UA="Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)"
-          for s in crimson-desert-enhanced-charting-the-unknown devils-hunt cities-in-motion-2; do
-            curl -s -A "$UA" -o prod.html "https://www.yuplay.com/product/$s/"
-            echo "== $s"; python3 - <<'PY'
-          import re
-          h=open('prod.html',encoding='utf-8',errors='ignore').read()
-          for m in re.finditer(r'<script type="application/ld\+json">(.*?)</script>',h,re.S):
-              if '"Product"' in m.group(1): print('LD', m.group(1)[:1200])
-          for k in ['product:price','itemprop="price"','data-price','"price"','Region','region','Activation','DRM','Steam']:
-              i=h.find(k); print(k, '->', re.sub(r'\s+',' ',h[max(0,i-150):i+250]) if i>=0 else None)
-          PY
+          for c in "" "currency=EUR" "currency=eur; country=ES"; do
+            curl -s -A "$UA" -b "$c" -o prod.html "https://www.yuplay.com/product/cities-in-motion-2/?currency=EUR"
+            echo "== cookie [$c] $(grep -o 'data-currency="[A-Z]*" data-sku="[^"]*" data-price="[^"]*"' prod.html | head -1) $(grep -o 'Can be activated in:' prod.html | head -1) spain=$(grep -c 'Spain' prod.html)"
           done
+          curl -s -A "$UA" -D - -o /dev/null "https://www.yuplay.com/api/currency/" | head -20; curl -s -A "$UA" "https://www.yuplay.com/api/currency/" | head -c 600; echo
+          curl -s -A "$UA" "https://www.yuplay.com/api/products/?search=cities" | head -c 800; echo
+          curl -s -A "$UA" -o prod.html "https://www.yuplay.com/product/cities-in-motion-2/"
+          python3 -c "
+          import re;h=open('prod.html',encoding='utf-8',errors='ignore').read()
+          m=re.search(r'title=\"([^\"]*)\">Can be activated in:',h);print('ACT', (m.group(1)[:300] if m else None), 'Spain' in (m.group(1) if m else ''))
+          m=re.search(r'Cannot be activated in:',h);print('NOACT', bool(m))
+          i=h.find('product-platform');print(re.sub(r'\s+',' ',h[i-100:i+300]))"
