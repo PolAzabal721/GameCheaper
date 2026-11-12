@@ -465,6 +465,10 @@ button { cursor: pointer; }
 .dest-lista b { font-size: 14px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .dest-p { margin-top: auto; font-size: 12.5px; color: var(--muted); display: flex; align-items: center; flex-wrap: wrap; gap: 0 4px; }
 .dest-p strong { color: var(--ink); font-family: var(--f-mono, ui-monospace); font-size: 17px; margin-right: 4px; }
+.dest-vacio > div { display: flex; flex-direction: column; gap: 6px; height: 100%; padding: 8px 8px 10px; border: 1px dashed var(--line); border-radius: 14px; background: var(--surface); }
+.dest-vacio .dest-img { display: grid; place-items: center; background: linear-gradient(140deg, var(--surface-2), color-mix(in srgb, var(--tag) 12%, var(--surface-2))); }
+.dest-vacio svg { width: 70%; height: 80%; }
+.dest-vacio b { font-size: 14px; }
 @media (max-width: 560px) { .dest-lista { margin-inline: -16px; padding-inline: 16px; } .dest-lista li { flex-basis: 170px; } }
 
 /* Logos de tiendas y movimiento */
@@ -1785,16 +1789,21 @@ button { cursor: pointer; }
   // Chollos de hoy: una tira con los juegos conocidos más rebajados, solo en la portada sin búsqueda ni filtros
   function pintarDestacados(filas, qTxt) {
     var caja = $("destacados");
-    if (qTxt || nActivos() || f.orden !== "populares") { caja.hidden = true; return; }
+    if (qTxt || f.orden !== "populares") { caja.hidden = true; return; }
     var xs = filas.filter(function (r) { var tt = (tiendaPorId[r.mejor.tienda] || {}).tipo; return tt !== "particulares" && tt !== "marketplace" && r.mejor.estado !== "usado" && (r.j.pop || 99999) <= 600 && r.dto >= 50 && (!r.j.tipo || r.j.tipo === "juego") && (urlsImagen(r.j, false) || []).length; })
       .sort(function (a, b) { return b.dto - a.dto; }).slice(0, 10);
-    if (xs.length < 4) { caja.hidden = true; return; }
     caja.hidden = false;
+    // Con los filtros puestos puede que no quede ninguno: una tarjeta del mismo tamaño con el euro roto
+    var vacio = xs.length ? "" : '<li class="dest-vacio"><div><span class="dest-img"><svg viewBox="0 0 120 60" aria-hidden="true">' +
+      '<g transform="translate(-6 2) rotate(-10 52 30)"><path d="M60 8 A22 22 0 0 0 60 52 L56 44 L62 36 L55 28 L61 20 L56 13 Z" fill="#ffd23f"/><text x="49" y="38" font-size="22" font-weight="800" fill="#1d1600" font-family="sans-serif">€</text></g>' +
+      '<g transform="translate(6 -2) rotate(12 68 30)"><path d="M60 8 A22 22 0 0 1 60 52 L56 44 L62 36 L55 28 L61 20 L56 13 Z" fill="#f2c21b"/></g>' +
+      '<path d="M57 6 l3 4 M64 50 l3 5 M52 54 l-2 4" stroke="#ffd23f" stroke-width="2" stroke-linecap="round"/></svg></span>' +
+      '<b>No hay chollos con estos filtros</b><span class="dest-p">Prueba a marcar más tiendas o plataformas</span></div></li>';
     caja.innerHTML = '<div class="dest-cab"><p class="dest-tit">🔥 Chollos de hoy</p><a href="chollos/">Ver todos →</a></div><ul class="dest-lista">' + xs.map(function (r) {
       var m = r.mejor, t = tiendaPorId[m.tienda] || { nombre: m.tienda };
       return '<li><a href="juego/' + esc(r.j.id) + '/"><span class="dest-img"><img src="' + esc(urlsImagen(r.j, false)[0]) + '" alt="" loading="lazy" width="460" height="215"><em>−' + r.dto + '%</em></span>' +
         '<b>' + esc(r.j.titulo) + '</b><span class="dest-p"><strong>' + eur.format(total(m)) + '</strong> ' + logoT(m.tienda, "c-logo") + esc(t.nombre) + "</span></a></li>";
-    }).join("") + "</ul>";
+    }).join("") + vacio + "</ul>";
   }
 
   function pintar() {
