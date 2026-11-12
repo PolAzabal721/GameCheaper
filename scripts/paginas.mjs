@@ -104,6 +104,10 @@ main.wrap{padding:24px 16px 56px;display:flex;flex-direction:column;gap:18px}.mi
 .poster .etiqueta{position:relative;transform:rotate(-2deg);box-shadow:0 10px 30px rgba(0,0,0,.35);text-align:left}
 .poster-dto{position:absolute;top:-12px;right:-12px;font-style:normal;background:#4fd18b;color:#06301c;font-weight:800;font-size:13px;padding:3px 8px;border-radius:7px;transform:rotate(4deg)}
 @media(max-width:600px){.poster{min-height:420px}.poster h1{font-size:30px}.poster-in{padding:18px}}
+.barra{flex:1 1 100%;display:grid;gap:7px;margin-top:4px}
+.barra .linea{position:relative;height:10px;border-radius:99px;background:linear-gradient(90deg,#4fd18b,#ffd23f 45%,#ff4d6d)}
+.barra .punto{position:absolute;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:#fff;border:4px solid #0e1120;box-shadow:0 0 0 2px #fff}
+.barra .eti{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:#cfd5ea}.barra .eti b,.barra .eti .ya{color:#fff;font-weight:700}
 .ficha{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:flex-start}.ficha>div:first-child{flex:1 1 380px;min-width:0}
 .tabla{overflow-x:auto;border-radius:14px}
 h1{font-family:"Bricolage Grotesque","Arial Black",sans-serif;font-size:30px;line-height:1.1;margin:0 0 8px;letter-spacing:-.01em}
@@ -232,12 +236,17 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
   // La imagen del juego en grande (las de Microsoft se piden a más resolución)
   const imgPoster = (imagenDe(j) || "").replace(/(store-images\.s-microsoft\.com\/image\/[^?]+)\?w=\d+/, "$1?w=1280") || null;
   const dtoPoster = j.pvp && j.pvp > total(mejor) ? Math.round((1 - total(mejor) / j.pvp) * 100) : 0;
+  // Termómetro: dónde está el precio de ahora entre el mínimo histórico y el precio normal
+  const tope = j.pvp || Math.max(0, ...ofs.filter((o) => o.estado !== "usado").map((o) => o.regular || 0));
+  const termometro = minimo && tope > minimo + 0.5
+    ? `<div class="barra"><div class="linea"><span class="punto" style="left:${Math.max(0, Math.min(100, ((total(mejor) - minimo) / (tope - minimo)) * 100)).toFixed(1)}%"></span></div><div class="eti"><span>Mínimo <b>${eur(minimo)}</b></span><span class="ya">Ahora ${eur(total(mejor))}</span><span>Normal <b>${eur(tope)}</b></span></div></div>`
+    : "";
   const cuerpo = `${volver("../../")}
 <section class="poster${imgPoster ? "" : " sin-img"}">${imgPoster ? `<img src="${esc(imgPoster)}" alt="" width="1280" height="720" fetchpriority="high">` : ""}<div class="poster-in"><div class="poster-d">${j.tipo && TIPO[j.tipo] ? `<span class="tipo">${TIPO[j.tipo]}</span> ` : ""}<h1>${esc(j.titulo)}</h1>
 <div class="plats">${plats.map((p) => `<span class="plat">${esc(p)}</span>`).join("")}</div>
 <p class="resumen">Comparamos <b>${ofs.length} oferta${ofs.length === 1 ? "" : "s"}</b> de <b>${nTiendas} tienda${nTiendas === 1 ? "" : "s"}</b>` +
     (minimo ? ` · Mínimo histórico <b>${eur(minimo)}</b>` : "") + (j.pvp && j.pvp > total(mejor) ? ` · Precio normal <b>${eur(j.pvp)}</b>` : "") + ` · Actualizado el ${fecha}</p></div>
-<div class="etiqueta"><small>Mejor precio</small><b>${eur(total(mejor))}</b><span>${esc(tm)} · ${esc(mejor.plataforma || "")}</span>${dtoPoster >= 5 ? `<i class="poster-dto">−${dtoPoster}%</i>` : ""}</div></div></section>
+<div class="etiqueta"><small>Mejor precio</small><b>${eur(total(mejor))}</b><span>${esc(tm)} · ${esc(mejor.plataforma || "")}</span>${dtoPoster >= 5 ? `<i class="poster-dto">−${dtoPoster}%</i>` : ""}</div>${termometro}</div></section>
 <div class="cta"><a class="boton" href="../../?q=${encodeURIComponent(j.titulo)}">Ver historial y crear aviso de precio</a><a class="boton sec" href="../../">Comparar otros juegos</a></div>
 <div class="tabla"><table><thead><tr><th>Tienda</th><th>Plataforma</th><th>Formato</th><th>Precio</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>
 ${relacionados.length ? `<h2>Otros juegos</h2><ul class="mas">${relacionados.map((r) => `<li><a href="../${r.id}/">${esc(r.titulo)}</a></li>`).join("")}</ul>` : ""}`;
