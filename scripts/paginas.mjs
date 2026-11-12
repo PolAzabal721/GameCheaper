@@ -126,6 +126,18 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;paddin
 .of-p s{color:var(--muted);font-size:13px}.of-p em{font-style:normal;font-weight:800;font-size:12px;background:var(--good);color:#fff;border-radius:5px;padding:1px 6px}
 .of-t{font-size:12.5px;color:var(--muted)}.of-t i{display:inline-block;margin-top:3px;font-style:normal;color:var(--tag-ink);background:var(--tag);border-radius:4px;padding:0 6px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
 .faq{display:flex;flex-direction:column;gap:8px}.faq details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}.faq summary{font-weight:700;cursor:pointer}.faq p{margin:8px 0 0;color:var(--muted)}
+.banners{display:grid;grid-template-columns:1fr;gap:14px}
+.banner{position:relative;display:flex;align-items:center;gap:16px;min-height:150px;padding:22px;border-radius:18px;overflow:hidden;text-decoration:none;color:#fff;background:linear-gradient(120deg,var(--c1),var(--c2));box-shadow:0 10px 28px rgba(0,0,0,.18);transition:transform .15s}
+.banner:hover{transform:translateY(-2px)}
+.b-logo{flex-shrink:0;width:64px;height:64px;border-radius:16px;background:#fff;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.2);position:relative;z-index:1}
+.b-logo img{width:44px;height:44px;object-fit:contain}.b-logo svg{width:38px;height:38px;color:var(--c1)}
+.b-txt{display:flex;flex-direction:column;gap:4px;position:relative;z-index:1;flex:1;min-width:0}
+.b-txt b{font-family:"Bricolage Grotesque","Arial Black",sans-serif;font-size:26px;line-height:1.1;letter-spacing:-.01em}
+.b-txt small{font-size:14px;opacity:.92}.b-ir{margin-top:8px;align-self:flex-start;background:#fff;color:#111;font-weight:800;font-size:13px;padding:6px 12px;border-radius:99px}
+.b-covs{position:relative;z-index:0;display:flex;flex-shrink:0;margin-right:-6px}
+.b-covs img{width:150px;aspect-ratio:460/215;object-fit:cover;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.85)}
+.b-covs img+img{margin-left:-70px}.b-covs img:nth-child(1){transform:rotate(-5deg)}.b-covs img:nth-child(2){transform:rotate(2deg) translateY(10px)}.b-covs img:nth-child(3){transform:rotate(7deg)}
+@media(max-width:600px){.banner{flex-wrap:wrap;min-height:0;padding:18px}.b-txt b{font-size:22px}.b-covs{order:3;width:100%;justify-content:center;margin:6px 0 0}.b-covs img{width:120px}.b-covs img+img{margin-left:-40px}}
 @media(max-width:600px){.hero h1{font-size:26px}.ofertas{grid-template-columns:1fr 1fr;gap:8px}.of-p strong{font-size:17px}}
 @media(max-width:600px){h1{font-size:24px}.ficha>div:first-child{flex-basis:100%}.etiqueta{align-self:flex-start}th:nth-child(3),td:nth-child(3){display:none}th,td{padding:9px 8px;font-size:13px}td a .l{display:none}}`;
 }
@@ -238,7 +250,7 @@ function esExpansion(titulo, titulos) {
   return false;
 }
 
-function paginaOfertas(datos, tiendaPorId, { ruta, titulo, h1, intro, plataformas, tienda, desc, cta, preguntas }) {
+function chollosDe(datos, { plataformas, tienda }) {
   const total = (o) => o.precio + (o.envio || 0);
   const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
   const titulos = new Set(datos.juegos.map((j) => norm(j.titulo)));
@@ -269,6 +281,11 @@ function paginaOfertas(datos, tiendaPorId, { ruta, titulo, h1, intro, plataforma
     { id: "minimos", t: "En su mínimo histórico", xs: filas.filter((x) => x.minimo && x.dto >= 20).sort(porPop) },
     { id: "descuentos", t: "Los mayores descuentos", xs: filas.filter((x) => x.dto >= 60 && (x.j.pop || 99999) <= 2000).sort((a, b) => b.dto - a.dto) },
   ].map((s) => ({ ...s, xs: s.xs.slice(0, 12) })).filter((s) => s.xs.length);
+  return { filas, secciones, vale, variasPlat, total, eur };
+}
+
+function paginaOfertas(datos, tiendaPorId, { ruta, titulo, h1, intro, plataformas, tienda, desc, cta, preguntas }) {
+  const { filas, secciones, vale, variasPlat, total, eur } = chollosDe(datos, { plataformas, tienda });
   const tarjeta = (x) => {
     const t = tiendaPorId[x.m.tienda] || { nombre: x.m.tienda }, img = imagenDe(x.j);
     const plat = variasPlat ? `${esc(x.m.plataforma)} · ` : "";
@@ -288,7 +305,7 @@ function paginaOfertas(datos, tiendaPorId, { ruta, titulo, h1, intro, plataforma
 ${secciones.map((s) => `<h2 id="${s.id}">${s.t}</h2><ul class="ofertas">${s.xs.map(tarjeta).join("")}</ul>`).join("\n")}
 <div class="cta"><a class="boton" href="../${cta.href}">${esc(cta.texto)}</a></div>
 <h2>Preguntas frecuentes</h2><div class="faq">${preguntas.map(([q, r]) => `<details><summary>${q}</summary><p>${r}</p></details>`).join("")}</div>
-<h2>Más chollos</h2><nav class="saltos otras">${otras}</nav>`;
+<h2>Más chollos</h2><nav class="saltos otras"><a href="../chollos/">Todos los chollos</a>${otras}</nav>`;
   const jsonld = [{
     "@context": "https://schema.org", "@type": "ItemList", name: h1,
     itemListElement: secciones.flatMap((s) => s.xs).slice(0, 30).map((x, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITIO}juego/${x.j.id}/`, name: x.j.titulo })),
@@ -351,6 +368,40 @@ const OFERTAS = [
       P_MINIMO, P_CADA] },
 ];
 
+// Cómo es el banner de cada página de chollos en /chollos/
+const PC_ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>';
+const BANNERS = {
+  "chollos-instant-gaming": { t: "Chollos de Instant Gaming", sub: "PC y consolas", c1: "#ff5a00", c2: "#c2185b", logo: "instant-gaming.com" },
+  "juegos-baratos-pc": { t: "Chollos de PC", sub: "Steam, GOG, Epic y tiendas de claves", c1: "#3b2bd6", c2: "#0e7490", ico: PC_ICO },
+  "juegos-baratos-playstation": { t: "Chollos de PlayStation", sub: "PS5 y PS4", c1: "#0050b5", c2: "#00439c", logo: "playstation.com" },
+  "juegos-baratos-xbox": { t: "Chollos de Xbox", sub: "Xbox Series X|S", c1: "#107c10", c2: "#0b4f0b", logo: "xbox.com" },
+  "juegos-baratos-nintendo-switch": { t: "Chollos de Nintendo", sub: "Switch y Switch 2", c1: "#e60012", c2: "#a3000d", logo: "nintendo.com" },
+};
+function paginaChollos(datos) {
+  const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "\u00a0€";
+  const banners = Object.entries(BANNERS).map(([ruta, b]) => {
+    const o = OFERTAS.find((x) => x.ruta === ruta);
+    const { secciones } = chollosDe(datos, o);
+    const vistos = new Map();
+    for (const sec of secciones) for (const x of sec.xs) if (!vistos.has(x.j.id)) vistos.set(x.j.id, x);
+    const xs = [...vistos.values()];
+    if (!xs.length) return "";
+    const desde = Math.min(...xs.map((x) => x.p));
+    // Sin juegos de deporte: sus portadas llevan fotos de deportistas reales
+    const portadas = xs.filter((x) => imagenDe(x.j) && !/\b(ea sports|fc \d|fifa|nba 2k|football manager|madden|nhl|mlb|efootball|wwe|ufc|f1 \d|top spin|tennis)\b/i.test(x.j.titulo)).sort((a, c) => (a.j.pop || 99999) - (c.j.pop || 99999)).slice(0, 3);
+    return `<a class="banner" href="../${ruta}/" style="--c1:${b.c1};--c2:${b.c2}">
+<span class="b-logo">${b.logo ? `<img src="../logos/${b.logo}.png" alt="">` : b.ico}</span>
+<span class="b-txt"><b>${esc(b.t)}</b><small>${esc(b.sub)} · ${xs.length} chollos hoy, desde ${eur(desde)}</small><span class="b-ir">Ver chollos →</span></span>
+<span class="b-covs">${portadas.map((x) => `<img src="${esc(imagenDe(x.j))}" alt="" loading="lazy">`).join("")}</span></a>`;
+  }).join("\n");
+  const cuerpo = `<nav class="migas"><a href="../">Pillao</a> › Chollos de hoy</nav>
+<section class="hero"><h1>Chollos de hoy</h1><p class="resumen">Las mejores ofertas de videojuegos de hoy, por plataforma y por tienda. Se actualizan solas varias veces al día.</p></section>
+<div class="banners">${banners}</div>`;
+  return plantilla({ titulo: "Chollos de videojuegos hoy: PC, PlayStation, Xbox, Switch e Instant Gaming | Pillao",
+    descripcion: "Los mejores chollos de videojuegos de hoy para PC, PS5, PS4, Xbox y Nintendo Switch, y las ofertas de Instant Gaming, comparando más de 30 tiendas.",
+    canonica: `${SITIO}chollos/`, raiz: "../", cuerpo });
+}
+
 async function main() {
   const datos = JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8"));
   const tiendaPorId = Object.fromEntries(datos.tiendas.map((t) => [t.id, t]));
@@ -387,12 +438,13 @@ async function main() {
 
   // 3. Páginas de ofertas por búsqueda
   for (const o of OFERTAS) { await mkdir(join(SALIDA, o.ruta), { recursive: true }); await writeFile(join(SALIDA, o.ruta, "index.html"), paginaOfertas(datos, tiendaPorId, o)); }
+  await mkdir(join(SALIDA, "chollos"), { recursive: true }); await writeFile(join(SALIDA, "chollos", "index.html"), paginaChollos(datos));
 
   // 4. Lista de todos los juegos y mapa del sitio
   await mkdir(join(SALIDA, "juegos"), { recursive: true });
   await writeFile(join(SALIDA, "juegos", "index.html"), paginaLista(hechas));
   const dia = datos.actualizado.slice(0, 10);
-  const urls = [SITIO, SITIO + "juegos/", ...OFERTAS.map((o) => `${SITIO}${o.ruta}/`), ...hechas.map((j) => `${SITIO}juego/${j.id}/`)];
+  const urls = [SITIO, SITIO + "juegos/", `${SITIO}chollos/`, ...OFERTAS.map((o) => `${SITIO}${o.ruta}/`), ...hechas.map((j) => `${SITIO}juego/${j.id}/`)];
   await writeFile(join(SALIDA, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
     urls.map((u) => `<url><loc>${u}</loc><lastmod>${dia}</lastmod></url>`).join("\n") + "\n</urlset>\n");
   console.log(`Web lista en _site: ${n} páginas de juego, sitemap con ${urls.length} direcciones (${SITIO}).`);
