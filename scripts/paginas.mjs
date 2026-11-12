@@ -116,6 +116,29 @@ h2[id^="l-"]{margin-top:22px;padding-bottom:6px;border-bottom:1px solid var(--li
 .ir-app{background:var(--ink);color:var(--surface);padding:8px 14px;border-radius:9px;text-decoration:none;font-weight:700;font-size:14px}
 .migas a{text-decoration:none}
 footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;padding:18px 0 30px}footer nav{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}footer a{color:var(--muted)}
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px}.hero h1{font-size:34px}
+.saltos{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.saltos a{background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:6px 12px;text-decoration:none;color:var(--ink);font-weight:600;font-size:14px}
+.ofertas{list-style:none;padding:0;margin:4px 0 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.of a{display:flex;flex-direction:column;height:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--ink)}
+.of a:hover{border-color:var(--accent)}.of img,.of .sin-img{display:block;width:100%;height:auto;aspect-ratio:460/215;object-fit:cover;background:var(--surface-2)}
+.of-d{display:flex;flex-direction:column;gap:4px;padding:10px 12px 12px}.of-d b{font-size:14.5px;line-height:1.25}
+.of-p{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px}.of-p strong{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:20px}
+.of-p s{color:var(--muted);font-size:13px}.of-p em{font-style:normal;font-weight:800;font-size:12px;background:var(--good);color:#fff;border-radius:5px;padding:1px 6px}
+.of-t{font-size:12.5px;color:var(--muted)}.of-t i{display:inline-block;margin-top:3px;font-style:normal;color:var(--tag-ink);background:var(--tag);border-radius:4px;padding:0 6px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
+.faq{display:flex;flex-direction:column;gap:8px}.faq details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}.faq summary{font-weight:700;cursor:pointer}.faq p{margin:8px 0 0;color:var(--muted)}
+.banners{display:grid;grid-template-columns:1fr;gap:14px}
+.banner{position:relative;display:flex;align-items:center;gap:16px;min-height:150px;padding:22px;border-radius:18px;overflow:hidden;text-decoration:none;color:#fff;background:linear-gradient(120deg,var(--c1),var(--c2));box-shadow:0 10px 28px rgba(0,0,0,.18);transition:transform .15s}
+.banner:hover{transform:translateY(-2px)}
+.b-logo{flex-shrink:0;width:64px;height:64px;border-radius:16px;background:#fff;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.2);position:relative;z-index:1}
+.b-logo img{width:44px;height:44px;object-fit:contain}.b-logo svg{width:38px;height:38px;color:var(--c1)}
+.b-txt{display:flex;flex-direction:column;gap:4px;position:relative;z-index:1;flex:1;min-width:0}
+.b-txt b{font-family:"Bricolage Grotesque","Arial Black",sans-serif;font-size:26px;line-height:1.1;letter-spacing:-.01em}
+.b-txt small{font-size:14px;opacity:.92}.b-ir{margin-top:8px;align-self:flex-start;background:#fff;color:#111;font-weight:800;font-size:13px;padding:6px 12px;border-radius:99px}
+.b-covs{position:relative;z-index:0;display:flex;flex-shrink:0;margin-right:-6px}
+.b-covs img{width:150px;aspect-ratio:460/215;object-fit:cover;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.85)}
+.b-covs img+img{margin-left:-70px}.b-covs img:nth-child(1){transform:rotate(-5deg)}.b-covs img:nth-child(2){transform:rotate(2deg) translateY(10px)}.b-covs img:nth-child(3){transform:rotate(7deg)}
+@media(max-width:600px){.banner{flex-wrap:wrap;min-height:0;padding:18px}.b-txt b{font-size:22px}.b-covs{order:3;width:100%;justify-content:center;margin:6px 0 0}.b-covs img{width:120px}.b-covs img+img{margin-left:-40px}}
+@media(max-width:600px){.hero h1{font-size:26px}.ofertas{grid-template-columns:1fr 1fr;gap:8px}.of-p strong{font-size:17px}}
 @media(max-width:600px){h1{font-size:24px}.ficha>div:first-child{flex-basis:100%}.etiqueta{align-self:flex-start}th:nth-child(3),td:nth-child(3){display:none}th,td{padding:9px 8px;font-size:13px}td a .l{display:none}}`;
 }
 
@@ -213,6 +236,172 @@ ${letras.map((l) => `<h2 id="l-${l === "#" ? "num" : l}">${l}</h2><ul class="lis
   return plantilla({ titulo: "Todos los juegos | Pillao", descripcion: "Lista de todos los videojuegos, DLC y tarjetas regalo cuyos precios compara Pillao en tiendas españolas.", canonica: SITIO + "juegos/", raiz: "../", cuerpo });
 }
 
+// ---------- Páginas de ofertas por búsqueda («juegos baratos para PC»…) ----------
+// Se rehacen en cada actualización con los precios del momento: el texto es fijo y las listas cambian solas.
+// Tiendas que no salen en estas páginas aunque estén en el comparador (claves que pueden no activarse en España)
+const FUERA_OFERTAS = new Set(["itad-gamesplanetus"]);
+const DLC_TXT = /\b(dlc|season pass|pase de temporada|expansion pack|soundtrack|banda sonora|upgrade|bundle|pack|shadow of the erdtree)\b/i;
+const norm = (t) => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+// «Juego: Algo» o «Juego - Algo» cuando «Juego» ya está en el catálogo suele ser una expansión (Sunbreak, Going East!…)
+function esExpansion(titulo, titulos) {
+  if (DLC_TXT.test(titulo)) return true;
+  const partes = titulo.split(/\s*(?::|\s[-–—]\s)\s*/);
+  for (let i = 1; i < partes.length; i++) if (titulos.has(norm(partes.slice(0, i).join(" ")))) return true;
+  return false;
+}
+
+function chollosDe(datos, { plataformas, tienda }) {
+  const total = (o) => o.precio + (o.envio || 0);
+  const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+  const titulos = new Set(datos.juegos.map((j) => norm(j.titulo)));
+  const vale = (o) => plataformas.includes(o.plataforma) && o.estado !== "usado" && o.stock !== false && o.precio > 0 && !FUERA_OFERTAS.has(o.tienda);
+  const variasPlat = plataformas.length > 1;
+  const filas = [];
+  for (const j of datos.juegos) {
+    if (j.tipo && j.tipo !== "juego") continue;
+    if ((j.pop || 99999) > 6000) continue;                         // juegos conocidos
+    if (esExpansion(j.titulo, titulos)) continue;
+    const todas = j.ofertas.filter(vale);
+    const ofs = tienda ? todas.filter((o) => o.tienda === tienda) : todas;
+    if (!ofs.length) continue;
+    const m = ofs.reduce((a, b) => (total(b) < total(a) ? b : a));
+    const ref = Math.max(j.pvp || 0, ...ofs.map((o) => o.regular || 0));
+    const dto = ref > total(m) ? Math.round((1 - total(m) / ref) * 100) : 0;
+    if (ref > total(m) * 8) continue;                                // un precio normal 8 veces mayor suele ser un dato raro
+    const rivales = todas.filter((o) => o.plataforma === m.plataforma);
+    filas.push({ j, m, p: total(m), ref, dto, minimo: j.minimo && total(m) <= j.minimo + 0.005,
+      tiendas: new Set((tienda ? rivales : ofs).map((o) => o.tienda)).size,
+      elMejor: rivales.every((o) => total(o) >= total(m) - 0.005) });
+  }
+  const porPop = (a, b) => (a.j.pop || 99999) - (b.j.pop || 99999);
+  const secciones = [
+    { id: "menos-5", t: "Por menos de 5 €", xs: filas.filter((x) => x.p < 5 && x.dto >= 30).sort(porPop) },
+    { id: "menos-10", t: "Por menos de 10 €", xs: filas.filter((x) => x.p >= 5 && x.p < 10 && x.dto >= 30).sort(porPop) },
+    { id: "menos-20", t: "Por menos de 20 €", xs: filas.filter((x) => x.p >= 10 && x.p < 20 && x.dto >= 30).sort(porPop) },
+    { id: "minimos", t: "En su mínimo histórico", xs: filas.filter((x) => x.minimo && x.dto >= 20).sort(porPop) },
+    { id: "descuentos", t: "Los mayores descuentos", xs: filas.filter((x) => x.dto >= 60 && (x.j.pop || 99999) <= 2000).sort((a, b) => b.dto - a.dto) },
+  ].map((s) => ({ ...s, xs: s.xs.slice(0, 12) })).filter((s) => s.xs.length);
+  return { filas, secciones, vale, variasPlat, total, eur };
+}
+
+function paginaOfertas(datos, tiendaPorId, { ruta, titulo, h1, intro, plataformas, tienda, desc, cta, preguntas }) {
+  const { filas, secciones, vale, variasPlat, total, eur } = chollosDe(datos, { plataformas, tienda });
+  const tarjeta = (x) => {
+    const t = tiendaPorId[x.m.tienda] || { nombre: x.m.tienda }, img = imagenDe(x.j);
+    const plat = variasPlat ? `${esc(x.m.plataforma)} · ` : "";
+    const pie = tienda
+      ? `${plat}${x.elMejor && x.tiendas > 1 ? `El más barato de ${x.tiendas} tiendas` : esc(t.nombre)}`
+      : `${plat}${esc(t.nombre)}${x.tiendas > 1 ? ` · ${x.tiendas} tiendas comparadas` : ""}`;
+    return `<li class="of"><a href="../juego/${x.j.id}/">${img ? `<img src="${esc(img)}" alt="" loading="lazy" width="460" height="215">` : `<span class="sin-img"></span>`}
+<span class="of-d"><b>${esc(x.j.titulo)}</b><span class="of-p"><strong>${eur(x.p)}</strong>${x.dto ? `<s>${eur(x.ref)}</s><em>−${x.dto} %</em>` : ""}</span>
+<span class="of-t">${pie}${x.minimo ? `<br><i>Mínimo histórico</i>` : ""}</span></span></a></li>`;
+  };
+  const fecha = new Date(datos.actualizado).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Madrid" });
+  const nTiendas = new Set(filas.flatMap((x) => x.j.ofertas.filter(vale).map((o) => o.tienda))).size;
+  const otras = OFERTAS.filter((o) => o.ruta !== ruta).map((o) => `<a href="../${o.ruta}/">${esc(o.corto)}</a>`).join("");
+  const cuerpo = `<nav class="migas"><a href="../">Pillao</a> › ${esc(h1)}</nav>
+<section class="hero"><h1>${esc(h1)}</h1><p class="resumen">${intro} Precios actualizados el ${fecha}${tienda ? "" : `, de ${nTiendas} tiendas`}.</p>
+<nav class="saltos">${secciones.map((s) => `<a href="#${s.id}">${s.t}</a>`).join("")}</nav></section>
+${secciones.map((s) => `<h2 id="${s.id}">${s.t}</h2><ul class="ofertas">${s.xs.map(tarjeta).join("")}</ul>`).join("\n")}
+<div class="cta"><a class="boton" href="../${cta.href}">${esc(cta.texto)}</a></div>
+<h2>Preguntas frecuentes</h2><div class="faq">${preguntas.map(([q, r]) => `<details><summary>${q}</summary><p>${r}</p></details>`).join("")}</div>
+<h2>Más chollos</h2><nav class="saltos otras"><a href="../chollos/">Todos los chollos</a>${otras}</nav>`;
+  const jsonld = [{
+    "@context": "https://schema.org", "@type": "ItemList", name: h1,
+    itemListElement: secciones.flatMap((s) => s.xs).slice(0, 30).map((x, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITIO}juego/${x.j.id}/`, name: x.j.titulo })),
+  }, {
+    "@context": "https://schema.org", "@type": "FAQPage",
+    mainEntity: preguntas.map(([q, r]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: r } })),
+  }];
+  return plantilla({ titulo, descripcion: desc, canonica: `${SITIO}${ruta}/`, raiz: "../", cuerpo, jsonld });
+}
+
+const P_MINIMO = ["¿Qué significa «mínimo histórico»?", "Que el juego nunca había estado tan barato desde que lo seguimos. Si no te corre prisa, puedes poner un aviso en la ficha del juego y te escribimos cuando baje al precio que tú digas."];
+const P_CADA = ["¿Cada cuánto se actualizan los precios?", "Varias veces al día. Aun así, el precio válido es siempre el que marque la tienda al comprar."];
+const OFERTAS = [
+  { ruta: "juegos-baratos-pc", corto: "PC", h1: "Juegos baratos para PC", plataformas: ["PC"],
+    titulo: "Juegos baratos para PC: ofertas de hoy en Steam y tiendas de claves | Pillao",
+    intro: "Las mejores ofertas de juegos de PC de hoy, comparando Steam, GOG, Epic, Instant Gaming y decenas de tiendas de claves válidas en España.",
+    desc: "Juegos de PC por menos de 5, 10 y 20 €, mínimos históricos y los mayores descuentos de hoy, comparando más de 30 tiendas. Actualizado varias veces al día.",
+    cta: { href: "?plat=PC", texto: "Ver todos los juegos de PC en el comparador" },
+    preguntas: [
+      ["¿Dónde comprar juegos baratos para PC?", "En tiendas oficiales como Steam, GOG o Epic cuando están de rebajas, y en tiendas de claves como Instant Gaming, Fanatical o Green Man Gaming, que suelen estar más baratas todo el año. En Pillao comparamos todas a la vez y te enseñamos la más barata para cada juego."],
+      ["¿Son fiables las claves de PC baratas?", "Las de tiendas autorizadas por las editoras (Fanatical, Green Man Gaming, GamesPlanet…) son tan seguras como comprar en Steam. En los mercados de claves (Driffle, K4G, Eneba, G2A) vende gente de terceros: son más baratas, pero conviene mirar la valoración del vendedor. En cada oferta te decimos de qué tipo es la tienda y su nota en Trustpilot."],
+      P_MINIMO, P_CADA] },
+  { ruta: "juegos-baratos-playstation", corto: "PlayStation", h1: "Juegos baratos para PS5 y PS4", plataformas: ["PS5", "PS4"],
+    titulo: "Juegos baratos para PS5 y PS4: ofertas de hoy | Pillao",
+    intro: "Las mejores ofertas de juegos de PS5 y PS4 de hoy, comparando PlayStation Store, GAME, Instant Gaming y otras tiendas españolas, en digital y en físico.",
+    desc: "Juegos de PS5 y PS4 por menos de 5, 10 y 20 €, mínimos históricos y los mayores descuentos de hoy en PlayStation Store y tiendas españolas.",
+    cta: { href: "?plat=PS5,PS4", texto: "Ver todos los juegos de PlayStation en el comparador" },
+    preguntas: [
+      ["¿Dónde comprar juegos baratos de PS5 y PS4?", "En PlayStation Store cuando hay rebajas, en tiendas de claves como Instant Gaming (códigos para la PlayStation Store española) y en tiendas físicas como GAME. En Pillao comparamos todas y te enseñamos la más barata para cada juego, en digital y en físico."],
+      ["¿Los códigos de PlayStation sirven para mi cuenta?", "Solo te enseñamos códigos válidos para cuentas de PlayStation Store de España o de Europa. Los de otras regiones no se pueden canjear en una cuenta española, así que los dejamos fuera."],
+      P_MINIMO, P_CADA] },
+  { ruta: "juegos-baratos-xbox", corto: "Xbox", h1: "Juegos baratos para Xbox", plataformas: ["Xbox Series"],
+    titulo: "Juegos baratos para Xbox Series X|S: ofertas de hoy | Pillao",
+    intro: "Las mejores ofertas de juegos de Xbox Series X|S de hoy, comparando Microsoft Store, Instant Gaming, GAME y tiendas de claves válidas en España.",
+    desc: "Juegos de Xbox por menos de 5, 10 y 20 €, mínimos históricos y los mayores descuentos de hoy en Microsoft Store y tiendas de claves.",
+    cta: { href: "?plat=Xbox%20Series", texto: "Ver todos los juegos de Xbox en el comparador" },
+    preguntas: [
+      ["¿Dónde comprar juegos baratos de Xbox?", "En Microsoft Store cuando hay rebajas, en tiendas de claves como Instant Gaming y en tiendas físicas como GAME. En Pillao comparamos todas y te enseñamos la más barata para cada juego."],
+      ["¿Las claves de Xbox funcionan en España?", "Solo te enseñamos claves válidas para España, Europa o de cualquier región. Las de otras regiones, que suelen necesitar VPN, las dejamos fuera."],
+      P_MINIMO, P_CADA] },
+  { ruta: "juegos-baratos-nintendo-switch", corto: "Nintendo Switch", h1: "Juegos baratos para Nintendo Switch", plataformas: ["Switch", "Switch 2"],
+    titulo: "Juegos baratos para Nintendo Switch y Switch 2: ofertas de hoy | Pillao",
+    intro: "Las mejores ofertas de juegos de Nintendo Switch y Switch 2 de hoy, comparando la eShop española, GAME, Instant Gaming y otras tiendas, en digital y en físico.",
+    desc: "Juegos de Switch y Switch 2 por menos de 5, 10 y 20 €, mínimos históricos y los mayores descuentos de hoy en la eShop y tiendas españolas.",
+    cta: { href: "?plat=Switch,Switch%202", texto: "Ver todos los juegos de Switch en el comparador" },
+    preguntas: [
+      ["¿Dónde comprar juegos baratos de Switch?", "En la eShop de Nintendo cuando hay rebajas (sobre todo en juegos independientes), en tiendas de códigos como Instant Gaming y en tiendas físicas como GAME. En Pillao comparamos todas y te enseñamos la más barata para cada juego."],
+      ["¿Los juegos de Switch funcionan en Switch 2?", "Casi todos, sí: Switch 2 es compatible con la mayoría de juegos de Switch. Los que se venden como «Nintendo Switch 2 Edition» solo funcionan en Switch 2."],
+      P_MINIMO, P_CADA] },
+  { ruta: "chollos-instant-gaming", corto: "Instant Gaming", h1: "Chollos de Instant Gaming", tienda: "instantgaming",
+    plataformas: ["PC", "PS5", "PS4", "Xbox Series", "Switch", "Switch 2"],
+    titulo: "Chollos de Instant Gaming hoy: juegos baratos para PC y consolas | Pillao",
+    intro: "Las mejores ofertas de hoy en Instant Gaming para PC, PlayStation, Xbox y Switch, comparadas con el resto de tiendas para que sepas cuándo es de verdad lo más barato.",
+    desc: "Juegos de Instant Gaming por menos de 5, 10 y 20 €, en su mínimo histórico y con los mayores descuentos de hoy, para PC y consolas.",
+    cta: { href: "?tienda=instantgaming", texto: "Ver todo Instant Gaming en el comparador" },
+    preguntas: [
+      ["¿Es fiable Instant Gaming?", "Sí. Es una tienda de claves francesa que compra las claves a distribuidores y las vende ella misma (no es un mercado de terceros). Tiene más de 800.000 reseñas en Trustpilot y una nota de 4,7 sobre 5."],
+      ["¿Las claves de Instant Gaming funcionan en España?", "Solo te enseñamos las de España, Europa o de cualquier región. Las de otras regiones las dejamos fuera."],
+      ["¿Siempre es lo más barato?", "No siempre. Por eso en cada juego te decimos si Instant Gaming es la más barata de todas las tiendas que comparamos; si no lo es, en la ficha del juego ves dónde está mejor."],
+      P_MINIMO, P_CADA] },
+];
+
+// Cómo es el banner de cada página de chollos en /chollos/
+const PC_ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>';
+const BANNERS = {
+  "chollos-instant-gaming": { t: "Chollos de Instant Gaming", sub: "PC y consolas", c1: "#ff5a00", c2: "#c2185b", logo: "instant-gaming.com" },
+  "juegos-baratos-pc": { t: "Chollos de PC", sub: "Steam, GOG, Epic y tiendas de claves", c1: "#3b2bd6", c2: "#0e7490", ico: PC_ICO },
+  "juegos-baratos-playstation": { t: "Chollos de PlayStation", sub: "PS5 y PS4", c1: "#0050b5", c2: "#00439c", logo: "playstation.com" },
+  "juegos-baratos-xbox": { t: "Chollos de Xbox", sub: "Xbox Series X|S", c1: "#107c10", c2: "#0b4f0b", logo: "xbox.com" },
+  "juegos-baratos-nintendo-switch": { t: "Chollos de Nintendo", sub: "Switch y Switch 2", c1: "#e60012", c2: "#a3000d", logo: "nintendo.com" },
+};
+function paginaChollos(datos) {
+  const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "\u00a0€";
+  const banners = Object.entries(BANNERS).map(([ruta, b]) => {
+    const o = OFERTAS.find((x) => x.ruta === ruta);
+    const { secciones } = chollosDe(datos, o);
+    const vistos = new Map();
+    for (const sec of secciones) for (const x of sec.xs) if (!vistos.has(x.j.id)) vistos.set(x.j.id, x);
+    const xs = [...vistos.values()];
+    if (!xs.length) return "";
+    const desde = Math.min(...xs.map((x) => x.p));
+    // Sin juegos de deporte: sus portadas llevan fotos de deportistas reales
+    const portadas = xs.filter((x) => imagenDe(x.j) && !/\b(ea sports|fc \d|fifa|nba 2k|football manager|madden|nhl|mlb|efootball|wwe|ufc|f1 \d|top spin|tennis)\b/i.test(x.j.titulo)).sort((a, c) => (a.j.pop || 99999) - (c.j.pop || 99999)).slice(0, 3);
+    return `<a class="banner" href="../${ruta}/" style="--c1:${b.c1};--c2:${b.c2}">
+<span class="b-logo">${b.logo ? `<img src="../logos/${b.logo}.png" alt="">` : b.ico}</span>
+<span class="b-txt"><b>${esc(b.t)}</b><small>${esc(b.sub)} · ${xs.length} chollos hoy, desde ${eur(desde)}</small><span class="b-ir">Ver chollos →</span></span>
+<span class="b-covs">${portadas.map((x) => `<img src="${esc(imagenDe(x.j))}" alt="" loading="lazy">`).join("")}</span></a>`;
+  }).join("\n");
+  const cuerpo = `<nav class="migas"><a href="../">Pillao</a> › Chollos de hoy</nav>
+<section class="hero"><h1>Chollos de hoy</h1><p class="resumen">Las mejores ofertas de videojuegos de hoy, por plataforma y por tienda. Se actualizan solas varias veces al día.</p></section>
+<div class="banners">${banners}</div>`;
+  return plantilla({ titulo: "Chollos de videojuegos hoy: PC, PlayStation, Xbox, Switch e Instant Gaming | Pillao",
+    descripcion: "Los mejores chollos de videojuegos de hoy para PC, PS5, PS4, Xbox y Nintendo Switch, y las ofertas de Instant Gaming, comparando más de 30 tiendas.",
+    canonica: `${SITIO}chollos/`, raiz: "../", cuerpo });
+}
+
 async function main() {
   const datos = JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8"));
   const tiendaPorId = Object.fromEntries(datos.tiendas.map((t) => [t.id, t]));
@@ -247,11 +436,15 @@ async function main() {
     hechas.push(j); n++;
   }
 
-  // 3. Lista de todos los juegos y mapa del sitio
+  // 3. Páginas de ofertas por búsqueda
+  for (const o of OFERTAS) { await mkdir(join(SALIDA, o.ruta), { recursive: true }); await writeFile(join(SALIDA, o.ruta, "index.html"), paginaOfertas(datos, tiendaPorId, o)); }
+  await mkdir(join(SALIDA, "chollos"), { recursive: true }); await writeFile(join(SALIDA, "chollos", "index.html"), paginaChollos(datos));
+
+  // 4. Lista de todos los juegos y mapa del sitio
   await mkdir(join(SALIDA, "juegos"), { recursive: true });
   await writeFile(join(SALIDA, "juegos", "index.html"), paginaLista(hechas));
   const dia = datos.actualizado.slice(0, 10);
-  const urls = [SITIO, SITIO + "juegos/", ...hechas.map((j) => `${SITIO}juego/${j.id}/`)];
+  const urls = [SITIO, SITIO + "juegos/", `${SITIO}chollos/`, ...OFERTAS.map((o) => `${SITIO}${o.ruta}/`), ...hechas.map((j) => `${SITIO}juego/${j.id}/`)];
   await writeFile(join(SALIDA, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
     urls.map((u) => `<url><loc>${u}</loc><lastmod>${dia}</lastmod></url>`).join("\n") + "\n</urlset>\n");
   console.log(`Web lista en _site: ${n} páginas de juego, sitemap con ${urls.length} direcciones (${SITIO}).`);
