@@ -226,20 +226,40 @@ ${letras.map((l) => `<h2 id="l-${l === "#" ? "num" : l}">${l}</h2><ul class="lis
 
 // ---------- Páginas de ofertas por búsqueda («juegos baratos para PC»…) ----------
 // Se rehacen en cada actualización con los precios del momento: el texto es fijo y las listas cambian solas.
-function paginaOfertas(datos, tiendaPorId, { ruta, titulo, h1, intro, plataformas, desc }) {
+// Tiendas que no salen en estas páginas aunque estén en el comparador (claves que pueden no activarse en España)
+const FUERA_OFERTAS = new Set(["itad-gamesplanetus"]);
+const DLC_TXT = /\b(dlc|season pass|pase de temporada|expansion pack|soundtrack|banda sonora|upgrade|bundle|pack|shadow of the erdtree)\b/i;
+const norm = (t) => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+// «Juego: Algo» o «Juego - Algo» cuando «Juego» ya está en el catálogo suele ser una expansión (Sunbreak, Going East!…)
+function esExpansion(titulo, titulos) {
+  if (DLC_TXT.test(titulo)) return true;
+  const partes = titulo.split(/\s*(?::|\s[-–—]\s)\s*/);
+  for (let i = 1; i < partes.length; i++) if (titulos.has(norm(partes.slice(0, i).join(" ")))) return true;
+  return false;
+}
+
+function paginaOfertas(datos, tiendaPorId, { ruta, titulo, h1, intro, plataformas, tienda, desc, cta, preguntas }) {
   const total = (o) => o.precio + (o.envio || 0);
   const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+  const titulos = new Set(datos.juegos.map((j) => norm(j.titulo)));
+  const vale = (o) => plataformas.includes(o.plataforma) && o.estado !== "usado" && o.stock !== false && o.precio > 0 && !FUERA_OFERTAS.has(o.tienda);
+  const variasPlat = plataformas.length > 1;
   const filas = [];
   for (const j of datos.juegos) {
     if (j.tipo && j.tipo !== "juego") continue;
     if ((j.pop || 99999) > 6000) continue;                         // juegos conocidos
-    const ofs = j.ofertas.filter((o) => plataformas.includes(o.plataforma) && o.estado !== "usado" && o.stock !== false && o.precio > 0);
+    if (esExpansion(j.titulo, titulos)) continue;
+    const todas = j.ofertas.filter(vale);
+    const ofs = tienda ? todas.filter((o) => o.tienda === tienda) : todas;
     if (!ofs.length) continue;
     const m = ofs.reduce((a, b) => (total(b) < total(a) ? b : a));
     const ref = Math.max(j.pvp || 0, ...ofs.map((o) => o.regular || 0));
     const dto = ref > total(m) ? Math.round((1 - total(m) / ref) * 100) : 0;
     if (ref > total(m) * 8) continue;                                // un precio normal 8 veces mayor suele ser un dato raro
-    filas.push({ j, m, p: total(m), ref, dto, minimo: j.minimo && total(m) <= j.minimo + 0.005, tiendas: new Set(ofs.map((o) => o.tienda)).size });
+    const rivales = todas.filter((o) => o.plataforma === m.plataforma);
+    filas.push({ j, m, p: total(m), ref, dto, minimo: j.minimo && total(m) <= j.minimo + 0.005,
+      tiendas: new Set((tienda ? rivales : ofs).map((o) => o.tienda)).size,
+      elMejor: rivales.every((o) => total(o) >= total(m) - 0.005) });
   }
   const porPop = (a, b) => (a.j.pop || 99999) - (b.j.pop || 99999);
   const secciones = [
@@ -251,24 +271,24 @@ function paginaOfertas(datos, tiendaPorId, { ruta, titulo, h1, intro, plataforma
   ].map((s) => ({ ...s, xs: s.xs.slice(0, 12) })).filter((s) => s.xs.length);
   const tarjeta = (x) => {
     const t = tiendaPorId[x.m.tienda] || { nombre: x.m.tienda }, img = imagenDe(x.j);
+    const plat = variasPlat ? `${esc(x.m.plataforma)} · ` : "";
+    const pie = tienda
+      ? `${plat}${x.elMejor && x.tiendas > 1 ? `El más barato de ${x.tiendas} tiendas` : esc(t.nombre)}`
+      : `${plat}${esc(t.nombre)}${x.tiendas > 1 ? ` · ${x.tiendas} tiendas comparadas` : ""}`;
     return `<li class="of"><a href="../juego/${x.j.id}/">${img ? `<img src="${esc(img)}" alt="" loading="lazy" width="460" height="215">` : `<span class="sin-img"></span>`}
 <span class="of-d"><b>${esc(x.j.titulo)}</b><span class="of-p"><strong>${eur(x.p)}</strong>${x.dto ? `<s>${eur(x.ref)}</s><em>−${x.dto} %</em>` : ""}</span>
-<span class="of-t">${esc(t.nombre)}${x.tiendas > 1 ? ` · ${x.tiendas} tiendas comparadas` : ""}${x.minimo ? `<br><i>Mínimo histórico</i>` : ""}</span></span></a></li>`;
+<span class="of-t">${pie}${x.minimo ? `<br><i>Mínimo histórico</i>` : ""}</span></span></a></li>`;
   };
   const fecha = new Date(datos.actualizado).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Madrid" });
-  const nTiendas = new Set(filas.map((x) => x.m.tienda)).size;
-  const preguntas = [
-    ["¿Dónde comprar juegos baratos para PC?", "En tiendas oficiales como Steam, GOG o Epic cuando están de rebajas, y en tiendas de claves como Instant Gaming, Fanatical o Green Man Gaming, que suelen estar más baratas todo el año. En Pillao comparamos todas a la vez y te enseñamos la más barata para cada juego."],
-    ["¿Son fiables las claves de PC baratas?", "Las de tiendas autorizadas por las editoras (Fanatical, Green Man Gaming, GamesPlanet…) son tan seguras como comprar en Steam. En los mercados de claves (Driffle, K4G, Eneba, G2A) vende gente de terceros: son más baratas, pero conviene mirar la valoración del vendedor. En cada oferta te decimos de qué tipo es la tienda y su nota en Trustpilot."],
-    ["¿Qué significa «mínimo histórico»?", "Que el juego nunca había estado tan barato desde que lo seguimos. Si no te corre prisa, puedes poner un aviso en la ficha del juego y te escribimos cuando baje al precio que tú digas."],
-    ["¿Cada cuánto se actualizan los precios?", "Varias veces al día. Aun así, el precio válido es siempre el que marque la tienda al comprar."],
-  ];
+  const nTiendas = new Set(filas.flatMap((x) => x.j.ofertas.filter(vale).map((o) => o.tienda))).size;
+  const otras = OFERTAS.filter((o) => o.ruta !== ruta).map((o) => `<a href="../${o.ruta}/">${esc(o.corto)}</a>`).join("");
   const cuerpo = `<nav class="migas"><a href="../">Pillao</a> › ${esc(h1)}</nav>
-<section class="hero"><h1>${esc(h1)}</h1><p class="resumen">${intro} Precios actualizados el ${fecha}, de ${nTiendas} tiendas.</p>
+<section class="hero"><h1>${esc(h1)}</h1><p class="resumen">${intro} Precios actualizados el ${fecha}${tienda ? "" : `, de ${nTiendas} tiendas`}.</p>
 <nav class="saltos">${secciones.map((s) => `<a href="#${s.id}">${s.t}</a>`).join("")}</nav></section>
 ${secciones.map((s) => `<h2 id="${s.id}">${s.t}</h2><ul class="ofertas">${s.xs.map(tarjeta).join("")}</ul>`).join("\n")}
-<div class="cta"><a class="boton" href="../?plat=PC">Ver todos los juegos de PC en el comparador</a></div>
-<h2>Preguntas frecuentes</h2><div class="faq">${preguntas.map(([q, r]) => `<details><summary>${q}</summary><p>${r}</p></details>`).join("")}</div>`;
+<div class="cta"><a class="boton" href="../${cta.href}">${esc(cta.texto)}</a></div>
+<h2>Preguntas frecuentes</h2><div class="faq">${preguntas.map(([q, r]) => `<details><summary>${q}</summary><p>${r}</p></details>`).join("")}</div>
+<h2>Más chollos</h2><nav class="saltos otras">${otras}</nav>`;
   const jsonld = [{
     "@context": "https://schema.org", "@type": "ItemList", name: h1,
     itemListElement: secciones.flatMap((s) => s.xs).slice(0, 30).map((x, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITIO}juego/${x.j.id}/`, name: x.j.titulo })),
@@ -278,6 +298,58 @@ ${secciones.map((s) => `<h2 id="${s.id}">${s.t}</h2><ul class="ofertas">${s.xs.m
   }];
   return plantilla({ titulo, descripcion: desc, canonica: `${SITIO}${ruta}/`, raiz: "../", cuerpo, jsonld });
 }
+
+const P_MINIMO = ["¿Qué significa «mínimo histórico»?", "Que el juego nunca había estado tan barato desde que lo seguimos. Si no te corre prisa, puedes poner un aviso en la ficha del juego y te escribimos cuando baje al precio que tú digas."];
+const P_CADA = ["¿Cada cuánto se actualizan los precios?", "Varias veces al día. Aun así, el precio válido es siempre el que marque la tienda al comprar."];
+const OFERTAS = [
+  { ruta: "juegos-baratos-pc", corto: "PC", h1: "Juegos baratos para PC", plataformas: ["PC"],
+    titulo: "Juegos baratos para PC: ofertas de hoy en Steam y tiendas de claves | Pillao",
+    intro: "Las mejores ofertas de juegos de PC de hoy, comparando Steam, GOG, Epic, Instant Gaming y decenas de tiendas de claves válidas en España.",
+    desc: "Juegos de PC por menos de 5, 10 y 20 €, mínimos históricos y los mayores descuentos de hoy, comparando más de 30 tiendas. Actualizado varias veces al día.",
+    cta: { href: "?plat=PC", texto: "Ver todos los juegos de PC en el comparador" },
+    preguntas: [
+      ["¿Dónde comprar juegos baratos para PC?", "En tiendas oficiales como Steam, GOG o Epic cuando están de rebajas, y en tiendas de claves como Instant Gaming, Fanatical o Green Man Gaming, que suelen estar más baratas todo el año. En Pillao comparamos todas a la vez y te enseñamos la más barata para cada juego."],
+      ["¿Son fiables las claves de PC baratas?", "Las de tiendas autorizadas por las editoras (Fanatical, Green Man Gaming, GamesPlanet…) son tan seguras como comprar en Steam. En los mercados de claves (Driffle, K4G, Eneba, G2A) vende gente de terceros: son más baratas, pero conviene mirar la valoración del vendedor. En cada oferta te decimos de qué tipo es la tienda y su nota en Trustpilot."],
+      P_MINIMO, P_CADA] },
+  { ruta: "juegos-baratos-playstation", corto: "PlayStation", h1: "Juegos baratos para PS5 y PS4", plataformas: ["PS5", "PS4"],
+    titulo: "Juegos baratos para PS5 y PS4: ofertas de hoy | Pillao",
+    intro: "Las mejores ofertas de juegos de PS5 y PS4 de hoy, comparando PlayStation Store, GAME, Instant Gaming y otras tiendas españolas, en digital y en físico.",
+    desc: "Juegos de PS5 y PS4 por menos de 5, 10 y 20 €, mínimos históricos y los mayores descuentos de hoy en PlayStation Store y tiendas españolas.",
+    cta: { href: "?plat=PS5,PS4", texto: "Ver todos los juegos de PlayStation en el comparador" },
+    preguntas: [
+      ["¿Dónde comprar juegos baratos de PS5 y PS4?", "En PlayStation Store cuando hay rebajas, en tiendas de claves como Instant Gaming (códigos para la PlayStation Store española) y en tiendas físicas como GAME. En Pillao comparamos todas y te enseñamos la más barata para cada juego, en digital y en físico."],
+      ["¿Los códigos de PlayStation sirven para mi cuenta?", "Solo te enseñamos códigos válidos para cuentas de PlayStation Store de España o de Europa. Los de otras regiones no se pueden canjear en una cuenta española, así que los dejamos fuera."],
+      P_MINIMO, P_CADA] },
+  { ruta: "juegos-baratos-xbox", corto: "Xbox", h1: "Juegos baratos para Xbox", plataformas: ["Xbox Series"],
+    titulo: "Juegos baratos para Xbox Series X|S: ofertas de hoy | Pillao",
+    intro: "Las mejores ofertas de juegos de Xbox Series X|S de hoy, comparando Microsoft Store, Instant Gaming, GAME y tiendas de claves válidas en España.",
+    desc: "Juegos de Xbox por menos de 5, 10 y 20 €, mínimos históricos y los mayores descuentos de hoy en Microsoft Store y tiendas de claves.",
+    cta: { href: "?plat=Xbox%20Series", texto: "Ver todos los juegos de Xbox en el comparador" },
+    preguntas: [
+      ["¿Dónde comprar juegos baratos de Xbox?", "En Microsoft Store cuando hay rebajas, en tiendas de claves como Instant Gaming y en tiendas físicas como GAME. En Pillao comparamos todas y te enseñamos la más barata para cada juego."],
+      ["¿Las claves de Xbox funcionan en España?", "Solo te enseñamos claves válidas para España, Europa o de cualquier región. Las de otras regiones, que suelen necesitar VPN, las dejamos fuera."],
+      P_MINIMO, P_CADA] },
+  { ruta: "juegos-baratos-nintendo-switch", corto: "Nintendo Switch", h1: "Juegos baratos para Nintendo Switch", plataformas: ["Switch", "Switch 2"],
+    titulo: "Juegos baratos para Nintendo Switch y Switch 2: ofertas de hoy | Pillao",
+    intro: "Las mejores ofertas de juegos de Nintendo Switch y Switch 2 de hoy, comparando la eShop española, GAME, Instant Gaming y otras tiendas, en digital y en físico.",
+    desc: "Juegos de Switch y Switch 2 por menos de 5, 10 y 20 €, mínimos históricos y los mayores descuentos de hoy en la eShop y tiendas españolas.",
+    cta: { href: "?plat=Switch,Switch%202", texto: "Ver todos los juegos de Switch en el comparador" },
+    preguntas: [
+      ["¿Dónde comprar juegos baratos de Switch?", "En la eShop de Nintendo cuando hay rebajas (sobre todo en juegos independientes), en tiendas de códigos como Instant Gaming y en tiendas físicas como GAME. En Pillao comparamos todas y te enseñamos la más barata para cada juego."],
+      ["¿Los juegos de Switch funcionan en Switch 2?", "Casi todos, sí: Switch 2 es compatible con la mayoría de juegos de Switch. Los que se venden como «Nintendo Switch 2 Edition» solo funcionan en Switch 2."],
+      P_MINIMO, P_CADA] },
+  { ruta: "chollos-instant-gaming", corto: "Instant Gaming", h1: "Chollos de Instant Gaming", tienda: "instantgaming",
+    plataformas: ["PC", "PS5", "PS4", "Xbox Series", "Switch", "Switch 2"],
+    titulo: "Chollos de Instant Gaming hoy: juegos baratos para PC y consolas | Pillao",
+    intro: "Las mejores ofertas de hoy en Instant Gaming para PC, PlayStation, Xbox y Switch, comparadas con el resto de tiendas para que sepas cuándo es de verdad lo más barato.",
+    desc: "Juegos de Instant Gaming por menos de 5, 10 y 20 €, en su mínimo histórico y con los mayores descuentos de hoy, para PC y consolas.",
+    cta: { href: "?tienda=instantgaming", texto: "Ver todo Instant Gaming en el comparador" },
+    preguntas: [
+      ["¿Es fiable Instant Gaming?", "Sí. Es una tienda de claves francesa que compra las claves a distribuidores y las vende ella misma (no es un mercado de terceros). Tiene más de 800.000 reseñas en Trustpilot y una nota de 4,7 sobre 5."],
+      ["¿Las claves de Instant Gaming funcionan en España?", "Solo te enseñamos las de España, Europa o de cualquier región. Las de otras regiones las dejamos fuera."],
+      ["¿Siempre es lo más barato?", "No siempre. Por eso en cada juego te decimos si Instant Gaming es la más barata de todas las tiendas que comparamos; si no lo es, en la ficha del juego ves dónde está mejor."],
+      P_MINIMO, P_CADA] },
+];
 
 async function main() {
   const datos = JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8"));
@@ -314,10 +386,6 @@ async function main() {
   }
 
   // 3. Páginas de ofertas por búsqueda
-  const OFERTAS = [{ ruta: "juegos-baratos-pc", titulo: "Juegos baratos para PC: ofertas de hoy en Steam y tiendas de claves | Pillao",
-    h1: "Juegos baratos para PC", plataformas: ["PC"],
-    intro: "Las mejores ofertas de juegos de PC de hoy, comparando Steam, GOG, Epic, Instant Gaming y decenas de tiendas de claves válidas en España.",
-    desc: "Juegos de PC por menos de 5, 10 y 20 €, mínimos históricos y los mayores descuentos de hoy, comparando más de 30 tiendas. Actualizado varias veces al día." }];
   for (const o of OFERTAS) { await mkdir(join(SALIDA, o.ruta), { recursive: true }); await writeFile(join(SALIDA, o.ruta, "index.html"), paginaOfertas(datos, tiendaPorId, o)); }
 
   // 4. Lista de todos los juegos y mapa del sitio

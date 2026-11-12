@@ -2123,6 +2123,13 @@ button { cursor: pointer; }
     f.fueraSub = [];
   }
 
+  // ?plat=PC (o PS5,PS4) en la dirección: llega desde las páginas de chollos; se aplica una vez y se quita
+  var platUrl = (new URLSearchParams(location.search).get("plat") || "").slice(0, 60);
+  if (platUrl) {
+    f.plats = platUrl.split(",").map(function (p) { return p.trim(); }).filter(Boolean);
+    try { var uP = new URL(location.href); uP.searchParams.delete("plat"); history.replaceState(null, "", uP.pathname + uP.search + uP.hash); } catch (e) {}
+  }
+
   // ?q=nombre en la dirección: llega desde la página de un juego
   var qUrl = new URLSearchParams(location.search).get("q");
   if (qUrl) { f.q = qUrl.slice(0, 80); $("q").value = f.q; }
