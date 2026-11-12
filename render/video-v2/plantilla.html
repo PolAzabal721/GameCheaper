@@ -9,7 +9,11 @@
 __FUENTES__
 html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#0b0e1c}
 #main{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:"Figtree",sans-serif;color:#eef0fa}
-#fondo{position:absolute;inset:0}
+#fondo{position:absolute;inset:0;overflow:hidden}
+#fondo img{position:absolute;left:-10%;top:-5%;width:120%;height:110%;object-fit:cover;opacity:.55}
+.brillo{position:absolute;width:900px;height:900px;border-radius:50%;opacity:.55}
+#b1{left:-300px;top:900px;background:radial-gradient(closest-side,#3b2bd6,transparent)}
+#b2{left:480px;top:-200px;background:radial-gradient(closest-side,#ff5a00,transparent)}
 #velo{position:absolute;inset:0;background:radial-gradient(120% 70% at 50% 40%,rgba(11,14,28,.15),rgba(11,14,28,.78) 75%)}
 .capa{position:absolute;left:0;right:0}
 .gancho{top:190px;text-align:center}
@@ -38,7 +42,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#0b0e1c
 </head>
 <body>
 <div id="main" data-composition-id="main" data-start="0" data-duration="13" data-width="1080" data-height="1920">
-  <div id="fondo" class="clip" data-start="0" data-duration="13" data-track-index="0"></div>
+  <div id="fondo" class="clip" data-start="0" data-duration="13" data-track-index="0"><img id="fondo-img" src="assets/fondo.jpg" alt=""><div class="brillo" id="b1"></div><div class="brillo" id="b2"></div></div>
   <div id="velo" class="clip" data-start="0" data-duration="13" data-track-index="1"></div>
 
   <div id="escena1" class="clip" data-start="0" data-duration="9.6" data-track-index="2" style="position:absolute;inset:0">
@@ -64,17 +68,14 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#0b0e1c
   </div>
 </div>
 
-<script type="module">
-import { ShaderMount, meshGradientFragmentShader, getShaderColorFromString } from "./assets/lib/shaders.mjs";
-const holder = document.getElementById("fondo");
-const colores = __COLORES__.map(getShaderColorFromString);
-const m = new ShaderMount(holder, meshGradientFragmentShader, { u_colors: colores, u_colorsCount: colores.length, u_distortion: 0.85, u_swirl: 0.55, u_grainMixer: 0, u_grainOverlay: 0.08 }, undefined, 0, 0, 1);
-window.addEventListener("hf-seek", (e) => m.setFrame(e.detail.time * 700));
-m.setFrame(0);
-</script>
+
 <script>
 const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 const tl = gsap.timeline({ paused: true });
+// Fondo: la portada desenfocada se acerca despacio y dos brillos de color se mueven
+tl.fromTo("#fondo-img", { scale: 1.05 }, { scale: 1.22, duration: 13, ease: "none" }, 0);
+tl.to("#b1", { x: 520, y: -380, duration: 13, ease: "sine.inOut" }, 0);
+tl.to("#b2", { x: -560, y: 520, duration: 13, ease: "sine.inOut" }, 0);
 // 1. Gancho: ya en pantalla en el fotograma 0 (miniatura de TikTok)
 tl.fromTo("#g2", { scale: .9 }, { scale: 1, duration: .5, ease: "back.out(3)" }, 0);
 tl.fromTo("#arte", { y: 30, scale: .97 }, { y: 0, scale: 1, duration: .8, ease: "power3.out" }, 0);
