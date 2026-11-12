@@ -115,6 +115,7 @@ h2{font-family:"Bricolage Grotesque","Arial Black",sans-serif;font-size:20px;mar
 h2[id^="l-"]{margin-top:22px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .ir-app{background:var(--ink);color:var(--surface);padding:8px 14px;border-radius:9px;text-decoration:none;font-weight:700;font-size:14px}
 .migas a{text-decoration:none}
+.migas{padding-top:16px}
 footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;padding:18px 0 30px}footer nav{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}footer a{color:var(--muted)}
 .hero{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px}.hero h1{font-size:34px}
 .saltos{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.saltos a{background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:6px 12px;text-decoration:none;color:var(--ink);font-weight:600;font-size:14px}
@@ -126,7 +127,7 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;paddin
 .of-p s{color:var(--muted);font-size:13px}.of-p em{font-style:normal;font-weight:800;font-size:12px;background:var(--good);color:#fff;border-radius:5px;padding:1px 6px}
 .of-t{font-size:12.5px;color:var(--muted)}.of-t i{display:inline-block;margin-top:3px;font-style:normal;color:var(--tag-ink);background:var(--tag);border-radius:4px;padding:0 6px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
 .faq{display:flex;flex-direction:column;gap:8px}.faq details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}.faq summary{font-weight:700;cursor:pointer}.faq p{margin:8px 0 0;color:var(--muted)}
-.volver{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;font-weight:700;font-size:14px;margin-bottom:-6px}
+.volver{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;font-weight:700;font-size:14px;margin:-4px 0 4px}
 .volver:hover{border-color:var(--accent)}
 .mas-ch{margin-top:26px}.saltos.otras{gap:10px 12px;margin:0 0 36px}.saltos.otras a{padding:8px 16px}
 .faq{margin-bottom:8px}
@@ -305,7 +306,7 @@ function paginaOfertas(datos, tiendaPorId, { ruta, titulo, h1, intro, plataforma
   const fecha = new Date(datos.actualizado).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Madrid" });
   const nTiendas = new Set(filas.flatMap((x) => x.j.ofertas.filter(vale).map((o) => o.tienda))).size;
   const otras = OFERTAS.filter((o) => o.ruta !== ruta).map((o) => `<a href="../${o.ruta}/">${esc(o.corto)}</a>`).join("");
-  const cuerpo = `${volver("../chollos/")}<nav class="migas"><a href="../">Pillao</a> › ${esc(h1)}</nav>
+  const cuerpo = `<nav class="migas"><a href="../">Pillao</a> › ${esc(h1)}</nav>${volver("../chollos/")}
 <section class="hero"><h1>${esc(h1)}</h1><p class="resumen">${intro} Precios actualizados el ${fecha}${tienda ? "" : `, de ${nTiendas} tiendas`}.</p>
 <nav class="saltos">${secciones.map((s) => `<a href="#${s.id}">${s.t}</a>`).join("")}</nav></section>
 ${secciones.map((s) => `<h2 id="${s.id}">${s.t}</h2><ul class="ofertas">${s.xs.map(tarjeta).join("")}</ul>`).join("\n")}
@@ -400,7 +401,7 @@ function paginaChollos(datos) {
 <span class="b-txt"><b>${esc(b.t)}</b><small>${esc(b.sub)} · ${xs.length} chollos hoy, desde ${eur(desde)}</small><span class="b-ir">Ver chollos →</span></span>
 <span class="b-covs">${portadas.map((x) => `<img src="${esc(imagenDe(x.j))}" alt="" loading="lazy">`).join("")}</span></a>`;
   }).join("\n");
-  const cuerpo = `${volver("../")}<nav class="migas"><a href="../">Pillao</a> › Chollos de hoy</nav>
+  const cuerpo = `<nav class="migas"><a href="../">Pillao</a> › Chollos de hoy</nav>${volver("../")}
 <section class="hero"><h1>Chollos de hoy</h1><p class="resumen">Las mejores ofertas de videojuegos de hoy, por plataforma y por tienda. Se actualizan solas varias veces al día.</p></section>
 <div class="banners">${banners}</div>`;
   return plantilla({ titulo: "Chollos de videojuegos hoy: PC, PlayStation, Xbox, Switch e Instant Gaming | Pillao",
