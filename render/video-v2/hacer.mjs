@@ -37,6 +37,6 @@ let html = readFileSync("plantilla.html", "utf8")
   .replace("__TITULO__", esc(j.titulo)).replace("__TIENDA__", esc(tiendas[o.tienda]?.nombre || o.tienda)).replace("__LOGO__", logo)
   .replace("__SELLO__", minimo ? '<div class="capa sello" id="sello">MÍNIMO HISTÓRICO</div>' : "")
   .replace("__TOPTIT__", String(topTit)).replace("__TOPPRE__", String(topPre)).replace("__TOPTIE__", String(topTie))
-  .replace("__COLORES__", JSON.stringify(["#0b0e1c", "#3b2bd6", "#c2185b", "#ff5a00", "#0e7490"]));
+;
 writeFileSync(join(dir, "index.html"), html);
 console.log(`${j.titulo}: ${eur(antes)} → ${eur(precio)} en ${tiendas[o.tienda]?.nombre} ${minimo ? "(mínimo)" : ""}`);
