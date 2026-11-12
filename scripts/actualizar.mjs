@@ -777,17 +777,29 @@ function leerDriffle(u) {
   let plat = null;
   if (m[3] === "pc" && (!m[4] || MK_PC.test(m[4]))) plat = "PC";
   else if (/^xbox/.test(m[3])) plat = "Xbox Series";
+  else if (m[3] === "nintendo-switch" || m[3] === "switch") plat = "Switch";
   if (!plat || m[5] !== "digital-key" && m[5] !== "cd-key" && m[5] !== "key") return null;
   return { url: u, llave: llave(quitarCola(m[1].replace(/-/g, " "))), plat, region: m[2] };
 }
-// K4G: «age-of-empires-ii-steam-global-cd-key-definitive-edition-cd-key-3161EFB6»
+// K4G: «age-of-empires-ii-steam-global-cd-key-definitive-edition-cd-key-3161EFB6», «alien-isolation-steam-global-cd-key-cd-key»,
+// «…-nintendo-switch-europe-cd-key», «…-xbox-one-series-x-s-xbox-europe-cd-key», «a-way-out-ea-app-global-instant-multilanguage-cd-key-cd-key»…
+const K4G_PLAT = [["nintendo-switch-2", "Switch 2", "Nintendo"], ["nintendo-switch", "Switch", "Nintendo"], ["xbox-one-series-x-s-xbox", "Xbox Series", "Xbox"],
+  ["xbox-series-x-s", "Xbox Series", "Xbox"], ["xbox-live", "Xbox Series", "Xbox"], ["xbox-one", "Xbox Series", "Xbox"],
+  ["ubisoft-connect", "PC", "Ubisoft Connect"], ["epic-games", "PC", "Epic Games"], ["battle-net", "PC", "Battle.net"], ["rockstar-games", "PC", "Rockstar"],
+  ["microsoft-store", "PC", "Microsoft Store"], ["ea-app", "PC", "EA App"], ["origin", "PC", "EA App"], ["uplay", "PC", "Ubisoft Connect"], ["steam", "PC", "Steam"], ["gog", "PC", "GOG"]];
 function leerK4G(u) {
   const slug = (u.match(/k4g\.com\/product\/([a-z0-9-]+)-[A-F0-9]{8}$/) || [])[1];
-  if (!slug || ES_CUENTA.test(slug.replace(/-/g, " "))) return null;
-  const m = slug.match(/^(.*?)-(steam|ea-app|origin|uplay|ubisoft-connect|gog|epic-games|battle-net|rockstar-games|microsoft-store|xbox-live|xbox-series-x-s|xbox-one)-(europe|eu|global|worldwide|[a-z-]+?)-(?:instant-)?cd-key-(.*?)-cd-key$/);
-  if (!m || !MK_REGION_OK.test(m[3])) return null;
-  const edicion = /^standard-edition$/.test(m[4]) ? "" : " " + m[4].replace(/-/g, " ");
-  return { url: u, llave: llave(quitarCola((m[1] + edicion).replace(/-/g, " "))), plat: /xbox/.test(m[2]) ? "Xbox Series" : "PC", region: m[3], drm: m[2] };
+  if (!slug || !/-cd-key$/.test(slug)) return null;                       // solo claves (fuera «gift», cuentas y tarjetas)
+  if (/\b(account|altergift|alter-gift|gift-card|top-up|-gift-)/.test(slug) || ES_CUENTA.test(slug.replace(/-/g, " "))) return null;
+  for (const [tok, plat, drm] of K4G_PLAT) {
+    const m = slug.match(new RegExp(`^(.+?)-${tok}-(europe|eu|global|worldwide|spain|emea)(?:-instant)?(?:-(.*?))?-cd-key(?:-cd-key)?$`));
+    if (!m) continue;
+    // Lo que va entre la región y «cd-key»: la edición («definitive-edition», «standard-edition-cd-key»…)
+    const resto = (m[3] || "").replace(/^cd-key-?/, "").replace(/-?cd-key$/, "").replace(/\b(multilanguage|instant)\b-?/g, "").replace(/^-|-$/g, "");
+    const edicion = /edition|bundle|pack|collection|season-pass/.test(resto) && !/^standard-edition$/.test(resto) ? " " + resto.replace(/-/g, " ") : "";
+    return { url: u, llave: llave(quitarCola((m[1] + edicion).replace(/-/g, " "))), plat, region: m[2], drm };
+  }
+  return null;
 }
 const MERCADOS = {
   driffle: {
@@ -854,7 +866,7 @@ async function recorrerMercado(id, juegos, cuenta, avisos, caidas) {
   const enCat = [];
   for (const j of juegos.values()) {
     if (j.tipo === "tarjeta") continue;
-    for (const plat of ["PC", "Xbox Series"]) { const p = porLlave.get(llave(j.titulo) + "|" + plat); if (p) enCat.push({ j, p, pop: j.pop }); }
+    for (const plat of ["PC", "Xbox Series", "Switch", "Switch 2"]) { const p = porLlave.get(llave(j.titulo) + "|" + plat); if (p) enCat.push({ j, p, pop: j.pop }); }
   }
   enCat.sort((a, b) => a.pop - b.pop);
   const lista = [...enCat.slice(0, MK_MAX), ...ventana(enCat.slice(MK_MAX), MK_ROTA)];
@@ -866,7 +878,7 @@ async function recorrerMercado(id, juegos, cuenta, avisos, caidas) {
       if (f && f.precio > 0) {
         const antes = x.j.ofertas.length;
         ofertar(x.j, { tienda: id, plataforma: x.p.plat, precio: f.precio, stock: f.stock, drm: x.p.drm || undefined,
-          condicion: `Clave ${x.p.drm || (x.p.plat === "PC" ? "PC" : "Xbox")} · ${x.p.region === "global" ? "Global" : "Europa"}`, url: x.p.url, fuente: id });
+          condicion: `Clave ${x.p.drm || (x.p.plat === "PC" ? "PC" : x.p.plat === "Xbox Series" ? "Xbox" : "Nintendo")} · ${x.p.region === "global" || x.p.region === "worldwide" ? "Global" : "Europa"}`, url: x.p.url, fuente: id });
         if (x.j.ofertas.length >= antes) n++;
       }
     } catch (e) { if (++fallos <= 3) avisos.push(`${id}: ${e.message}`); if (fallos >= 8) { avisos.push(`${id}: demasiados fallos, paro`); caidas.add(id); break; } }
