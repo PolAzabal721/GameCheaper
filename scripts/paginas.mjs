@@ -92,6 +92,18 @@ header{background:var(--surface);border-bottom:1px solid var(--line)}header .wra
 .logo{font-family:"Bricolage Grotesque","Arial Black",sans-serif;font-weight:800;font-size:24px;color:var(--ink);text-decoration:none;letter-spacing:-.02em}
 .logo span{background:var(--tag);color:var(--tag-ink);border-radius:5px;font-size:13px;padding:1px 5px;margin-left:4px;vertical-align:4px}
 main.wrap{padding:24px 16px 56px;display:flex;flex-direction:column;gap:18px}.migas{font-size:13px;color:var(--muted)}.migas a{color:var(--muted)}
+.poster{position:relative;min-height:400px;display:flex;align-items:flex-end;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:linear-gradient(140deg,#1b2140,#3b1d8f 50%,#0e7490);color:#fff}
+.poster>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.poster:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,17,32,0) 15%,rgba(14,17,32,.8) 50%,rgba(14,17,32,.98) 75%)}
+.poster.sin-img{min-height:0}.poster.sin-img:after{background:rgba(14,17,32,.35)}
+.poster-in{position:relative;z-index:1;width:100%;padding:22px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between}
+.poster-d{flex:1 1 380px;min-width:0}
+.poster h1{color:#fff;font-size:40px;margin:0 0 10px;text-shadow:0 2px 20px rgba(0,0,0,.5)}
+.poster .plat,.poster .tipo{background:rgba(10,12,24,.6);border-color:transparent;color:#fff;backdrop-filter:blur(6px)}
+.poster .resumen{color:#cfd5ea}.poster .resumen b{color:#fff}
+.poster .etiqueta{position:relative;transform:rotate(-2deg);box-shadow:0 10px 30px rgba(0,0,0,.35);text-align:left}
+.poster-dto{position:absolute;top:-12px;right:-12px;font-style:normal;background:#4fd18b;color:#06301c;font-weight:800;font-size:13px;padding:3px 8px;border-radius:7px;transform:rotate(4deg)}
+@media(max-width:600px){.poster{min-height:420px}.poster h1{font-size:30px}.poster-in{padding:18px}}
 .ficha{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:flex-start}.ficha>div:first-child{flex:1 1 380px;min-width:0}
 .tabla{overflow-x:auto;border-radius:14px}
 h1{font-family:"Bricolage Grotesque","Arial Black",sans-serif;font-size:30px;line-height:1.1;margin:0 0 8px;letter-spacing:-.01em}
@@ -217,12 +229,15 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
     return `<tr${o === mejor ? ' class="mejor"' : ""}><td><b>${esc(t?.nombre || o.tienda)}</b>${o.stock ? "" : ' <span class="agotado">Agotado</span>'}</td><td>${esc(o.plataforma || "—")}</td><td>${forma}${o.condicion ? " · " + esc(o.condicion) : ""}</td>` +
       `<td class="p">${eur(total(o))}${o.envio ? ` <span class="agotado">(envío incl.)</span>` : ""}</td><td>${url ? `<a href="${esc(url)}" rel="nofollow sponsored noopener" target="_blank">Ver<span class="l"> oferta</span> ↗</a>` : ""}</td></tr>`;
   }).join("");
+  // La imagen del juego en grande (las de Microsoft se piden a más resolución)
+  const imgPoster = (imagenDe(j) || "").replace(/(store-images\.s-microsoft\.com\/image\/[^?]+)\?w=\d+/, "$1?w=1280") || null;
+  const dtoPoster = j.pvp && j.pvp > total(mejor) ? Math.round((1 - total(mejor) / j.pvp) * 100) : 0;
   const cuerpo = `${volver("../../")}
-<section class="ficha"><div>${j.tipo && TIPO[j.tipo] ? `<span class="tipo">${TIPO[j.tipo]}</span> ` : ""}<h1>${esc(j.titulo)}</h1>
+<section class="poster${imgPoster ? "" : " sin-img"}">${imgPoster ? `<img src="${esc(imgPoster)}" alt="" width="1280" height="720" fetchpriority="high">` : ""}<div class="poster-in"><div class="poster-d">${j.tipo && TIPO[j.tipo] ? `<span class="tipo">${TIPO[j.tipo]}</span> ` : ""}<h1>${esc(j.titulo)}</h1>
 <div class="plats">${plats.map((p) => `<span class="plat">${esc(p)}</span>`).join("")}</div>
-<p class="resumen">Comparamos <b>${ofs.length} oferta${ofs.length === 1 ? "" : "s"}</b> de <b>${nTiendas} tienda${nTiendas === 1 ? "" : "s"}</b>.` +
-    (minimo ? ` Mínimo histórico: <b>${eur(minimo)}</b>.` : "") + (j.pvp && j.pvp > total(mejor) ? ` Precio normal: <b>${eur(j.pvp)}</b>.` : "") + ` Actualizado el ${fecha}.</p></div>
-<div class="etiqueta"><small>Mejor precio</small><b>${eur(total(mejor))}</b><span>${esc(tm)} · ${esc(mejor.plataforma || "")}</span></div></section>
+<p class="resumen">Comparamos <b>${ofs.length} oferta${ofs.length === 1 ? "" : "s"}</b> de <b>${nTiendas} tienda${nTiendas === 1 ? "" : "s"}</b>` +
+    (minimo ? ` · Mínimo histórico <b>${eur(minimo)}</b>` : "") + (j.pvp && j.pvp > total(mejor) ? ` · Precio normal <b>${eur(j.pvp)}</b>` : "") + ` · Actualizado el ${fecha}</p></div>
+<div class="etiqueta"><small>Mejor precio</small><b>${eur(total(mejor))}</b><span>${esc(tm)} · ${esc(mejor.plataforma || "")}</span>${dtoPoster >= 5 ? `<i class="poster-dto">−${dtoPoster}%</i>` : ""}</div></div></section>
 <div class="cta"><a class="boton" href="../../?q=${encodeURIComponent(j.titulo)}">Ver historial y crear aviso de precio</a><a class="boton sec" href="../../">Comparar otros juegos</a></div>
 <div class="tabla"><table><thead><tr><th>Tienda</th><th>Plataforma</th><th>Formato</th><th>Precio</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>
 ${relacionados.length ? `<h2>Otros juegos</h2><ul class="mas">${relacionados.map((r) => `<li><a href="../${r.id}/">${esc(r.titulo)}</a></li>`).join("")}</ul>` : ""}`;
