@@ -461,6 +461,8 @@ button { cursor: pointer; }
 .dest-img { position: relative; display: block; border-radius: 9px; overflow: hidden; aspect-ratio: 460/215; background: var(--surface-2); }
 .dest-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s ease; }
 @media (hover: hover) { .dest-lista a:hover .dest-img img { transform: scale(1.03); } }
+.dest-tj { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 8px 10px; color: #fff; font-family: var(--f-display); font-weight: 800; font-size: 26px; line-height: 1; }
+.dest-tj small { font-family: inherit; font-size: 12px; font-weight: 700; opacity: .85; margin-bottom: 4px; }
 .dest-img em { position: absolute; top: 6px; right: 6px; font-style: normal; font-weight: 800; font-size: 12px; background: var(--tag); color: var(--tag-ink); padding: 2px 7px; border-radius: 6px; }
 .dest-lista b { font-size: 14px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .dest-p { margin-top: auto; font-size: 12.5px; color: var(--muted); display: flex; align-items: center; flex-wrap: wrap; gap: 0 4px; }
@@ -1790,7 +1792,19 @@ button { cursor: pointer; }
   function pintarDestacados(filas, qTxt) {
     var caja = $("destacados");
     if (qTxt || f.orden !== "populares") { caja.hidden = true; return; }
-    var xs = filas.filter(function (r) { var tt = (tiendaPorId[r.mejor.tienda] || {}).tipo; return tt !== "particulares" && tt !== "marketplace" && r.mejor.estado !== "usado" && (r.j.pop || 99999) <= 600 && r.dto >= 50 && (!r.j.tipo || r.j.tipo === "juego") && (urlsImagen(r.j, false) || []).length; })
+    // Sin resultados con estos filtros: tampoco hay tira
+    if (!filas.length) { caja.hidden = true; return; }
+    // La tira sigue los filtros de arriba: digital/en disco y nuevo/segunda mano ya vienen en «filas» (la mejor oferta que encaja);
+    // aquí se ajusta qué tipo de producto sale y cuánto tiene que estar rebajado
+    var usado = f.estado === "usado", tipoF = f.tipo === "dlc" || f.tipo === "tarjeta" ? f.tipo : "juego";
+    var popMax = tipoF === "juego" && !usado ? 600 : 4000, dtoMin = tipoF === "tarjeta" ? 3 : tipoF === "juego" && !usado ? 50 : 25;
+    var xs = filas.filter(function (r) {
+      var tt = (tiendaPorId[r.mejor.tienda] || {}).tipo, tipoJ = (r.j.tipo === "edicion" ? "juego" : r.j.tipo) || "juego";
+      if (tt === "marketplace" || (tt === "particulares" && !usado)) return false;
+      if ((r.mejor.estado === "usado") !== usado && f.estado !== "todos") return false;
+      if (f.estado === "todos" && r.mejor.estado === "usado") return false;
+      return tipoJ === tipoF && (r.j.pop || 99999) <= popMax && r.dto >= dtoMin && ((urlsImagen(r.j, false) || []).length || (tipoF === "tarjeta" && r.j.marca));
+    })
       .sort(function (a, b) { return b.dto - a.dto; }).slice(0, 10);
     caja.hidden = false;
     // Con los filtros puestos puede que no quede ninguno: una tarjeta del mismo tamaño con el euro roto
@@ -1801,7 +1815,8 @@ button { cursor: pointer; }
       '<b>No hay chollos con estos filtros</b><span class="dest-p">Prueba a marcar más tiendas o plataformas</span></div></li>';
     caja.innerHTML = '<div class="dest-cab"><p class="dest-tit">🔥 Chollos de hoy</p><a href="chollos/">Ver todos →</a></div><ul class="dest-lista">' + xs.map(function (r) {
       var m = r.mejor, t = tiendaPorId[m.tienda] || { nombre: m.tienda };
-      return '<li><a href="juego/' + esc(r.j.id) + '/"><span class="dest-img"><img src="' + esc(urlsImagen(r.j, false)[0]) + '" alt="" loading="lazy" width="460" height="215"><em>−' + r.dto + '%</em></span>' +
+      return '<li><a href="juego/' + esc(r.j.id) + '/"><span class="dest-img">' + ((urlsImagen(r.j, false) || []).length ? '<img src="' + esc(urlsImagen(r.j, false)[0]) + '" alt="" loading="lazy" width="460" height="215">'
+        : '<span class="dest-tj" style="background:linear-gradient(135deg,' + ((TJ_MARCAS[r.j.marca] || ["#3b2bd6", "#0e7490"]).join(",")) + ')"><small>' + esc(r.j.marca || "") + "</small>" + esc(r.j.valor ? r.j.valor + " €" : "") + "</span>") + '<em>−' + r.dto + '%</em></span>' +
         '<b>' + esc(r.j.titulo) + '</b><span class="dest-p"><strong>' + eur.format(total(m)) + '</strong> ' + logoT(m.tienda, "c-logo") + esc(t.nombre) + "</span></a></li>";
     }).join("") + vacio + "</ul>";
   }
