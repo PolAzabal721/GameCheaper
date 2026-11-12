@@ -10,9 +10,14 @@ jobs:
       - name: Yuplay
         run: |
           UA="Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)"
-          curl -s -A "$UA" https://www.yuplay.com/sitemap.xml | grep -o '<loc>[^<]*' 
-          for sm in $(curl -s -A "$UA" https://www.yuplay.com/sitemap.xml | grep -o '<loc>[^<]*' | sed 's/<loc>//' | grep -i 'product\|yuplay'); do echo "== $sm"; curl -s -A "$UA" "$sm" | grep -o '<loc>[^<]*' | head -3; curl -s -A "$UA" "$sm" | grep -c '<loc>'; done
-          s="crimson-desert-enhanced-charting-the-unknown"
-          curl -s -A "$UA" -o prod.html -w 'HTTP %{http_code} %{size_download}\n' "https://www.yuplay.com/product/$s/"
-          grep -o '[^>]\{0,80\}€[^<]\{0,40\}' prod.html | head -5; grep -o 'application/ld+json[^<]*<[^<]\{0,600\}' prod.html | head -c 900; echo
-          for u in "api/products/$s/" "api/products/?slug=$s" "api/products/$s"; do echo "== $u"; curl -s -A "$UA" -w ' HTTP %{http_code}\n' "https://www.yuplay.com/$u" | head -c 1500; echo; done
+          for s in crimson-desert-enhanced-charting-the-unknown devils-hunt cities-in-motion-2; do
+            curl -s -A "$UA" -o prod.html "https://www.yuplay.com/product/$s/"
+            echo "== $s"; python3 - <<'PY'
+          import re
+          h=open('prod.html',encoding='utf-8',errors='ignore').read()
+          for m in re.finditer(r'<script type="application/ld\+json">(.*?)</script>',h,re.S):
+              if '"Product"' in m.group(1): print('LD', m.group(1)[:1200])
+          for k in ['product:price','itemprop="price"','data-price','"price"','Region','region','Activation','DRM','Steam']:
+              i=h.find(k); print(k, '->', re.sub(r'\s+',' ',h[max(0,i-150):i+250]) if i>=0 else None)
+          PY
+          done
