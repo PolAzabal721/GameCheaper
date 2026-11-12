@@ -11,9 +11,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
-      - run: |
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - env:
+          ITAD_KEY: ${{ secrets.ITAD_KEY }}
+        run: |
+          node packs.mjs
           mkdir -p vista
+          node -e 'for (const p of require("./packs.json")) for (const u of p.portadas) console.log(u)' > urls.txt
           while read -r u; do [ -n "$u" ] && curl -s -L -A "Mozilla/5.0" -o "vista/$(echo -n "$u" | md5sum | cut -c1-16).jpg" "$u"; done < urls.txt
-          ls vista | wc -l
           git config user.name "github-actions[bot]"; git config user.email "41898+github-actions[bot]@users.noreply.github.com"
-          git add vista && git commit -qm "imgs" && git push -q origin HEAD:vista-imgs
+          git add vista packs.json && git commit -qm "packs" && git push -q origin HEAD:vista-imgs
