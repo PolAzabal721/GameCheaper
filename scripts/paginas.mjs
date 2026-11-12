@@ -238,8 +238,10 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
   const dtoPoster = j.pvp && j.pvp > total(mejor) ? Math.round((1 - total(mejor) / j.pvp) * 100) : 0;
   // Termómetro: dónde está el precio de ahora entre el mínimo histórico y el precio normal
   const tope = j.pvp || Math.max(0, ...ofs.filter((o) => o.estado !== "usado").map((o) => o.regular || 0));
-  const termometro = minimo && tope > minimo + 0.5
-    ? `<div class="barra"><div class="linea"><span class="punto" style="left:${Math.max(0, Math.min(100, ((total(mejor) - minimo) / (tope - minimo)) * 100)).toFixed(1)}%"></span></div><div class="eti"><span>Mínimo <b>${eur(minimo)}</b></span><span class="ya">Ahora ${eur(total(mejor))}</span><span>Normal <b>${eur(tope)}</b></span></div></div>`
+  // Sin mínimo guardado todavía (juego recién añadido): el más bajo que tenemos es el de ahora
+  const minTermo = minimo || total(mejor);
+  const termometro = tope > minTermo + 0.5
+    ? `<div class="barra"><div class="linea"><span class="punto" style="left:${Math.max(0, Math.min(100, ((total(mejor) - minTermo) / (tope - minTermo)) * 100)).toFixed(1)}%"></span></div><div class="eti"><span>Mínimo <b>${eur(minTermo)}</b></span><span class="ya">Ahora ${eur(total(mejor))}</span><span>Normal <b>${eur(tope)}</b></span></div></div>`
     : "";
   const cuerpo = `${volver("../../")}
 <section class="poster${imgPoster ? "" : " sin-img"}">${imgPoster ? `<img src="${esc(imgPoster)}" alt="" width="1280" height="720" fetchpriority="high">` : ""}<div class="poster-in"><div class="poster-d">${j.tipo && TIPO[j.tipo] ? `<span class="tipo">${TIPO[j.tipo]}</span> ` : ""}<h1>${esc(j.titulo)}</h1>
