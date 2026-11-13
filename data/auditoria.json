@@ -1,76 +1,76 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 2322,
+   "pendientes": 416,
    "ejemplos": [
-    "Call of Duty: World at War",
-    "Atari 50: The Anniversary Celebration",
-    "Better Than Dead",
-    "Salt 2: Shores of Gold",
-    "Mycopunk"
+    "Clone Drone in the Danger Zone",
+    "Worshippers of Cthulhu",
+    "Regions of Ruin",
+    "Winter Resort Simulator 2",
+    "Better Than Dead"
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 3450,
+   "pendientes": 3423,
    "ejemplos": [
-    "Chippy&Noppo",
-    "World of Goo",
-    "Euro Truck Simulator 2 - Farm Machinery",
-    "Rabi-Ribi",
-    "GoNNER"
+    "Voice of Cards: The Forsaken Maiden",
+    "Moomin: Midsummer Madness",
+    "On The Train",
+    "Euro Truck Simulator 2 - Holland Style Tuning Pack",
+    "Scarecrow: 90s Crime Story"
    ]
   },
   "game (consola)": {
-   "pendientes": 15321,
+   "pendientes": 16140,
    "ejemplos": [
-    "The Stretchers",
-    "The Legend of Zelda: Ocarina of Time",
-    "Fire Emblem Engage",
     "EA Sports FC 27 Ultimate Edition",
-    "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo"
+    "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo",
+    "Grand Theft Auto VI",
+    "Final Fantasy VII Rebirth Digital Deluxe Edition",
+    "Hiragana Pixel Party"
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 465,
+   "pendientes": 579,
    "ejemplos": [
     "Football Manager 27",
+    "Grand Theft Auto VI",
     "NBA 2K27",
     "Mortal Shell II",
-    "Cyberpunk 2077: Phantom Liberty",
-    "Windstorm: Start of a Great Friendship"
+    "Minecraft Dungeons II Deluxe Edition"
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 15963,
+   "pendientes": 15542,
    "ejemplos": [
+    "Shrek 2 Remastered",
     "SNK HEROINES Tag Team Frenzy",
     "Vesta",
     "Ys VIII: Lacrimosa of DANA",
-    "ACA NEOGEO ART OF FIGHTING 2",
-    "Gunhouse"
+    "ACA NEOGEO ART OF FIGHTING 2"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 465,
-  "sinFicha": 388,
-  "fichasEncontradas": 533
+  "sinPrecio": 579,
+  "sinFicha": 497,
+  "fichasEncontradas": 621
  },
  "fotos": {
   "juego": {
-   "total": 23729,
-   "con": 21484,
-   "porcentaje": 91
+   "total": 24397,
+   "con": 22945,
+   "porcentaje": 94
   },
   "edicion": {
-   "total": 1646,
-   "con": 1429,
-   "porcentaje": 87
+   "total": 1706,
+   "con": 1539,
+   "porcentaje": 90
   },
   "dlc": {
-   "total": 1408,
-   "con": 1322,
-   "porcentaje": 94
+   "total": 1473,
+   "con": 1407,
+   "porcentaje": 96
   },
   "tarjeta": {
    "total": 358,
@@ -79,34 +79,35 @@
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 3525,
+   "total": 3908,
    "probadas": 12,
-   "fallan": 2,
+   "fallan": 3,
    "ejemplos": [
-    "Warhammer 40,000: Battlesector - Black Legion → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3577620/header.jpg",
-    "Black Friday Janitor: Clean the Whole Mall → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3396010/header.jpg"
+    "XeGrader plus → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4323520/header.jpg",
+    "SCUM Base Building Decor Pack → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4062860/header.jpg",
+    "Expansion - Hearts of Iron IV: No Compromise, No Surrender → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3796260/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 1756,
+   "total": 1745,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "nintendo": {
-   "total": 10659,
+   "total": 11634,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 8108,
+   "total": 8309,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "otras": {
-   "total": 187,
+   "total": 295,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
@@ -114,80 +115,87 @@
  },
  "enlaces": {
   "steam": {
-   "ofertas": 6258,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "game": {
-   "ofertas": 1286,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "xbox": {
-   "ofertas": 11883,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "instantgaming": {
-   "ofertas": 4721,
+   "ofertas": 6841,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "k4g": {
-   "ofertas": 135,
+   "ofertas": 346,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "game": {
+   "ofertas": 1532,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "xbox": {
+   "ofertas": 12098,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "instantgaming": {
+   "ofertas": 5564,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "eshop": {
-   "ofertas": 18385,
+   "ofertas": 18617,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "gameseminuevos": {
-   "ofertas": 311,
+   "ofertas": 359,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "psstore": {
-   "ofertas": 407,
+   "ofertas": 495,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "driffle": {
-   "ofertas": 205,
+   "ofertas": 481,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "alcampo": {
-   "ofertas": 8,
+   "ofertas": 10,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "ebay": {
-   "ofertas": 1407,
+   "ofertas": 1525,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
+   "ejemplos": []
+  },
+  "yuplay": {
+   "ofertas": 232,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
    "ejemplos": []
   }
  },
@@ -199,32 +207,32 @@
   "ejemplos": []
  },
  "actualizado": {
-  "precios": "2026-11-12T09:04:12.730Z",
+  "precios": "2026-11-13T08:33:42.477Z",
   "diasDesdeLaUltima": 0.2
  },
  "historial": {
-  "series": 26739,
+  "series": 27579,
   "rotas": 0,
-  "alDia": 26705,
-  "ultimoDia": "2026-11-12"
+  "alDia": 27482,
+  "ultimoDia": "2026-11-13"
  },
  "red": {
-  "comprobadas": 126,
+  "comprobadas": 132,
   "sinRespuesta": 0,
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 27141,
-  "ofertas": 97129,
-  "tiendas": 41,
-  "conFoto": "89 %"
+  "juegos": 27934,
+  "ofertas": 106469,
+  "tiendas": 42,
+  "conFoto": "93 %"
  },
- "fecha": "2026-11-12T13:54:32.754Z",
+ "fecha": "2026-11-13T13:17:59.927Z",
  "graves": [],
  "avisos": [
-  "game (consola): 658 juegos populares aún sin consultar (p. ej. The Stretchers, The Legend of Zelda: Ocarina of Time, Fire Emblem Engage)",
-  "psstore (PS4 o PS5): 50 juegos populares aún sin consultar (p. ej. Football Manager 27, NBA 2K27, Mortal Shell II)",
-  "ebay (consola, 2ª mano): 279 juegos populares aún sin consultar (p. ej. SNK HEROINES Tag Team Frenzy, Vesta, Ys VIII: Lacrimosa of DANA)",
-  "fotos: 58 juegos populares sin foto (p. ej. Crusader Kings II: Dynasty Shield III, Injustice: Gods Among Us Ultimate Edition, Country Pack - Hearts of Iron IV: Graveyard of Empires)"
+  "xbox (PC o Xbox): 38 juegos populares aún sin consultar (p. ej. Voice of Cards: The Forsaken Maiden, Moomin: Midsummer Madness, On The Train)",
+  "game (consola): 720 juegos populares aún sin consultar (p. ej. EA Sports FC 27 Ultimate Edition, Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo, Grand Theft Auto VI)",
+  "psstore (PS4 o PS5): 60 juegos populares aún sin consultar (p. ej. Football Manager 27, Grand Theft Auto VI, NBA 2K27)",
+  "ebay (consola, 2ª mano): 297 juegos populares aún sin consultar (p. ej. Shrek 2 Remastered, SNK HEROINES Tag Team Frenzy, Vesta)"
  ]
 }
