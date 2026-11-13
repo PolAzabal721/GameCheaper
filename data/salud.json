@@ -1,18 +1,19 @@
 {
- "revisado": "2026-11-12T23:29",
+ "revisado": "2026-11-13T06:53",
  "referencia": {
-  "steam": 1847,
-  "game": 585,
-  "xbox": 11787,
-  "itad": 44718,
-  "eshop": 2396,
-  "gameseminuevos": 113,
-  "instantgaming": 1450,
+  "steam": 1833,
+  "game": 350,
+  "xbox": 11838,
+  "itad": 44454,
+  "eshop": 4698,
+  "gameseminuevos": 50,
+  "instantgaming": 1977,
   "psstore": 495,
-  "alcampo": 7,
-  "ebay": 320,
-  "k4g": 104,
-  "driffle": 127
+  "alcampo": 9,
+  "ebay": 222,
+  "k4g": 109,
+  "driffle": 133,
+  "yuplay": 232
  },
  "problemas": []
 }
