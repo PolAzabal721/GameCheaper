@@ -1,18 +1,70 @@
 {
- "fecha": "2026-11-12T18:57:56.738Z",
+ "fecha": "2026-11-13T16:47:35.807Z",
  "videos": [
   {
-   "archivo": "videos/2026-11-12-far-cry-4.mp4",
-   "juego": "Far Cry 4",
-   "precio": 6,
-   "antes": 29.99,
+   "archivo": "videos/2026-11-13-detroit-become-human.mp4",
+   "juego": "Detroit: Become Human",
+   "precio": 6.99,
+   "antes": 39.99,
+   "dto": 83,
+   "tienda": "GamesPlanet FR",
+   "plataforma": "PC",
+   "minimo": false,
+   "guion": "Chollo de hoy en Pillao. Detroit: Become Human, para PC. Costaba 39 euros con 99 y ahora está en 6 euros con 99. Un 83 por ciento menos en GamesPlanet FR. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 13,
+   "url": "https://pillaojuegos.com/?q=Detroit%3A%20Become%20Human"
+  },
+  {
+   "archivo": "videos/2026-11-13-final-fantasy-vii-remake-intergrade.mp4",
+   "juego": "FINAL FANTASY VII REMAKE INTERGRADE",
+   "precio": 7.19,
+   "antes": 39.99,
+   "dto": 82,
+   "tienda": "Epic Game Store",
+   "plataforma": "PC",
+   "minimo": true,
+   "guion": "Chollo de hoy en Pillao. FINAL FANTASY VII REMAKE INTERGRADE, para PC. Costaba 39 euros con 99 y ahora está en 7 euros con 19. Un 82 por ciento menos en Epic Game Store. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 13,
+   "url": "https://pillaojuegos.com/?q=FINAL%20FANTASY%20VII%20REMAKE%20INTERGRADE"
+  },
+  {
+   "archivo": "videos/2026-11-13-pirate-bloopers.mp4",
+   "juego": "Pirate Bloopers",
+   "precio": 1.89,
+   "antes": 9.99,
+   "dto": 81,
+   "tienda": "Nintendo eShop",
+   "plataforma": "Switch",
+   "minimo": true,
+   "guion": "Chollo de hoy en Pillao. Pirate Bloopers, para Switch. Costaba 9 euros con 99 y ahora está en 1 euros con 89. Un 81 por ciento menos en Nintendo eShop. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 13,
+   "url": "https://pillaojuegos.com/?q=Pirate%20Bloopers"
+  },
+  {
+   "archivo": "videos/2026-11-13-assassin-s-creed-odyssey.mp4",
+   "juego": "Assassin's Creed Odyssey",
+   "precio": 12,
+   "antes": 59.99,
    "dto": 80,
    "tienda": "Ubisoft Store",
    "plataforma": "PC",
    "minimo": false,
-   "guion": "Chollo de hoy en Pillao. Far Cry 4, para PC. Costaba 29 euros con 99 y ahora está en 6 euros. Un 80 por ciento menos en Ubisoft Store. Compara todas las tiendas en pillaojuegos punto com.",
+   "guion": "Chollo de hoy en Pillao. Assassin's Creed Odyssey, para PC. Costaba 59 euros con 99 y ahora está en 12 euros. Un 80 por ciento menos en Ubisoft Store. Compara todas las tiendas en pillaojuegos punto com.",
    "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=Far%20Cry%204"
+   "url": "https://pillaojuegos.com/?q=Assassin's%20Creed%20Odyssey"
+  },
+  {
+   "archivo": "videos/2026-11-13-danganronpa-v3-killing-harmony.mp4",
+   "juego": "Danganronpa V3: Killing Harmony",
+   "precio": 6.79,
+   "antes": 33.99,
+   "dto": 80,
+   "tienda": "Steam",
+   "plataforma": "PC",
+   "minimo": true,
+   "guion": "Chollo de hoy en Pillao. Danganronpa V3: Killing Harmony, para PC. Costaba 33 euros con 99 y ahora está en 6 euros con 79. Un 80 por ciento menos en Steam. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 13,
+   "url": "https://pillaojuegos.com/?q=Danganronpa%20V3%3A%20Killing%20Harmony"
   }
  ]
 }
