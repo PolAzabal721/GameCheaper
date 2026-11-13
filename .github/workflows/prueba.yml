@@ -1,0 +1,28 @@
+name: Prueba
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Yuplay
+        run: |
+          cat > p.mjs <<'JS'
+          const Y="https://www.yuplay.com"; const jar=new Map();
+          const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)"};
+          const ir=async(u,j)=>{const r=await fetch(Y+u,{headers:{...H,Cookie:[...jar].map(([k,v])=>k+"="+v).join("; "),Referer:Y+"/",...(j?{Accept:"application/json"}:{})},redirect:"manual"});(r.headers.getSetCookie?.()||[]).map(c=>c.split(";")[0]).forEach(c=>{const i=c.indexOf("=");jar.set(c.slice(0,i),c.slice(i+1))});return r;};
+          await ir("/"); await ir("/api/currency/euro/");
+          let r=await ir("/api/products/?page=1",true); let d=await r.json();
+          console.log("PAG", JSON.stringify(d.extensions?.pagination)); console.log("KEYS", Object.keys(d)); console.log("P0", JSON.stringify(d.products[0]).slice(0,1500));
+          const todos=[]; const n=d.extensions.pagination.num_pages;
+          for(let p=1;p<=n;p++){ r=await ir(`/api/products/?page=${p}`,true); if(!r.ok){console.log("STOP",p,r.status);break;} d=await r.json(); for(const x of d.products) todos.push(x); await new Promise(s=>setTimeout(s,150)); }
+          console.log("TOTAL", todos.length);
+          for(const x of todos) if(/truck|gift|card|wallet|steam|dlc/i.test(x.name)) console.log("N", x.name, x.price, x.link, x.product_type||x.type||"", x.category||"");
+          r=await ir("/product/euro-truck-simulator-2/"); const h=await r.text(); console.log("ETS", r.status, (h.match(/data-tooltip_content="[^"]*"/g)||[]).join(" | "));
+          for (const q of ["/api/products/?page=1&type=dlc","/catalog/","/api/categories/"]) { r=await ir(q,true); console.log("Q",q,r.status,(await r.text()).slice(0,400)); }
+          JS
+          node p.mjs
