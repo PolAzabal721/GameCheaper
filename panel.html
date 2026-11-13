@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel de Pillao</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="fonts/fuentes.css">
+<style>
+/* Panel privado: cabecera con el rango de fechas, cifras clave, gráfica por día y tablas de desglose que filtran por tienda */
+:root {
+  --bg: #eef0f5; --surface: #ffffff; --surface-2: #f6f7fb; --ink: #141a2e; --muted: #5a6280; --line: #d9dce8;
+  --accent: #2741d6; --accent-soft: #e4e8ff; --tag: #ffd23f; --tag-ink: #1d1600; --good: #11804a; --bad: #b4233a; --click: #0f8a5f;
+  --f-display: "Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e1120; --surface: #161a2c; --surface-2: #1c2136; --ink: #e8ebf6; --muted: #98a0bf; --line: #2a3150;
+  --accent: #8fa0ff; --accent-soft: #232a52; --good: #4fd18b; --bad: #ff7d8f; --click: #22a86d; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #0e1120; --surface: #161a2c; --surface-2: #1c2136; --ink: #e8ebf6; --muted: #98a0bf; --line: #2a3150;
+  --accent: #8fa0ff; --accent-soft: #232a52; --good: #4fd18b; --bad: #ff7d8f; --click: #22a86d; color-scheme: dark; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; }
+button, input, select { font: inherit; color: inherit; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 20px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 20px; }
+.cab { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; justify-content: space-between; }
+.logo { font-family: var(--f-display); font-weight: 800; font-size: 24px; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; margin: 0; }
+.logo i { font-style: normal; background: var(--tag); color: var(--tag-ink); border-radius: 7px; padding: 0 7px; font-size: 18px; }
+.logo small { font-family: var(--f-body); font-weight: 600; font-size: 14px; color: var(--muted); letter-spacing: 0; }
+.seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 3px; flex-wrap: wrap; }
+.seg button { border: 0; background: transparent; padding: 6px 12px; border-radius: 7px; font-weight: 600; font-size: 14px; color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 7px 12px; font-weight: 600; cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+.btn.prim { background: var(--accent); border-color: var(--accent); color: #fff; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.resumen { margin: 0; color: var(--muted); }
+.resumen b { color: var(--ink); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.tile span { font-size: 13px; color: var(--muted); font-weight: 600; }
+.tile strong { font-family: var(--f-mono); font-size: 30px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.tile small { font-size: 13px; color: var(--muted); }
+.tile small .up { color: var(--good); font-weight: 700; } .tile small .down { color: var(--bad); font-weight: 700; }
+.caja { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.caja h2 { font-family: var(--f-display); font-size: 18px; margin: 0; letter-spacing: -.01em; }
+.caja .sub { margin: 0; color: var(--muted); font-size: 13px; }
+.caja-cab { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.leyenda { display: flex; gap: 14px; font-size: 13px; color: var(--muted); }
+.leyenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.graf { position: relative; min-height: 240px; }
+.graf svg { display: block; width: 100%; }
+.graf text { fill: var(--muted); font-size: 12px; font-family: var(--f-body); }
+.graf .num { fill: var(--ink); font-family: var(--f-mono); font-size: 11px; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 6px 20px rgba(0,0,0,.18); border-radius: 8px; padding: 6px 9px; font-size: 13px; white-space: nowrap; z-index: 2; }
+.dos { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.filtro { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+.filtro select { border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 6px 8px; max-width: 100%; }
+.barras { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.barras li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; }
+.barras button { all: unset; cursor: pointer; display: contents; }
+.barras .n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.barras .v { font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.barras .b { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.barras .b i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.barras li.activa .n { font-weight: 700; color: var(--accent); }
+.barras li.clic .b i { background: var(--click); }
+.vacio { color: var(--muted); font-size: 14px; padding: 8px 0; }
+.entrar { max-width: 420px; margin: 12vh auto 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.entrar h1 { font-family: var(--f-display); margin: 0; font-size: 24px; }
+.entrar p { margin: 0; color: var(--muted); font-size: 14px; }
+.entrar input { border: 1px solid var(--line); background: var(--surface-2); border-radius: 10px; padding: 10px 12px; width: 100%; }
+.error { color: var(--bad); font-size: 14px; }
+.cargando { opacity: .55; transition: opacity .2s; }
+@media (max-width: 560px) { .tiles { grid-template-columns: 1fr 1fr; gap: 8px; } .tile { padding: 12px; } .tile strong { font-size: 24px; } .seg button { padding: 6px 9px; } }
+@media (prefers-reduced-motion: no-preference) { .barras .b i { transition: width .35s ease-out; } }
+</style>
+</head>
+<body>
+<form class="entrar" id="entrar" hidden>
+  <h1>Panel de Pillao</h1>
+  <p>Escribe el token del panel (el secreto PANEL_TOKEN del Worker). Se guarda solo en este navegador.</p>
+  <label for="token" class="sub">Token</label>
+  <input id="token" type="password" autocomplete="current-password" required>
+  <button class="btn prim" type="submit">Entrar</button>
+  <p class="error" id="error-entrar" hidden></p>
+</form>
+
+<main class="wrap" id="panel" hidden>
+  <header class="cab">
+    <h1 class="logo">Pillao <i>€</i> <small>Panel</small></h1>
+    <div class="seg" role="group" aria-label="Periodo" id="rangos">
+      <button type="button" data-r="1" aria-pressed="false">Hoy</button>
+      <button type="button" data-r="7" aria-pressed="true">Semana</button>
+      <button type="button" data-r="30" aria-pressed="false">Mes</button>
+      <button type="button" data-r="365" aria-pressed="false">Año</button>
+      <button type="button" data-r="0" aria-pressed="false">Todo</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" type="button" id="recargar">Actualizar</button>
+      <button class="btn" type="button" id="salir">Salir</button>
+    </div>
+  </header>
+
+  <p class="resumen" id="resumen">Cargando…</p>
+
+  <div class="tiles">
+    <div class="tile"><span>Visitas</span><strong id="t-visitas">—</strong><small id="c-visitas">&nbsp;</small></div>
+    <div class="tile"><span>Clics a tiendas</span><strong id="t-clics">—</strong><small id="c-clics">&nbsp;</small></div>
+    <div class="tile"><span>Clics por cada 100 visitas</span><strong id="t-ratio">—</strong><small>Visitas que acaban yendo a una tienda</small></div>
+    <div class="tile"><span>Media de visitas al día</span><strong id="t-media">—</strong><small id="c-media">&nbsp;</small></div>
+  </div>
+
+  <section class="caja">
+    <div class="caja-cab">
+      <h2 id="tit-graf">Visitas y clics por día</h2>
+      <div class="leyenda"><span><i style="background:var(--accent)"></i>Visitas</span><span><i style="background:var(--click)"></i>Clics<span id="ley-tienda"></span></span></div>
+    </div>
+    <div class="graf" id="graf"></div>
+  </section>
+
+  <div class="filtro">
+    <label for="f-tienda">Filtrar clics por tienda:</label>
+    <select id="f-tienda"><option value="">Todas las tiendas</option></select>
+  </div>
+
+  <div class="dos">
+    <section class="caja">
+      <h2>Juegos más clicados</h2>
+      <p class="sub" id="sub-juegos">Pulsa una tienda para ver solo sus juegos.</p>
+      <ul class="barras" id="l-juegos"></ul>
+    </section>
+    <section class="caja">
+      <h2>Clics por tienda</h2>
+      <p class="sub">Pulsa una tienda para filtrar.</p>
+      <ul class="barras" id="l-tiendas"></ul>
+    </section>
+    <section class="caja">
+      <h2>De dónde llegan</h2>
+      <p class="sub">Webs desde las que entra la gente (las visitas directas no salen).</p>
+      <ul class="barras" id="l-origen"></ul>
+    </section>
+    <section class="caja">
+      <h2>Páginas más vistas</h2>
+      <ul class="barras" id="l-paginas"></ul>
+    </section>
+  </div>
+</main>
+
+<script>
+(() => {
+  const API = "https://pillao-buscador.pillao-bb5842.workers.dev/panel";
+  const INICIO = "2026-11-11";          // día en que abrió la web
+  const $ = (id) => document.getElementById(id);
+  const fmt = new Intl.NumberFormat("es-ES");
+  const guardado = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch { return null; } };
+  const hoyMadrid = () => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Madrid" }).format(new Date());
+  const sumaDias = (f, n) => { const d = new Date(f + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+  const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+  const fechaCorta = (f) => +f.slice(8) + " " + MESES[+f.slice(5, 7) - 1];
+
+  let datos = null, rango = +(guardado("pillao-panel-rango") || 7), tienda = "";
+  let nombresTienda = {}, titulos = {};
+
+  // Nombres de tiendas y de juegos, del propio catálogo de la web
+  fetch("precios.json").then((r) => r.json()).then((d) => {
+    (d.tiendas || []).forEach((t) => { nombresTienda[t.id] = t.nombre; });
+    (d.juegos || []).forEach((j) => { titulos[j.id] = j.titulo; });
+    if (datos) pintar();
+    if (d.resto) fetch(d.resto).then((r) => r.json()).then((x) => { (x.juegos || []).forEach((j) => { titulos[j.id] = j.titulo; }); if (datos) pintar(); }).catch(() => {});
+  }).catch(() => {});
+  const nomTienda = (id) => nombresTienda[id] || id;
+  const nomJuego = (id) => titulos[id] || id.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
+
+  async function cargar() {
+    const k = guardado("pillao-panel-token");
+    if (!k) { $("entrar").hidden = false; $("panel").hidden = true; return; }
+    $("panel").classList.add("cargando");
+    try {
+      const r = await fetch(API + "?dias=400&k=" + encodeURIComponent(k), { cache: "no-store" });
+      if (r.status === 401 || r.status === 403) { guardado("pillao-panel-token", null); $("error-entrar").textContent = "Ese token no es el bueno."; $("error-entrar").hidden = false; $("entrar").hidden = false; $("panel").hidden = true; return; }
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      datos = await r.json();
+      $("entrar").hidden = true; $("panel").hidden = false;
+      pintar();
+    } catch (e) {
+      $("entrar").hidden = true; $("panel").hidden = false;
+      $("resumen").textContent = "No se han podido cargar los datos del contador (" + e.message + "). Prueba con «Actualizar».";
+    } finally { $("panel").classList.remove("cargando"); }
+  }
+
+  // Días del periodo elegido y del anterior (para comparar)
+  function periodo() {
+    const hoy = hoyMadrid();
+    let desde = rango === 0 ? INICIO : sumaDias(hoy, -(rango - 1));
+    if (desde < INICIO) desde = INICIO;
+    const dias = []; for (let f = desde; f <= hoy; f = sumaDias(f, 1)) dias.push(f);
+    const largo = dias.length, antes = [];
+    for (let i = largo; i >= 1; i--) antes.push(sumaDias(desde, -i));
+    return { dias, antes: antes.filter((f) => f >= INICIO), hoy };
+  }
+  const suma = (porDia, dias, filtro) => dias.reduce((n, f) => { const d = porDia[f]; if (d == null) return n; if (typeof d === "number") return n + d; let s = 0; for (const k in d) if (!filtro || filtro(k)) s += d[k]; return n + s; }, 0);
+  const agrupa = (porDia, dias, clave) => { const o = {}; for (const f of dias) { const d = porDia[f]; if (!d) continue; for (const k in d) { const kk = clave ? clave(k) : k; if (kk == null) continue; o[kk] = (o[kk] || 0) + d[k]; } } return Object.entries(o).sort((a, b) => b[1] - a[1]); };
+  const cambio = (ahora, antes, el, texto) => {
+    el.replaceChildren();
+    if (!antes) { el.textContent = texto ? "Sin periodo anterior con datos" : " "; return; }
+    const p = Math.round((ahora - antes) / antes * 100);
+    const s = document.createElement("span"); s.className = p >= 0 ? "up" : "down"; s.textContent = (p >= 0 ? "+" : "−") + Math.abs(p) + " %";
+    el.append(s, " frente a " + texto + " (" + fmt.format(antes) + ")");
+  };
+
+  function pintar() {
+    const { dias, antes, hoy } = periodo();
+    const dd = datos.dias || {};
+    const clicsDia = dd.clics || {};
+    const fT = tienda ? (k) => k === tienda : null;
+    const visitas = suma(datos.visitas, dias), visitasAntes = suma(datos.visitas, antes);
+    const clics = suma(clicsDia, dias, fT), clicsAntes = suma(clicsDia, antes, fT);
+    const textoAntes = rango === 1 ? "ayer" : rango === 0 ? "" : "el periodo anterior";
+    $("t-visitas").textContent = fmt.format(visitas);
+    $("t-clics").textContent = fmt.format(clics);
+    $("t-ratio").textContent = visitas ? (clics / visitas * 100).toLocaleString("es-ES", { maximumFractionDigits: 1 }) : "—";
+    const completos = dias.filter((f) => f < hoy);
+    const media = completos.length ? suma(datos.visitas, completos) / completos.length : null;
+    $("t-media").textContent = media == null ? "—" : fmt.format(Math.round(media));
+    $("c-media").textContent = completos.length ? "Días completos: " + completos.length + " (sin contar hoy)" : "Aún no hay ningún día completo";
+    if (rango === 0) { $("c-visitas").textContent = "Desde el " + fechaCorta(INICIO); $("c-clics").textContent = tienda ? "Solo " + nomTienda(tienda) : "Todas las tiendas"; }
+    else { cambio(visitas, visitasAntes, $("c-visitas"), textoAntes); cambio(clics, clicsAntes, $("c-clics"), textoAntes); }
+    const nombreRango = { 1: "hoy", 7: "los últimos 7 días", 30: "los últimos 30 días", 365: "los últimos 12 meses", 0: "todo el tiempo" }[rango];
+    $("resumen").replaceChildren("En ", nombreRango, " ha habido ", Object.assign(document.createElement("b"), { textContent: fmt.format(visitas) + " visitas" }),
+      " y ", Object.assign(document.createElement("b"), { textContent: fmt.format(clics) + " clics" }), tienda ? " a " + nomTienda(tienda) : " a tiendas", ". Datos del contador de la web, en hora de Madrid.");
+    $("ley-tienda").textContent = tienda ? " (" + nomTienda(tienda) + ")" : "";
+    grafica(dias, hoy, fT);
+    // Tiendas
+    lista($("l-tiendas"), agrupa(clicsDia, dias).map(([k, v]) => ({ n: nomTienda(k), v, id: k })), { activa: tienda, clic: true, pulsar: (id) => fijarTienda(id === tienda ? "" : id) });
+    // Juegos: con tienda elegida, del desglose tienda|juego (solo existe para los clics desde que se añadió)
+    const juegos = tienda ? agrupa(dd.tiendaJuego || {}, dias, (k) => (k.startsWith(tienda + "|") ? k.slice(tienda.length + 1) : null)) : agrupa(dd.juegos || {}, dias);
+    $("sub-juegos").textContent = tienda ? "Solo clics a " + nomTienda(tienda) + " (se cuenta así desde el 13 nov)." : "Pulsa una tienda para ver solo sus juegos.";
+    lista($("l-juegos"), juegos.slice(0, 25).map(([k, v]) => ({ n: nomJuego(k), v })), { clic: true });
+    lista($("l-origen"), agrupa(dd.origen || {}, dias).slice(0, 15).map(([k, v]) => ({ n: k, v })));
+    lista($("l-paginas"), agrupa(dd.paginas || {}, dias).slice(0, 15).map(([k, v]) => ({ n: k === "/" ? "/ (portada)" : k, v })));
+    // Selector de tiendas
+    const sel = $("f-tienda"), opts = agrupa(clicsDia, Object.keys(clicsDia)).map(([k]) => k);
+    if (tienda && !opts.includes(tienda)) opts.unshift(tienda);
+    sel.replaceChildren(new Option("Todas las tiendas", ""), ...opts.map((k) => new Option(nomTienda(k), k)));
+    sel.value = tienda;
+  }
+
+  function lista(ul, filas, { activa, clic, pulsar } = {}) {
+    ul.replaceChildren();
+    if (!filas.length) { const li = document.createElement("li"); li.className = "vacio"; li.textContent = "Nada en este periodo."; ul.appendChild(li); return; }
+    const max = filas[0].v || 1;
+    for (const f of filas) {
+      const li = document.createElement("li");
+      if (clic) li.classList.add("clic");
+      if (activa && f.id === activa) li.classList.add("activa");
+      const n = document.createElement("span"); n.className = "n"; n.textContent = f.n; n.title = f.n;
+      const v = document.createElement("span"); v.className = "v"; v.textContent = fmt.format(f.v);
+      const b = document.createElement("span"); b.className = "b"; const i = document.createElement("i"); i.style.width = Math.max(2, f.v / max * 100) + "%"; b.appendChild(i);
+      if (pulsar) { const btn = document.createElement("button"); btn.type = "button"; btn.setAttribute("aria-label", "Filtrar por " + f.n); btn.append(n, v, b); btn.onclick = () => pulsar(f.id); li.appendChild(btn); }
+      else li.append(n, v, b);
+      ul.appendChild(li);
+    }
+  }
+
+  // Gráfica: barras de visitas y línea de clics; con más de 62 días, por semanas
+  function grafica(dias, hoy, fT) {
+    const box = $("graf"); box.replaceChildren();
+    const semanal = dias.length > 62;
+    $("tit-graf").textContent = semanal ? "Visitas y clics por semana" : "Visitas y clics por día";
+    let puntos = dias.map((f) => ({ f, et: fechaCorta(f), v: suma(datos.visitas, [f]), c: suma(datos.dias?.clics || {}, [f], fT), hoy: f === hoy }));
+    if (semanal) {
+      const g = [];
+      puntos.forEach((p, i) => { if (i % 7 === 0) g.push({ f: p.f, et: "sem. " + p.et, v: 0, c: 0 }); const u = g[g.length - 1]; u.v += p.v; u.c += p.c; u.hoy = p.hoy; });
+      puntos = g;
+    }
+    const W = box.clientWidth || 600, H = 240, m = { t: 22, r: 10, b: 28, l: 36 };
+    const max = Math.max(1, ...puntos.map((p) => Math.max(p.v, p.c)));
+    const bruto = max / 4, mag = Math.pow(10, Math.floor(Math.log10(bruto))), paso = [1, 2, 5, 10].map((k) => k * mag).find((k) => k >= bruto), techo = paso * 4;
+    const y = (v) => H - m.b - (v / techo) * (H - m.t - m.b);
+    const ancho = (W - m.l - m.r) / puntos.length;
+    const ns = "http://www.w3.org/2000/svg", el = (t, a) => { const e = document.createElementNS(ns, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "img", "aria-label": `Visitas y clics: ${puntos.map((p) => p.et + " " + p.v + " visitas, " + p.c + " clics").join("; ")}` });
+    for (let i = 0; i <= 4; i++) {
+      const v = techo / 4 * i, yy = y(v);
+      svg.appendChild(el("line", { x1: m.l, x2: W - m.r, y1: yy, y2: yy, stroke: "var(--line)", "stroke-width": 1 }));
+      const t = el("text", { x: m.l - 6, y: yy + 4, "text-anchor": "end" }); t.textContent = fmt.format(v); svg.appendChild(t);
+    }
+    const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; box.appendChild(tip);
+    const cada = Math.ceil(puntos.length / Math.max(1, Math.floor((W - m.l) / 64)));
+    const sitios = [];
+    puntos.forEach((p, i) => {
+      const x = m.l + i * ancho, bw = Math.max(2, Math.min(46, ancho * 0.62)), cx = x + ancho / 2;
+      const r = el("rect", { x: cx - bw / 2, y: y(p.v), width: bw, height: Math.max(0, H - m.b - y(p.v)), rx: 3, fill: "var(--accent)", opacity: p.hoy ? 0.45 : 1 });
+      svg.appendChild(r);
+      if (puntos.length <= 16 && p.v) { const t = el("text", { x: cx, y: y(p.v) - 6, "text-anchor": "middle", class: "num" }); t.textContent = fmt.format(p.v); svg.appendChild(t); }
+      if (i % cada === 0) { const t = el("text", { x: cx, y: H - 8, "text-anchor": "middle" }); t.textContent = p.hoy && !semanal ? "hoy" : p.et; svg.appendChild(t); }
+      sitios.push(cx);
+      const zona = el("rect", { x, y: m.t, width: ancho, height: H - m.t - m.b, fill: "transparent" });
+      zona.addEventListener("pointermove", (ev) => {
+        tip.textContent = `${p.et}${p.hoy ? " (sin cerrar)" : ""}: ${fmt.format(p.v)} visitas · ${fmt.format(p.c)} clics`;
+        tip.hidden = false; const b = box.getBoundingClientRect();
+        tip.style.left = Math.max(0, Math.min(ev.clientX - b.left + 12, b.width - tip.offsetWidth - 4)) + "px"; tip.style.top = Math.max(0, ev.clientY - b.top - 40) + "px";
+      });
+      zona.addEventListener("pointerleave", () => { tip.hidden = true; });
+      svg.appendChild(zona);
+    });
+    // línea de clics, de punto a punto
+    const d = puntos.map((p, i) => (i ? "L" : "M") + sitios[i] + " " + y(p.c)).join(" ");
+    svg.insertBefore(el("path", { d, fill: "none", stroke: "var(--click)", "stroke-width": 2.5, "stroke-linejoin": "round", "pointer-events": "none" }), svg.querySelector("rect[fill=transparent]"));
+    puntos.forEach((p, i) => svg.insertBefore(el("circle", { cx: sitios[i], cy: y(p.c), r: 3.5, fill: "var(--click)", "pointer-events": "none" }), svg.querySelector("rect[fill=transparent]")));
+    box.appendChild(svg);
+  }
+
+  function fijarTienda(id) { tienda = id; pintar(); }
+
+  $("rangos").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-r]"); if (!b) return;
+    rango = +b.dataset.r; guardado("pillao-panel-rango", String(rango));
+    document.querySelectorAll("#rangos button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    if (datos) pintar();
+  });
+  document.querySelectorAll("#rangos button").forEach((x) => x.setAttribute("aria-pressed", String(+x.dataset.r === rango)));
+  $("f-tienda").addEventListener("change", (e) => fijarTienda(e.target.value));
+  $("recargar").addEventListener("click", cargar);
+  $("salir").addEventListener("click", () => { guardado("pillao-panel-token", null); datos = null; $("panel").hidden = true; $("entrar").hidden = false; $("token").value = ""; });
+  $("entrar").addEventListener("submit", (e) => { e.preventDefault(); const v = $("token").value.trim(); if (!v) return; guardado("pillao-panel-token", v); $("error-entrar").hidden = true; cargar(); });
+  let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(() => { if (datos) pintar(); }, 150); });
+  cargar();
+})();
+</script>
+</body>
+</html>
