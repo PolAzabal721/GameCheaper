@@ -839,7 +839,8 @@ function leerK4G(u) {
 }
 const MERCADOS = {
   driffle: {
-    nombre: "Driffle", mapa: "https://driffle.com/sitemap.xml", submapas: (us) => us.filter((u) => /products-sitemap-\d+\.xml$/.test(u)), porRonda: +(ENV.DRIFFLE_MAPAS || 45),
+    nombre: "Driffle", mapa: "https://driffle.com/sitemap.xml", // Solo los mapas en inglés: los de otros idiomas (/de/, /el/…) repiten los mismos productos con otra dirección
+    submapas: (us) => us.filter((u) => /driffle\.com\/sitemaps\/products-sitemap-\d+\.xml$/.test(u)), porRonda: +(ENV.DRIFFLE_MAPAS || 45),
     leer: leerDriffle,
     async ficha(p) {
       const h = await (await pedir(p.url + "?currency=EUR")).text();
