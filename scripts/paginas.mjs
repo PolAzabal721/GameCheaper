@@ -163,6 +163,14 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;paddin
 @media(max-width:600px){h1{font-size:24px}.ficha>div:first-child{flex-basis:100%}.etiqueta{align-self:flex-start}th:nth-child(3),td:nth-child(3){display:none}th,td{padding:9px 8px;font-size:13px}td a .l{display:none}}`;
 }
 
+// Recuento de visitas y clics (el mismo que el de la portada): una visita por pestaña, sin cookies.
+// Lo de la pestaña se guarda en sessionStorage, que el navegador borra al cerrarla.
+let BUSCADOR = "";
+const contador = () => !BUSCADOR ? "" : `<script>(function(){var B=${JSON.stringify(BUSCADOR.replace(/\/$/, ""))};var px=function(r){try{new Image().src=B+r}catch(e){}};
+var ya=false;try{ya=!!sessionStorage.getItem("pillao-visita");sessionStorage.setItem("pillao-visita","1")}catch(e){}
+if(!ya){var de="";try{de=document.referrer?new URL(document.referrer).hostname:""}catch(e){}if(de===location.hostname)de="";
+setTimeout(function(){px("/v?p="+encodeURIComponent(location.pathname.slice(0,60))+(de?"&r="+encodeURIComponent(de):""))},1500)}
+document.addEventListener("click",function(e){var a=e.target.closest?e.target.closest("a[data-t]"):null;if(a)px("/c?t="+encodeURIComponent(a.dataset.t)+"&j="+encodeURIComponent(a.dataset.j||""))},true)})();</script>`;
 function plantilla({ titulo, descripcion, canonica, raiz, cuerpo, jsonld }) {
   return proteger(`<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -176,8 +184,9 @@ ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(
 <main class="wrap">${cuerpo}</main>
 <footer><div class="wrap">Pillao compara precios de videojuegos y no vende productos. Los precios son orientativos: el válido es siempre el de cada tienda. Algunos enlaces son de afiliado: si compras tras pulsarlos, la tienda puede pagarnos una comisión, sin coste para ti.
 <nav><a href="${raiz}legal.html#aviso-legal">Aviso legal</a><a href="${raiz}legal.html#condiciones">Condiciones de uso</a><a href="${raiz}legal.html#privacidad">Privacidad</a><a href="${raiz}legal.html#cookies">Cookies</a></nav></div></footer>
+${contador()}
 </body></html>
-`);
+`, BUSCADOR);
 }
 
 function enlaceOferta(o, j, tiendaPorId) {
@@ -231,7 +240,7 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
     const t = tiendaPorId[o.tienda], url = enlaceOferta(o, j, tiendaPorId);
     const forma = o.estado === "usado" ? "2ª mano" : o.formato === "fisico" ? "En disco" : "Digital";
     return `<tr${o === mejor ? ' class="mejor"' : ""}><td><b>${esc(t?.nombre || o.tienda)}</b>${o.stock ? "" : ' <span class="agotado">Agotado</span>'}</td><td>${esc(o.plataforma || "—")}</td><td>${forma}${o.condicion ? " · " + esc(o.condicion) : ""}</td>` +
-      `<td class="p">${eur(total(o))}${o.envio ? ` <span class="agotado">(envío incl.)</span>` : ""}</td><td>${url ? `<a href="${esc(url)}" rel="nofollow sponsored noopener" target="_blank">Ver<span class="l"> oferta</span> ↗</a>` : ""}</td></tr>`;
+      `<td class="p">${eur(total(o))}${o.envio ? ` <span class="agotado">(envío incl.)</span>` : ""}</td><td>${url ? `<a href="${esc(url)}" rel="nofollow sponsored noopener" target="_blank" data-t="${esc(o.tienda)}" data-j="${esc(j.id)}">Ver<span class="l"> oferta</span> ↗</a>` : ""}</td></tr>`;
   }).join("");
   // La imagen del juego en grande (las de Microsoft se piden a más resolución)
   const imgPoster = (imagenDe(j) || "").replace(/(store-images\.s-microsoft\.com\/image\/[^?]+)\?w=\d+/, "$1?w=1280") || null;
@@ -437,6 +446,7 @@ function paginaChollos(datos) {
 
 async function main() {
   const datos = JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8"));
+  BUSCADOR = datos.buscador || "";
   const tiendaPorId = Object.fromEntries(datos.tiendas.map((t) => [t.id, t]));
   await rm(SALIDA, { recursive: true, force: true });
   await mkdir(SALIDA, { recursive: true });

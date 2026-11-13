@@ -2378,6 +2378,9 @@ button { cursor: pointer; }
   var contarVisita = function () {
     if (contada || !datos || !datos.buscador) return;
     contada = true;
+    // Una visita por pestaña: si ya se contó (recargas o ir de una página a otra), no se suma otra.
+    // sessionStorage no es una cookie y el navegador lo borra al cerrar la pestaña.
+    try { if (sessionStorage.getItem("pillao-visita")) return; sessionStorage.setItem("pillao-visita", "1"); } catch (e) { /* sin almacenamiento: se cuenta */ }
     var de = "";
     try { de = document.referrer ? new URL(document.referrer).hostname : ""; } catch (e) { de = ""; }
     if (de === location.hostname) de = "";
