@@ -143,8 +143,15 @@ for (const { j, o, p, ref, dto, minimo } of elegidos) {
     const png = await tarjeta(j, o, p, ref, minimo, t.nombre);
     const foto = imagen(j);
     let hecho = false;
-    if (png) { try { await enviarFoto(png, { chat_id: CANAL, caption: texto, parse_mode: "HTML", reply_markup: botones }); hecho = true; } catch (e) { console.warn("  " + e.message); } }
-    if (!hecho && foto) { try { await telegram("sendPhoto", { chat_id: CANAL, photo: foto, caption: texto, parse_mode: "HTML", reply_markup: botones }); hecho = true; } catch {} }
+    // Un corte de conexión al subir la imagen no puede dejar el chollo sin foto: hasta 3 intentos, con una pausa entre ellos
+    if (png) for (let intento = 1; intento <= 3 && !hecho; intento++) {
+      try { await enviarFoto(png, { chat_id: CANAL, caption: texto, parse_mode: "HTML", reply_markup: botones }); hecho = true; }
+      catch (e) { console.warn(`  imagen de «${j.titulo}», intento ${intento}: ${e.message}`); await new Promise((r) => setTimeout(r, 4000 * intento)); }
+    }
+    if (!hecho && foto) for (let intento = 1; intento <= 2 && !hecho; intento++) {
+      try { await telegram("sendPhoto", { chat_id: CANAL, photo: foto, caption: texto, parse_mode: "HTML", reply_markup: botones }); hecho = true; }
+      catch (e) { console.warn(`  foto de la tienda de «${j.titulo}», intento ${intento}: ${e.message}`); await new Promise((r) => setTimeout(r, 4000)); }
+    }
     if (!hecho) await telegram("sendMessage", { chat_id: CANAL, text: texto, parse_mode: "HTML", reply_markup: botones, link_preview_options: { is_disabled: true } });
     estado.publicados[clave(j, o)] = { precio: p, fecha: new Date().toISOString() };
     enviados++;
