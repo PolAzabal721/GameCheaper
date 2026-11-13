@@ -917,6 +917,46 @@ async function recorrerMercado(id, juegos, cuenta, avisos, caidas) {
   cuenta[id] = n;
 }
 
+// ---------- Portadas por nombre (para los juegos sin foto) ----------
+const CACHE_IMAGENES = join(RAIZ, "data", "imagenes.json");
+const IMG_MAX = +(ENV.IMAGENES_MAX || 400);
+async function buscarImagenes(juegos, imgAnterior) {
+  let cache = {}; try { cache = JSON.parse(await readFile(CACHE_IMAGENES, "utf8")); } catch {}
+  const sinFoto = (j) => !j._img && !j._cov && !(imgAnterior.get(j.id) || []).some(Boolean) && j.tipo !== "tarjeta" && j.ofertas.length;
+  let puestas = 0, buscadas = 0;
+  const pendientes = [];
+  for (const j of juegos.values()) {
+    if (!sinFoto(j)) continue;
+    const c = cache[j.id];
+    if (c && c.img) { j._img = c.img; j._cov = c.cov || c.img; puestas++; continue; }
+    if (c && Date.now() - Date.parse(c.fecha) < 30 * 86400000) continue;   // no se encontró hace poco: se reintenta al mes
+    pendientes.push(j);
+  }
+  pendientes.sort((a, b) => a.pop - b.pop);
+  const igual = (a, b) => llave(a) === llave(b);
+  for (const j of pendientes.slice(0, IMG_MAX)) {
+    let img = null, cov = null;
+    try {
+      if (j.plataformas.has("PC") || j.plataformas.has("Xbox Series")) {
+        const d = await (await pedir(`https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(j.titulo)}&l=spanish&cc=ES`)).json();
+        const it = (d.items || []).find((x) => x.type === "app" && igual(x.name, j.titulo));
+        if (it) { img = "s:" + it.id; cov = img; }
+      }
+      if (!img && (j.plataformas.has("Switch") || j.plataformas.has("Switch 2"))) {
+        const d = await (await pedir(`https://searching.nintendo-europe.com/es/select?q=${encodeURIComponent(j.titulo)}&fq=type:GAME&rows=5&wt=json&fl=title,image_url,image_url_h2x1_s`)).json();
+        const it = (d.response?.docs || []).find((x) => igual(x.title || "", j.titulo));
+        if (it && (it.image_url_h2x1_s || it.image_url)) { img = it.image_url_h2x1_s || it.image_url; cov = it.image_url || img; }
+      }
+    } catch (e) { continue; }
+    buscadas++;
+    cache[j.id] = img ? { img, cov, fecha: new Date().toISOString() } : { fecha: new Date().toISOString() };
+    if (img) { j._img = img; j._cov = cov; puestas++; }
+    await esperar(250);
+  }
+  await writeFile(CACHE_IMAGENES, JSON.stringify(cache));
+  console.log(`Imágenes por nombre: ${buscadas} buscadas ahora, ${puestas} juegos con portada nueva (quedan ${Math.max(0, pendientes.length - IMG_MAX)} por buscar).`);
+}
+
 // ---------- Yuplay (claves de PC) ----------
 // Su robots.txt permite el listado /api/products/ y las fichas /product/. El listado da nombre, precio y precio normal
 // (en euros tras elegir la moneda con /api/currency/euro/, como el selector de su web). La región de cada clave solo
@@ -1568,6 +1608,11 @@ async function main() {
     heredadas++;
   }
   if (heredadas) console.log(`Fotos heredadas del juego base: ${heredadas} ediciones y extras.`);
+  // Juegos que siguen sin foto: se busca su portada por el nombre en Steam (PC) y en la eShop (Switch).
+  // Solo si el nombre coincide; lo encontrado (o que no hay) se guarda en data/imagenes.json para no repetir la búsqueda.
+  if (ENV.SIN_IMAGENES !== "1") {
+    try { await buscarImagenes(juegos, imgAnterior); } catch (e) { console.warn("Imágenes por nombre: " + e.message); }
+  }
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
     .map(({ _buscarEn, _pvpFijo, _fechaOf, _fechaIG, _img, _imgP, _cov, _covP, plataformas, revisado, ...j }) => {
       const lanzamiento = _fechaOf || _fechaIG || fechaAnterior.get(j.id) || undefined;
