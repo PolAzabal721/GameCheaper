@@ -701,7 +701,9 @@ async function mapaInstantGaming() {
 }
 // Ficha de un producto: nombre (con la región detrás de « - »), precio en euros y si hay stock
 async function fichaIG(url) {
-  const html = await (await pedir(url)).text();
+  // Una ficha que sigue en su mapa pero ya no existe (p. ej. las reservas de GTA VI para PC y PS5): sin precio, sin aviso
+  let html;
+  try { html = await (await pedir(url)).text(); } catch (e) { if (/HTTP 404/.test(e.message)) return null; throw e; }
   const m = html.match(/itemprop="price"[^>]*data-price-eur="([\d.]+)"/);
   if (!m) return null;
   const nombreCompleto = html2txt((html.match(/itemprop="name"\s+content="([^"]+)"/) || [])[1] || "");
