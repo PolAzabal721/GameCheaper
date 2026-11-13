@@ -18,11 +18,11 @@ jobs:
           await ir("/"); await ir("/api/currency/euro/");
           let r=await ir("/api/products/?page=1",true); let d=await r.json();
           console.log("PAG", JSON.stringify(d.extensions?.pagination)); console.log("KEYS", Object.keys(d)); console.log("P0", JSON.stringify(d.products[0]).slice(0,1500));
-          const todos=[]; const n=d.extensions.pagination.num_pages;
-          for(let p=1;p<=n;p++){ r=await ir(`/api/products/?page=${p}`,true); if(!r.ok){console.log("STOP",p,r.status);break;} d=await r.json(); for(const x of d.products) todos.push(x); await new Promise(s=>setTimeout(s,150)); }
-          console.log("TOTAL", todos.length);
-          for(const x of todos) if(/truck|gift|card|wallet|steam|dlc/i.test(x.name)) console.log("N", x.name, x.price, x.link, x.product_type||x.type||"", x.category||"");
-          r=await ir("/product/euro-truck-simulator-2/"); const h=await r.text(); console.log("ETS", r.status, (h.match(/data-tooltip_content="[^"]*"/g)||[]).join(" | "));
-          for (const q of ["/api/products/?page=1&type=dlc","/catalog/","/api/categories/"]) { r=await ir(q,true); console.log("Q",q,r.status,(await r.text()).slice(0,400)); }
+          r=await fetch(Y+"/robots.txt",{headers:H}); console.log("ROBOTS", (await r.text()).replace(/\n/g," ¦ ").slice(0,1500));
+          r=await ir("/catalog/"); let h=await r.text(); console.log("CATST", r.status);
+          const ps=new Set(); for (const m of h.matchAll(/(?:name|data-name|data-filter|data-param)="([a-z_]+)"/g)) ps.add(m[1]); console.log("PARAMS", [...ps].join(","));
+          for (const m of h.matchAll(/href="(\/[a-z-]+\/[^"]*\?[^"]+)"/g)) console.log("HREF", m[1]);
+          console.log("SORT", (h.match(/sort[^<]{0,300}/gi)||[]).slice(0,8).join(" ## "));
+          for (const q of ["/api/products/?q=euro%20truck","/api/products/?search=euro%20truck","/api/products/?sort=-price","/api/products/?ordering=price","/api/products/?sort=price_asc","/api/products/?page=101","/api/products/?price_from=0&price_to=1","/api/products/?min_price=0&max_price=1","/search/?q=euro+truck"]) { r=await ir(q,true); const t=await r.text(); let x=""; try{const j=JSON.parse(t); x=JSON.stringify(j.extensions)+" "+(j.products||[]).slice(0,3).map(p=>p.name+" "+p.price).join(" | ");}catch{x=t.slice(0,200).replace(/\s+/g," ")} console.log("Q",q,r.status,x.slice(0,400)); }
           JS
           node p.mjs
