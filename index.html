@@ -10,6 +10,9 @@
 <title>Pillao</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Compara precios de videojuegos digitales y físicos en tiendas españolas.">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Pillao"><meta property="og:locale" content="es_ES">
+<meta property="og:title" content="Pillao · Comparador de precios de videojuegos"><meta property="og:description" content="Compara el precio de cualquier juego en más de 40 tiendas españolas: digital, en disco y segunda mano.">
+<meta property="og:url" content="https://pillaojuegos.com/"><meta property="og:image" content="https://pillaojuegos.com/icono-192.png"><meta name="twitter:card" content="summary">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="favicon.ico" sizes="any"><link rel="icon" href="icono-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="icono-180.png">
@@ -700,6 +703,9 @@ button { cursor: pointer; }
   var TITULOS_TIPO = { oficial: "Oficiales", revendedor: "Revendedores de claves", marketplace: "Marketplaces de claves", tienda: "Tiendas físicas", segundamano: "Tiendas de segunda mano", particulares: "Entre particulares" };
   // Precio que pagas de verdad: producto + envío
   function total(o) { return o.precio + (o.envio || 0); }
+  // Tiendas con las que Pillao es afiliado: manda siempre el precio, pero en un empate salen primero
+  var AFILIADAS = { instantgaming: 1, yuplay: 1, g2a: 1, gamivo: 1 };
+  function porPrecio(a, b) { return (b.stock - a.stock) || (Math.round(total(a) * 100) - Math.round(total(b) * 100)) || ((AFILIADAS[b.tienda] || 0) - (AFILIADAS[a.tienda] || 0)); }
   // Tipo de clave de una oferta de revendedor ("Steam", "EA App"…), si lo sabemos
   function subtipo(o) {
     if (o.drm) return "Clave " + o.drm;
@@ -975,7 +981,7 @@ button { cursor: pointer; }
       if (f.stock && !o.stock) return false;
       if (f.pmax != null && total(o) > f.pmax) return false;
       return true;
-    }).sort(function (a, b) { return (b.stock - a.stock) || (total(a) - total(b)); });
+    }).sort(porPrecio);
   }
   function nActivos() {
     return (f.formato !== "todos") + (f.estado !== "todos") + (f.plats.length > 0) + (f.fuera.length > 0) + (f.revOff.length > 0) + ((f.tipo || "todos") !== "todos") + (!f.mkt) + (!f.part) + f.stock + (f.pmax != null);
@@ -1320,13 +1326,13 @@ button { cursor: pointer; }
     if (deClaves.length > 1) {
       var ofsClaves = [];
       deClaves.forEach(function (g) { ofsClaves.push.apply(ofsClaves, g.ofs); });
-      ofsClaves.sort(function (a, b) { return (b.stock - a.stock) || (total(a) - total(b)); });
+      ofsClaves.sort(porPrecio);
       grupos = grupos.filter(function (g) { return deClaves.indexOf(g) < 0; });
       var primera = tiendaPorId[ofsClaves[0].tienda] || { nombre: ofsClaves[0].tienda };
       grupos.push({ id: "claves", claves: true, nTiendas: deClaves.length, t: { nombre: primera.nombre, tipo: "revendedor" }, ofs: ofsClaves });
     }
     // La opción más barata siempre arriba, sea la tienda que sea (las agotadas al final)
-    grupos.sort(function (a, b) { return (b.ofs[0].stock - a.ofs[0].stock) || (total(a.ofs[0]) - total(b.ofs[0])); });
+    grupos.sort(function (a, b) { return porPrecio(a.ofs[0], b.ofs[0]); });
     var todas = abiertos[j.id];
     var vis = todas ? grupos : grupos.slice(0, VISIBLES);
     var otras = otrasTiendas(j);

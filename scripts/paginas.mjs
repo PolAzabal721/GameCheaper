@@ -67,6 +67,7 @@ const SITIO = (process.env.SITIO_URL || "https://pillaojuegos.com/").replace(/\/
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const eur = (n) => new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n);
 const total = (o) => o.precio + (o.envio || 0);
+const AFILIADAS = { instantgaming: 1, yuplay: 1, g2a: 1, gamivo: 1 };
 const TIPO = { dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo" };
 
 // Política de seguridad (CSP): el navegador solo ejecuta los scripts de Pillao (por su huella exacta),
@@ -171,12 +172,15 @@ var ya=false;try{ya=!!sessionStorage.getItem("pillao-visita");sessionStorage.set
 if(!ya){var de="";try{de=document.referrer?new URL(document.referrer).hostname:""}catch(e){}if(de===location.hostname)de="";
 setTimeout(function(){px("/v?p="+encodeURIComponent(location.pathname.slice(0,60))+(de?"&r="+encodeURIComponent(de):""))},1500)}
 document.addEventListener("click",function(e){var a=e.target.closest?e.target.closest("a[data-t]"):null;if(a)px("/c?t="+encodeURIComponent(a.dataset.t)+"&j="+encodeURIComponent(a.dataset.j||""))},true)})();</script>`;
-function plantilla({ titulo, descripcion, canonica, raiz, cuerpo, jsonld }) {
+function plantilla({ titulo, descripcion, canonica, raiz, cuerpo, jsonld, imagen }) {
+  // Imagen al compartir el enlace (WhatsApp, Telegram, X…): la del juego, o el icono de Pillao
+  const og = imagen ? `<meta property="og:image" content="${esc(imagen)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(imagen)}">`
+    : `<meta property="og:image" content="${SITIO}icono-192.png"><meta name="twitter:card" content="summary">`;
   return proteger(`<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(titulo)}</title><meta name="description" content="${esc(descripcion)}">
 <link rel="canonical" href="${canonica}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(titulo)}">
-<meta property="og:description" content="${esc(descripcion)}"><meta property="og:url" content="${canonica}"><meta property="og:locale" content="es_ES"><meta property="og:site_name" content="Pillao">
+<meta property="og:description" content="${esc(descripcion)}"><meta property="og:url" content="${canonica}"><meta property="og:locale" content="es_ES"><meta property="og:site_name" content="Pillao">${og}
 <link rel="icon" href="${raiz}favicon.svg" type="image/svg+xml"><link rel="alternate icon" href="${raiz}favicon.ico" sizes="any"><link rel="icon" href="${raiz}icono-192.png" type="image/png" sizes="192x192"><link rel="apple-touch-icon" href="${raiz}icono-180.png">
 <link rel="stylesheet" href="${raiz}fonts/fuentes.css"><link rel="stylesheet" href="${raiz}paginas.css">
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>` : ""}
@@ -197,8 +201,9 @@ function enlaceOferta(o, j, tiendaPorId) {
 
 function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
   // Mismas tiendas que la web enseña por defecto (de los revendedores de claves, solo Instant Gaming)
+  // Manda el precio; en un empate, primero las tiendas con las que somos afiliados
   const ofs = j.ofertas.filter(() => true)
-    .sort((a, b) => (b.stock - a.stock) || (total(a) - total(b)));
+    .sort((a, b) => (b.stock - a.stock) || (Math.round(total(a) * 100) - Math.round(total(b) * 100)) || ((AFILIADAS[b.tienda] || 0) - (AFILIADAS[a.tienda] || 0)));
   if (!ofs.length) return null;
   const conStock = ofs.filter((o) => o.stock), mejor = conStock[0] || ofs[0];
   const tm = tiendaPorId[mejor.tienda]?.nombre || mejor.tienda;
@@ -261,7 +266,7 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
 <div class="cta"><a class="boton" href="../../?q=${encodeURIComponent(j.titulo)}">Ver historial y crear aviso de precio</a><a class="boton sec" href="../../">Comparar otros juegos</a></div>
 <div class="tabla"><table><thead><tr><th>Tienda</th><th>Plataforma</th><th>Formato</th><th>Precio</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>
 ${relacionados.length ? `<h2>Otros juegos</h2><ul class="mas">${relacionados.map((r) => `<li><a href="../${r.id}/">${esc(r.titulo)}</a></li>`).join("")}</ul>` : ""}`;
-  return plantilla({ titulo, descripcion, canonica, raiz: "../../", cuerpo, jsonld });
+  return plantilla({ titulo, descripcion, canonica, raiz: "../../", cuerpo, jsonld, imagen: imgPoster });
 }
 
 function paginaLista(juegos) {
