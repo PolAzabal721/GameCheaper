@@ -961,10 +961,13 @@ async function buscarImagenes(juegos, imgAnterior) {
 // Su robots.txt permite el listado /api/products/ y las fichas /product/. El listado da nombre, precio y precio normal
 // (en euros tras elegir la moneda con /api/currency/euro/, como el selector de su web). La región de cada clave solo
 // sale en la ficha («Can be activated in …»): se guarda en data/yuplay.json y se vuelve a mirar cada 30 días.
-// Solo entran juegos que ya están en el catálogo y cuya clave se activa en España.
+// El listado solo deja ver las 100 primeras páginas (2.400 de unos 13.000 productos): el resto lo encontramos con su buscador
+// (/api/products/?search=…), buscando los juegos del catálogo por turnos. Entra todo lo que se active en España: juegos,
+// ediciones y DLC, aunque no estuvieran antes en el catálogo (fuera bandas sonoras y sus «Gift», que son lotes sorpresa).
 const YUPLAY = "https://www.yuplay.com", YUPLAY_PARTNER = "3473557";
 const CACHE_YUPLAY = join(RAIZ, "data", "yuplay.json");
-const YU_FICHAS = +(ENV.YUPLAY_FICHAS || 250), YU_ESPERA = 350, YU_DIAS = 30;
+const YU_FICHAS = +(ENV.YUPLAY_FICHAS || 700), YU_BUSQUEDAS = +(ENV.YUPLAY_BUSQUEDAS || 400), YU_ESPERA = 350, YU_DIAS = 30, YU_DIAS_BUSQUEDA = 7;
+const nombreYuplay = (n) => n.replace(/\s*\((steam|pc|gog|epic|epic games|ubisoft connect|uplay|ea app|origin|rockstar|battle\.net)\)\s*$/i, "").trim();
 const galletas = (r) => (r.headers.getSetCookie ? r.headers.getSetCookie() : [r.headers.get("set-cookie") || ""]).map((c) => c.split(";")[0]).filter(Boolean);
 async function yuplay(juegos, cuenta, avisos) {
   let cache = {}; try { cache = JSON.parse(await readFile(CACHE_YUPLAY, "utf8")); } catch {}
@@ -986,17 +989,41 @@ async function yuplay(juegos, cuenta, avisos) {
     total = d.extensions?.pagination?.num_pages || 1;
     for (const p of d.products || []) {
       if (p.currency_code !== "EUR") throw new Error("los precios no llegan en euros (" + p.currency_code + ")");
-      productos.push({ nombre: html2txt(p.name), link: p.link, precio: +p.price, normal: +p.base_price, reserva: !!p.is_preorder });
+      productos.push({ nombre: nombreYuplay(html2txt(p.name)), link: p.link, precio: +p.price, normal: +p.base_price, reserva: !!p.is_preorder });
     }
     await esperar(150);
   }
-  // 2. Los que coinciden con el catálogo
+  // 2. Lo que no cabe en el listado: buscamos los juegos del catálogo (los más populares primero; cada uno, como mucho una vez por semana)
+  const vistos = new Set(productos.map((p) => p.link));
+  const busq = cache._busquedas || (cache._busquedas = {});
   const porLlave = new Map();
   for (const j of juegos.values()) if (j.tipo !== "tarjeta") { const k = llave(j.titulo); if (!porLlave.has(k)) porLlave.set(k, j); }
-  const coinciden = productos.filter((p) => p.precio > 0 && porLlave.has(llave(p.nombre)));
-  // 3. Región y plataforma de las fichas que no se han mirado (o hace más de 30 días), las más populares primero
+  const yaEsta = new Set(productos.map((p) => llave(p.nombre)));
+  const aBuscar = [...juegos.values()].filter((j) => j.tipo === "juego" && j.plataformas.has("PC") && !yaEsta.has(llave(j.titulo)))
+    .filter((j) => !busq[llave(j.titulo)] || Date.now() - Date.parse(busq[llave(j.titulo)]) > YU_DIAS_BUSQUEDA * 86400000)
+    .sort((a, b) => a.pop - b.pop).slice(0, YU_BUSQUEDAS);
+  let buscadas = 0;
+  for (const j of aBuscar) {
+    try {
+      const r = await ir(`/api/products/?search=${encodeURIComponent(j.titulo)}`, true);
+      if (r.status === 403 || r.status === 429) break;                  // nos piden parar: seguimos en la próxima ejecución
+      if (!r.ok) continue;
+      for (const p of (await r.json()).products || []) {
+        if (p.currency_code !== "EUR" || vistos.has(p.link)) continue;
+        vistos.add(p.link);
+        productos.push({ nombre: nombreYuplay(html2txt(p.name)), link: p.link, precio: +p.price, normal: +p.base_price, reserva: !!p.is_preorder });
+      }
+      busq[llave(j.titulo)] = new Date().toISOString(); buscadas++;
+    } catch (e) { avisos.push("yuplay búsqueda: " + e.message); break; }
+    await esperar(YU_ESPERA);
+  }
+  // 3. Qué es cada producto: los del catálogo se juntan con su ficha; el resto (ediciones, DLC…) entra como ficha nueva
+  const valido = (p) => p.precio > 0 && !/\bgift\b/i.test(p.nombre) && !NO_PRODUCTO.test(limpiar(p.nombre));
+  const candidatos = productos.filter(valido);
+  const popDe = (p) => (porLlave.get(llave(p.nombre)) || { pop: 199999 }).pop;
+  // 4. Región y plataforma de las fichas que no se han mirado (o hace más de 30 días): primero las del catálogo, por popularidad
   const viejo = (c) => !c || Date.now() - Date.parse(c.fecha) > YU_DIAS * 86400000;
-  const pendientes = coinciden.filter((p) => viejo(cache[p.link])).sort((a, b) => porLlave.get(llave(a.nombre)).pop - porLlave.get(llave(b.nombre)).pop).slice(0, YU_FICHAS);
+  const pendientes = candidatos.filter((p) => viejo(cache[p.link])).sort((a, b) => popDe(a) - popDe(b)).slice(0, YU_FICHAS);
   let fichas = 0;
   for (const p of pendientes) {
     try {
@@ -1014,17 +1041,19 @@ async function yuplay(juegos, cuenta, avisos) {
     await esperar(YU_ESPERA);
   }
   await writeFile(CACHE_YUPLAY, JSON.stringify(cache));
-  // 4. Las ofertas: claves que se activan en España, de PC (Steam, GOG, Epic, Ubisoft…)
-  let n = 0;
-  for (const p of coinciden) {
+  // 5. Las ofertas: claves que se activan en España, de PC (Steam, GOG, Epic, Ubisoft…)
+  let n = 0, nuevas = 0;
+  for (const p of candidatos) {
     const c = cache[p.link];
     if (!c || !c.vale || /xbox|playstation|psn|nintendo/i.test(c.drm || "")) continue;
-    const j = porLlave.get(llave(p.nombre));
+    let j = porLlave.get(llave(p.nombre));
+    if (!j) { j = juego(p.nombre, { pop: 99999 }); if (!j) continue; porLlave.set(llave(p.nombre), j); nuevas++; }
     ofertar(j, { tienda: "yuplay", plataforma: "PC", precio: p.precio, regular: p.normal > p.precio ? p.normal : undefined, drm: c.drm || undefined,
       condicion: `Clave ${c.drm || "PC"} · válida en España`, url: `${YUPLAY}${p.link}?partner=${YUPLAY_PARTNER}`, fuente: "yuplay" });
     j.revisado.add("yuplay"); n++;
   }
-  console.log(`Yuplay: ${productos.length} productos; ${coinciden.length} coinciden con el catálogo; ${fichas} fichas revisadas ahora; ${n} ofertas válidas en España.`);
+  const enCatalogo = candidatos.filter((p) => porLlave.has(llave(p.nombre))).length;
+  console.log(`Yuplay: ${productos.length} productos (${buscadas} búsquedas); ${fichas} fichas revisadas ahora (quedan ${Math.max(0, candidatos.filter((p) => viejo(cache[p.link])).length)}); ${n} ofertas válidas en España, ${nuevas} de fichas nuevas; ${enCatalogo} en el catálogo.`);
   cuenta.yuplay = n;
 }
 
