@@ -297,7 +297,7 @@ function esExpansion(titulo, titulos) {
 
 const volver = (destino) => `<a class="volver" href="${destino}" onclick="if(document.referrer.indexOf(location.host)>-1&&history.length>1){history.back();return false}">← Volver</a>`;
 
-function chollosDe(datos, { plataformas, tienda }) {
+function chollosDe(datos, { plataformas, tienda, maxPrecio, soloMin }) {
   const total = (o) => o.precio + (o.envio || 0);
   const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
   const titulos = new Set(datos.juegos.map((j) => norm(j.titulo)));
@@ -321,6 +321,13 @@ function chollosDe(datos, { plataformas, tienda }) {
       elMejor: rivales.every((o) => total(o) >= total(m) - 0.005) });
   }
   const porPop = (a, b) => (a.j.pop || 99999) - (b.j.pop || 99999);
+  // Páginas por precio o por mínimo histórico: los juegos que cumplen, agrupados por plataforma
+  if (maxPrecio || soloMin) {
+    const fs = filas.filter((x) => (!maxPrecio || x.p < maxPrecio) && (!soloMin || x.minimo) && x.dto >= 20);
+    const PL = [["PC", ["PC"]], ["PlayStation", ["PS5", "PS4"]], ["Xbox", ["Xbox Series"]], ["Nintendo Switch", ["Switch", "Switch 2"]]];
+    const secciones = PL.map(([t, ps]) => ({ id: t.toLowerCase().replace(/\s+/g, "-"), t, xs: fs.filter((x) => ps.includes(x.m.plataforma)).sort(porPop).slice(0, 12) })).filter((s) => s.xs.length);
+    return { filas: fs, secciones, vale, variasPlat, total, eur };
+  }
   const secciones = [
     { id: "menos-5", t: "Por menos de 5 €", xs: filas.filter((x) => x.p < 5 && x.dto >= 30).sort(porPop) },
     { id: "menos-10", t: "Por menos de 10 €", xs: filas.filter((x) => x.p >= 5 && x.p < 10 && x.dto >= 30).sort(porPop) },
@@ -331,8 +338,8 @@ function chollosDe(datos, { plataformas, tienda }) {
   return { filas, secciones, vale, variasPlat, total, eur };
 }
 
-function paginaOfertas(datos, tiendaPorId, { ruta, titulo, h1, intro, plataformas, tienda, desc, cta, preguntas }) {
-  const { filas, secciones, vale, variasPlat, total, eur } = chollosDe(datos, { plataformas, tienda });
+function paginaOfertas(datos, tiendaPorId, { ruta, titulo, h1, intro, plataformas, tienda, desc, cta, preguntas, maxPrecio, soloMin }) {
+  const { filas, secciones, vale, variasPlat, total, eur } = chollosDe(datos, { plataformas, tienda, maxPrecio, soloMin });
   const tarjeta = (x) => {
     const t = tiendaPorId[x.m.tienda] || { nombre: x.m.tienda }, img = imagenDe(x.j);
     const plat = variasPlat ? `${esc(x.m.plataforma)} · ` : "";
@@ -365,7 +372,22 @@ ${secciones.map((s) => `<h2 id="${s.id}">${s.t}</h2><ul class="ofertas">${s.xs.m
 
 const P_MINIMO = ["¿Qué significa «mínimo histórico»?", "Que el juego nunca había estado tan barato desde que lo seguimos. Si no te corre prisa, puedes poner un aviso en la ficha del juego y te escribimos cuando baje al precio que tú digas."];
 const P_CADA = ["¿Cada cuánto se actualizan los precios?", "Varias veces al día. Aun así, el precio válido es siempre el que marque la tienda al comprar."];
+const TODAS_PLATS = ["PC", "PS5", "PS4", "Xbox Series", "Switch", "Switch 2"];
 const OFERTAS = [
+  { ruta: "juegos-por-menos-de-5-euros", corto: "Menos de 5 €", h1: "Juegos por menos de 5 €", plataformas: TODAS_PLATS, maxPrecio: 5,
+    titulo: "Juegos por menos de 5 € hoy: PC, PS5, Xbox y Switch | Pillao",
+    intro: "Juegos conocidos rebajados por debajo de 5 € hoy, para PC, PlayStation, Xbox y Nintendo Switch.",
+    desc: "Juegos por menos de 5 euros hoy para PC, PS5, PS4, Xbox y Switch, comparando más de 40 tiendas españolas. Actualizado varias veces al día.",
+    cta: { href: "", texto: "Buscar más juegos en el comparador" },
+    preguntas: [
+      ["¿De verdad hay juegos buenos por menos de 5 €?", "Sí: en rebajas muchos juegos conocidos bajan de 5 €, sobre todo en PC y en la eShop de Nintendo. Aquí solo salen juegos completos con al menos un 20 % de descuento sobre su precio normal."],
+      P_MINIMO, P_CADA] },
+  { ruta: "juegos-en-su-minimo-historico", corto: "Mínimos históricos", h1: "Juegos en su precio más bajo histórico", plataformas: TODAS_PLATS, soloMin: true,
+    titulo: "Juegos en su mínimo histórico hoy: nunca habían estado tan baratos | Pillao",
+    intro: "Juegos que hoy están más baratos que nunca desde que seguimos su precio, para PC, PlayStation, Xbox y Nintendo Switch.",
+    desc: "Juegos de PC, PS5, PS4, Xbox y Switch en su precio más bajo histórico hoy, comparando más de 40 tiendas españolas.",
+    cta: { href: "", texto: "Buscar más juegos en el comparador" },
+    preguntas: [P_MINIMO, ["¿Volverán a bajar más?", "Puede pasar, pero un mínimo histórico suele ser un buen momento para comprar. Si prefieres esperar, crea un aviso en el comparador y te escribimos si baja todavía más."], P_CADA] },
   { ruta: "juegos-baratos-pc", corto: "PC", h1: "Juegos baratos para PC", plataformas: ["PC"],
     titulo: "Juegos baratos para PC: ofertas de hoy en Steam y tiendas de claves | Pillao",
     intro: "Las mejores ofertas de juegos de PC de hoy, comparando Steam, GOG, Epic, Instant Gaming y decenas de tiendas de claves válidas en España.",
@@ -417,7 +439,11 @@ const OFERTAS = [
 
 // Cómo es el banner de cada página de chollos en /chollos/
 const PC_ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>';
+const EURO5_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="16.5" text-anchor="middle" font-size="12" font-weight="800" font-family="Bricolage Grotesque,Arial Black,sans-serif" fill="currentColor">5€</text></svg>';
+const MIN_ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l6 6 4-4 8 8"/><path d="M21 11v5h-5"/></svg>';
 const BANNERS = {
+  "juegos-por-menos-de-5-euros": { t: "Juegos por menos de 5 €", sub: "Todas las plataformas", c1: "#b45309", c2: "#7c2d12", ico: EURO5_ICO },
+  "juegos-en-su-minimo-historico": { t: "En su mínimo histórico", sub: "Nunca habían estado tan baratos", c1: "#0f766e", c2: "#134e4a", ico: MIN_ICO },
   "chollos-instant-gaming": { t: "Chollos de Instant Gaming", sub: "PC y consolas", c1: "#ff5a00", c2: "#c2185b", logo: "instant-gaming.com" },
   "juegos-baratos-pc": { t: "Chollos de PC", sub: "Steam, GOG, Epic y tiendas de claves", c1: "#3b2bd6", c2: "#0e7490", ico: PC_ICO },
   "juegos-baratos-playstation": { t: "Chollos de PlayStation", sub: "PS5 y PS4", c1: "#0050b5", c2: "#00439c", logo: "playstation.com" },
