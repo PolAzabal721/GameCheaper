@@ -1035,7 +1035,7 @@ async function yuplay(juegos, cuenta, avisos) {
   const aBuscar = [...juegos.values()].filter((j) => j.tipo === "juego" && j.plataformas.has("PC") && !yaEsta.has(llave(j.titulo)))
     .filter((j) => !busq[llave(j.titulo)] || Date.now() - Date.parse(busq[llave(j.titulo)]) > YU_DIAS_BUSQUEDA * 86400000)
     .sort((a, b) => a.pop - b.pop).slice(0, YU_BUSQUEDAS);
-  let buscadas = 0;
+  let buscadas = 0, fallosBusq = 0;
   // Las tarjetas y monedas se buscan siempre; luego, los juegos del catálogo
   for (const q of [...YU_TARJETAS, ...aBuscar.map((j) => j.titulo)]) {
     const j = aBuscar.find((x) => x.titulo === q);
@@ -1050,7 +1050,7 @@ async function yuplay(juegos, cuenta, avisos) {
       }
       if (j) busq[llave(j.titulo)] = new Date().toISOString();
       buscadas++;
-    } catch (e) { avisos.push("yuplay búsqueda: " + e.message); break; }
+    } catch (e) { if (++fallosBusq === 1) avisos.push("yuplay búsqueda: " + e.message); if (fallosBusq >= 10) break; await esperar(3000); }
     await esperar(YU_ESPERA);
   }
   // 3. Qué es cada producto: los del catálogo se juntan con su ficha; el resto (ediciones, DLC…) entra como ficha nueva
