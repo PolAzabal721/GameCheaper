@@ -92,6 +92,14 @@ button { cursor: pointer; }
 @media (max-width: 700px) { .quick { justify-content: center; } #plataformas { justify-content: center; } .sep { display: none; } .seg button { padding: 6px 10px; } }
 .chip { border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; border-radius: 99px; font-size: 14px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
 .chip-plat { display: inline-flex; align-items: center; gap: 6px; }
+/* Móvil: plataformas como iconos en una rejilla, todas a la vista */
+@media (max-width: 560px) {
+  #plataformas { display: grid !important; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px !important; width: 100%; }
+  #plataformas .chip-plat { flex-direction: column; justify-content: center; gap: 3px; min-width: 0; padding: 7px 0 6px; border-radius: 12px; font-size: 11px; font-weight: 700; white-space: nowrap; letter-spacing: -.01em; background: var(--surface-2); }
+  #plataformas .chip-plat svg { width: 20px; height: 20px; }
+  #plataformas .chip-plat .pl-x { display: none; }
+  #plataformas .chip-plat[aria-pressed=true] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--surface-2)); }
+}
 .ic-plat { width: 17px; height: 17px; flex-shrink: 0; }
 .ic-pc { color: var(--muted); } .ic-ps { color: #1f5fd6; } .ic-xbox { color: #12893e; } .ic-nin { color: #d42a2a; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ic-ps { color: #6f9bff; } :root:not([data-theme="light"]) .ic-xbox { color: #3fcf73; } :root:not([data-theme="light"]) .ic-nin { color: #ff6b6b; } }
@@ -982,7 +990,7 @@ button { cursor: pointer; }
     f.plats = f.plats.filter(function (p) { return plats.indexOf(p) >= 0; });
     poner($("plataformas"), plats.map(function (p) {
       var ic = iconoPlat(p);
-      return '<button type="button" class="chip chip-plat" data-p="' + esc(p) + '" aria-pressed="' + (f.plats.indexOf(p) >= 0) + '">' + ic + esc(p) + "</button>";
+      return '<button type="button" class="chip chip-plat" data-p="' + esc(p) + '" aria-pressed="' + (f.plats.indexOf(p) >= 0) + '">' + ic + (p === "Xbox Series" ? '<span>Xbox<span class="pl-x"> Series</span></span>' : esc(p)) + "</button>";
     }).join(""));
     // tiendas agrupadas por tipo (solo las que tienen algún precio)
     conOfertas = {};
