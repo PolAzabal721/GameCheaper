@@ -1,0 +1,34 @@
+name: Prueba
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Probar
+        run: |
+          cat > p.mjs <<'JS'
+          const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)"};
+          const sleep=(ms)=>new Promise(s=>setTimeout(s,ms));
+          for (const u of ["https://driffle.com/007-first-light-deluxe-edition-europe-pc-steam-digital-key-p9995900","https://k4g.com/product/7-days-to-die-steam-europe-instant-cd-key-standard-edition-cd-key-2157A0E6"]) {
+            const h=await (await fetch(u,{headers:H})).text();
+            console.log("FICHA", u.slice(0,40), "| og:", (h.match(/property="og:title"\s+content="([^"]+)"/)||[])[1], "| ld:", (h.match(/"@type"\s*:\s*"Product"[\s\S]{0,400}?"name"\s*:\s*"([^"]+)"/)||[])[1], "| h1:", (h.match(/<h1[^>]*>([\s\S]{0,150}?)<\/h1>/)||[])[1]);
+            await sleep(1500);
+          }
+          const r=await fetch("https://www.compraonline.alcampo.es/api/webproductpagews/v6/product-pages/search?q=juego%20ps5&maxPageSize=60&maxProductsToDecorate=60",{headers:{...H,Accept:"application/json"}});
+          console.log("ALC", r.status); try{const d=await r.json(); for(const g of d.productGroups||[]) for(const p of g.decoratedProducts||[]) console.log("A", p.name, "|", (p.categoryPath||[]).join(">"));}catch(e){console.log(e.message)}
+          const Y="https://www.yuplay.com"; const jar=new Map();
+          const ir=async(u,j)=>{const r=await fetch(Y+u,{headers:{...H,Cookie:[...jar].map(([k,v])=>k+"="+v).join("; "),Referer:Y+"/",...(j?{Accept:"application/json"}:{})},redirect:"manual"});(r.headers.getSetCookie?.()||[]).map(c=>c.split(";")[0]).forEach(c=>{const i=c.indexOf("=");jar.set(c.slice(0,i),c.slice(i+1))});return r;};
+          await ir("/"); await ir("/api/currency/euro/");
+          for (const q of ["gift card","wallet","points","coins","subscription","months","nintendo switch online","ea play","tinder","apex","fc points","blizzard","playstation","xbox","game pass","v-bucks","robux","netflix","spotify","top up"]) {
+            const r=await ir(`/api/products/?search=${encodeURIComponent(q)}`,true); const d=await r.json();
+            console.log("Q", q, d.extensions?.count); for (const p of d.products||[]) console.log("  Y", p.name, "|", p.price, "|", p.base_price, "|", p.link);
+            await sleep(400);
+          }
+          for (const l of ["/product/steam-wallet-gift-card-30-eur/","/product/nintendo-switch-online-12-months/"]) { const r=await ir(l); const h=await r.text(); console.log("F", l, r.status, (h.match(/data-tooltip_content="[^"]{0,200}/g)||[]).join(" || "), (h.match(/Available Platform:<\/span><div><a [^>]*title="([^"]+)"/)||[])[1]); }
+          JS
+          node p.mjs
