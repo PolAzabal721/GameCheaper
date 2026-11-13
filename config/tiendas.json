@@ -71,6 +71,15 @@
   "busqueda": "https://www.eneba.com/es/store/all?text={q}"
  },
  {
+  "id": "gamivo",
+  "nombre": "Gamivo",
+  "tipo": "marketplace",
+  "formatos": [
+   "digital"
+  ],
+  "busqueda": "https://www.gamivo.com/search/{q}?glv=pillao"
+ },
+ {
   "id": "g2a",
   "nombre": "G2A",
   "tipo": "marketplace",
