@@ -1877,6 +1877,10 @@ button { cursor: pointer; }
       if (p.expira && Date.parse(p.expira) < ahora) return false;
       var t = tiendaDePack(p);
       if (t && f.fuera.indexOf(t.id) >= 0) return false;
+      if (t && t.tipo === "revendedor" && f.revOff.indexOf(t.id) >= 0) return false;
+      if (t && t.tipo === "marketplace" && !f.mkt) return false;
+      // Tienda que no sale en el panel: si estás eligiendo tiendas, no la cuelas
+      if (!t && (f.fuera.length || f.revOff.length)) return false;
       if (f.pmax != null && p.desde != null && p.desde > f.pmax) return false;
       if (q) { var txt = norm(p.titulo + " " + p.tiers.map(function (x) { return x.juegos.join(" "); }).join(" ")); if (q.split(/\s+/).some(function (w) { return txt.indexOf(w) < 0; })) return false; }
       return true;
