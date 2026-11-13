@@ -795,6 +795,11 @@ async function kinguinUno(j, p) {
 // y K4G lo lleva en euros (en céntimos) dentro de la página. Solo claves de Europa o globales, sin cuentas ni PlayStation.
 const MK_MAX = +(ENV.MK_MAX || 100), MK_ROTA = +(ENV.MK_ROTA || 150), MK_ESPERA = +(ENV.MK_ESPERA || 1300);
 const MK_REGION_OK = /^(europe|eu|global|worldwide|spain|emea)$/;
+const MK_NUEVOS = +(ENV.MK_NUEVOS || 150);   // productos nuevos que se dan de alta por mercado y ejecución
+// «age of empires ii definitive edition» → «Age of Empires II Definitive Edition»
+const ROMANOS = /^(ii|iii|iv|vi|vii|viii|ix|xi|xii|xiii|xiv|xv|xvi)$/;
+const MENORES = /^(of|the|and|a|an|in|on|to|for|de|del|la|el|los|las|y)$/;
+const nombreDeSlug = (t) => t.split(" ").map((w, i) => ROMANOS.test(w) ? w.toUpperCase() : (i && MENORES.test(w)) ? w : /^(dlc|vr|hd|rpg|fps|gta|ufc|nba|nfl|nhl|wwe|fc|f1|wrc|lego)$/.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 const MK_PC = /^(steam|ea-app|origin|uplay|ubisoft-connect|gog|epic-games|battle-net|rockstar|microsoft-store|windows)$/;
 const quitarCola = (t) => t.replace(/\b(standard edition|edicion estandar)\b/gi, "").replace(/\s+/g, " ").trim();
 // Driffle: «007-first-light-deluxe-edition-europe-pc-steam-digital-key-p9995900»
@@ -838,7 +843,9 @@ const MERCADOS = {
       const h = await (await pedir(p.url + "?currency=EUR")).text();
       const m = h.match(/"price"\s*:\s*"?([0-9.]+)"?\s*,\s*"priceCurrency"\s*:\s*"EUR"/) || h.match(/"priceCurrency"\s*:\s*"EUR"\s*,\s*"price"\s*:\s*"?([0-9.]+)/);
       if (!m) return null;
-      return { precio: Number(m[1]), stock: !/OutOfStock/.test(h.slice(0, 200000)) };
+      // Su nombre: «007 First Light - Deluxe Edition (Europe) (PC) - Steam - Digital Key» → «007 First Light - Deluxe Edition»
+      const h1 = html2txt((h.match(/<h1[^>]*>([\s\S]{1,200}?)<\/h1>/) || [])[1] || "").replace(/\s*\((europe|eu|global|row|worldwide|emea|spain)\)[\s\S]*$/i, "").trim();
+      return { precio: Number(m[1]), stock: !/OutOfStock/.test(h.slice(0, 200000)), nombre: h1 || null };
     },
   },
   k4g: {
@@ -865,11 +872,14 @@ async function mapaMercado(id, llavesCatalogo) {
   // Primero los que nunca se han leído, luego los más antiguos
   const ronda = [...todos].sort((a, b) => (c.leidos[a] || "").localeCompare(c.leidos[b] || "")).slice(0, t.porRonda);
   let nuevos = 0;
+  const fuera = new Map();
   for (const sm of ronda) {
     try {
       for (const u of [...(await (await pedir(sm)).text()).matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((m) => m[1])) {
         const p = t.leer(u);
-        if (!p || !llavesCatalogo.has(p.llave)) continue;
+        if (!p) continue;
+        // Lo que aún no está en el catálogo se apunta para darlo de alta (unos cuantos por ejecución)
+        if (!llavesCatalogo.has(p.llave)) { if (!NO_PRODUCTO.test(p.llave)) fuera.set(p.llave + "|" + p.plat, p); continue; }
         const k = p.llave + "|" + p.plat;
         if (!c.productos[k]) nuevos++;
         // Una ficha por juego y plataforma: mejor la europea que la global
@@ -882,13 +892,13 @@ async function mapaMercado(id, llavesCatalogo) {
   const productos = Object.values(c.productos);
   console.log(`${t.nombre}: leídos ${ronda.length} de ${todos.length} ficheros de su mapa (${Object.keys(c.leidos).length} en total); ${nuevos} coincidencias nuevas, ${productos.length} guardadas`);
   if (!productos.length) throw new Error(`el mapa de ${t.nombre} no trae ninguna clave del catálogo`);
-  return productos;
+  return { productos, fuera: [...fuera.values()] };
 }
 async function guardarCacheMercados() { if (cacheMercados) await writeFile(CACHE_MERCADOS, JSON.stringify(cacheMercados)); }
 async function recorrerMercado(id, juegos, cuenta, avisos, caidas) {
   const t = MERCADOS[id];
   const llavesCatalogo = new Set([...juegos.values()].filter((j) => j.tipo !== "tarjeta").map((j) => llave(j.titulo)));
-  const productos = await mapaMercado(id, llavesCatalogo);
+  const { productos, fuera } = await mapaMercado(id, llavesCatalogo);
   // Por juego y plataforma, una ficha (las globales y europeas valen igual en España)
   const porLlave = new Map();
   for (const p of productos) { const k = p.llave + "|" + p.plat; if (!porLlave.has(k)) porLlave.set(k, p); }
@@ -914,6 +924,24 @@ async function recorrerMercado(id, juegos, cuenta, avisos, caidas) {
     x.j.revisado.add(id); visitar(id, x.j);
     await esperar(MK_ESPERA);
   }
+  // Productos que no teníamos: se dan de alta con su nombre (de la ficha, o del enlace si la ficha no lo trae)
+  let altas = 0;
+  if (!caidas.has(id)) for (const p of fuera.slice(0, MK_NUEVOS)) {
+    try {
+      const f = await t.ficha(p);
+      if (f && f.precio > 0) {
+        const nombre = f.nombre || nombreDeSlug(p.llave);
+        const j = juego(nombre, { pop: 99999 });
+        if (j && !ES_CUENTA.test(nombre)) {
+          ofertar(j, { tienda: id, plataforma: p.plat, precio: f.precio, stock: f.stock, drm: p.drm || undefined,
+            condicion: `Clave ${p.drm || (p.plat === "PC" ? "PC" : p.plat === "Xbox Series" ? "Xbox" : "Nintendo")} · ${p.region === "global" || p.region === "worldwide" ? "Global" : "Europa"}`, url: p.url, fuente: id });
+          j.revisado.add(id); visitar(id, j); altas++; n++;
+        }
+      }
+    } catch (e) { if (++fallos >= 8) break; }
+    await esperar(MK_ESPERA);
+  }
+  if (fuera.length) console.log(`${t.nombre}: ${fuera.length} claves que no teníamos en los mapas leídos; ${altas} dadas de alta ahora`);
   cuenta[id] = n;
 }
 
@@ -967,7 +995,12 @@ async function buscarImagenes(juegos, imgAnterior) {
 const YUPLAY = "https://www.yuplay.com", YUPLAY_PARTNER = "3473557";
 const CACHE_YUPLAY = join(RAIZ, "data", "yuplay.json");
 const YU_FICHAS = +(ENV.YUPLAY_FICHAS || 700), YU_BUSQUEDAS = +(ENV.YUPLAY_BUSQUEDAS || 400), YU_ESPERA = 350, YU_DIAS = 30, YU_DIAS_BUSQUEDA = 7;
-const nombreYuplay = (n) => n.replace(/\s*\((steam|pc|gog|epic|epic games|ubisoft connect|uplay|ea app|origin|rockstar|battle\.net)\)\s*$/i, "").trim();
+// Quita la plataforma y la región del nombre: «Avowed (Xbox Series X|S & PC)», «Civilization VI (Xbox One & Xbox Series X|S) Europe»
+const nombreYuplay = (n) => n.replace(/\s*\((?=[^()]*\b(steam|pc|gog|epic|ubisoft|uplay|ea app|origin|rockstar|battle\.net|xbox|microsoft store|nintendo switch|playstation|eshop)\b)[^()]*\)/gi, "")
+  .replace(/\s+(europe|global|eu|emea|worldwide)$/i, "").replace(/\s+/g, " ").trim();
+// Tarjetas, monedas de juegos y suscripciones (FC Points, Robux, V-Bucks, tarjetas PSN, EA Play…)
+const TJ_YU = /\b(gift card|wallet|network card|psn|eshop \d|points|coins|robux|v-?bucks|credits|minecoins|subscription|membership|riot points|\d+\s*(eur|usd|gbp)|[€$£]\s*\d+)\b|\b(tinder|nintendo switch online|game pass|ea play|ps plus|playstation plus)\b/i;
+const YU_TARJETAS = ["gift card", "network card", "points", "coins", "robux", "v-bucks", "credits", "minecoins", "subscription", "membership", "eshop", "wallet", "tinder", "nintendo switch online", "ea play", "game pass", "playstation plus"];
 const galletas = (r) => (r.headers.getSetCookie ? r.headers.getSetCookie() : [r.headers.get("set-cookie") || ""]).map((c) => c.split(";")[0]).filter(Boolean);
 async function yuplay(juegos, cuenta, avisos) {
   let cache = {}; try { cache = JSON.parse(await readFile(CACHE_YUPLAY, "utf8")); } catch {}
@@ -989,7 +1022,7 @@ async function yuplay(juegos, cuenta, avisos) {
     total = d.extensions?.pagination?.num_pages || 1;
     for (const p of d.products || []) {
       if (p.currency_code !== "EUR") throw new Error("los precios no llegan en euros (" + p.currency_code + ")");
-      productos.push({ nombre: nombreYuplay(html2txt(p.name)), link: p.link, precio: +p.price, normal: +p.base_price, reserva: !!p.is_preorder });
+      productos.push({ nombre: nombreYuplay(html2txt(p.name)), bruto: html2txt(p.name), link: p.link, precio: +p.price, normal: +p.base_price, reserva: !!p.is_preorder });
     }
     await esperar(150);
   }
@@ -1003,24 +1036,27 @@ async function yuplay(juegos, cuenta, avisos) {
     .filter((j) => !busq[llave(j.titulo)] || Date.now() - Date.parse(busq[llave(j.titulo)]) > YU_DIAS_BUSQUEDA * 86400000)
     .sort((a, b) => a.pop - b.pop).slice(0, YU_BUSQUEDAS);
   let buscadas = 0;
-  for (const j of aBuscar) {
+  // Las tarjetas y monedas se buscan siempre; luego, los juegos del catálogo
+  for (const q of [...YU_TARJETAS, ...aBuscar.map((j) => j.titulo)]) {
+    const j = aBuscar.find((x) => x.titulo === q);
     try {
-      const r = await ir(`/api/products/?search=${encodeURIComponent(j.titulo)}`, true);
+      const r = await ir(`/api/products/?search=${encodeURIComponent(q)}`, true);
       if (r.status === 403 || r.status === 429) break;                  // nos piden parar: seguimos en la próxima ejecución
       if (!r.ok) continue;
       for (const p of (await r.json()).products || []) {
         if (p.currency_code !== "EUR" || vistos.has(p.link)) continue;
         vistos.add(p.link);
-        productos.push({ nombre: nombreYuplay(html2txt(p.name)), link: p.link, precio: +p.price, normal: +p.base_price, reserva: !!p.is_preorder });
+        productos.push({ nombre: nombreYuplay(html2txt(p.name)), bruto: html2txt(p.name), link: p.link, precio: +p.price, normal: +p.base_price, reserva: !!p.is_preorder });
       }
-      busq[llave(j.titulo)] = new Date().toISOString(); buscadas++;
+      if (j) busq[llave(j.titulo)] = new Date().toISOString();
+      buscadas++;
     } catch (e) { avisos.push("yuplay búsqueda: " + e.message); break; }
     await esperar(YU_ESPERA);
   }
   // 3. Qué es cada producto: los del catálogo se juntan con su ficha; el resto (ediciones, DLC…) entra como ficha nueva
-  const valido = (p) => p.precio > 0 && !/\bgift\b/i.test(p.nombre) && !NO_PRODUCTO.test(limpiar(p.nombre));
+  const valido = (p) => p.precio > 0 && !(/\bgift\b/i.test(p.nombre) && !/gift card/i.test(p.nombre)) && !NO_PRODUCTO.test(limpiar(p.nombre));
   const candidatos = productos.filter(valido);
-  const popDe = (p) => (porLlave.get(llave(p.nombre)) || { pop: 199999 }).pop;
+  const popDe = (p) => TJ_YU.test(p.bruto || p.nombre) ? 1500 : (porLlave.get(llave(p.nombre)) || { pop: 199999 }).pop;
   // 4. Región y plataforma de las fichas que no se han mirado (o hace más de 30 días): primero las del catálogo, por popularidad
   const viejo = (c) => !c || Date.now() - Date.parse(c.fecha) > YU_DIAS * 86400000;
   const pendientes = candidatos.filter((p) => viejo(cache[p.link])).sort((a, b) => popDe(a) - popDe(b)).slice(0, YU_FICHAS);
@@ -1041,19 +1077,44 @@ async function yuplay(juegos, cuenta, avisos) {
     await esperar(YU_ESPERA);
   }
   await writeFile(CACHE_YUPLAY, JSON.stringify(cache));
-  // 5. Las ofertas: claves que se activan en España, de PC (Steam, GOG, Epic, Ubisoft…)
-  let n = 0, nuevas = 0;
+  // 5. Las ofertas: lo que se activa en España (claves de PC, Xbox y Switch; tarjetas, monedas y suscripciones)
+  let n = 0, nuevas = 0, tarjetas = 0;
+  const marcaDe = (txt) => (MARCAS_SALDO.find(([, re]) => re.test(limpiar(txt))) || [])[0];
   for (const p of candidatos) {
     const c = cache[p.link];
-    if (!c || !c.vale || /xbox|playstation|psn|nintendo/i.test(c.drm || "")) continue;
+    if (!c || !c.vale) continue;
+    const bruto = p.bruto || p.nombre, drm = c.drm || "";
+    const xbox = /xbox/i.test(drm + " " + bruto) && /xbox|microsoft/i.test(drm);
+    const plats = xbox ? (/\bpc\b/i.test(bruto) ? ["Xbox Series", "PC"] : ["Xbox Series"]) : /nintendo/i.test(drm) ? ["Switch"] : /playstation|psn/i.test(drm) ? [] : ["PC"];
+    const url = `${YUPLAY}${p.link}?partner=${YUPLAY_PARTNER}`, regular = p.normal > p.precio ? p.normal : undefined;
+    if (TJ_YU.test(bruto)) {
+      // Tarjeta de saldo en euros (p. ej. «PlayStation Network Card €10 - PSN Spain»): una ficha por marca y valor
+      const m = marcaDe(bruto), valor = valorEuros(bruto.replace(/€\s*(\d+)/, "$1 €"));
+      let j;
+      if (m && valor > 0 && /(card|gift|wallet|eshop)/i.test(bruto)) {
+        if (p.precio < valor * 0.7 || p.precio > valor * 1.15) continue;      // no cuadra con su valor: no es lo que creemos
+        j = fichaSaldo(m, valor, 1500);
+        ofertar(j, { tienda: "yuplay", plataforma: "Tarjeta regalo", precio: p.precio, regular: valor, condicion: "Código digital · válido en España", url, fuente: "yuplay" });
+      } else {
+        j = juego(p.nombre, { pop: 1600, tipo: "tarjeta" });
+        if (!j) continue;
+        plats.forEach((x) => j.plataformas.add(x));
+        for (const plataforma of plats.length && !/playstation|psn/i.test(drm) ? plats : ["Tarjeta regalo"])
+          ofertar(j, { tienda: "yuplay", plataforma, precio: p.precio, regular, condicion: `Código ${drm || "digital"} · válido en España`, url, fuente: "yuplay" });
+      }
+      j.revisado.add("yuplay"); n++; tarjetas++;
+      continue;
+    }
+    if (!plats.length) continue;                                              // juegos de PlayStation: no sabemos si son de PS4 o PS5
     let j = porLlave.get(llave(p.nombre));
     if (!j) { j = juego(p.nombre, { pop: 99999 }); if (!j) continue; porLlave.set(llave(p.nombre), j); nuevas++; }
-    ofertar(j, { tienda: "yuplay", plataforma: "PC", precio: p.precio, regular: p.normal > p.precio ? p.normal : undefined, drm: c.drm || undefined,
-      condicion: `Clave ${c.drm || "PC"} · válida en España`, url: `${YUPLAY}${p.link}?partner=${YUPLAY_PARTNER}`, fuente: "yuplay" });
+    for (const plataforma of plats)
+      ofertar(j, { tienda: "yuplay", plataforma, precio: p.precio, regular, drm: drm || undefined,
+        condicion: `Clave ${drm || "PC"} · válida en España`, url, fuente: "yuplay" });
     j.revisado.add("yuplay"); n++;
   }
   const enCatalogo = candidatos.filter((p) => porLlave.has(llave(p.nombre))).length;
-  console.log(`Yuplay: ${productos.length} productos (${buscadas} búsquedas); ${fichas} fichas revisadas ahora (quedan ${Math.max(0, candidatos.filter((p) => viejo(cache[p.link])).length)}); ${n} ofertas válidas en España, ${nuevas} de fichas nuevas; ${enCatalogo} en el catálogo.`);
+  console.log(`Yuplay: ${productos.length} productos (${buscadas} búsquedas); ${fichas} fichas revisadas ahora (quedan ${Math.max(0, candidatos.filter((p) => viejo(cache[p.link])).length)}); ${n} ofertas válidas en España (${tarjetas} tarjetas y monedas), ${nuevas} de fichas nuevas; ${enCatalogo} en el catálogo.`);
   cuenta.yuplay = n;
 }
 
