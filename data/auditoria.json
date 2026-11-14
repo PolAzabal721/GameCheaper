@@ -1,7 +1,7 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 416,
+   "pendientes": 852,
    "ejemplos": [
     "Clone Drone in the Danger Zone",
     "Worshippers of Cthulhu",
@@ -11,103 +11,102 @@
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 3423,
+   "pendientes": 5983,
    "ejemplos": [
-    "Voice of Cards: The Forsaken Maiden",
-    "Moomin: Midsummer Madness",
-    "On The Train",
-    "Euro Truck Simulator 2 - Holland Style Tuning Pack",
-    "Scarecrow: 90s Crime Story"
+    "Passpartout 2: The Lost Artist",
+    "Tactical Breach Wizards",
+    "Where Angels Cry",
+    "Yono and the Celestial Elephants",
+    "Sockventure"
    ]
   },
   "game (consola)": {
-   "pendientes": 16140,
+   "pendientes": 16261,
    "ejemplos": [
+    "The Legend of Zelda: Ocarina of Time",
+    "Fire Emblem Engage",
     "EA Sports FC 27 Ultimate Edition",
     "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo",
-    "Grand Theft Auto VI",
-    "Final Fantasy VII Rebirth Digital Deluxe Edition",
-    "Hiragana Pixel Party"
+    "Grand Theft Auto VI"
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 579,
+   "pendientes": 643,
    "ejemplos": [
     "Football Manager 27",
-    "Grand Theft Auto VI",
     "NBA 2K27",
     "Mortal Shell II",
-    "Minecraft Dungeons II Deluxe Edition"
+    "Minecraft Dungeons II Deluxe Edition",
+    "Cyberpunk 2077: Phantom Liberty"
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 15542,
+   "pendientes": 15473,
    "ejemplos": [
-    "Shrek 2 Remastered",
+    "Dying Light - Shu Warrior Bundle",
+    "DERELIKT",
+    "LEGO Marvel Super Heroes 2 Deluxe Edition",
     "SNK HEROINES Tag Team Frenzy",
-    "Vesta",
-    "Ys VIII: Lacrimosa of DANA",
-    "ACA NEOGEO ART OF FIGHTING 2"
+    "Vesta"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 579,
-  "sinFicha": 497,
-  "fichasEncontradas": 621
+  "sinPrecio": 643,
+  "sinFicha": 533,
+  "fichasEncontradas": 714
  },
  "fotos": {
   "juego": {
-   "total": 24397,
-   "con": 22945,
-   "porcentaje": 94
+   "total": 27341,
+   "con": 25006,
+   "porcentaje": 91
   },
   "edicion": {
-   "total": 1706,
-   "con": 1539,
-   "porcentaje": 90
+   "total": 2107,
+   "con": 1774,
+   "porcentaje": 84
   },
   "dlc": {
-   "total": 1473,
-   "con": 1407,
-   "porcentaje": 96
+   "total": 1999,
+   "con": 1826,
+   "porcentaje": 91
   },
   "tarjeta": {
-   "total": 358,
+   "total": 401,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 3908,
+   "total": 5529,
    "probadas": 12,
-   "fallan": 3,
+   "fallan": 2,
    "ejemplos": [
-    "XeGrader plus → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4323520/header.jpg",
-    "SCUM Base Building Decor Pack → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4062860/header.jpg",
-    "Expansion - Hearts of Iron IV: No Compromise, No Surrender → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3796260/header.jpg"
+    "Paquete de artes marciales de DRAGON BALL: Sparking! ZERO → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2957510/header.jpg",
+    "Mystery Detective Adventure 2 Collector's Edition → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4693270/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 1745,
+   "total": 2146,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "nintendo": {
-   "total": 11634,
+   "total": 11811,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 8309,
+   "total": 8826,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "otras": {
-   "total": 295,
+   "total": 294,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
@@ -115,84 +114,84 @@
  },
  "enlaces": {
   "steam": {
-   "ofertas": 6841,
+   "ofertas": 8062,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "k4g": {
-   "ofertas": 346,
+   "ofertas": 931,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "yuplay": {
+   "ofertas": 2247,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "game": {
-   "ofertas": 1532,
+   "ofertas": 1543,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xbox": {
-   "ofertas": 12098,
+   "ofertas": 12839,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "instantgaming": {
-   "ofertas": 5564,
+   "ofertas": 8106,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "eshop": {
-   "ofertas": 18617,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "gameseminuevos": {
-   "ofertas": 359,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "psstore": {
-   "ofertas": 495,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "driffle": {
-   "ofertas": 481,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "alcampo": {
-   "ofertas": 10,
+   "ofertas": 18634,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "ebay": {
-   "ofertas": 1525,
+   "ofertas": 1663,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
-  "yuplay": {
-   "ofertas": 232,
+  "gameseminuevos": {
+   "ofertas": 377,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "psstore": {
+   "ofertas": 564,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "driffle": {
+   "ofertas": 727,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "alcampo": {
+   "ofertas": 12,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -207,14 +206,14 @@
   "ejemplos": []
  },
  "actualizado": {
-  "precios": "2026-11-13T08:33:42.477Z",
-  "diasDesdeLaUltima": 0.2
+  "precios": "2026-11-14T09:00:27.341Z",
+  "diasDesdeLaUltima": 0.14
  },
  "historial": {
-  "series": 27579,
+  "series": 30801,
   "rotas": 0,
-  "alDia": 27482,
-  "ultimoDia": "2026-11-13"
+  "alDia": 30701,
+  "ultimoDia": "2026-11-14"
  },
  "red": {
   "comprobadas": 132,
@@ -222,17 +221,17 @@
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 27934,
-  "ofertas": 106469,
+  "juegos": 31848,
+  "ofertas": 116741,
   "tiendas": 42,
-  "conFoto": "93 %"
+  "conFoto": "90 %"
  },
- "fecha": "2026-11-13T13:17:59.927Z",
+ "fecha": "2026-11-14T12:21:43.688Z",
  "graves": [],
  "avisos": [
-  "xbox (PC o Xbox): 38 juegos populares aún sin consultar (p. ej. Voice of Cards: The Forsaken Maiden, Moomin: Midsummer Madness, On The Train)",
-  "game (consola): 720 juegos populares aún sin consultar (p. ej. EA Sports FC 27 Ultimate Edition, Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo, Grand Theft Auto VI)",
-  "psstore (PS4 o PS5): 60 juegos populares aún sin consultar (p. ej. Football Manager 27, Grand Theft Auto VI, NBA 2K27)",
-  "ebay (consola, 2ª mano): 297 juegos populares aún sin consultar (p. ej. Shrek 2 Remastered, SNK HEROINES Tag Team Frenzy, Vesta)"
+  "xbox (PC o Xbox): 69 juegos populares aún sin consultar (p. ej. Passpartout 2: The Lost Artist, Tactical Breach Wizards, Where Angels Cry)",
+  "game (consola): 848 juegos populares aún sin consultar (p. ej. The Legend of Zelda: Ocarina of Time, Fire Emblem Engage, EA Sports FC 27 Ultimate Edition)",
+  "psstore (PS4 o PS5): 61 juegos populares aún sin consultar (p. ej. Football Manager 27, NBA 2K27, Mortal Shell II)",
+  "ebay (consola, 2ª mano): 466 juegos populares aún sin consultar (p. ej. Dying Light - Shu Warrior Bundle, DERELIKT, LEGO Marvel Super Heroes 2 Deluxe Edition)"
  ]
 }
