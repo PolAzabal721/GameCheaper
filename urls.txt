@@ -56,3 +56,14 @@ https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/203140/header
 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/632360/header.jpg
 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4045480/d2390d4f514c9e16fc1f93be5f6040cd4796ece4/capsule_616x353.jpg
 https://pillao-buscador.pillao-bb5842.workers.dev/v?p=%2Fchollos-yuplay%2F
+https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/library_600x900.jpg
+https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2622380/d1ee7bc631966b1a99e232a9f84af736bb298395/library_600x900.jpg
+https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2778580/library_600x900.jpg
+https://www.nintendo.com/eu/media/images/assets/nintendo_switch_2_games/eldenringtarnishededition/1x1_NSwitch2_EldenRing_image500w.jpg
+https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/header.jpg
+https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2622380/library_600x900.jpg
+https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2778580/header.jpg
+https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2622380/header.jpg
+https://store-images.s-microsoft.com/image/apps.12992.13549857495135736.aa626910-9f2c-4a13-a633-112e29ab5995.1be6d942-0f78-467b-800c-fe562cb27016?w=300
+https://store-images.s-microsoft.com/image/apps.23316.13549857495135736.aa626910-9f2c-4a13-a633-112e29ab5995.4ae5a6e0-6ab3-426d-baf6-791996c1573c?w=460
+https://pillao-buscador.pillao-bb5842.workers.dev/v?p=%2Fjuego%2Felden-ring%2F
