@@ -1,57 +1,70 @@
 {
- "fecha": "2026-11-13T22:24:14.404Z",
+ "fecha": "2026-11-14T15:25:17.092Z",
  "videos": [
   {
-   "archivo": "videos/2026-11-13-detroit-become-human.mp4",
-   "juego": "Detroit: Become Human",
-   "precio": 6.99,
-   "antes": 39.99,
+   "archivo": "videos/2026-11-14-tinykin.mp4",
+   "juego": "Tinykin",
+   "precio": 4.19,
+   "antes": 24.5,
    "dto": 83,
-   "tienda": "GamesPlanet FR",
+   "tienda": "GOG",
    "plataforma": "PC",
    "minimo": false,
-   "guion": "Chollo de hoy en Pillao. Detroit: Become Human, para PC. Costaba 39 euros con 99 y ahora está en 6 euros con 99. Un 83 por ciento menos en GamesPlanet FR. Compara todas las tiendas en pillaojuegos punto com.",
+   "guion": "Chollo de hoy en Pillao. Tinykin, para PC. Costaba 24 euros con 50 y ahora está en 4 euros con 19. Un 83 por ciento menos en GOG. Compara todas las tiendas en pillaojuegos punto com.",
    "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=Detroit%3A%20Become%20Human"
+   "url": "https://pillaojuegos.com/?q=Tinykin"
   },
   {
-   "archivo": "videos/2026-11-13-clustertruck.mp4",
-   "juego": "Clustertruck",
-   "precio": 2.75,
-   "antes": 14.79,
+   "archivo": "videos/2026-11-14-astrologaster.mp4",
+   "juego": "Astrologaster",
+   "precio": 1.88,
+   "antes": 9.99,
    "dto": 81,
+   "tienda": "Playsum",
+   "plataforma": "PC",
+   "minimo": false,
+   "guion": "Chollo de hoy en Pillao. Astrologaster, para PC. Costaba 9 euros con 99 y ahora está en 1 euros con 88. Un 81 por ciento menos en Playsum. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 13,
+   "url": "https://pillaojuegos.com/?q=Astrologaster"
+  },
+  {
+   "archivo": "videos/2026-11-14-inbento.mp4",
+   "juego": "inbento",
+   "precio": 0.93,
+   "antes": 4.99,
+   "dto": 81,
+   "tienda": "Playsum",
+   "plataforma": "PC",
+   "minimo": false,
+   "guion": "Chollo de hoy en Pillao. inbento, para PC. Costaba 4 euros con 99 y ahora está en 0 euros con 93. Un 81 por ciento menos en Playsum. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 13,
+   "url": "https://pillaojuegos.com/?q=inbento"
+  },
+  {
+   "archivo": "videos/2026-11-14-unmetal.mp4",
+   "juego": "UnMetal",
+   "precio": 3.39,
+   "antes": 16.99,
+   "dto": 80,
    "tienda": "GOG",
    "plataforma": "PC",
    "minimo": false,
-   "guion": "Chollo de hoy en Pillao. Clustertruck, para PC. Costaba 14 euros con 79 y ahora está en 2 euros con 75. Un 81 por ciento menos en GOG. Compara todas las tiendas en pillaojuegos punto com.",
+   "guion": "Chollo de hoy en Pillao. UnMetal, para PC. Costaba 16 euros con 99 y ahora está en 3 euros con 39. Un 80 por ciento menos en GOG. Compara todas las tiendas en pillaojuegos punto com.",
    "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=Clustertruck"
+   "url": "https://pillaojuegos.com/?q=UnMetal"
   },
   {
-   "archivo": "videos/2026-11-13-thehunter-call-of-the-wild.mp4",
-   "juego": "theHunter: Call of the Wild",
-   "precio": 3.99,
-   "antes": 19.99,
+   "archivo": "videos/2026-11-14-lichtspeer-double-speer-edition.mp4",
+   "juego": "Lichtspeer: Double Speer Edition",
+   "precio": 1.99,
+   "antes": 9.99,
    "dto": 80,
-   "tienda": "Epic Game Store",
-   "plataforma": "PC",
+   "tienda": "Nintendo eShop",
+   "plataforma": "Switch",
    "minimo": false,
-   "guion": "Chollo de hoy en Pillao. theHunter: Call of the Wild, para PC. Costaba 19 euros con 99 y ahora está en 3 euros con 99. Un 80 por ciento menos en Epic Game Store. Compara todas las tiendas en pillaojuegos punto com.",
+   "guion": "Chollo de hoy en Pillao. Lichtspeer: Double Speer Edition, para Switch. Costaba 9 euros con 99 y ahora está en 1 euros con 99. Un 80 por ciento menos en Nintendo eShop. Compara todas las tiendas en pillaojuegos punto com.",
    "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=theHunter%3A%20Call%20of%20the%20Wild"
-  },
-  {
-   "archivo": "videos/2026-11-13-tomb-raider-definitive-survivor-trilogy.mp4",
-   "juego": "Tomb Raider: Definitive Survivor Trilogy",
-   "precio": 10.09,
-   "antes": 50.49,
-   "dto": 80,
-   "tienda": "GOG",
-   "plataforma": "PC",
-   "minimo": false,
-   "guion": "Chollo de hoy en Pillao. Tomb Raider: Definitive Survivor Trilogy, para PC. Costaba 50 euros con 49 y ahora está en 10 euros con 9. Un 80 por ciento menos en GOG. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=Tomb%20Raider%3A%20Definitive%20Survivor%20Trilogy"
+   "url": "https://pillaojuegos.com/?q=Lichtspeer%3A%20Double%20Speer%20Edition"
   }
  ]
 }
