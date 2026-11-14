@@ -11,6 +11,10 @@ import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
+// Logo de cada tienda (logos/<dominio>.png), para la lista de ofertas de cada ficha
+let LOGOS = {};
+try { LOGOS = JSON.parse(await readFile(join(RAIZ, "config", "logos.json"), "utf8")); } catch {}
+const logoDe = (id) => LOGOS[id] && existsSync(join(RAIZ, "logos", LOGOS[id] + ".png")) ? LOGOS[id] : null;
 const SALIDA = join(RAIZ, "_site");
 
 // ---------- precios.json más ligero para la web (sobre todo para móviles) ----------
@@ -111,6 +115,18 @@ main.wrap{padding:24px 16px 56px;display:flex;flex-direction:column;gap:18px}.mi
 .barra .eti{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:#cfd5ea}.barra .eti b,.barra .eti .ya{color:#fff;font-weight:700}
 .ficha{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:flex-start}.ficha>div:first-child{flex:1 1 380px;min-width:0}
 .tabla{overflow-x:auto;border-radius:14px}
+.lista-of{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}.lista-of ul{list-style:none;margin:0;padding:0}
+.lista-of li{display:grid;grid-template-columns:32px minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:11px 16px;border-bottom:1px solid var(--line)}
+.lista-of img,.lista-of .lg0{width:32px;height:32px;border-radius:8px;background:#fff;padding:3px;object-fit:contain}.lista-of .lg0{background:var(--surface-2)}
+.lista-of .n{min-width:0}.lista-of .n b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lista-of .n small{display:block;color:var(--muted);font-size:12.5px}
+.lista-of .p{font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lista-of .ir{font-weight:700;font-size:13px;text-decoration:none;color:var(--accent);border:1px solid var(--line);border-radius:99px;padding:6px 13px;white-space:nowrap}.lista-of .ir:hover{border-color:var(--accent)}
+.lista-of li.top{background:color-mix(in srgb,var(--good) 10%,var(--surface))}.lista-of li.top .p{color:var(--good)}.lista-of li.top .ir{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.lista-of .tag{font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--good);margin-left:8px;vertical-align:1px}.lista-of li.ago{opacity:.55}
+.lista-of details{border-top:0}.lista-of summary{list-style:none;cursor:pointer;text-align:center;padding:13px;color:var(--accent);font-weight:700}.lista-of summary::-webkit-details-marker{display:none}
+.lista-of summary::after{content:" ▾"}.lista-of details[open] summary{order:2}.lista-of details[open] summary::after{content:" ▴"}.lista-of summary .a,.lista-of details[open] summary .c{display:none}.lista-of details[open] summary .a{display:inline}.lista-of details[open]>ul{border-top:1px solid var(--line)}
+.lista-of>ul>li:last-child{border-bottom:0}.lista-of details>ul>li:last-child{border-bottom:0}.lista-of details[open]{display:flex;flex-direction:column}
+@media(max-width:600px){.lista-of li{gap:10px;padding:11px 14px}}
 h1{font-family:"Bricolage Grotesque","Arial Black",sans-serif;font-size:30px;line-height:1.1;margin:0 0 8px;letter-spacing:-.01em}
 .plats{display:flex;flex-wrap:wrap;gap:6px}.plat,.tipo{font-size:12px;font-weight:600;padding:2px 8px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
 .etiqueta{background:var(--tag);color:var(--tag-ink);border-radius:8px;padding:10px 16px;text-align:right;transform:rotate(-1.5deg);min-width:170px}
@@ -159,7 +175,11 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;paddin
 .b-covs{position:relative;z-index:0;display:flex;flex-shrink:0;margin-right:-6px}
 .b-covs img{width:150px;aspect-ratio:460/215;object-fit:cover;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.85)}
 .b-covs img+img{margin-left:-70px}.b-covs img:nth-child(1){transform:rotate(-5deg)}.b-covs img:nth-child(2){transform:rotate(2deg) translateY(10px)}.b-covs img:nth-child(3){transform:rotate(7deg)}
-@media(max-width:600px){.banner{flex-wrap:wrap;min-height:0;padding:18px}.b-txt b{font-size:22px}.b-covs{order:3;width:100%;justify-content:center;margin:6px 0 0}.b-covs img{width:120px}.b-covs img+img{margin-left:-40px}}
+.b-num{display:none}
+@media(max-width:600px){.banners{grid-template-columns:1fr 1fr;gap:10px}.banner:last-child:nth-child(odd){grid-column:1/-1}
+.banner{flex-direction:column;align-items:flex-start;gap:10px;min-height:0;padding:14px;border-radius:16px}.b-covs,.b-ir,.b-cnt{display:none}
+.b-logo{width:44px;height:44px;border-radius:12px}.b-logo img{width:30px;height:30px}.b-logo svg{width:26px;height:26px}
+.b-txt b{font-size:17px;line-height:1.15}.b-txt small{font-size:12.5px}.b-num{display:block;font-weight:800;font-size:15px;margin-top:4px}.b-num small{display:block;font-weight:600;font-size:12.5px;opacity:.85}}
 @media(max-width:600px){.hero h1{font-size:26px}.ofertas{grid-template-columns:1fr 1fr;gap:8px}.of-p strong{font-size:17px}}
 @media(max-width:600px){h1{font-size:24px}.ficha>div:first-child{flex-basis:100%}.etiqueta{align-self:flex-start}th:nth-child(3),td:nth-child(3){display:none}th,td{padding:9px 8px;font-size:13px}td a .l{display:none}}`;
 }
@@ -241,12 +261,17 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
       { "@type": "ListItem", position: 3, name: j.titulo, item: canonica },
     ],
   }];
-  const filas = ofs.slice(0, 40).map((o) => {
-    const t = tiendaPorId[o.tienda], url = enlaceOferta(o, j, tiendaPorId);
+  // Lista de ofertas: logo, tienda, plataforma y formato, precio y botón; las 8 primeras a la vista y el resto en «Ver las N ofertas»
+  const fila = (o) => {
+    const t = tiendaPorId[o.tienda], url = enlaceOferta(o, j, tiendaPorId), lg = logoDe(o.tienda);
     const forma = o.estado === "usado" ? "2ª mano" : o.formato === "fisico" ? "En disco" : "Digital";
-    return `<tr${o === mejor ? ' class="mejor"' : ""}><td><b>${esc(t?.nombre || o.tienda)}</b>${o.stock ? "" : ' <span class="agotado">Agotado</span>'}</td><td>${esc(o.plataforma || "—")}</td><td>${forma}${o.condicion ? " · " + esc(o.condicion) : ""}</td>` +
-      `<td class="p">${eur(total(o))}${o.envio ? ` <span class="agotado">(envío incl.)</span>` : ""}</td><td>${url ? `<a href="${esc(url)}" rel="nofollow sponsored noopener" target="_blank" data-t="${esc(o.tienda)}" data-j="${esc(j.id)}">Ver<span class="l"> oferta</span> ↗</a>` : ""}</td></tr>`;
-  }).join("");
+    return `<li class="${o === mejor ? "top" : ""}${o.stock ? "" : " ago"}">${lg ? `<img src="../../logos/${lg}.png" alt="" width="32" height="32" loading="lazy">` : `<span class="lg0"></span>`}` +
+      `<span class="n"><b>${esc(t?.nombre || o.tienda)}${o === mejor ? '<span class="tag">MÁS BARATO</span>' : ""}</b><small>${esc(o.plataforma || "—")} · ${forma}${o.condicion ? " · " + esc(o.condicion) : ""}${o.stock ? "" : " · Agotado"}${o.envio ? " · envío incluido" : ""}</small></span>` +
+      `<span class="p">${eur(total(o))}</span>${url ? `<a class="ir" href="${esc(url)}" rel="nofollow sponsored noopener" target="_blank" data-t="${esc(o.tienda)}" data-j="${esc(j.id)}">Ir ↗</a>` : "<span></span>"}</li>`;
+  };
+  const VISIBLES = 8, todas40 = ofs.slice(0, 40);
+  const filas = todas40.slice(0, VISIBLES).map(fila).join("");
+  const resto = todas40.slice(VISIBLES).map(fila).join("");
   // La imagen del juego en grande (las de Microsoft se piden a más resolución)
   const imgPoster = (imagenDe(j) || "").replace(/(store-images\.s-microsoft\.com\/image\/[^?]+)\?w=\d+/, "$1?w=1280") || null;
   const dtoPoster = j.pvp && j.pvp > total(mejor) ? Math.round((1 - total(mejor) / j.pvp) * 100) : 0;
@@ -264,7 +289,7 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
     (minimo ? ` · Mínimo histórico <b>${eur(minimo)}</b>` : "") + (j.pvp && j.pvp > total(mejor) ? ` · Precio normal <b>${eur(j.pvp)}</b>` : "") + ` · Actualizado el ${fecha}</p></div>
 <div class="etiqueta"><small>Mejor precio</small><b>${eur(total(mejor))}</b><span>${esc(tm)} · ${esc(mejor.plataforma || "")}</span>${dtoPoster >= 5 ? `<i class="poster-dto">−${dtoPoster}%</i>` : ""}</div>${termometro}</div></section>
 <div class="cta"><a class="boton" href="../../?q=${encodeURIComponent(j.titulo)}">Ver historial y crear aviso de precio</a><a class="boton sec" href="../../">Comparar otros juegos</a></div>
-<div class="tabla"><table><thead><tr><th>Tienda</th><th>Plataforma</th><th>Formato</th><th>Precio</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>
+<div class="lista-of"><ul>${filas}</ul>${resto ? `<details><summary><span class="c">Ver las ${todas40.length} ofertas</span><span class="a">Ver menos</span></summary><ul>${resto}</ul></details>` : ""}</div>
 ${relacionados.length ? `<h2>Otros juegos</h2><ul class="mas">${relacionados.map((r) => `<li><a href="../${r.id}/">${esc(r.titulo)}</a></li>`).join("")}</ul>` : ""}`;
   return plantilla({ titulo, descripcion, canonica, raiz: "../../", cuerpo, jsonld, imagen: imgPoster });
 }
@@ -478,7 +503,7 @@ function paginaChollos(datos) {
     const portadas = xs.filter((x) => imagenDe(x.j) && !/\b(ea sports|fc \d|fifa|nba 2k|football manager|madden|nhl|mlb|efootball|wwe|ufc|f1 \d|top spin|tennis)\b/i.test(x.j.titulo)).sort((a, c) => (a.j.pop || 99999) - (c.j.pop || 99999)).slice(0, 3);
     return `<a class="banner" href="../${ruta}/" style="--c1:${b.c1};--c2:${b.c2}">
 <span class="b-logo">${b.logo ? `<img src="../logos/${b.logo}.png" alt="">` : b.ico}</span>
-<span class="b-txt"><b>${esc(b.t)}</b><small>${esc(b.sub)} · ${xs.length} chollos hoy, desde ${eur(desde)}</small><span class="b-ir">Ver chollos →</span></span>
+<span class="b-txt"><b>${esc(b.t)}</b><small>${esc(b.sub)}<span class="b-cnt"> · ${xs.length} chollos hoy, desde ${eur(desde)}</span></small><span class="b-num">${xs.length} chollos<small>desde ${eur(desde)}</small></span><span class="b-ir">Ver chollos →</span></span>
 <span class="b-covs">${portadas.map((x) => `<img src="${esc(imagenDe(x.j))}" alt="" loading="lazy">`).join("")}</span></a>`;
   }).join("\n");
   const cuerpo = `${volver("../")}
