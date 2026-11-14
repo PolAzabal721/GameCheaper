@@ -205,6 +205,12 @@ button { cursor: pointer; }
 /* La carátula baja hasta el final del texto cuando la ficha es más alta (Novedad, Mínimo histórico…) */
 .j-cov { width: 96px; height: auto; min-height: 128px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.18); }
 .j-cov img { position: absolute; inset: 0; }
+.j-ficha { color: inherit; text-decoration: none; }
+.j-fl { width: .8em; height: .8em; margin-left: 4px; vertical-align: -.05em; color: var(--muted); }
+.j-ficha:hover .j-fl { color: var(--accent); }
+.j-ficha:hover { color: var(--accent); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.j-cov-a { display: block; flex-shrink: 0; border-radius: 10px; }
+@media (hover: hover) { .j-cov-a:hover .j-cov { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.28); } .j-cov { transition: transform .15s ease-out, box-shadow .15s ease-out; } }
 .cuadro-img { margin: -14px -14px 0; height: 118px; border-radius: var(--r) var(--r) 0 0; }
 .cuadro-tit { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; }
 .cuadro-tit h2 { flex: 1; min-width: 0; }
@@ -1347,7 +1353,7 @@ button { cursor: pointer; }
     var enGrid = f.vista === "cuadricula";
     return '<article class="juego' + (enGrid ? " expandida" : "") + '" id="j-' + esc(j.id) + '">' +
       (enGrid ? '<div class="exp-barra"><button type="button" class="btn-menos" data-cerrar="' + esc(j.id) + '" aria-label="Ver en pequeño" title="Ver en pequeño"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"/></svg></button></div>' : "") +
-      '<div class="j-cab"><div class="j-izq">' + imagenJuego(j, true, "j-cov") + '<div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") + etiquetaFecha(j) +
+      '<div class="j-cab"><div class="j-izq">' + (fichaDe(j) ? '<a class="j-cov-a" href="' + fichaDe(j) + '" tabindex="-1" aria-hidden="true">' + imagenJuego(j, true, "j-cov") + "</a>" : imagenJuego(j, true, "j-cov")) + '<div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") + etiquetaFecha(j) +
       (enMinimo ? '<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>' : "") +
       etiquetaPremio(j) +
       (j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo" }[j.tipo] || "") + "</span>" : "") + campanaTitulo(j) + '<div class="plats">' +
@@ -1460,8 +1466,11 @@ button { cursor: pointer; }
       (n ? "Tus avisos de precio (" + n + ") e historial" : "Historial de precios y crear aviso por email") + '" title="' + (n ? "Tus avisos de precio" : "Historial y aviso de precio") + '">' +
       (n ? CAMPANA_OK + (n > 1 ? '<span class="n">' + n + "</span>" : "") : CAMPANA_MAS) + "</button>";
   }
+  // Ficha propia de cada juego del catálogo (la que tiene el termómetro); los encontrados ahora en vivo aún no la tienen
+  function fichaDe(j) { return !j._vivo && j.ofertas && j.ofertas.length && /^[a-z0-9-]{1,80}$/.test(j.id) ? "juego/" + j.id + "/" : ""; }
   function campanaTitulo(j) {
-    return '<div class="j-tit"><h2>' + esc(j.titulo) + "</h2>" + botonCampana(j) + "</div>";
+    var f = fichaDe(j);
+    return '<div class="j-tit"><h2>' + (f ? '<a class="j-ficha" href="' + f + '">' + esc(j.titulo) + '<svg class="j-fl" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>' : esc(j.titulo)) + "</h2>" + botonCampana(j) + "</div>";
   }
 
   // Lo mismo que cuenta el historial: nuevo, con stock, sin los revendedores que la web oculta de serie
