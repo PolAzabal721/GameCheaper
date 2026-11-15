@@ -797,7 +797,8 @@ async function kinguinUno(j, p) {
 // y K4G lo lleva en euros (en céntimos) dentro de la página. Solo claves de Europa o globales, sin cuentas ni PlayStation.
 const MK_MAX = +(ENV.MK_MAX || 100), MK_ROTA = +(ENV.MK_ROTA || 150), MK_ESPERA = +(ENV.MK_ESPERA || 1300);
 const MK_REGION_OK = /^(europe|eu|global|worldwide|spain|emea)$/;
-const MK_NUEVOS = +(ENV.MK_NUEVOS || 150);   // productos nuevos que se dan de alta por mercado y ejecución
+const MK_NUEVOS = +(ENV.MK_NUEVOS || 250);   // productos nuevos que se prueban a dar de alta por mercado y ejecución
+const MK_DIAS_REINTENTO = 14;                  // una clave sin precio (agotada o retirada) no se vuelve a probar hasta dentro de 14 días
 // «age of empires ii definitive edition» → «Age of Empires II Definitive Edition»
 const ROMANOS = /^(ii|iii|iv|vi|vii|viii|ix|xi|xii|xiii|xiv|xv|xvi)$/;
 const MENORES = /^(of|the|and|a|an|in|on|to|for|de|del|la|el|los|las|y)$/;
@@ -927,11 +928,18 @@ async function recorrerMercado(id, juegos, cuenta, avisos, caidas) {
     x.j.revisado.add(id); visitar(id, x.j);
     await esperar(MK_ESPERA);
   }
-  // Productos que no teníamos: se dan de alta con su nombre (de la ficha, o del enlace si la ficha no lo trae)
-  let altas = 0;
-  if (!caidas.has(id)) for (const p of fuera.slice(0, MK_NUEVOS)) {
+  // Productos que no teníamos: se dan de alta con su nombre (de la ficha, o del enlace si la ficha no lo trae).
+  // Se apunta cuáles ya se probaron: las que no tenían precio no se repiten en 14 días, así cada vez entran claves distintas
+  let altas = 0, sinPrecio = 0, fallosAlta = 0;
+  const probadas = (cacheMercados[id].probadas ||= {});
+  for (const k in probadas) if (Date.now() - Date.parse(probadas[k]) > MK_DIAS_REINTENTO * 86400000) delete probadas[k];
+  const reciente = (k) => probadas[k] && Date.now() - Date.parse(probadas[k]) < MK_DIAS_REINTENTO * 86400000;
+  const nuevas = fuera.filter((p) => !reciente(p.llave + "|" + p.plat));
+  if (!caidas.has(id)) for (const p of nuevas.slice(0, MK_NUEVOS)) {
     try {
       const f = await t.ficha(p);
+      probadas[p.llave + "|" + p.plat] = new Date().toISOString();
+      if (!f || !(f.precio > 0)) sinPrecio++;
       if (f && f.precio > 0) {
         const nombre = f.nombre || nombreDeSlug(p.llave);
         const j = juego(nombre, { pop: 99999 });
@@ -941,10 +949,10 @@ async function recorrerMercado(id, juegos, cuenta, avisos, caidas) {
           j.revisado.add(id); visitar(id, j); altas++; n++;
         }
       }
-    } catch (e) { if (++fallos >= 8) break; }
+    } catch (e) { if (++fallosAlta >= 15) break; }               // un corte suelto no para las altas; muchos seguidos, sí
     await esperar(MK_ESPERA);
   }
-  if (fuera.length) console.log(`${t.nombre}: ${fuera.length} claves que no teníamos en los mapas leídos; ${altas} dadas de alta ahora`);
+  if (fuera.length) console.log(`${t.nombre}: ${fuera.length} claves que no teníamos (${nuevas.length} sin probar en 14 días); ${altas} dadas de alta ahora, ${sinPrecio} sin precio, ${fallosAlta} fallos de conexión`);
   cuenta[id] = n;
 }
 
