@@ -1,0 +1,30 @@
+name: Prueba
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Probar
+        run: |
+          cat > p.mjs <<'JS'
+          const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)"};
+          const sleep=(ms)=>new Promise(s=>setTimeout(s,ms));
+          const locs=async(u)=>[...(await (await fetch(u,{headers:H})).text()).matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map(m=>m[1]);
+          // K4G
+          let idx=await locs("https://cdn.k4g.com/files/sitemap/sitemap.xml"); let sm=idx.filter(u=>/\d+-products\.xml$/.test(u));
+          let us=(await locs(sm[5])).filter(u=>/-cd-key$|cd-key-[A-F0-9]{8}$/.test(u)&&/(europe|global|eu)/.test(u)).slice(0,25);
+          let ok=0;
+          for(const u of us){ const r=await fetch(u,{headers:H}); const h=await r.text(); const m=h.match(/"price"\s*:\s*\{\s*"EUR"\s*:\s*(\d+)/); const oos=/out of stock|outOfStock|OutOfStock/i.test(h.slice(0,300000)); if(m) ok++; console.log("K4G",r.status,m?m[1]:"SIN",oos?"AGOTADO?":"",u.slice(22,100)); await sleep(1300); }
+          console.log("K4G con precio",ok,"de",us.length);
+          // Driffle
+          idx=await locs("https://driffle.com/sitemap.xml"); sm=idx.filter(u=>/driffle\.com\/sitemaps\/products-sitemap-\d+\.xml$/.test(u));
+          us=(await locs(sm[3])).filter(u=>/-(europe|global|eu)-pc-steam-digital-key-p\d+$/.test(u)).slice(0,25); ok=0;
+          for(const u of us){ const r=await fetch(u+"?currency=EUR",{headers:H}); const h=await r.text(); const m=h.match(/"price"\s*:\s*"?([0-9.]+)"?\s*,\s*"priceCurrency"\s*:\s*"EUR"/)||h.match(/"priceCurrency"\s*:\s*"EUR"\s*,\s*"price"\s*:\s*"?([0-9.]+)/); if(m&&+m[1]>0) ok++; console.log("DRF",r.status,m?m[1]:"SIN",/OutOfStock/.test(h.slice(0,200000))?"AGOTADO":"",u.slice(20,100)); await sleep(1300); }
+          console.log("Driffle con precio",ok,"de",us.length);
+          JS
+          node p.mjs
