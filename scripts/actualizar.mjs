@@ -30,6 +30,17 @@ const ESHOP_ROTA = +(ENV.ESHOP_ROTA || 2500);       // eShop: además de los pop
 const IG_ROTA = +(ENV.IG_ROTA || 1200);  // …y un bloque nuevo del resto en cada ejecución (su mapa trae unos 17.000)
 const MS_ROTA = +(ENV.MS_ROTA || 300);
 const CONSERVAR_DIAS = 7;                            // un precio no revisado en una ejecución se conserva hasta 7 días
+// Tiempo máximo de consultas: pasado este tiempo no se pide nada más a las tiendas, se guarda lo que hay y lo que falta
+// sigue en la próxima ejecución (lo no revisado conserva su precio y las rotaciones y cachés retoman donde quedaron).
+// 150 min de consultas + arranque, Telegram y guardado ≈ 2 h 40 en total, por debajo del límite de 200 min del trabajo.
+const LIMITE_MIN = +(ENV.LIMITE_MIN || 150);
+const FIN_CONSULTAS = Date.now() + LIMITE_MIN * 60000;
+let consultasCortadas = 0;
+const fetchOriginal = globalThis.fetch;
+globalThis.fetch = (...a) => {
+  if (Date.now() > FIN_CONSULTAS) { consultasCortadas++; return Promise.reject(new Error("sin tiempo: sigue en la próxima actualización")); }
+  return fetchOriginal(...a);
+};
 const AHORA = new Date().toISOString().slice(0, 16);
 const TURNO = Math.floor(Date.now() / (6 * 3600 * 1000)); // cambia en cada ejecución programada
 // Qué juegos ha revisado cada fuente en esta ejecución (lo no revisado conserva su precio anterior)
@@ -53,7 +64,8 @@ const leer = async (ruta, porDefecto) => {
   try { return JSON.parse(await readFile(join(RAIZ, ruta), "utf8")); }
   catch (e) { if (porDefecto !== undefined) return porDefecto; throw new Error(`No pude leer ${ruta}: ${e.message}`); }
 };
-const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+// Sin tiempo ya no hace falta esperar entre consultas (no se hace ninguna): así se termina enseguida y se guarda
+const esperar = (ms) => Date.now() > FIN_CONSULTAS ? Promise.resolve() : new Promise((r) => setTimeout(r, ms));
 const CABECERAS = {
   "User-Agent": "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://github.com/PolAzabal721/GameCheaper)",
   "Accept-Language": "es-ES,es;q=0.9",
@@ -1736,6 +1748,7 @@ async function main() {
   const salida = { actualizado: new Date().toISOString(), ejemplo: false, revisadoV: 2, caidas: caidas.size ? [...caidas] : undefined, buscador: buscador || undefined, tiendas, packs: packs.filter((p) => !p.expira || Date.parse(p.expira) > Date.now()), juegos: lista };
   await writeFile(join(RAIZ, "precios.json"), JSON.stringify(salida) + "\n");
   console.log(`precios.json listo: ${lista.length} juegos, ${total} ofertas.`);
+  if (consultasCortadas) console.log(`Tiempo agotado (${LIMITE_MIN} min): ${consultasCortadas} consultas se dejan para la próxima actualización; lo no revisado conserva su precio.`);
   // Historial diario (gráfica de la web) y precios mínimos (avisos por email)
   try { await guardarHistorial(RAIZ, lista, tiendas); } catch (e) { console.warn("Historial: " + e.message); }
 }
