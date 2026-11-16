@@ -1,1 +1,4 @@
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/629820/library_600x900.jpg
+https://cdn.jsdelivr.net/npm/d3-geo@3.1.1/dist/d3-geo.min.js
+https://cdn.jsdelivr.net/npm/d3-array@3.2.4/dist/d3-array.min.js
+https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js
+https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json
