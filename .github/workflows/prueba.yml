@@ -6,6 +6,6 @@ jobs:
     steps:
       - run: |
           U='https://pdt.tradedoubler.com/click?a(3508009)p(270504)product(24915-1679046)ttid(3)url(https%3A%2F%2Fwww.mediamarkt.es%2Fes%2Fproduct%2F_ps5-football-manager-27-1679046.html)'
-          curl -s -o /dev/null -D - -A "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148" "$U" | head -20
+          curl -s -A "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148" "$U" | head -c 3000
           echo ---- clk
           curl -s -o /dev/null -D - -A "Mozilla/5.0" "https://clk.tradedoubler.com/click?p=270504&a=3508009&url=https%3A%2F%2Fwww.mediamarkt.es%2Fes%2Fproduct%2F_ps5-football-manager-27-1679046.html" | head -15
