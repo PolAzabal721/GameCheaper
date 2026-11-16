@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8">
 <style>
+@font-face{font-family:"Inter";font-weight:600;src:url(fuentes/Inter-SemiBold.otf)}
+@font-face{font-family:"Inter";font-weight:700;src:url(fuentes/Inter-Bold.otf)}
+@font-face{font-family:"Inter";font-weight:800;src:url(fuentes/Inter-ExtraBold.otf)}
+@font-face{font-family:"Inter Display";font-weight:800;src:url(fuentes/InterDisplay-ExtraBold.otf)}
+@font-face{font-family:"Inter Display";font-weight:900;src:url(fuentes/InterDisplay-Black.otf)}
+@font-face{font-family:"DejaVu Sans Mono";font-weight:700;src:url(fuentes/DejaVuSansMono-Bold.ttf)}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1920px;overflow:hidden;background:#06213f}
 #st{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:"Inter","Inter Display",sans-serif}
@@ -17,8 +23,8 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:#06213f}
 .dato small{font-size:28px;font-weight:700;opacity:.85;margin-left:6px}
 #motas{position:absolute;inset:0}
 </style></head><body><div id="st">
-<div id="mar"></div><div id="shader" style="position:absolute;inset:0;mix-blend-mode:screen;opacity:.85"></div><div id="rayos"></div><div id="motas"></div>
-<div id="esc"></div><div id="sub"></div>
+<div id="mar"></div><div id="shader" style="position:absolute;inset:0;mix-blend-mode:screen;opacity:.45"></div><div id="rayos"></div><div id="motas"></div>
+<div id="esc"></div><div style="position:absolute;left:0;right:0;top:0;height:560px;background:linear-gradient(180deg,rgba(4,18,40,.75),rgba(4,18,40,0))"></div><div id="sub"></div>
 </div>
 <script>
 const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)), sg=(t,a,b)=>cl((t-a)/(b-a));
@@ -146,7 +152,7 @@ window.render=function(t){
  document.getElementById("sub").innerHTML=subt(t);
 };
 window.shaderFrame=null;
-window.listo=(async()=>{try{
+window.listo=(async()=>{await document.fonts.load('900 40px "Inter Display"');await document.fonts.load('600 40px Inter');await document.fonts.load('700 30px "DejaVu Sans Mono"');await document.fonts.ready;try{
  const m=await import("https://cdn.jsdelivr.net/npm/@paper-design/shaders@0.0.82/+esm");
  const tex=m.getShaderNoiseTexture(); if(tex&&!tex.complete) await new Promise(r=>{tex.onload=r;tex.onerror=r});
  const u={u_colorBloom:m.getShaderColorFromString("#5fb6ff"),u_colorBack:m.getShaderColorFromString("#000000"),
