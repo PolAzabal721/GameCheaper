@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#06213f}
+#st{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:"Inter","Inter Display",sans-serif}
+#mar{position:absolute;inset:0;background:linear-gradient(180deg,#1e64a8 0%,#11467f 30%,#0a2c58 65%,#061a36 100%)}
+#rayos{position:absolute;left:-300px;right:-300px;top:-200px;height:1700px;background:repeating-linear-gradient(100deg,rgba(255,255,255,0) 0 70px,rgba(160,215,255,.10) 70px 110px,rgba(255,255,255,0) 110px 190px);transform-origin:50% 0;mix-blend-mode:screen;-webkit-mask-image:linear-gradient(180deg,#000,transparent)}
+#caust{position:absolute;inset:0;opacity:.0}
+#esc{position:absolute;inset:0}
+#sub{position:absolute;left:80px;right:80px;top:250px;text-align:center;font-size:52px;line-height:1.25;font-weight:600}
+#sub span{color:rgba(255,255,255,.38);transition:none}
+#sub span.ya{color:#fff}
+#sub span.on{color:#fff;font-weight:800}
+#sub span.k{outline:3px solid #5fb6ff;outline-offset:4px;border-radius:4px}
+.dato{position:absolute;background:rgba(10,20,35,.85);color:#fff;font-weight:800;border-radius:16px;padding:10px 20px;font-size:58px;box-shadow:0 0 0 2px rgba(255,255,255,.12)}
+.dato small{font-size:28px;font-weight:700;opacity:.85;margin-left:6px}
+#motas{position:absolute;inset:0}
+</style></head><body><div id="st">
+<div id="mar"></div><div id="shader" style="position:absolute;inset:0;mix-blend-mode:screen;opacity:.85"></div><div id="rayos"></div><div id="motas"></div>
+<div id="esc"></div><div id="sub"></div>
+</div>
+<script>
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)), sg=(t,a,b)=>cl((t-a)/(b-a));
+const eio=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2, eo=x=>1-Math.pow(1-x,3);
+function rnd(n){const x=Math.sin(n*91.7+12.3)*43758.5453;return x-Math.floor(x)}
+// Tiburón dibujado en plano (genérico, propio). Mira a la derecha.
+function tiburon(cola=0,s=1,gafas=false,guino=false){
+ return `<svg width="${520*s}" height="${240*s}" viewBox="0 0 520 240" style="overflow:visible">
+ <g transform="rotate(${cola} 120 120)"><path d="M130 118 L18 40 Q40 118 22 196 Z" fill="#5d7488"/></g>
+ <path d="M120 120 C170 60 300 50 420 82 C470 95 505 112 512 124 C500 140 470 152 420 160 C300 186 180 176 120 120 Z" fill="#7f97ab"/>
+ <path d="M150 132 C230 170 360 172 470 146 C440 160 420 162 400 164 C300 184 190 176 150 132 Z" fill="#eef3f6"/>
+ <path d="M270 70 L300 4 L340 66 Z" fill="#6b8297"/>
+ <path d="M300 150 L262 214 L340 160 Z" fill="#6b8297"/>
+ <path d="M470 140 C455 146 438 148 420 146" stroke="#2b3a47" stroke-width="5" fill="none" stroke-linecap="round"/>
+ ${[0,1,2,3].map(i=>`<path d="M${380-i*14} 100 q-6 18 0 34" stroke="#5a6f82" stroke-width="4" fill="none"/>`).join("")}
+ ${guino?`<path d="M440 108 Q450 98 460 108" stroke="#101820" stroke-width="5" fill="none" stroke-linecap="round"/>`:`<circle cx="450" cy="108" r="9" fill="#101820"/><circle cx="453" cy="105" r="3" fill="#fff"/>`}
+ ${gafas?`<g fill="none" stroke="#111" stroke-width="6"><circle cx="450" cy="108" r="22"/><path d="M428 106 L400 98"/></g>`:""}
+ </svg>`}
+function tibVista(cola){ // vista desde arriba
+ return `<svg width="300" height="120" viewBox="0 0 300 120"><g transform="rotate(${cola} 60 60)"><path d="M70 60 L4 18 Q22 60 4 102 Z" fill="#5d7488"/></g>
+ <path d="M60 60 C110 30 220 28 290 60 C220 92 110 90 60 60 Z" fill="#7f97ab"/><path d="M150 42 L130 6 L176 40 Z M150 78 L130 114 L176 80 Z" fill="#6b8297"/><circle cx="262" cy="50" r="5" fill="#101820"/><circle cx="262" cy="70" r="5" fill="#101820"/></svg>`}
+function pez(c="#d6e3ec"){return `<svg width="90" height="40" viewBox="0 0 90 40"><path d="M20 20 L2 6 L6 20 L2 34 Z" fill="${c}"/><ellipse cx="50" cy="20" rx="36" ry="13" fill="${c}"/><circle cx="74" cy="17" r="3" fill="#123"/></svg>`}
+function etiqueta(txt,glow){return `<div style="position:relative;width:300px;height:150px">
+ <div style="position:absolute;inset:0;border-radius:24px;background:#d8ff1f;box-shadow:0 0 ${60*glow}px ${20*glow}px rgba(216,255,31,.55);display:flex;align-items:center;justify-content:center;font:900 88px 'Inter Display';color:#0a1a2e;letter-spacing:-.04em">${txt}</div>
+ <div style="position:absolute;left:-26px;top:50%;width:52px;height:52px;margin-top:-26px;border-radius:50%;background:#0a2c58;border:8px solid #d8ff1f"></div></div>`}
+
+// Guion con tiempos (palabra a palabra). k = palabra destacada
+const FRASES=[
+ [0.2,3.1,"¿Sabías que los *tiburones* nunca pagan precio completo por un *videojuego?*"],
+ [3.2,4.5,"¿Pero por *qué?*"],
+ [4.6,8.4,"Para empezar, huelen una *oferta* a cientos de kilómetros."],
+ [8.5,12.8,"Y cuando la encuentran, se ponen en *círculo* alrededor del *chollo.*"],
+ [12.9,17.2,"¿Su favorito? *Maneater:* el juego en el que TÚ eres el *tiburón.*"],
+ [17.3,22.0,"En Steam cuesta 33,99 euros. Hoy, en Yuplay: *2,66.*"],
+ [22.1,27.5,"¿Y cómo lo encuentran tan rápido? Con *Pillao:* comparan más de 40 *tiendas* en segundos."],
+ [27.6,31.8,"Mientras tanto, este pez pagó el juego a precio *completo…*"],
+ [31.9,37.4,"Por eso el animal más *peligroso* del océano no es el tiburón. Es el que paga de *más.*"],
+ [37.6,42.6,"Compara antes de pagar en *pillaojuegos.com*"],
+];
+function subt(t){const f=FRASES.find(f=>t>=f[0]&&t<f[1]+.25); if(!f) return "";
+ const ws=f[2].split(" "); const per=(f[1]-f[0])/ws.length;
+ return ws.map((w,i)=>{const k=w.includes("*"); w=w.replace(/\*/g,""); const ts=f[0]+i*per; const st=t>=ts+per?"ya":t>=ts?"on":"";
+  return `<span class="${st} ${k&&t>=ts?"k":""}">${w}</span>`}).join(" ")}
+
+function motas(t){let h="";for(let i=0;i<40;i++){const x=rnd(i)*1080,y=((rnd(i+50)*1920)-t*(20+rnd(i+9)*30))%1920; h+=`<div style="position:absolute;left:${x}px;top:${(y+1920)%1920}px;width:${3+rnd(i+3)*4}px;height:${3+rnd(i+3)*4}px;border-radius:50%;background:rgba(200,230,255,${.15+rnd(i+7)*.3})"></div>`}return h}
+
+window.render=function(t){
+ if(window.shaderFrame) window.shaderFrame(t*900);
+ document.getElementById("rayos").style.transform=`rotate(${Math.sin(t*.4)*4}deg) translateX(${Math.sin(t*.3)*40}px)`;
+ document.getElementById("motas").innerHTML=motas(t);
+ let h="";
+ if(t<3.2){ // tres tiburones cruzando
+  for(let i=0;i<3;i++){const x=-600+((t*(180+i*40))+i*420)%1900, y=820+i*260+Math.sin(t*1.5+i)*20, s=[.9,1.2,.75][i];
+   h+=`<div style="position:absolute;left:${x}px;top:${y}px">${tiburon(Math.sin(t*6+i)*12,s)}</div>`}
+  for(let i=0;i<8;i++){const x=(1200-((t*90+i*170)%1500)), y=700+rnd(i)*900; h+=`<div style="position:absolute;left:${x}px;top:${y}px;transform:scaleX(-1)">${pez()}</div>`}
+ } else if(t<4.6){ // primer plano: cabeza
+  const k=eo(sg(t,3.2,3.6)); h+=`<div style="position:absolute;left:${-1500+k*80}px;top:${430}px;transform:scale(4.2);transform-origin:0 0">${tiburon(Math.sin(t*5)*6,1)}</div>`;
+  if(t>4) h+=`<div style="position:absolute;left:640px;top:820px;width:80px;height:80px;border-radius:50%;border:5px dashed rgba(255,255,255,.7);transform:rotate(${t*90}deg)"></div>`;
+ } else if(t<8.5){ // olfato: línea punteada hasta la oferta
+  const lt=t-4.6; const k=eio(sg(lt,0,1.2));
+  h+=`<div style="position:absolute;left:${-200+k*180}px;top:${1250-k*80}px;transform:rotate(-28deg);transform-origin:50% 50%">${tiburon(Math.sin(t*6)*10,1.25)}</div>`;
+  const kd=sg(lt,1.4,2.4); // línea de olfato
+  h+=`<svg style="position:absolute;left:0;top:0" width="1080" height="1920"><path d="M520 1040 Q700 900 860 640" stroke="#d8ff1f" stroke-width="6" fill="none" stroke-dasharray="14 16" stroke-dashoffset="${-t*60}" pathLength="1000" style="stroke-dasharray:${kd*1000} 1000"/></svg>`;
+  if(lt>2.2){const g=.6+.4*Math.sin(t*6); h+=`<div style="position:absolute;left:720px;top:520px;transform:scale(${.6*eo(sg(lt,2.2,2.6))}) rotate(-8deg);transform-origin:0 0">${etiqueta("-92%",g)}</div>`}
+  if(lt>2.6) h+=`<div class="dato" style="left:560px;top:820px;opacity:${sg(lt,2.6,2.9)}">+400<small>km</small></div>`;
+ } else if(t<12.9){ // círculo desde arriba alrededor del chollo
+  const lt=t-8.5; const k=eio(sg(lt,0,2));
+  h+=`<div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 54%,rgba(120,200,255,.25),transparent 55%)"></div>`;
+  const cx=540,cy=1040;
+  const g=.7+.3*Math.sin(t*5); h+=`<div style="position:absolute;left:${cx-150}px;top:${cy-75}px;transform:scale(${eo(sg(lt,0,.5))})">${etiqueta("2,66€",g)}</div>`;
+  for(let i=0;i<7;i++){const a0=i/7*Math.PI*2, a=a0+lt*.6; const r=380+(1-k)*700+(rnd(i)-.5)*(1-k)*600;
+   const x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r; const ang=(a+Math.PI/2)*180/Math.PI;
+   h+=`<div style="position:absolute;left:${x-150}px;top:${y-60}px;transform:rotate(${ang}deg) scale(.95)">${tibVista(Math.sin(t*7+i)*14)}</div>`}
+  if(lt>2.6) h+=`<div class="dato" style="left:${cx-140}px;top:${cy+130}px;opacity:${sg(lt,2.6,2.9)}">7<small>tiburones</small></div>`;
+ } else if(t<17.3){ // portada de Maneater con tiburones emocionados
+  const lt=t-12.9, k=eo(sg(lt,.2,1.0));
+  h+=`<div style="position:absolute;left:290px;top:${700+(1-k)*900}px;width:500px;height:750px;transform:rotate(${-4+Math.sin(t*2)*2}deg);border-radius:14px;box-shadow:0 30px 60px rgba(0,0,0,.5),0 0 0 6px #d8ff1f;background:url(img/maneater.jpg) center/cover"></div>`;
+  for(let i=0;i<4;i++){const a=lt*1.3+i*Math.PI/2, x=540+Math.cos(a)*430-260, y=1080+Math.sin(a)*560-120; const dir=Math.cos(a+Math.PI/2)>0;
+   h+=`<div style="position:absolute;left:${x}px;top:${y}px;transform:${dir?"":"scaleX(-1)"} scale(.7)">${tiburon(Math.sin(t*9+i)*16,1)}</div>`}
+  for(let i=0;i<14;i++){const y=1700-((lt*260+i*140)%1300); h+=`<div style="position:absolute;left:${200+rnd(i)*700+Math.sin(t*3+i)*20}px;top:${y}px;width:${14+rnd(i+1)*20}px;height:${14+rnd(i+1)*20}px;border-radius:50%;border:3px solid rgba(220,240,255,.6)"></div>`}
+  if(lt>1.8) h+=`<div class="dato" style="left:600px;top:1500px;opacity:${sg(lt,1.8,2.1)}">TÚ<small>= tiburón</small></div>`;
+ } else if(t<22.1){ // precio que cae
+  const lt=t-17.3; h+=`<div style="position:absolute;left:90px;top:640px;width:300px;height:450px;border-radius:10px;box-shadow:0 0 0 5px #d8ff1f,0 20px 40px rgba(0,0,0,.5);background:url(img/maneater.jpg) center/cover;transform:rotate(-6deg)"></div>`;
+  const k1=eo(sg(lt,.2,.6)); h+=`<div style="position:absolute;left:470px;top:720px;font:800 96px 'Inter Display';color:#fff;opacity:${k1};letter-spacing:-.03em">33,99€<div style="position:absolute;left:-10px;right:-10px;top:52%;height:10px;background:#ff4f6d;transform:scaleX(${eo(sg(lt,1.4,1.8))});transform-origin:0 50%"></div></div>`;
+  h+=`<div class="mono" style="position:absolute;left:470px;top:680px;font:700 30px 'DejaVu Sans Mono';color:#9fd0ff;opacity:${k1}">STEAM</div>`;
+  if(lt>2.2){const kp=eo(sg(lt,2.2,3.0)); const v=33.99+(2.66-33.99)*kp;
+   h+=`<div class="mono" style="position:absolute;left:470px;top:880px;font:700 30px 'DejaVu Sans Mono';color:#d8ff1f">HOY · YUPLAY</div>`;
+   h+=`<div style="position:absolute;left:460px;top:920px;font:900 150px 'Inter Display';color:#d8ff1f;letter-spacing:-.05em;text-shadow:0 0 40px rgba(216,255,31,.45)">${v.toFixed(2).replace(".",",")}€</div>`}
+  if(lt>3.1){const g=.6+.4*Math.sin(t*6); h+=`<div style="position:absolute;left:560px;top:1180px;transform:scale(${.7*eo(sg(lt,3.1,3.4))}) rotate(-8deg);transform-origin:0 0">${etiqueta("-92%",g)}</div>`}
+  h+=`<div style="position:absolute;left:${-600+((lt*160)%1800)}px;top:1420px;transform:scale(.8)">${tiburon(Math.sin(t*6)*12,1)}</div>`;
+ } else if(t<27.6){ // tiburón con gafas mirando el móvil con Pillao
+  const lt=t-22.1, k=eo(sg(lt,0,.6));
+  h+=`<div style="position:absolute;left:${-700+k*540}px;top:1000px;transform:scale(1.6);transform-origin:0 0">${tiburon(Math.sin(t*4)*8,1,true)}</div>`;
+  const rows=[["Yuplay","2,66 €",1],["GOG","5,39 €",0],["Fanatical","7,19 €",0],["GameBillet","33,83 €",0],["Steam","33,99 €",0]];
+  const kp=eo(sg(lt,.4,1.0));
+  h+=`<div style="position:absolute;left:560px;top:${560+(1-kp)*300}px;width:420px;height:800px;border-radius:52px;background:#0b0d10;padding:18px;box-shadow:0 30px 60px rgba(0,0,0,.55);transform:rotate(6deg);opacity:${kp}">
+   <div style="width:100%;height:100%;border-radius:38px;background:#f4f6f8;overflow:hidden;font-family:'Inter'">
+    <div style="background:#0a1a2e;color:#d8ff1f;font:900 44px 'Inter Display';padding:26px 22px 16px;letter-spacing:-.03em">pillao<span style="color:#fff;font-size:22px;font-weight:600;margin-left:8px">comparador</span></div>
+    <div style="display:flex;gap:12px;padding:16px 18px;align-items:center"><div style="width:70px;height:100px;border-radius:6px;background:url(img/maneater.jpg) center/cover"></div><div style="font:800 32px 'Inter Display';color:#111">Maneater<div style="font:600 18px 'Inter';color:#667">PC · ${rows.length} tiendas</div></div></div>
+    ${rows.map((r,i)=>{const kv=sg(lt,1.0+i*.25,1.3+i*.25);return `<div style="margin:8px 14px;padding:14px 16px;border-radius:14px;display:flex;justify-content:space-between;font:700 26px 'Inter';opacity:${kv};transform:translateX(${(1-kv)*40}px);background:${r[2]?"#d8ff1f":"#fff"};color:#111;box-shadow:0 1px 0 #dde">${r[0]}<b>${r[1]}</b></div>`}).join("")}
+   </div></div>`;
+  if(lt>2.6) h+=`<div class="dato" style="left:120px;top:760px;opacity:${sg(lt,2.6,2.9)}">+40<small>tiendas</small></div>`;
+ } else if(t<31.9){ // pez triste con su ticket
+  const lt=t-27.6, k=eo(sg(lt,0,.6));
+  h+=`<div style="position:absolute;left:${-500+k*700}px;top:900px;transform:scale(4);transform-origin:0 0">${pez("#f2b84b")}</div>`;
+  h+=`<div style="position:absolute;left:480px;top:${930}px;width:40px;height:40px"></div>`;
+  for(let i=0;i<3;i++){const y=(lt*240+i*90)%300; h+=`<div style="position:absolute;left:${470+i*6}px;top:${1010+y}px;width:16px;height:24px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#8fd3ff;opacity:${1-y/300}"></div>`}
+  const kt=eo(sg(lt,.8,1.3));
+  h+=`<div style="position:absolute;left:560px;top:${1150}px;width:300px;padding:22px;background:#fff;color:#111;font-family:'DejaVu Sans Mono';transform:rotate(8deg) scale(${kt});box-shadow:0 20px 40px rgba(0,0,0,.4);clip-path:polygon(0 0,100% 0,100% 92%,90% 100%,80% 92%,70% 100%,60% 92%,50% 100%,40% 92%,30% 100%,20% 92%,10% 100%,0 92%)">
+   <div style="font-weight:700;font-size:22px">TICKET</div><div style="font-size:20px;margin-top:8px">MANEATER · PC</div><div style="font-size:20px">PRECIO COMPLETO</div><div style="font:900 56px 'Inter Display';margin-top:10px">33,99€</div></div>`;
+  if(lt>2) h+=`<div style="position:absolute;left:${1300-(lt-2)*500}px;top:600px;transform:scaleX(-1) scale(.8)">${tiburon(Math.sin(t*6)*12,1)}</div>`;
+ } else if(t<37.6){ // guiño final del tiburón
+  const lt=t-31.9; const k=eo(sg(lt,0,.6));
+  h+=`<div style="position:absolute;left:${-1300+k*120}px;top:${560}px;transform:scale(3.6);transform-origin:0 0">${tiburon(Math.sin(t*4)*6,1,true,lt>3.6&&lt<4.4)}</div>`;
+  h+=`<div style="position:absolute;left:${1100-lt*160}px;top:1500px;transform:scale(1.4)">${pez("#f2b84b")}</div>`;
+ } else { // cierre
+  const lt=t-37.6, k=eo(sg(lt,0,.6));
+  h+=`<div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(216,255,31,.12),transparent 60%)"></div>`;
+  h+=`<div style="position:absolute;left:0;right:0;top:${820+(1-k)*60}px;text-align:center;opacity:${k};font:900 112px 'Inter Display';letter-spacing:-.04em;color:#fff">pillaojuegos<span style="color:#d8ff1f">.com</span></div>`;
+  h+=`<div style="position:absolute;left:0;right:0;top:980px;text-align:center;opacity:${sg(lt,.5,.9)};font:700 34px 'DejaVu Sans Mono';color:#9fd0ff;letter-spacing:.08em">TELEGRAM: PILLAO CHOLLOS</div>`;
+  h+=`<div style="position:absolute;left:390px;top:1120px;width:300px;transform:scale(${eo(sg(lt,.9,1.3))})">${etiqueta("2,66€",.8)}</div>`;
+  for(let i=0;i<5;i++){const a=lt*.7+i*Math.PI*2/5; h+=`<div style="position:absolute;left:${540+Math.cos(a)*420-150}px;top:${1050+Math.sin(a)*620-60}px;transform:rotate(${(a+Math.PI/2)*180/Math.PI}deg) scale(.8);opacity:.7">${tibVista(Math.sin(t*7+i)*14)}</div>`}
+ }
+ document.getElementById("esc").innerHTML=h;
+ document.getElementById("sub").innerHTML=subt(t);
+};
+window.shaderFrame=null;
+window.listo=(async()=>{try{
+ const m=await import("https://cdn.jsdelivr.net/npm/@paper-design/shaders@0.0.82/+esm");
+ const tex=m.getShaderNoiseTexture(); if(tex&&!tex.complete) await new Promise(r=>{tex.onload=r;tex.onerror=r});
+ const u={u_colorBloom:m.getShaderColorFromString("#5fb6ff"),u_colorBack:m.getShaderColorFromString("#000000"),
+  u_colors:["#9fd8ff","#4aa3ff","#ffffff","#2f7bd6"].map(m.getShaderColorFromString),u_colorsCount:4,
+  u_density:.35,u_spotty:.25,u_midIntensity:.25,u_midSize:.25,u_intensity:.75,u_bloom:.35,u_noiseTexture:tex,
+  u_fit:m.ShaderFitOptions.cover,u_scale:1.2,u_rotation:0,u_offsetX:0,u_offsetY:-.95,u_originX:.5,u_originY:.5,u_worldWidth:0,u_worldHeight:0};
+ const sm=new m.ShaderMount(document.getElementById("shader"),m.godRaysFragmentShader,u,undefined,0,0,1,1080*1920);
+ window.shaderFrame=ms=>sm.setFrame(ms); document.getElementById("rayos").style.opacity=.35;
+}catch(e){console.log("SIN SHADER",e.message)}})();
+</script></body></html>
