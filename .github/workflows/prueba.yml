@@ -20,9 +20,16 @@ jobs:
           s=json.dumps(ps,ensure_ascii=False)
           for w in ['reacondicionad','segunda mano','seminuevo','usado','refurbished','used']: print(w,len(re.findall(w,s,re.I)))
           ej=[x.get('name') for x in ps if re.search('reacondicion|segunda mano|seminuevo',json.dumps(x,ensure_ascii=False),re.I)][:15]; print(ej)
+          jg=[x for x in ps if 'Consolas y videojuegos' in json.dumps(x.get('categories'),ensure_ascii=False) or 'Juegos' in json.dumps(x.get('fields'),ensure_ascii=False)]
+          us=[x for x in jg if re.search('reacondicion|seminuevo|segunda mano|usado',x.get('name',''),re.I)]
+          print('consolas-videojuegos',len(jg),'reacondicionados',len(us))
+          import collections as C
+          print(C.Counter([f.get('value') for x in us for f in x.get('fields',[]) if f.get('name')=='category_second_level']).most_common(10))
+          for x in us[:25]: print('U',x['name'][:110], x['offers'][0].get('priceHistory',[{}])[0].get('price',{}).get('value') if x.get('offers') else '')
           P
-      - run: |
-          npm i playwright@1.56.1 >/dev/null 2>&1 && npx playwright install --with-deps chromium webkit >/dev/null 2>&1
+      - if: always()
+        run: |
+          npm i playwright@1.49.1 2>&1 | tail -3; npx playwright install --with-deps chromium webkit 2>&1 | tail -3
           cat > t.mjs <<'J'
           import { chromium, webkit, devices } from 'playwright';
           const urls={pdt:'https://pdt.tradedoubler.com/click?a(3508009)p(270504)product(24915-1679046)ttid(3)url(https%3A%2F%2Fwww.mediamarkt.es%2Fes%2Fproduct%2F_ps5-football-manager-27-1679046.html)',
