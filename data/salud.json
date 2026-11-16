@@ -1,21 +1,20 @@
 {
- "revisado": "2026-11-16T06:41",
+ "revisado": "2026-11-16T12:18",
  "referencia": {
-  "steam": 1871,
-  "game": 589,
-  "xbox": 13261,
-  "itad": 44149,
-  "eshop": 4811,
-  "gameseminuevos": 41,
-  "instantgaming": 1481,
-  "psstore": 743,
-  "alcampo": 10,
-  "ebay": 227,
-  "k4g": 194,
-  "driffle": 166,
-  "yuplay": 2674
+  "steam": 1859,
+  "game": 488,
+  "xbox": 13337,
+  "itad": 44659,
+  "eshop": 4649,
+  "gameseminuevos": 108,
+  "instantgaming": 1642,
+  "psstore": 775,
+  "alcampo": 11,
+  "ebay": 272,
+  "k4g": 286,
+  "driffle": 254,
+  "yuplay": 2700,
+  "mediamarkt": 1063
  },
- "problemas": [
-  "game: 233 precios nuevos (la última vez que estaba bien, 589)"
- ]
+ "problemas": []
 }
