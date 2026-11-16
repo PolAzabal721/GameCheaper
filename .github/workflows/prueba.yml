@@ -1,0 +1,28 @@
+name: prueba
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: macos-latest
+    steps:
+      - run: |
+          npm i playwright@1.49.1 2>&1 | tail -1; npx playwright install webkit 2>&1 | tail -1
+          cat > t.mjs <<'J'
+          import { webkit, devices } from 'playwright';
+          const CRIOS='Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/131.0.6778.73 Mobile/15E148 Safari/604.1';
+          const br=await webkit.launch();
+          for (const [n,ua] of [['safari',undefined],['chrome-ios',CRIOS]]) {
+            const ctx=await br.newContext({...devices['iPhone 15'], ...(ua?{userAgent:ua}:{})});
+            const pg=await ctx.newPage();
+            await pg.goto('https://pillaojuegos.com/?q=football%20manager%2027',{timeout:30000}); await pg.waitForTimeout(6000);
+            const a=pg.locator('a.ir[data-t="mediamarkt"]').first();
+            const href=await a.getAttribute('href').catch(()=>null); console.log(n,'HREF',href);
+            if(!href) { console.log(n,'sin enlace de mediamarkt'); continue; }
+            ctx.on('page', p2=>{ p2.on('requestfailed', r=>console.log(n,'FALLO',r.url().slice(0,150),r.failure()?.errorText)); p2.on('framenavigated', f=>{ if(f===p2.mainFrame()) console.log(n,'NAV',f.url().slice(0,160)); }); });
+            const [nueva]=await Promise.all([ctx.waitForEvent('page'), a.click()]);
+            await nueva.waitForTimeout(15000); console.log(n,'FINAL',nueva.url().slice(0,200));
+            const t=await nueva.evaluate(()=>document.title+' | '+document.body.innerText.slice(0,200)).catch(e=>e.message); console.log(n,'TEXTO',t.replace(/\n/g,' '));
+            await ctx.close();
+          }
+          await br.close();
+          J
+          node t.mjs
