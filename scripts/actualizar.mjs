@@ -17,6 +17,7 @@
 // Si una fuente falla, se conservan sus ofertas anteriores para no dejar huecos.
 
 import { readFile, writeFile } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
 import { guardarHistorial } from "./historial.mjs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -1141,6 +1142,71 @@ async function yuplay(juegos, cuenta, avisos) {
   cuenta.yuplay = n;
 }
 
+// ---------- MediaMarkt (juegos en disco, por Tradedoubler) ----------
+// Feed de productos de su programa de afiliados (feed 24915). Tradedoubler solo deja bajar cada versión del archivo
+// 3 veces al día, así que primero se pregunta cuándo cambió y, si no ha cambiado, se usa lo guardado en data/mediamarkt.json.
+const MM_FEED = 24915;
+const CACHE_MM = join(RAIZ, "data", "mediamarkt.json");
+const MM_PLATS = { "Juegos PS5": "PS5", "Juegos PS4": "PS4", "Juegos Nintendo Switch": "Switch", "Juegos Nintendo Switch 2": "Switch 2", "Juegos Xbox Series X y S": "Xbox Series", "Juegos PC": "PC" };
+// «PS4 Final Fantasy VII Remake», «Nintendo Switch Hogwarts Legacy (Código de descarga)», «PS4 Minecraft (Ed. Starter Collection)»…
+const nombreMM = (n) => html2txt(n).replace(/[™®©]/g, "")
+  .replace(/^(ps5|ps4|nintendo switch 2|nintendo switch|switch 2|switch|xbox series x\s*(y|\|)?\s*s|xbox series x|xbox series|xbox one|pc)\s+/i, "")
+  .replace(/\((c[oó]digo[^)]*|playstation hits|ps hits|nintendo selects)\)|\bps hits\b/gi, "")
+  .replace(/\(([A-Z0-9 ]{2,8})\)/g, "")                                 // siglas: «(GTA V)»
+  .replace(/\(ed\.?\s*([^)]+)\)/gi, "$1 Edition").replace(/\(([^)]*edition[^)]*)\)/gi, "$1").replace(/\bed\.\s*/gi, "Edition ")
+  .replace(/\s+-\s*$/, "").replace(/\s+/g, " ").trim();
+async function mediamarkt(juegos, avisos) {
+  const token = (ENV.TRADEDOUBLER_TOKEN || "").replace(/\s+/g, "");
+  if (!token) return 0;
+  let cache = {}; try { cache = JSON.parse(await readFile(CACHE_MM, "utf8")); } catch {}
+  let ultima = null;
+  try { ultima = (await (await pedir(`https://api.tradedoubler.com/1.0/productsUnlimited/lastUpdated.json;fid=${MM_FEED}?token=${token}`)).json()).lastUpdatedTime || null; }
+  catch (e) { console.warn("MediaMarkt: no se sabe cuándo cambió el feed (" + e.message.slice(0, 80) + ")"); }
+  if (!cache.productos || !ultima || ultima !== cache.ultima) {
+    try {
+      const r = await fetch(`https://api.tradedoubler.com/1.0/productsUnlimited.json;compress=zip;fid=${MM_FEED}?token=${token}`, { redirect: "follow" });
+      if (r.status !== 200) throw new Error("HTTP " + r.status);
+      const zip = join(RAIZ, "mediamarkt.zip");
+      await writeFile(zip, Buffer.from(await r.arrayBuffer()));
+      const d = JSON.parse(execFileSync("unzip", ["-p", zip], { maxBuffer: 1024 * 1024 * 1024 }).toString("utf8"));
+      execFileSync("rm", ["-f", zip]);
+      const campo = (p, n) => ((p.fields || []).find((x) => x.name === n) || {}).value || "";
+      const productos = [];
+      for (const p of d.products || []) {
+        if (campo(p, "category_second_level") !== "Juegos") continue;
+        const plat = MM_PLATS[campo(p, "category_third_level")];
+        const o = (p.offers || [])[0];
+        if (!plat || !o) continue;
+        const precio = +(o.priceHistory?.[0]?.price?.value || 0), normal = +campo(p, "strike_price") || 0;
+        const envio = +((o.shippingCost || "").match(/([\d.]+)\s*EUR/) || [])[1] || 0;
+        if (!(precio > 0) || o.condition && o.condition !== "new") continue;
+        productos.push({ nombre: nombreMM(p.name), plat, precio, normal, envio, stock: o.availability !== "out of stock", reserva: o.availability === "pre order", url: o.productUrl, ean: p.identifiers?.ean || undefined });
+      }
+      cache = { ultima: ultima || new Date().toISOString(), descargado: new Date().toISOString(), productos };
+      await writeFile(CACHE_MM, JSON.stringify(cache));
+      console.log(`MediaMarkt: feed nuevo descargado (${(d.products || []).length} productos, ${productos.length} juegos)`);
+    } catch (e) {
+      avisos.push("mediamarkt: " + e.message.slice(0, 120));
+      if (!cache.productos) return 0;
+      console.warn("MediaMarkt: se usan los precios guardados");
+    }
+  } else console.log(`MediaMarkt: el feed no ha cambiado desde ${cache.ultima}; se usan los ${cache.productos.length} juegos guardados`);
+  // Juntar con el catálogo (o dar de alta los que no teníamos)
+  const porLlave = new Map();
+  for (const j of juegos.values()) if (j.tipo !== "tarjeta") { const k = llave(j.titulo); if (!porLlave.has(k)) porLlave.set(k, j); }
+  let n = 0, nuevos = 0;
+  for (const p of cache.productos) {
+    if (!p.nombre || NO_PRODUCTO.test(limpiar(p.nombre))) continue;
+    let j = porLlave.get(llave(p.nombre));
+    if (!j) { j = juego(p.nombre, { pop: 99999 }); if (!j) continue; porLlave.set(llave(p.nombre), j); nuevos++; }
+    ofertar(j, { tienda: "mediamarkt", plataforma: p.plat, formato: "fisico", estado: "nuevo", precio: p.precio, regular: p.normal > p.precio ? p.normal : undefined,
+      envio: p.envio || undefined, stock: p.stock, url: p.url, fuente: "mediamarkt" });
+    j.revisado.add("mediamarkt"); visitar("mediamarkt", j); n++;
+  }
+  console.log(`MediaMarkt: ${n} precios de juegos en disco (${nuevos} juegos nuevos en el catálogo)`);
+  return n;
+}
+
 // ---------- Alcampo (juegos en disco) ----------
 // Su tienda online tiene un buscador con los datos de cada producto (nombre, precio, disponibilidad y sección).
 // Su robots.txt permite consultarlo. Solo cogemos productos de la sección «Videojuegos» que no sean consolas ni accesorios,
@@ -1587,6 +1653,7 @@ async function main() {
     try { await yuplay(juegos, cuenta, avisos); } catch (e) { avisos.push(`yuplay: ${e.message}`); caidas.add("yuplay"); }
   }
   if (!(await intentar("alcampo", () => alcampo((j) => visitar("alcampo", j))))) caidas.add("alcampo");
+  if (ENV.TRADEDOUBLER_TOKEN) { try { await mediamarkt(juegos, avisos); } catch (e) { avisos.push("mediamarkt: " + e.message); caidas.add("mediamarkt"); } }
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) {
     // Juegos en disco (no DLC ni tarjetas): los populares siempre y el resto por turnos, hasta cubrir todo el catálogo
