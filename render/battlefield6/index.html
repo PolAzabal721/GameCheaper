@@ -17,31 +17,57 @@ const FRASES=[
  [38.9,42.6,"Así que ni torres ni *excusas.*"],
  [42.7,46.8,"Entra en *pillaojuegos.com* y derriba precios tú también."],
 ];
-// edificio propio dibujado: ancho w, pisos n; k = derrumbe 0..1
-function edificio(x,w,n,k,col="#2a1418",etiqueta=""){
- const ph=70; let h="";
- for(let i=0;i<n;i++){const caida=Math.max(0,k*(n-i)/n*1.6-(.6*(i/n))); const y=1500-(i+1)*ph+caida*caida*900*(k>0?1:0);
-  const rot=(rnd(i+x)-.5)*caida*60, dx=(rnd(i+x*3)-.5)*caida*160;
-  h+=`<div style="position:absolute;left:${x+dx}px;top:${Math.min(y,1500-ph)}px;width:${w}px;height:${ph}px;background:${col};border-bottom:3px solid #120a0c;transform:rotate(${rot}deg);opacity:${y>1560?0:1};
-   background-image:repeating-linear-gradient(90deg,transparent 0 ${w/6-12}px,${rnd(i*7+x)>.4?"#ffcf7a":"#3a2228"} ${w/6-12}px ${w/6}px);background-size:100% 30px;background-repeat:repeat-x;background-position:0 20px"></div>`}
- if(etiqueta&&k<.15) h+=`<div style="position:absolute;left:${x+w/2-130}px;top:${1500-n*ph-110}px">${etiq(etiqueta,.5,"#ffb347","#1b0d14")}</div>`;
+// Edificio propio: fachada con ventanas, lateral con volumen y azotea. k = derrumbe 0..1
+// 0–0,18: tiembla y aparecen grietas · después se hunde en bloque, se inclina y levanta una nube de polvo con cascotes
+function edificio(x,w,n,k,col="#2a1418",etiqueta="",techo=""){
+ const ph=70, H=n*ph, top=1500-H, lado=Math.round(w*.2), semilla=x*13+n;
+ const f=cl((k-.18)/.82), caida=f*f, dy=caida*(H+120), dir=rnd(semilla)>.5?1:-1, rot=dir*7*eo(f);
+ const vib=k>0&&k<.2?Math.sin(k*900)*4:0;
+ // ventanas
+ const cols=Math.max(3,Math.floor(w/46)), cw=(w-24)/cols; let ven="";
+ for(let r=0;r<n;r++)for(let c=0;c<cols;c++){const on=rnd(semilla+r*31+c*7)>.45;
+  ven+=`<i style="position:absolute;left:${12+c*cw+cw*.2}px;top:${20+r*ph}px;width:${cw*.6}px;height:${ph*.48}px;border-radius:3px;background:${on?"linear-gradient(180deg,#ffe2a0,#ffb35a)":"#3a2026"};${on?"box-shadow:0 0 14px rgba(255,190,100,.55)":""}"></i>`}
+ // grietas
+ const g=cl(k/.18); let grietas="";
+ if(k>0){let pts=`${w*.5},0`;for(let q=1;q<=8;q++)pts+=` ${w*.5+(rnd(semilla+q)-.5)*w*.5},${q*H/8}`;
+  grietas=`<svg style="position:absolute;left:0;top:0;overflow:visible" width="${w}" height="${H}"><polyline points="${pts}" fill="none" stroke="#120a0c" stroke-width="7" stroke-linejoin="round" pathLength="100" stroke-dasharray="${g*100} 100"/></svg>`}
+ const azotea=`<div style="position:absolute;left:${w*.12}px;top:-26px;width:${w*.22}px;height:26px;background:#1d0e12;border-radius:4px 4px 0 0"></div>
+  <div style="position:absolute;left:${w*.7}px;top:-70px;width:6px;height:70px;background:#1d0e12"></div><div style="position:absolute;left:${w*.7-5}px;top:-78px;width:16px;height:16px;border-radius:50%;background:#ff5a4f;box-shadow:0 0 14px #ff5a4f"></div>
+  ${etiqueta?`<div style="position:absolute;left:${w/2-150}px;top:-150px;width:300px;text-align:center;white-space:nowrap">${etiq(etiqueta,.5,"#ffb347","#1b0d14")}</div>`:""}${techo}`;
+ let h=`<div style="position:absolute;left:${x-300}px;top:0;width:${w+600}px;height:1500px;overflow:hidden;pointer-events:none">
+  <div style="position:absolute;left:${300+vib}px;top:${top+dy}px;width:${w}px;height:${H}px;transform:rotate(${rot}deg);transform-origin:${dir>0?"100%":"0%"} 100%">
+   <div style="position:absolute;left:${w}px;top:0;width:${lado}px;height:${H}px;background:linear-gradient(180deg,#1a0b10,#0e0609);transform:skewY(-28deg);transform-origin:0 0"></div>
+   <div style="position:absolute;left:0;top:-6px;width:${w}px;height:8px;background:#3d1d24"></div>
+   <div style="position:absolute;inset:0;background:linear-gradient(90deg,${col},#1e0e12);box-shadow:inset 0 -40px 60px rgba(0,0,0,.35)">${ven}${grietas}</div>
+   ${azotea}
+  </div></div>`;
+ // nube de polvo que crece desde la base
+ if(f>0){const cx=x+w/2; for(let i=0;i<26;i++){const a=rnd(semilla+i*3), b=rnd(semilla+i*5);
+   const sz=(120+b*180)*(.4+eo(cl(f*1.3))*.95), px=cx+(a-.5)*(w+260)*(.5+f), py=1500-sz*.55-eo(f)*b*520;
+   h+=`<div style="position:absolute;left:${px-sz/2}px;top:${py-sz/2}px;width:${sz}px;height:${sz}px;border-radius:50%;background:radial-gradient(circle at 40% 35%,rgba(236,206,180,.95),rgba(190,150,128,.8) 45%,rgba(150,110,95,0) 72%);opacity:${cl(f*3)*(.85-.4*f)}"></div>`}
+  // cascotes
+  for(let i=0;i<16;i++){const s0=cl((f-.08)*1.4); if(s0<=0) break; const vx=(rnd(semilla+i*7)-.5)*900, vy=500+rnd(semilla+i*11)*700, y0=top+dy+rnd(i)*H*.5;
+   const cxp=x+w/2+vx*s0, cyp=y0-vy*s0+1400*s0*s0; if(cyp>1500) continue; const sz=14+rnd(i+3)*26;
+   h+=`<div style="position:absolute;left:${cxp}px;top:${cyp}px;width:${sz}px;height:${sz*.7}px;background:${i%3?"#2a1418":"#4a2a2a"};transform:rotate(${s0*720*(i%2?1:-1)}deg);border-radius:3px"></div>`}}
  return h}
-function polvo(lt,cx,n=16){let h="";for(let i=0;i<n;i++){const a=rnd(i)*Math.PI, r=lt*260*(.6+rnd(i+3)); h+=`<div style="position:absolute;left:${cx+Math.cos(a)*r*1.6-60}px;top:${1460-Math.sin(a)*r*.6-60}px;width:${120+rnd(i)*80}px;height:${120+rnd(i)*80}px;border-radius:50%;background:rgba(190,150,130,${.35*(1-cl(lt/2.5))})"></div>`}return h}
+function polvo(){return ""}
 function tanque(x,cañon=0,retro=0){return `<svg style="position:absolute;left:${x-retro*30}px;top:1330px" width="380" height="200" viewBox="0 0 380 200">
  <g transform="rotate(${-8-cañon*4} 200 70)"><rect x="200" y="58" width="190" height="22" rx="8" fill="#4b5a3a"/></g>
  <rect x="30" y="100" width="300" height="62" rx="24" fill="#2e3a24"/>${[60,110,160,210,260,300].map(c=>`<circle cx="${c}" cy="150" r="22" fill="#1d2416"/>`).join("")}
  <path d="M70 100 q20 -54 90 -54 h60 q50 0 70 54 Z" fill="#5d6e45"/><rect x="140" y="30" width="60" height="22" rx="8" fill="#4b5a3a"/>
  <circle cx="130" cy="78" r="9" fill="#ffd36a"/></svg>`}
-function torre(x,k,quien=true,lt=0){const w=280,n=11,ph=70; let h=edificio(x,w,n,k);
- if(quien&&k<.05) h+=`<div style="position:absolute;left:${x+60}px;top:${1500-n*ph-150}px;width:160px;height:150px;border-radius:12px;overflow:hidden;border:5px solid #efe9f7;background:#3a2228">${persona(lt>2.4?"sorpresa":"feliz","#f0b98a","#556b2f","#2b1a0e",0)}</div>`;
- return h}
+function torre(x,k,quien=true,lt=0){const w=280,n=11;
+ const ventana=quien?`<div style="position:absolute;left:60px;top:-160px;width:160px;height:150px;border-radius:12px;overflow:hidden;border:5px solid #efe9f7;background:#3a2228;box-shadow:0 0 30px rgba(255,190,100,.35)">${persona(lt>2.4||k>0?"sorpresa":"feliz","#f0b98a","#556b2f","#2b1a0e",0)}</div>`:`<div style="position:absolute;left:110px;top:-70px;font-size:64px">🪑</div>`;
+ return edificio(x,w,n,k,"#2a1418","",ventana)}
 function fogonazo(x,y,k){return k<=0||k>=1?"":`<div style="position:absolute;left:${x-90}px;top:${y-90}px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,#fff6c8,#ffb347 40%,rgba(255,120,40,0) 70%);transform:scale(${.5+k})"></div>`}
 function suelo(){return `<div style="position:absolute;left:0;right:0;top:1500px;bottom:0;background:#160a0d"></div><div style="position:absolute;left:0;right:0;top:1500px;height:6px;background:#3a1a1a"></div>`}
 function cajaJuego(x,y,w,rot=0){const h=w*1.25; return `<div style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;transform:rotate(${rot}deg);border-radius:10px;overflow:hidden;box-shadow:0 0 0 6px #ffb347,0 30px 60px rgba(0,0,0,.5);background:radial-gradient(circle at 70% 30%,#ff9a3c,#a2421f 40%,#1b0d14 80%)">
  <div style="position:absolute;left:0;right:0;top:0;height:${h*.09}px;background:#0b3fd0;color:#fff;font:900 ${w*.08}px 'Inter Display';display:flex;align-items:center;padding-left:${w*.05}px">PS5</div>
  <svg viewBox="0 0 100 125" width="${w}" height="${h}" style="position:absolute;left:0;top:0"><path d="M0 125 L0 95 L12 95 L12 80 L22 80 L22 92 L34 92 L34 70 L46 70 L46 88 L58 88 L58 76 L70 76 L70 96 L82 96 L82 84 L100 84 L100 125 Z" fill="#1b0d14"/><circle cx="72" cy="40" r="10" fill="#ffd38a" opacity=".8"/></svg>
  <div style="position:absolute;left:0;right:0;bottom:${h*.12}px;text-align:center;color:#fff;font:900 ${w*.13}px 'Inter Display';letter-spacing:-.03em;line-height:.9;text-shadow:0 4px 10px rgba(0,0,0,.6)">BATTLEFIELD<br><span style="font-size:1.6em;color:#ffb347">6</span></div></div>`}
-function escena(t){let h="";
+function escena(t){return `<div style="position:absolute;inset:0;transform:translate(${temblor(t)}px,${temblor(t+.37)*.6}px)">${escena0(t)}</div>`}
+function temblor(t){let a=0;for(const c of [1.6,5.9,7.3,18.6,21.9,39.5,43.2]){const d=t-c; if(d>0&&d<.8) a+=Math.sin(d*70)*14*(1-d/.8)}return a}
+function escena0(t){let h="";
  if(t<3.7){ const lt=t; h+=suelo()+edificio(120,220,10,0)+edificio(420,260,13,sg(lt,1.2,3.3))+edificio(760,200,8,0);
   if(lt>1.2) h+=polvo(lt-1.2,550); if(lt>1.2&&lt<1.3) h+=`<div style="position:absolute;inset:0;background:#fff;opacity:.5"></div>`;
  } else if(t<7.9){ const lt=t-3.7; h+=suelo()+edificio(60,200,9,sg(lt,.2,2.2))+edificio(380,240,12,0)+edificio(720,240,10,sg(lt,1.6,3.6));
@@ -66,7 +92,6 @@ function escena(t){let h="";
   h+=suelo()+cajaJuego(80,700,260,-6)+rows.map((r,i)=>{const k=eo(sg(lt,.4+i*.4,.8+i*.4));return `<div style="position:absolute;left:${400+(1-k)*80}px;top:${720+i*130}px;width:600px;padding:22px 26px;border-radius:18px;display:flex;justify-content:space-between;font:800 34px 'Inter';opacity:${k};background:${r[2]?"#ffb347":"rgba(255,255,255,.92)"};color:#1b0d14">${r[0]}<b>${r[1]}</b></div>`}).join("");
  } else if(t<42.7){ const lt=t-38.9; h+=suelo()+torre(560,sg(lt,.4,2.4),false)+tanque(40,1,0);
   if(lt>.4) h+=polvo(lt-.4,700,20);
-  h+=`<div style="position:absolute;left:640px;top:${540+(lt>.4?eo(sg(lt,.4,1.6))*300:0)}px;font-size:90px;transform:rotate(${eo(sg(lt,.4,1.6))*90}deg)">🪑</div>`;
  } else { const lt=t-42.7; h+=suelo()+edificio(380,320,12,sg(lt,.2,2))+polvo(lt,540)+cierre(lt,"#ffb347"); }
  return h}
 iniciar();
