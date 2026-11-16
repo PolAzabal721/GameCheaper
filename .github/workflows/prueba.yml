@@ -10,28 +10,18 @@ jobs:
         run: |
           [ -z "$F" ] && { echo "SIN SECRETO"; exit 1; }
           cat > a.py <<'P'
-          import sys,csv,re,collections,json
+          import sys,csv,re,collections
           csv.field_size_limit(10**9)
-          r=csv.reader(sys.stdin, delimiter=';')
-          cab=next(r); print('COLUMNAS',cab)
-          n=0; cats=collections.Counter(); ej=[]; juegos=0; jcats=collections.Counter(); malos=0; ejm=[]
-          JUEGO=re.compile(r'\b(ps5|ps4|playstation|nintendo switch|switch 2|xbox|steam|cd ?key|game key|clave|videojuego|video game)\b',re.I)
-          MALO=re.compile(r'account|cuenta|shared|offline|activation|compte|konto|accessor|controller|mando|case|funda|skin|sticker|charger|cable|stand|holder|grip|bag|protector|cover|toy|figure|poster|card game|board game|keychain|t-shirt|hoodie|mouse|keyboard|headset|joystick|console|consola|handheld|retro|emulator|dock|fan|cooling|battery',re.I)
+          r=csv.reader(sys.stdin, delimiter=';'); cab=next(r)
+          cats=collections.Counter(); ej=collections.defaultdict(list)
+          CAT=re.compile(r'game|giftcard|gift card|software|video|console|digital|key|card',re.I)
           for row in r:
-            n+=1; d=dict(zip(cab,row))
-            c=d.get('categoryId') or d.get('category') or ''
-            cats[(d.get('category') or d.get('categoryId') or '')[:80]]+=1
-            nom=d.get('name') or d.get('title') or ''
-            if JUEGO.search(nom):
-              if MALO.search(nom): malos+=1; len(ejm)<15 and ejm.append(nom[:120])
-              else:
-                juegos+=1; jcats[(d.get('category') or '')[:80]]+=1
-                if len(ej)<40: ej.append((nom[:120], d.get('price'), d.get('currencyId'), (d.get('url') or '')[:60]))
-            if n==1: print('EJEMPLO FILA', json.dumps(d,ensure_ascii=False)[:1500])
-          print('TOTAL',n,'CANDIDATOS',juegos,'DESCARTADOS',malos)
-          print('CATS TOP',cats.most_common(25))
-          print('CATS CANDIDATOS',jcats.most_common(25))
-          for e in ej: print('J',e)
-          for e in ejm: print('X',e)
+            d=dict(zip(cab,row)); c=d.get('category','')
+            if CAT.search(c):
+              cats[c]+=1
+              if len(ej[c])<12: ej[c].append((d.get('name','')[:110], d.get('price'), d.get('currencyId')))
+          print('CATSJ',cats.most_common(40))
+          for c,_ in cats.most_common(15):
+            for e in ej[c]: print('E',c,'|',e)
           P
           time (curl -sL "$F" | python3 a.py) 2>&1 | tail -120
