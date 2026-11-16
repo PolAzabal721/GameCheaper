@@ -1155,6 +1155,13 @@ const nombreMM = (n) => html2txt(n).replace(/[™®©]/g, "")
   .replace(/\(([A-Z0-9 ]{2,8})\)/g, "")                                 // siglas: «(GTA V)»
   .replace(/\(ed\.?\s*([^)]+)\)/gi, "$1 Edition").replace(/\(([^)]*edition[^)]*)\)/gi, "$1").replace(/\bed\.\s*/gi, "Edition ")
   .replace(/\s+-\s*$/, "").replace(/\s+/g, " ").trim();
+// Chrome de iPhone no abre los enlaces de Tradedoubler con paréntesis (pdt…/click?a(…)p(…)url(…)): da ERR_INVALID_URL.
+// El formato clásico clk.tradedoubler.com/click?p=…&a=…&url=… lleva el mismo seguimiento y sí funciona.
+function enlaceTD(u) {
+  const m = /[?)]a\((\d+)\).*?p\((\d+)\).*?url\(([^)]+)\)/.exec(u || "");
+  return m ? `https://clk.tradedoubler.com/click?p=${m[2]}&a=${m[1]}&url=${m[3]}` : u;
+}
+
 async function mediamarkt(juegos, avisos) {
   const token = (ENV.TRADEDOUBLER_TOKEN || "").replace(/\s+/g, "");
   if (!token) return 0;
@@ -1180,7 +1187,7 @@ async function mediamarkt(juegos, avisos) {
         const precio = +(o.priceHistory?.[0]?.price?.value || 0), normal = +campo(p, "strike_price") || 0;
         const envio = +((o.shippingCost || "").match(/([\d.]+)\s*EUR/) || [])[1] || 0;
         if (!(precio > 0) || o.condition && o.condition !== "new") continue;
-        productos.push({ nombre: nombreMM(p.name), plat, precio, normal, envio, stock: o.availability !== "out of stock", reserva: o.availability === "pre order", url: o.productUrl, ean: p.identifiers?.ean || undefined });
+        productos.push({ nombre: nombreMM(p.name), plat, precio, normal, envio, stock: o.availability !== "out of stock", reserva: o.availability === "pre order", url: enlaceTD(o.productUrl), ean: p.identifiers?.ean || undefined });
       }
       cache = { ultima: ultima || new Date().toISOString(), descargado: new Date().toISOString(), productos };
       await writeFile(CACHE_MM, JSON.stringify(cache));
@@ -1200,7 +1207,7 @@ async function mediamarkt(juegos, avisos) {
     let j = porLlave.get(llave(p.nombre));
     if (!j) { j = juego(p.nombre, { pop: 99999 }); if (!j) continue; porLlave.set(llave(p.nombre), j); nuevos++; }
     ofertar(j, { tienda: "mediamarkt", plataforma: p.plat, formato: "fisico", estado: "nuevo", precio: p.precio, regular: p.normal > p.precio ? p.normal : undefined,
-      envio: p.envio || undefined, stock: p.stock, url: p.url, fuente: "mediamarkt" });
+      envio: p.envio || undefined, stock: p.stock, url: enlaceTD(p.url), fuente: "mediamarkt" });
     j.revisado.add("mediamarkt"); visitar("mediamarkt", j); n++;
   }
   console.log(`MediaMarkt: ${n} precios de juegos en disco (${nuevos} juegos nuevos en el catálogo)`);
