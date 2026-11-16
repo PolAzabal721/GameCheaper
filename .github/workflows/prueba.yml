@@ -16,10 +16,8 @@ jobs:
           T=$(printf '%s' "$TD" | tr -d '[:space:]')
           echo "token: ${#T} caracteres"
           curl -s "https://api.tradedoubler.com/1.0/productsUnlimited/lastUpdated.json;fid=24915?token=$T"; echo
-          for i in $(seq 1 16); do
-            c=$(curl -s -o feed.zip -w '%{http_code}' "https://api.tradedoubler.com/1.0/productsUnlimited.json;compress=zip;fid=24915?token=$T"); echo "intento $i HTTP $c $(stat -c%s feed.zip)"
-            [ "$c" = 200 ] && break; sleep 60
-          done
+          curl -s -o /dev/null -w 'redirige a: %{redirect_url}\n' "https://api.tradedoubler.com/1.0/productsUnlimited.json;compress=zip;fid=24915?token=$T" | sed -E 's/(token|sig|Signature|X-Amz[^=]*)=[^&]*/\1=***/g' | cut -c1-200
+          curl -s -L -o feed.zip -w 'descarga HTTP %{http_code} %{size_download}\n' "https://api.tradedoubler.com/1.0/productsUnlimited.json;compress=zip;fid=24915?token=$T"
           file feed.zip; mkdir -p f && (unzip -o -q feed.zip -d f || true); ls -la f | head
           cat > p.mjs <<'JS'
           import fs from "fs";
