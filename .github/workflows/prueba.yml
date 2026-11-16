@@ -1,0 +1,34 @@
+name: Prueba
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: MediaMarkt
+        env:
+          TD: ${{ secrets.TRADEDOUBLER_TOKEN }}
+        run: |
+          T=$(printf '%s' "$TD" | tr -d '[:space:]')
+          echo "token: ${#T} caracteres"
+          curl -s "https://api.tradedoubler.com/1.0/productsUnlimited/lastUpdated.json;fid=24915?token=$T"; echo
+          curl -s -o feed.zip -w 'HTTP %{http_code} %{size_download}\n' "https://api.tradedoubler.com/1.0/productsUnlimited.json;compress=zip;fid=24915?token=$T"
+          file feed.zip; mkdir -p f && (unzip -o -q feed.zip -d f || true); ls -la f | head
+          cat > p.mjs <<'JS'
+          import fs from "fs";
+          const fl = fs.readdirSync("f").map(x=>"f/"+x).sort((a,b)=>fs.statSync(b).size-fs.statSync(a).size)[0];
+          if(!fl){ console.log("SIN FICHERO", fs.readFileSync("feed.zip","utf8").slice(0,500)); process.exit(0); }
+          const txt = fs.readFileSync(fl,"utf8"); console.log("FICHERO", fl, txt.length); console.log("INICIO", txt.slice(0,1500));
+          const d = JSON.parse(txt); const ps = d.products || d.productHeader?.products || d;
+          console.log("CLAVES", Object.keys(d)); const lista = Array.isArray(ps)?ps:(d.products||[]);
+          console.log("PRODUCTOS", lista.length);
+          const cat = {}; for (const p of lista) for (const c of (p.categories||[])) cat[c.name]=(cat[c.name]||0)+1;
+          console.log("CATS", JSON.stringify(Object.entries(cat).sort((a,b)=>b[1]-a[1]).slice(0,60)));
+          const jue = lista.filter(p=>/videojuego|juegos|gaming|consola/i.test(JSON.stringify(p.categories||[])));
+          console.log("JUEGOS", jue.length); for (const p of jue.slice(0,4)) console.log("EJ", JSON.stringify(p).slice(0,1500));
+          JS
+          node p.mjs
