@@ -1,0 +1,34 @@
+name: prueba
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        feed: [14267, 14280, 14281, 14282, 14283, 14284, 14285, 15830]
+    steps:
+      - env:
+          F: ${{ secrets.ALIEXPRESS_FEED }}
+        run: |
+          U=$(echo "$F" | sed "s/feed_id=[0-9]*/feed_id=${{ matrix.feed }}/")
+          cat > a.py <<'P'
+          import sys,csv,re,collections
+          csv.field_size_limit(10**9)
+          r=csv.reader(sys.stdin, delimiter=';'); cab=next(r)
+          n=0; cats=collections.Counter(); catg=collections.Counter(); ej=collections.defaultdict(list)
+          FUERTE=re.compile(r'(ps5|ps4|playstation ?[45]|switch ?2?|nintendo switch|xbox( series| one)?)\s*(physical\s*)?(game|games|video game|cartridge|card|disc|disk)|game (cartridge|card|disc)|(physical|original|brand new|sealed) (video )?game|(steam|origin|uplay|gog|epic)\s*(cd)?\s*key|cd ?key|game ?key|activation key|digital code|global key|for (ps5|ps4|nintendo switch|xbox)\b.*\b(game|edition)|\bedition\b.*\b(ps5|ps4|switch|xbox)\b',re.I)
+          for row in r:
+            n+=1; d=dict(zip(cab,row)); c=d.get('category',''); nom=d.get('name','')
+            if re.search(r'game|video|console|digital|key|software',c,re.I): catg[c]+=1
+            if FUERTE.search(nom):
+              cats[c]+=1
+              if len(ej[c])<8: ej[c].append((nom[:120], d.get('price')))
+          print('TOTAL',n)
+          print('CATS_CON_GAME',catg.most_common(30))
+          print('CATS_DE_COINCIDENCIAS',cats.most_common(30))
+          for c,_ in cats.most_common(12):
+            for e in ej[c]: print('E',c,'|',e)
+          P
+          curl -sL "$U" | python3 a.py 2>&1 | sed "s/^/[${{ matrix.feed }}] /" | cut -c1-500
