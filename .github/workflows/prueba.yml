@@ -1,0 +1,24 @@
+name: Prueba
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: GameBillet
+        run: |
+          cat > p.mjs <<'JS'
+          const H={"User-Agent":"Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)"};
+          const jar=new Map(); const ck=()=>[...jar].map(([k,v])=>k+"="+v).join("; ");
+          const ir=async(u)=>{const r=await fetch(u,{headers:{...H,Cookie:ck()},redirect:"manual"});(r.headers.getSetCookie?.()||[]).map(c=>c.split(";")[0]).forEach(c=>{const i=c.indexOf("=");jar.set(c.slice(0,i),c.slice(i+1))});return r;};
+          let r=await ir("https://www.gamebillet.com/sitemap.xml"); let t=await r.text(); console.log("SITEMAP",r.status,t.length,t.slice(0,600).replace(/\s+/g," "));
+          const locs=[...t.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map(m=>m[1]); console.log("LOCS",locs.length, locs.slice(0,8).join(" "), locs.slice(-5).join(" "));
+          r=await ir("https://www.gamebillet.com/"); let h=await r.text(); console.log("HOME",r.status,(h.match(/changecurrency\/\d+[^"]*/g)||[]).slice(0,6).join(" | "), "CUR", (h.match(/currency[^<]{0,80}/gi)||[]).slice(0,5).join(" ## "));
+          const prod=locs.filter(u=>!/sitemap|\/blog|\/topic|\/news|category|\/page/i.test(u)).slice(10,13);
+          for (const u of prod){ r=await ir(u); h=await r.text(); console.log("PROD",r.status,u, "| price:", (h.match(/itemprop="price"[^>]*>|"price"\s*:\s*"?[\d.,]+|price-value[^<]{0,80}/g)||[]).slice(0,4).join(" ## "), "| cur:", (h.match(/priceCurrency"?[^>]{0,40}/g)||[]).slice(0,2).join(" ## "), "| region:", (h.match(/(region|activat|restrict)[^<]{0,100}/gi)||[]).slice(0,3).join(" ## "), "| drm:", (h.match(/(steam|uplay|ubisoft connect|epic|gog|origin|ea app)[^<]{0,30}/gi)||[]).slice(0,2).join(" ## ")); }
+          JS
+          node p.mjs
