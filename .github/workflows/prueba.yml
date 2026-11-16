@@ -1,0 +1,15 @@
+name: prueba
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          T: ${{ secrets.CJ_TOKEN }}
+        run: |
+          echo "longitud token: ${#T}"
+          # Consulta mínima: un token válido devuelve un error de datos (falta companyId), uno inválido devuelve 401
+          curl -s -o r.txt -w "HTTP %{http_code}\n" -H "Authorization: Bearer $T" -H "Content-Type: application/json" \
+            -d '{"query":"{ publisherCommissions(forPublishers: [\"0\"], sincePostingDate: \"2026-11-01T00:00:00Z\", beforePostingDate: \"2026-11-02T00:00:00Z\") { count } }"}' \
+            https://commissions.api.cj.com/query
+          head -c 400 r.txt; echo
