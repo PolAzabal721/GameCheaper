@@ -1,0 +1,37 @@
+name: prueba4
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - run: |
+          B='https://feed.admitad.com/api/external/feed_export/50002'
+          echo "== cabecera 10-25"
+          curl -sL -D h.txt "$B?min_price=10&max_price=25&website_id=3022850&locale=en&currency=EUR&format=gcsv" | head -c 2500; echo; grep -iE "^HTTP|content-(type|length|disposition)" h.txt
+          echo "== todo 0-100000 (solo cabeceras y tamaño)"
+          curl -sL -o todo.csv -D h2.txt -w "HTTP %{http_code} BYTES %{size_download} TIEMPO %{time_total}\n" --max-time 3000 "$B?min_price=0&max_price=100000&website_id=3022850&locale=en&currency=EUR&format=gcsv"
+          grep -iE "^HTTP|content-type" h2.txt; wc -l todo.csv; head -c 600 todo.csv; echo
+          cat > a.py <<'P'
+          import sys,csv,re,collections
+          csv.field_size_limit(10**9)
+          f=open('todo.csv',newline='',encoding='utf-8',errors='replace')
+          s=f.read(4096); f.seek(0); dl=csv.Sniffer().sniff(s).delimiter
+          r=csv.DictReader(f,delimiter=dl); print('COLUMNAS',r.fieldnames)
+          PLAT=re.compile(r'\b(ps5|ps4|playstation ?[45]|nintendo switch|switch ?2|xbox series|xbox one)\b',re.I)
+          ACC=re.compile(r'controller|gamepad|joystick|case|bag|cover|skin|sticker|charger|charging|cable|stand|holder|grip|protector|glass|film|dock|fan|cool|battery|thumb|cap|button|shell|housing|repair|replacement|adapter|hdmi|ssd|memory|headset|earphone|keyboard|mouse|strap|wheel|pedal|light|led|mat|organizer|storage|rack|mount|tool|screw|chip|board|motor|power|port',re.I)
+          n=0; cats=collections.Counter(); hit=collections.Counter(); ej=collections.defaultdict(list); found=0
+          for d in r:
+            n+=1; nom=d.get('title') or d.get('name') or ''; c=d.get('google_product_category') or d.get('product_type') or d.get('category') or ''
+            cats[c[:70]]+=1
+            if '1005010084979022' in str(d): found+=1; print('ENCONTRADO',nom[:100],d.get('price'))
+            if PLAT.search(nom) and not ACC.search(nom):
+              hit[c[:70]]+=1
+              if len(ej[c[:70]])<10: ej[c[:70]].append((nom[:110],d.get('price') or d.get('sale_price')))
+            if n==1: print('FILA1',{k:(v or '')[:80] for k,v in d.items()})
+          print('TOTAL',n,'enlace encontrado',found)
+          print('CATS',cats.most_common(15)); print('HITS',hit.most_common(15))
+          for c,_ in hit.most_common(6):
+            for e in ej[c]: print('E',c,'|',e)
+          P
+          python3 a.py 2>&1 | cut -c1-500
