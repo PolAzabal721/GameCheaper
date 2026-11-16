@@ -4,13 +4,36 @@ jobs:
   p:
     runs-on: ubuntu-latest
     steps:
+      - env:
+          T: ${{ secrets.TRADEDOUBLER_TOKEN }}
+        run: |
+          curl -sL -o f.zip "https://api.tradedoubler.com/1.0/productsUnlimited.json;compress=zip;fid=24915?token=$T"
+          ls -la f.zip; unzip -p f.zip > f.json 2>/dev/null; ls -la f.json
+          python3 - <<'P'
+          import json,re,collections
+          try: d=json.load(open('f.json'))
+          except Exception as e: print('sin feed',e); raise SystemExit
+          ps=d.get('products',d) if isinstance(d,dict) else d
+          print('productos',len(ps)); p0=ps[0]; print('campos',sorted(p0.keys()))
+          for k in p0:
+            if re.search('cond|state|used|categ',k,re.I): print(k,collections.Counter(str(x.get(k))[:60] for x in ps).most_common(15))
+          s=json.dumps(ps,ensure_ascii=False)
+          for w in ['reacondicionad','segunda mano','seminuevo','usado','refurbished','used']: print(w,len(re.findall(w,s,re.I)))
+          ej=[x.get('name') for x in ps if re.search('reacondicion|segunda mano|seminuevo',json.dumps(x,ensure_ascii=False),re.I)][:15]; print(ej)
+          P
       - run: |
-          U='https://pdt.tradedoubler.com/click?a(3508009)p(270504)product(24915-1679046)ttid(3)url(https%3A%2F%2Fwww.mediamarkt.es%2Fes%2Fproduct%2F_ps5-football-manager-27-1679046.html)'
-          A="Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148"
-          curl -s -c c.txt -o /dev/null -A "$A" "$U"
-          echo ---- POST
-          curl -s -b c.txt -c c.txt -D - -o b.txt -A "$A" -e "$U" -X POST -d "f=0&referer=https%3A%2F%2Fpillaojuegos.com%2F" "$U" | grep -iE "^HTTP|^location"
-          head -c 1500 b.txt; echo
-          echo ---- GET2
-          curl -s -b c.txt -D - -o b2.txt -A "$A" "$U&referer=&f=0" | grep -iE "^HTTP|^location"
-          head -c 800 b2.txt; echo
+          npm i playwright@1.56.1 >/dev/null 2>&1 && npx playwright install --with-deps chromium webkit >/dev/null 2>&1
+          cat > t.mjs <<'J'
+          import { chromium, webkit, devices } from 'playwright';
+          const urls={pdt:'https://pdt.tradedoubler.com/click?a(3508009)p(270504)product(24915-1679046)ttid(3)url(https%3A%2F%2Fwww.mediamarkt.es%2Fes%2Fproduct%2F_ps5-football-manager-27-1679046.html)',
+            clk:'https://clk.tradedoubler.com/click?p=270504&a=3508009&url=https%3A%2F%2Fwww.mediamarkt.es%2Fes%2Fproduct%2F_ps5-football-manager-27-1679046.html'};
+          for (const [n,b,dev] of [['chromium-android',chromium,devices['Pixel 7']],['webkit-iphone',webkit,devices['iPhone 15']]]) {
+            const br=await b.launch(); const pg=await (await br.newContext(dev)).newPage();
+            for (const [k,u] of Object.entries(urls)) {
+              try { await pg.goto(u,{timeout:30000}); await pg.waitForURL(/mediamarkt\.es/,{timeout:20000}).catch(()=>{}); console.log(n,k,'->',pg.url().slice(0,160)); }
+              catch(e){ console.log(n,k,'ERROR',e.message.split('\n')[0], pg.url().slice(0,120)); }
+            }
+            await br.close();
+          }
+          J
+          node t.mjs
