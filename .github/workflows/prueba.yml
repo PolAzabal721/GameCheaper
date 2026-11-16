@@ -6,6 +6,11 @@ jobs:
     steps:
       - run: |
           U='https://pdt.tradedoubler.com/click?a(3508009)p(270504)product(24915-1679046)ttid(3)url(https%3A%2F%2Fwww.mediamarkt.es%2Fes%2Fproduct%2F_ps5-football-manager-27-1679046.html)'
-          curl -s -A "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148" "$U" | head -c 3000
-          echo ---- clk
-          curl -s -o /dev/null -D - -A "Mozilla/5.0" "https://clk.tradedoubler.com/click?p=270504&a=3508009&url=https%3A%2F%2Fwww.mediamarkt.es%2Fes%2Fproduct%2F_ps5-football-manager-27-1679046.html" | head -15
+          A="Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148"
+          curl -s -c c.txt -o /dev/null -A "$A" "$U"
+          echo ---- POST
+          curl -s -b c.txt -c c.txt -D - -o b.txt -A "$A" -e "$U" -X POST -d "f=0&referer=https%3A%2F%2Fpillaojuegos.com%2F" "$U" | grep -iE "^HTTP|^location"
+          head -c 1500 b.txt; echo
+          echo ---- GET2
+          curl -s -b c.txt -D - -o b2.txt -A "$A" "$U&referer=&f=0" | grep -iE "^HTTP|^location"
+          head -c 800 b2.txt; echo
