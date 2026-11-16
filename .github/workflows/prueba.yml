@@ -2,45 +2,18 @@ name: prueba
 on: workflow_dispatch
 jobs:
   p:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
-      - env:
-          T: ${{ secrets.TRADEDOUBLER_TOKEN }}
-        run: |
-          curl -sL -o f.zip "https://api.tradedoubler.com/1.0/productsUnlimited.json;compress=zip;fid=24915?token=$T"
-          ls -la f.zip; unzip -p f.zip > f.json 2>/dev/null; ls -la f.json
-          python3 - <<'P'
-          import json,re,collections
-          try: d=json.load(open('f.json'))
-          except Exception as e: print('sin feed',e); raise SystemExit
-          ps=d.get('products',d) if isinstance(d,dict) else d
-          print('productos',len(ps)); p0=ps[0]; print('campos',sorted(p0.keys()))
-          for k in p0:
-            if re.search('cond|state|used|categ',k,re.I): print(k,collections.Counter(str(x.get(k))[:60] for x in ps).most_common(15))
-          s=json.dumps(ps,ensure_ascii=False)
-          for w in ['reacondicionad','segunda mano','seminuevo','usado','refurbished','used']: print(w,len(re.findall(w,s,re.I)))
-          ej=[x.get('name') for x in ps if re.search('reacondicion|segunda mano|seminuevo',json.dumps(x,ensure_ascii=False),re.I)][:15]; print(ej)
-          jg=[x for x in ps if 'Consolas y videojuegos' in json.dumps(x.get('categories'),ensure_ascii=False) or 'Juegos' in json.dumps(x.get('fields'),ensure_ascii=False)]
-          us=[x for x in jg if re.search('reacondicion|seminuevo|segunda mano|usado',x.get('name',''),re.I)]
-          print('consolas-videojuegos',len(jg),'reacondicionados',len(us))
-          import collections as C
-          print(C.Counter([f.get('value') for x in us for f in x.get('fields',[]) if f.get('name')=='category_second_level']).most_common(10))
-          for x in us[:25]: print('U',x['name'][:110], x['offers'][0].get('priceHistory',[{}])[0].get('price',{}).get('value') if x.get('offers') else '')
-          P
-      - if: always()
-        run: |
-          npm i playwright@1.49.1 2>&1 | tail -3; npx playwright install --with-deps chromium webkit 2>&1 | tail -3
+      - run: |
+          npm i playwright@1.49.1 2>&1 | tail -1; npx playwright install webkit 2>&1 | tail -2
           cat > t.mjs <<'J'
-          import { chromium, webkit, devices } from 'playwright';
-          const urls={pdt:'https://pdt.tradedoubler.com/click?a(3508009)p(270504)product(24915-1679046)ttid(3)url(https%3A%2F%2Fwww.mediamarkt.es%2Fes%2Fproduct%2F_ps5-football-manager-27-1679046.html)',
-            clk:'https://clk.tradedoubler.com/click?p=270504&a=3508009&url=https%3A%2F%2Fwww.mediamarkt.es%2Fes%2Fproduct%2F_ps5-football-manager-27-1679046.html'};
-          for (const [n,b,dev] of [['chromium-android',chromium,devices['Pixel 7']],['webkit-iphone',webkit,devices['iPhone 15']]]) {
-            const br=await b.launch(); const pg=await (await br.newContext(dev)).newPage();
-            for (const [k,u] of Object.entries(urls)) {
-              try { await pg.goto(u,{timeout:30000}); await pg.waitForURL(/mediamarkt\.es/,{timeout:20000}).catch(()=>{}); console.log(n,k,'->',pg.url().slice(0,160)); }
-              catch(e){ console.log(n,k,'ERROR',e.message.split('\n')[0], pg.url().slice(0,120)); }
-            }
-            await br.close();
-          }
+          import { webkit, devices } from 'playwright';
+          const u='https://pdt.tradedoubler.com/click?a(3508009)p(270504)product(24915-1679046)ttid(3)url(https%3A%2F%2Fwww.mediamarkt.es%2Fes%2Fproduct%2F_ps5-football-manager-27-1679046.html)';
+          const br=await webkit.launch(); const pg=await (await br.newContext(devices['iPhone 15'])).newPage();
+          pg.on('requestfailed', r=>console.log('FALLO', r.url().slice(0,200), r.failure()?.errorText));
+          pg.on('response', r=>{ if (r.status()>=300) console.log('RESP', r.status(), r.url().slice(0,120), (r.headers().location||'').slice(0,250)); });
+          try { await pg.goto(u,{timeout:30000}); } catch(e){ console.log('GOTO', e.message.split('\n')[0]); }
+          await pg.waitForTimeout(12000);
+          console.log('FINAL', pg.url().slice(0,250)); await br.close();
           J
           node t.mjs
