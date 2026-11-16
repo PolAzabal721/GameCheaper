@@ -1,0 +1,68 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dying Light: The Beast</title></head><body>
+<script src="kit.js"></script>
+<script>
+const DUR=39.6;
+const PALETA={cielo:"linear-gradient(180deg,#06140f,#0e2a22 45%,#1d4a3a 80%,#2c5e48)",shader:["#04100c","#0e2a22","#1d4a3a","#123828","#2a1a1a"],acento:"#7dff8a",shaderOpacidad:.85};
+const IMAGENES=["img/dyinglight.jpg"];
+const FRASES=[
+ [0.2,3.6,"¿Sabías que en *Dying Light: The Beast* la noche es *mucho* más peligrosa?"],
+ [3.7,7.8,"De día, los infectados son *lentos* y torpes."],
+ [7.9,12.0,"Pero cuando se pone el *sol,* salen los *Volátiles:* rápidos y *letales.*"],
+ [12.1,16.4,"Lo mejor es *correr* por los tejados… y no mirar *atrás.*"],
+ [16.5,20.8,"Y buscar la *luz ultravioleta:* a los Volátiles no les gusta *nada.*"],
+ [20.9,26.2,"Por suerte, su *precio* no da tanto *miedo:* de 59,99 a *20,02* euros."],
+ [26.3,30.6,"Un *67* por ciento menos para PC: su precio más *bajo* desde que Pillao lo sigue."],
+ [30.7,34.6,"Así que esta noche, mejor quedarse en casa *jugando.*"],
+ [34.7,39.2,"Compara antes de comprar en *pillaojuegos.com*… y sobrevive a la *noche.*"],
+];
+document.getElementById("estrellas").innerHTML=estrellas(80,1100);
+// infectado propio (dibujo genérico de dibujos animados)
+function zombi(x,y,s=1,fase=0,noche=false){const b=Math.sin(fase)*8;
+ return `<svg style="position:absolute;left:${x}px;top:${y}px;transform:scale(${s});transform-origin:0 100%" width="160" height="300" viewBox="0 0 160 300">
+  <path d="M60 300 L66 ${210+b} M100 300 L94 ${210-b}" stroke="#2d3b2a" stroke-width="18" stroke-linecap="round"/>
+  <path d="M40 140 q40 -20 80 0 l-6 90 h-68 Z" fill="#4b5d3f"/>
+  <path d="M44 150 q-30 ${20+b} -6 ${60+b} M116 150 q40 ${10-b} 20 ${55-b}" stroke="#7d9a6b" stroke-width="16" fill="none" stroke-linecap="round"/>
+  <ellipse cx="80" cy="96" rx="40" ry="46" fill="#8fae7a"/>
+  <circle cx="64" cy="92" r="${noche?9:8}" fill="${noche?"#ff2d2d":"#fff"}" ${noche?'style="filter:drop-shadow(0 0 8px #ff2d2d)"':""}/><circle cx="96" cy="88" r="${noche?9:6}" fill="${noche?"#ff2d2d":"#fff"}"/>
+  ${noche?"":`<circle cx="66" cy="94" r="3" fill="#222"/><circle cx="97" cy="90" r="2.5" fill="#222"/>`}
+  <path d="M64 118 q16 ${noche?14:6} 32 0" stroke="#2a1a1a" stroke-width="5" fill="${noche?"#2a1a1a":"none"}"/></svg>`}
+function corredor(x,y,fase,s=1){const a=Math.sin(fase)*40;
+ return `<svg style="position:absolute;left:${x}px;top:${y}px;transform:scale(${s});transform-origin:0 100%" width="160" height="260" viewBox="0 0 160 260">
+  <g stroke="#e8f0ea" stroke-width="16" stroke-linecap="round" fill="none"><path d="M80 150 l${a*.5} 50 l${-a*.3} 50"/><path d="M80 150 l${-a*.5} 50 l${a*.3} 50"/>
+  <path d="M80 80 l${-a*.6} 40"/><path d="M80 80 l${a*.6} 40"/><path d="M80 70 L80 150"/></g><circle cx="80" cy="44" r="24" fill="#e8f0ea"/></svg>`}
+function tejados(off=0,col="#08160f"){let h="";for(let i=-1;i<7;i++){const x=i*240-((off)%240), hh=300+rnd(i+Math.floor(off/240)*7)*260;
+ h+=`<div style="position:absolute;left:${x}px;top:${1500-hh}px;width:230px;height:${hh+420}px;background:${col};background-image:repeating-linear-gradient(90deg,transparent 0 30px,rgba(255,220,140,.12) 30px 46px,transparent 46px 76px);background-size:100% 60px"></div>`}
+ return h+`<div style="position:absolute;left:0;right:0;top:1500px;bottom:0;background:#040c08"></div>`}
+function escena(t){let h=""; const est=document.getElementById("estrellas"); est.style.opacity=1;
+ if(t<3.7){ const lt=t; h+=tejados(lt*20)+luna(820,520,1.3);
+  for(let i=0;i<5;i++) h+=zombi(40+i*200,1180+rnd(i)*40,1.4,lt*3+i,true);
+ } else if(t<7.9){ const lt=t-3.7; est.style.opacity=0;
+  h+=`<div style="position:absolute;inset:0;background:linear-gradient(180deg,#7fc3e8,#cfe9f2 60%,#e8d9a8)"></div>`+sol(800,520)+tejados(lt*10,"#4d6b5a");
+  for(let i=0;i<4;i++) h+=zombi(80+i*240+Math.sin(lt*.6+i)*20,1180,1.4,lt*1.5+i,false);
+  if(lt>1.6) h+=`<div class="dato" style="left:90px;top:1560px;opacity:${sg(lt,1.6,1.9)}">LENTOS 🐢</div>`;
+ } else if(t<12.1){ const lt=t-7.9; const k=sg(lt,0,1.6); est.style.opacity=k;
+  h+=`<div style="position:absolute;inset:0;background:linear-gradient(180deg,#7fc3e8,#cfe9f2 60%,#e8d9a8);opacity:${1-k}"></div>`;
+  h+=`<div style="position:absolute;left:800px;top:${520+k*700}px;width:110px;height:110px;border-radius:50%;background:#ffb070;box-shadow:0 0 80px 30px rgba(255,140,80,.5);opacity:${1-k}"></div>`+tejados(lt*10)+(k>.6?luna(820,520,1.3):"");
+  for(let i=0;i<5;i++){const x=1100-((lt-1.6)*(500+i*90)+i*260)%1500; h+=zombi(x,1170,1.45,lt*14+i,k>.5)}
+  if(lt>2.4) h+=`<div class="dato" style="left:90px;top:1560px;background:#ff2d2d;opacity:${sg(lt,2.4,2.7)}">VOLÁTILES</div>`;
+ } else if(t<16.5){ const lt=t-12.1; h+=tejados(lt*520)+luna(820,520,1.3);
+  // el corredor salta de tejado en tejado
+  const salto=Math.abs(Math.sin(lt*2.6))*170; h+=corredor(400,1140-salto,lt*14,1.8);
+  for(let i=0;i<2;i++) h+=zombi(60-i*200+Math.sin(lt*3)*30,1140-Math.abs(Math.sin(lt*2.6+1+i))*140,1,lt*16+i,true);
+ } else if(t<20.9){ const lt=t-16.5; h+=tejados(0)+luna(820,520,1.3);
+  h+=`<div style="position:absolute;left:320px;top:900px;width:440px;height:600px;background:radial-gradient(ellipse at 50% 0%,rgba(190,120,255,.75),rgba(140,60,255,.25) 50%,rgba(140,60,255,0) 75%)"></div><div style="position:absolute;left:500px;top:880px;width:80px;height:40px;border-radius:10px;background:#d9b8ff;box-shadow:0 0 50px 20px rgba(190,120,255,.8)"></div>`;
+  h+=corredor(460,1250,.5,1.5);
+  for(let i=0;i<2;i++){const s0=i?1:-1, x=540+s0*(520-eo(sg(lt,0,1.6))*220); h+=`<div style="transform:scaleX(${s0>0?-1:1});transform-origin:${x+80}px 0;position:absolute;inset:0">${zombi(x,1170,1.4,lt*10+i,true)}</div>`}
+  if(lt>1.8) h+=`<div class="dato" style="left:360px;top:1560px;background:#8a3cff;opacity:${sg(lt,1.8,2.1)}">ZONA SEGURA</div>`;
+ } else if(t<26.3){ const lt=t-20.9; h+=tejados(0)+luna(120,520,1);
+  h+=portada("img/dyinglight.jpg",330,620,420,-3,"#7dff8a");
+  if(lt>1.2) h+=`<div style="position:absolute;left:0;right:0;top:1330px;text-align:center">${etiq(contador(lt,1.2,3.4,59.99,20.02),.6+.4*Math.sin(t*6),"#7dff8a","#06140f")}</div>`;
+  if(lt>3.6) h+=`<div class="dato" style="left:690px;top:600px;font-size:36px;transform:rotate(6deg)">PC · DRIFFLE</div>`;
+ } else if(t<30.7){ const lt=t-26.3; h+=tejados(0)+luna(820,520,1.3)+portada("img/dyinglight.jpg",330,620,420,-3,"#7dff8a")+sello("-67 %",120,1320,sg(lt,.4,.8),"#7dff8a")+sello("MÍNIMO",560,1340,sg(lt,2,2.4),"#d8ff1f");
+ } else if(t<34.7){ const lt=t-30.7; h+=calle("#04100c","#3a5a40","#0b2018")+luna(840,560,1.2);
+  for(let i=0;i<3;i++) h+=zombi(-200+((lt*120+i*420)%1400),1300,1.1,lt*6+i,true);
+  h+=caseta({x:220,y:820,w:640,col:"#1f6e5a",pais:"EN CASA",hora:"23:00",persona:persona("feliz","#f0b98a","#2d6a4f","#2b1a0e",1,mando(150,330+Math.sin(lt*8)*4)),fondo:"#13261e",luz:"#7dff8a"});
+ } else { const lt=t-34.7; h+=tejados(lt*40)+luna(820,520,1.3)+cierre(lt,"#7dff8a")+`<div style="position:absolute;left:0;right:0;top:1060px;text-align:center;transform:scale(${eb(sg(lt,.9,1.3))})">${etiq("20,02 €",.7,"#7dff8a","#06140f")}</div>`; }
+ return h}
+iniciar();
+</script></body></html>

@@ -1,0 +1,73 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Battlefield 6</title></head><body>
+<script src="kit.js"></script>
+<script>
+const DUR=47.2;
+const PALETA={cielo:"linear-gradient(180deg,#1b0d14,#4a1a1a 40%,#a2421f 75%,#e0782c)",shader:["#1b0d14","#4a1a1a","#8a2f1c","#c4561f","#3a1420"],acento:"#ffb347",shaderOpacidad:.85};
+const IMAGENES=[];
+const FRASES=[
+ [0.2,3.6,"¿Sabías que en *Battlefield 6* puedes *derribar* edificios enteros?"],
+ [3.7,7.8,"Paredes, puentes, torres… casi todo el *mapa* se puede *destruir.*"],
+ [7.9,12.2,"Un jugador se escondió en lo más *alto* de una torre, convencido de que nadie lo iba a *pillar.*"],
+ [12.3,16.2,"Pero alguien llegó con un *tanque*… y apuntó a la *base.*"],
+ [16.3,19.8,"Tres disparos después, la torre entera se vino *abajo.*"],
+ [19.9,23.8,"Y esta semana se ha derrumbado *otra* cosa: su *precio.*"],
+ [23.9,29.2,"Salió a *79,99* euros. Hoy, en PS Store, está a *26,39* para PS5."],
+ [29.3,33.8,"Un *67* por ciento menos: su precio más *bajo* desde que Pillao lo sigue."],
+ [33.9,38.8,"¿Prefieres Xbox o el *disco?* Pillao te dice dónde está más *barato* en cada caso."],
+ [38.9,42.6,"Así que ni torres ni *excusas.*"],
+ [42.7,46.8,"Entra en *pillaojuegos.com* y derriba precios tú también."],
+];
+// edificio propio dibujado: ancho w, pisos n; k = derrumbe 0..1
+function edificio(x,w,n,k,col="#2a1418",etiqueta=""){
+ const ph=70; let h="";
+ for(let i=0;i<n;i++){const caida=Math.max(0,k*(n-i)/n*1.6-(.6*(i/n))); const y=1500-(i+1)*ph+caida*caida*900*(k>0?1:0);
+  const rot=(rnd(i+x)-.5)*caida*60, dx=(rnd(i+x*3)-.5)*caida*160;
+  h+=`<div style="position:absolute;left:${x+dx}px;top:${Math.min(y,1500-ph)}px;width:${w}px;height:${ph}px;background:${col};border-bottom:3px solid #120a0c;transform:rotate(${rot}deg);opacity:${y>1560?0:1};
+   background-image:repeating-linear-gradient(90deg,transparent 0 ${w/6-12}px,${rnd(i*7+x)>.4?"#ffcf7a":"#3a2228"} ${w/6-12}px ${w/6}px);background-size:100% 30px;background-repeat:repeat-x;background-position:0 20px"></div>`}
+ if(etiqueta&&k<.15) h+=`<div style="position:absolute;left:${x+w/2-130}px;top:${1500-n*ph-110}px">${etiq(etiqueta,.5,"#ffb347","#1b0d14")}</div>`;
+ return h}
+function polvo(lt,cx,n=16){let h="";for(let i=0;i<n;i++){const a=rnd(i)*Math.PI, r=lt*260*(.6+rnd(i+3)); h+=`<div style="position:absolute;left:${cx+Math.cos(a)*r*1.6-60}px;top:${1460-Math.sin(a)*r*.6-60}px;width:${120+rnd(i)*80}px;height:${120+rnd(i)*80}px;border-radius:50%;background:rgba(190,150,130,${.35*(1-cl(lt/2.5))})"></div>`}return h}
+function tanque(x,cañon=0,retro=0){return `<svg style="position:absolute;left:${x-retro*30}px;top:1330px" width="380" height="200" viewBox="0 0 380 200">
+ <g transform="rotate(${-8-cañon*4} 200 70)"><rect x="200" y="58" width="190" height="22" rx="8" fill="#4b5a3a"/></g>
+ <rect x="30" y="100" width="300" height="62" rx="24" fill="#2e3a24"/>${[60,110,160,210,260,300].map(c=>`<circle cx="${c}" cy="150" r="22" fill="#1d2416"/>`).join("")}
+ <path d="M70 100 q20 -54 90 -54 h60 q50 0 70 54 Z" fill="#5d6e45"/><rect x="140" y="30" width="60" height="22" rx="8" fill="#4b5a3a"/>
+ <circle cx="130" cy="78" r="9" fill="#ffd36a"/></svg>`}
+function torre(x,k,quien=true,lt=0){const w=280,n=11,ph=70; let h=edificio(x,w,n,k);
+ if(quien&&k<.05) h+=`<div style="position:absolute;left:${x+60}px;top:${1500-n*ph-150}px;width:160px;height:150px;border-radius:12px;overflow:hidden;border:5px solid #efe9f7;background:#3a2228">${persona(lt>2.4?"sorpresa":"feliz","#f0b98a","#556b2f","#2b1a0e",0)}</div>`;
+ return h}
+function fogonazo(x,y,k){return k<=0||k>=1?"":`<div style="position:absolute;left:${x-90}px;top:${y-90}px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,#fff6c8,#ffb347 40%,rgba(255,120,40,0) 70%);transform:scale(${.5+k})"></div>`}
+function suelo(){return `<div style="position:absolute;left:0;right:0;top:1500px;bottom:0;background:#160a0d"></div><div style="position:absolute;left:0;right:0;top:1500px;height:6px;background:#3a1a1a"></div>`}
+function cajaJuego(x,y,w,rot=0){const h=w*1.25; return `<div style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;transform:rotate(${rot}deg);border-radius:10px;overflow:hidden;box-shadow:0 0 0 6px #ffb347,0 30px 60px rgba(0,0,0,.5);background:radial-gradient(circle at 70% 30%,#ff9a3c,#a2421f 40%,#1b0d14 80%)">
+ <div style="position:absolute;left:0;right:0;top:0;height:${h*.09}px;background:#0b3fd0;color:#fff;font:900 ${w*.08}px 'Inter Display';display:flex;align-items:center;padding-left:${w*.05}px">PS5</div>
+ <svg viewBox="0 0 100 125" width="${w}" height="${h}" style="position:absolute;left:0;top:0"><path d="M0 125 L0 95 L12 95 L12 80 L22 80 L22 92 L34 92 L34 70 L46 70 L46 88 L58 88 L58 76 L70 76 L70 96 L82 96 L82 84 L100 84 L100 125 Z" fill="#1b0d14"/><circle cx="72" cy="40" r="10" fill="#ffd38a" opacity=".8"/></svg>
+ <div style="position:absolute;left:0;right:0;bottom:${h*.12}px;text-align:center;color:#fff;font:900 ${w*.13}px 'Inter Display';letter-spacing:-.03em;line-height:.9;text-shadow:0 4px 10px rgba(0,0,0,.6)">BATTLEFIELD<br><span style="font-size:1.6em;color:#ffb347">6</span></div></div>`}
+function escena(t){let h="";
+ if(t<3.7){ const lt=t; h+=suelo()+edificio(120,220,10,0)+edificio(420,260,13,sg(lt,1.2,3.3))+edificio(760,200,8,0);
+  if(lt>1.2) h+=polvo(lt-1.2,550); if(lt>1.2&&lt<1.3) h+=`<div style="position:absolute;inset:0;background:#fff;opacity:.5"></div>`;
+ } else if(t<7.9){ const lt=t-3.7; h+=suelo()+edificio(60,200,9,sg(lt,.2,2.2))+edificio(380,240,12,0)+edificio(720,240,10,sg(lt,1.6,3.6));
+  const kp=sg(lt,.8,2.4); h+=`<div style="position:absolute;left:260px;top:${1260+kp*kp*260}px;width:140px;height:24px;background:#3a2228;transform:rotate(${kp*30}deg)"></div><div style="position:absolute;left:600px;top:${1260+kp*kp*200}px;width:140px;height:24px;background:#3a2228;transform:rotate(${-kp*25}deg)"></div>`;
+  h+=polvo(cl(lt-.2,0,9),160)+polvo(cl(lt-1.6,0,9),840);
+ } else if(t<12.3){ const lt=t-7.9; h+=suelo()+edificio(60,200,8,0)+torre(400,0,true,lt)+edificio(800,200,9,0);
+  if(lt>2.6) h+=`<div class="dato" style="left:640px;top:520px;opacity:${sg(lt,2.6,2.9)}">PISO<small>14</small></div>`;
+ } else if(t<16.3){ const lt=t-12.3; h+=suelo()+torre(560,0,true,3);
+  h+=tanque(-380+eo(sg(lt,0,1.8))*420,sg(lt,2,2.8));
+ } else if(t<19.9){ const lt=t-16.3; const shots=[.3,1.0,1.7]; let ret=0,fl="";
+  shots.forEach(s0=>{const k=sg(lt,s0,s0+.25); if(k>0&&k<1){ret=1-k; fl+=fogonazo(420,1360,k)+fogonazo(640,1460,k)}});
+  h+=suelo()+torre(560,sg(lt,1.9,3.5),true,3)+tanque(40,1,ret)+fl;
+  if(lt>1.9) h+=polvo(lt-1.9,700,24);
+  if(lt>1.9&&lt<2.0) h+=`<div style="position:absolute;inset:0;background:#fff;opacity:.55"></div>`;
+ } else if(t<23.9){ const lt=t-19.9; h+=suelo()+edificio(340,400,14,sg(lt,1.6,3.6),"#2a1418","79,99 €");
+  if(lt>1.6) h+=polvo(lt-1.6,540,22); if(lt>1.6&&lt<1.7) h+=`<div style="position:absolute;inset:0;background:#fff;opacity:.5"></div>`;
+ } else if(t<29.3){ const lt=t-23.9; h+=suelo()+cajaJuego(140,640,360,-4);
+  h+=`<div style="position:absolute;left:560px;top:760px;font:800 30px 'DejaVu Sans Mono';color:#ffd0a0">SALIÓ A</div><div style="position:absolute;left:560px;top:800px;font:900 96px 'Inter Display';color:#fff;letter-spacing:-.03em">79,99€<div style="position:absolute;left:-8px;right:-8px;top:52%;height:10px;background:#ff4f4f;transform:scaleX(${eo(sg(lt,2.2,2.6))});transform-origin:0 50%"></div></div>`;
+  if(lt>2.8) h+=`<div style="position:absolute;left:560px;top:940px;font:800 30px 'DejaVu Sans Mono';color:#ffb347">HOY · PS STORE</div><div style="position:absolute;left:550px;top:980px;font:900 150px 'Inter Display';color:#ffb347;letter-spacing:-.05em;text-shadow:0 0 40px rgba(255,179,71,.5)">${contador(lt,2.8,4.2,79.99,26.39).replace(" €","€")}</div>`;
+ } else if(t<33.9){ const lt=t-29.3; h+=suelo()+cajaJuego(330,620,420,-3)+sello("-67 %",140,1300,sg(lt,.5,.9),"#ffb347")+sello("MÍNIMO",560,1340,sg(lt,2.2,2.6),"#d8ff1f");
+ } else if(t<38.9){ const lt=t-33.9; const rows=[["PS Store · PS5","26,39 €",1],["Driffle · Xbox","27,47 €",0],["Instant Gaming · Xbox","29,39 €",0],["GAME · PS5 disco","29,99 €",0]];
+  h+=suelo()+cajaJuego(80,700,260,-6)+rows.map((r,i)=>{const k=eo(sg(lt,.4+i*.4,.8+i*.4));return `<div style="position:absolute;left:${400+(1-k)*80}px;top:${720+i*130}px;width:600px;padding:22px 26px;border-radius:18px;display:flex;justify-content:space-between;font:800 34px 'Inter';opacity:${k};background:${r[2]?"#ffb347":"rgba(255,255,255,.92)"};color:#1b0d14">${r[0]}<b>${r[1]}</b></div>`}).join("");
+ } else if(t<42.7){ const lt=t-38.9; h+=suelo()+torre(560,sg(lt,.4,2.4),false)+tanque(40,1,0);
+  if(lt>.4) h+=polvo(lt-.4,700,20);
+  h+=`<div style="position:absolute;left:640px;top:${540+(lt>.4?eo(sg(lt,.4,1.6))*300:0)}px;font-size:90px;transform:rotate(${eo(sg(lt,.4,1.6))*90}deg)">🪑</div>`;
+ } else { const lt=t-42.7; h+=suelo()+edificio(380,320,12,sg(lt,.2,2))+polvo(lt,540)+cierre(lt,"#ffb347"); }
+ return h}
+iniciar();
+</script></body></html>
