@@ -1,12 +1,2 @@
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2909400/library_600x900_2x.jpg
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2909400/library_600x900.jpg
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2909400/library_hero.jpg
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2909400/logo.png
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/990080/library_600x900_2x.jpg
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/990080/library_600x900.jpg
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/990080/library_hero.jpg
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/990080/logo.png
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/library_600x900_2x.jpg
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/library_600x900.jpg
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/library_hero.jpg
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/logo.png
+https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/library_600x900_2x.jpg
+https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/logo.png
