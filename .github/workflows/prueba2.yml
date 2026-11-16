@@ -1,0 +1,29 @@
+name: prueba2
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          T: ${{ secrets.TRADEDOUBLER_TOKEN }}
+        run: |
+          for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            c=$(curl -sL -o f.zip -w "%{http_code}" "https://api.tradedoubler.com/1.0/productsUnlimited.json;compress=zip;fid=50247?token=$T")
+            echo "intento $i HTTP $c $(stat -c%s f.zip)"; [ "$c" = 200 ] && [ $(stat -c%s f.zip) -gt 1000 ] && break; sleep 60
+          done
+          unzip -p f.zip > f.json 2>/dev/null || cp f.zip f.json; head -c 300 f.json; echo
+          python3 - <<'P'
+          import json,collections,re
+          try: d=json.load(open('f.json'))
+          except Exception as e: print('NOJSON',e); raise SystemExit
+          ps=d.get('products',d) if isinstance(d,dict) else d
+          print('PRODUCTOS',len(ps))
+          def campo(x,n): return next((f.get('value') for f in x.get('fields',[]) if f.get('name')==n),None)
+          print('CAMPOS', sorted({f.get('name') for x in ps[:200] for f in x.get('fields',[])}))
+          print('CATS', collections.Counter(str([c.get('tdCategoryName') or c.get('name') for c in x.get('categories',[])]) for x in ps).most_common(30))
+          for k in ['category_second_level','category_third_level','category']:
+            print(k, collections.Counter(campo(x,k) for x in ps).most_common(25))
+          J=[x for x in ps if re.search(r'videojuego|juego|game',json.dumps([x.get('categories'),x.get('fields')],ensure_ascii=False),re.I)]
+          print('CON JUEGO EN CATEGORIA',len(J))
+          for x in J[:40]: o=(x.get('offers') or [{}])[0]; print('J',x.get('name','')[:110],'|',(o.get('priceHistory') or [{}])[0].get('price',{}).get('value'),'|',o.get('availability'),'|',(o.get('productUrl') or '')[:50])
+          P
