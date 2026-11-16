@@ -1160,7 +1160,7 @@ async function mediamarkt(juegos, avisos) {
   if (!token) return 0;
   let cache = {}; try { cache = JSON.parse(await readFile(CACHE_MM, "utf8")); } catch {}
   let ultima = null;
-  try { ultima = (await (await pedir(`https://api.tradedoubler.com/1.0/productsUnlimited/lastUpdated.json;fid=${MM_FEED}?token=${token}`)).json()).lastUpdatedTime || null; }
+  try { ultima = (await (await pedir(`https://api.tradedoubler.com/1.0/productsUnlimited/lastUpdated.json;compress=zip;fid=${MM_FEED}?token=${token}`)).json()).lastUpdatedTime || null; }
   catch (e) { console.warn("MediaMarkt: no se sabe cuándo cambió el feed (" + e.message.slice(0, 80) + ")"); }
   if (!cache.productos || !ultima || ultima !== cache.ultima) {
     try {
