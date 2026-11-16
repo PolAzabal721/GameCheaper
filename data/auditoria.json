@@ -1,17 +1,17 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 1222,
+   "pendientes": 1042,
    "ejemplos": [
     "Clone Drone in the Danger Zone",
     "Worshippers of Cthulhu",
     "Regions of Ruin",
-    "Winter Resort Simulator 2",
-    "Until Dawn"
+    "Grim Dawn",
+    "Winter Resort Simulator 2"
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 6740,
+   "pendientes": 7017,
    "ejemplos": [
     "Passpartout 2: The Lost Artist",
     "Tactical Breach Wizards",
@@ -21,17 +21,17 @@
    ]
   },
   "game (consola)": {
-   "pendientes": 16869,
+   "pendientes": 17204,
    "ejemplos": [
     "The Legend of Zelda: Ocarina of Time",
-    "LIVE A LIVE",
     "Fire Emblem Engage",
+    "LIVE A LIVE",
     "EA Sports FC 27 Ultimate Edition",
     "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo"
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 674,
+   "pendientes": 670,
    "ejemplos": [
     "Football Manager 27",
     "NBA 2K27",
@@ -41,72 +41,71 @@
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 15058,
+   "pendientes": 14495,
    "ejemplos": [
     "Dying Light - Shu Warrior Bundle",
     "DERELIKT",
+    "Crusader Kings III: Tours & Tournaments",
     "LEGO Marvel Super Heroes 2 Deluxe Edition",
-    "SNK HEROINES Tag Team Frenzy",
-    "Vesta"
+    "SNK HEROINES Tag Team Frenzy"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 674,
+  "sinPrecio": 670,
   "sinFicha": 563,
-  "fichasEncontradas": 808
+  "fichasEncontradas": 880
  },
  "fotos": {
   "juego": {
-   "total": 28770,
-   "con": 26319,
-   "porcentaje": 91
+   "total": 29040,
+   "con": 26800,
+   "porcentaje": 92
   },
   "edicion": {
-   "total": 2305,
-   "con": 1972,
-   "porcentaje": 86
+   "total": 2392,
+   "con": 2036,
+   "porcentaje": 85
   },
   "dlc": {
-   "total": 2324,
-   "con": 2106,
-   "porcentaje": 91
+   "total": 2435,
+   "con": 2202,
+   "porcentaje": 90
   },
   "tarjeta": {
-   "total": 400,
+   "total": 396,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 6660,
+   "total": 7160,
    "probadas": 12,
-   "fallan": 2,
+   "fallan": 1,
    "ejemplos": [
-    "Moldwasher → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3688130/header.jpg",
-    "DIVE or DIE - Children of Rain → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3590290/header.jpg"
+    "Sideways → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4111500/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 1926,
+   "total": 1952,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "nintendo": {
-   "total": 11878,
+   "total": 11855,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 9619,
+   "total": 9775,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "otras": {
-   "total": 314,
+   "total": 296,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
@@ -114,77 +113,77 @@
  },
  "enlaces": {
   "steam": {
-   "ofertas": 8417,
+   "ofertas": 8377,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "k4g": {
-   "ofertas": 1312,
+   "ofertas": 1621,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "yuplay": {
-   "ofertas": 4164,
+   "ofertas": 4925,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "game": {
-   "ofertas": 1592,
+   "ofertas": 1583,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xbox": {
-   "ofertas": 13470,
+   "ofertas": 13621,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "instantgaming": {
-   "ofertas": 8303,
+   "ofertas": 8343,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "eshop": {
-   "ofertas": 18833,
+   "ofertas": 18612,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "ebay": {
-   "ofertas": 1707,
+   "ofertas": 1740,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "gameseminuevos": {
-   "ofertas": 416,
+   "ofertas": 409,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "psstore": {
-   "ofertas": 673,
+   "ofertas": 743,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "driffle": {
-   "ofertas": 967,
+   "ofertas": 1088,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -206,14 +205,14 @@
   "ejemplos": []
  },
  "actualizado": {
-  "precios": "2026-11-15T08:39:55.636Z",
-  "diasDesdeLaUltima": 0.18
+  "precios": "2026-11-16T08:48:09.534Z",
+  "diasDesdeLaUltima": 0.21
  },
  "historial": {
-  "series": 32905,
+  "series": 33630,
   "rotas": 0,
-  "alDia": 32750,
-  "ultimoDia": "2026-11-15"
+  "alDia": 33433,
+  "ultimoDia": "2026-11-16"
  },
  "red": {
   "comprobadas": 132,
@@ -221,17 +220,17 @@
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 33799,
-  "ofertas": 122306,
+  "juegos": 34263,
+  "ofertas": 124242,
   "tiendas": 42,
-  "conFoto": "90 %"
+  "conFoto": "91 %"
  },
- "fecha": "2026-11-15T12:53:04.353Z",
+ "fecha": "2026-11-16T13:52:30.719Z",
  "graves": [],
  "avisos": [
-  "xbox (PC o Xbox): 74 juegos populares aún sin consultar (p. ej. Passpartout 2: The Lost Artist, Tactical Breach Wizards, Where Angels Cry)",
-  "game (consola): 867 juegos populares aún sin consultar (p. ej. The Legend of Zelda: Ocarina of Time, LIVE A LIVE, Fire Emblem Engage)",
-  "psstore (PS4 o PS5): 63 juegos populares aún sin consultar (p. ej. Football Manager 27, NBA 2K27, Mortal Shell II)",
-  "ebay (consola, 2ª mano): 517 juegos populares aún sin consultar (p. ej. Dying Light - Shu Warrior Bundle, DERELIKT, LEGO Marvel Super Heroes 2 Deluxe Edition)"
+  "xbox (PC o Xbox): 75 juegos populares aún sin consultar (p. ej. Passpartout 2: The Lost Artist, Tactical Breach Wizards, Where Angels Cry)",
+  "game (consola): 992 juegos populares aún sin consultar (p. ej. The Legend of Zelda: Ocarina of Time, Fire Emblem Engage, LIVE A LIVE)",
+  "psstore (PS4 o PS5): 64 juegos populares aún sin consultar (p. ej. Football Manager 27, NBA 2K27, Mortal Shell II)",
+  "ebay (consola, 2ª mano): 580 juegos populares aún sin consultar (p. ej. Dying Light - Shu Warrior Bundle, DERELIKT, Crusader Kings III: Tours & Tournaments)"
  ]
 }
