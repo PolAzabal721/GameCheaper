@@ -1,3 +1,2 @@
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2807960/library_600x900_2x.jpg
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3008130/library_600x900_2x.jpg
-https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1426210/library_600x900_2x.jpg
+https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2807960/5efba891507f611d94ef6685cc2af7cd0640f55d/library_capsule_2x.jpg
+https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2807960/5efba891507f611d94ef6685cc2af7cd0640f55d/library_capsule.jpg
