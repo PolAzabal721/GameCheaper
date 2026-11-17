@@ -455,6 +455,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .premios { display: flex; flex-wrap: wrap; gap: 5px; }
 .minimo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--tag-ink); background: var(--tag); padding: 2px 7px; border-radius: 4px; }
 .tipo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
+.tipo-tag.t-sorpresa { background: rgba(109,75,255,.15); color: #6d4bff; }
 .tipo-tag.t-tarjeta { background: var(--good-soft); color: var(--good); }
 .tipo-tag.t-skins { background: rgba(255,170,60,.18); color: #e8a23a; }
 .tipo-tag.t-software, .tipo-tag.t-otros { background: rgba(140,160,190,.18); color: var(--muted); }
@@ -510,6 +511,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .dest-lista a, .pk-grid a { display: flex; flex-direction: column; gap: 6px; height: 100%; padding: 8px 8px 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); text-decoration: none; transition: transform .18s ease, border-color .18s ease; }
 @media (hover: hover) { .dest-lista a:hover, .pk-grid a:hover { transform: translateY(-2px); border-color: var(--accent); } }
 .dest-img { position: relative; display: block; border-radius: 9px; overflow: hidden; aspect-ratio: 460/215; background: var(--surface-2); }
+.sor-tag { position: absolute; left: 6px; bottom: 6px; z-index: 1; font-style: normal; font-weight: 700; font-size: 11.5px; background: #6d4bff; color: #fff; padding: 2px 7px; border-radius: 6px; }
 .dest-sin { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); opacity: .5; }
 .dest-sin svg { width: 44px; height: 44px; }
 .dest-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s ease; }
@@ -1420,7 +1422,45 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     }
     return [v];
   }
+  // ---------- Claves sorpresa: imagen propia según su nombre (las de la tienda no cargan) ----------
+  // «Juego X or Mystery»: la portada de ese juego si está en el catálogo (con la etiqueta «¿o sorpresa?»)
+  var SOR_TEMAS = [
+    [/diamond/, "Diamante", ["#0b3b4a", "#11a3b8"], "#bff6ff", '<path d="M30 22h60l16 18-46 54-46-54z" fill="#e8fdff" opacity=".95"/><path d="M30 22l14 18h32l14-18M14 40h92M44 40l16 54 16-54" fill="none" stroke="#0b6f80" stroke-width="2.4"/>'],
+    [/deluxe/, "Deluxe", ["#3a0d4f", "#c03c9a"], "#ffd6f3", '<path d="M38 28h44l14 16-36 44-36-44z" fill="#ffb6e8"/><path d="M38 28l10 16h24l10-16M24 44h72M48 44l12 44 12-44" fill="none" stroke="#7a1d63" stroke-width="2.2"/><circle cx="92" cy="22" r="3" fill="#fff"/><circle cx="26" cy="74" r="2" fill="#fff"/>'],
+    [/premium/, "Premium", ["#1d1a3a", "#b8860b"], "#ffe08a", '<path d="M22 78l8-40 18 18 12-26 12 26 18-18 8 40z" fill="#ffd34d" stroke="#8a6400" stroke-width="2.4" stroke-linejoin="round"/><rect x="22" y="80" width="76" height="10" rx="3" fill="#ffd34d" stroke="#8a6400" stroke-width="2.4"/>'],
+    [/horror/, "Terror", ["#0d0d0d", "#7a0e0e"], "#ffb3b3", '<path d="M60 18c-22 0-36 14-36 34 0 12 6 20 14 25v13h44V77c8-5 14-13 14-25 0-20-14-34-36-34z" fill="#f2efe9"/><circle cx="46" cy="52" r="8" fill="#1a0505"/><circle cx="74" cy="52" r="8" fill="#1a0505"/><path d="M56 68l4-7 4 7z" fill="#1a0505"/><path d="M48 90v-8M56 90v-8M64 90v-8M72 90v-8" stroke="#1a0505" stroke-width="3"/>'],
+    [/\bvr\b/, "VR", ["#06283d", "#1f8ad6"], "#bfe6ff", '<rect x="16" y="38" width="88" height="40" rx="14" fill="#e6f4ff"/><circle cx="42" cy="58" r="11" fill="#0d3d66"/><circle cx="78" cy="58" r="11" fill="#0d3d66"/><path d="M54 78c2-6 10-6 12 0" fill="#e6f4ff" stroke="#0d3d66" stroke-width="2"/>'],
+    [/black box/, "Caja negra", ["#000", "#2d2d2d"], "#d9d9d9", '<path d="M60 20l38 18v40L60 96 22 78V38z" fill="#1b1b1b" stroke="#777" stroke-width="2.4"/><path d="M22 38l38 18 38-18M60 56v40" fill="none" stroke="#777" stroke-width="2.4"/><text x="60" y="46" font-size="20" font-weight="800" text-anchor="middle" fill="#aaa">?</text>'],
+    [/grand theft box/, "Caja de acción", ["#0d1f12", "#3d8b37"], "#d4ffc9", '<path d="M60 20l38 18v40L60 96 22 78V38z" fill="#2f6b2a" stroke="#d4ffc9" stroke-width="2.4"/><path d="M22 38l38 18 38-18M60 56v40" fill="none" stroke="#d4ffc9" stroke-width="2.4"/><text x="60" y="46" font-size="20" font-weight="800" text-anchor="middle" fill="#d4ffc9">$</text>'],
+    [/hall of fame/, "Hall of Fame", ["#2a1a00", "#c48a12"], "#ffe7a8", '<path d="M40 22h40v14c0 14-8 24-20 26-12-2-20-12-20-26z" fill="#ffd34d" stroke="#8a6400" stroke-width="2.4"/><path d="M40 28H28c0 12 6 18 14 18M80 28h12c0 12-6 18-14 18" fill="none" stroke="#8a6400" stroke-width="2.4"/><rect x="52" y="62" width="16" height="14" fill="#ffd34d" stroke="#8a6400" stroke-width="2.4"/><rect x="40" y="76" width="40" height="10" rx="2" fill="#ffd34d" stroke="#8a6400" stroke-width="2.4"/>'],
+    [/fortnite|skin/, "Skin", ["#1b0b3a", "#5a2ad6"], "#e2d6ff", '<path d="M38 26l12-6h20l12 6 16 14-10 12-8-6v42H40V46l-8 6-10-12z" fill="#e2d6ff" stroke="#3a1a8c" stroke-width="2.4" stroke-linejoin="round"/><text x="60" y="72" font-size="22" font-weight="800" text-anchor="middle" fill="#3a1a8c">?</text>'],
+    [/./, "Sorpresa", ["#1c1250", "#6d4bff"], "#e1dbff", '<path d="M60 20l38 18v40L60 96 22 78V38z" fill="#8f7bff" stroke="#e1dbff" stroke-width="2.4"/><path d="M22 38l38 18 38-18M60 56v40" fill="none" stroke="#e1dbff" stroke-width="2.4"/><text x="60" y="47" font-size="20" font-weight="800" text-anchor="middle" fill="#fff">?</text>'],
+  ];
+  var cacheSor = {};
+  function arteSorpresa(titulo, vertical) {
+    var k = (vertical ? "v|" : "h|") + titulo;
+    if (cacheSor[k]) return cacheSor[k];
+    var t = String(titulo).toLowerCase(), n = (t.match(/^(\d+)\s*x\s/) || [])[1];
+    var tema = SOR_TEMAS.find(function (x) { return x[0].test(t); }), c1 = tema[2][0], c2 = tema[2][1], tinta = tema[3];
+    var W = vertical ? 300 : 460, H = vertical ? 400 : 215, F = "font-family=\"system-ui,sans-serif\"";
+    var chip = n ? '<rect x="' + (vertical ? 150 - (46 + n.length * 12) / 2 : 32) + '" y="' + (vertical ? 326 : 152) + '" rx="10" width="' + (46 + n.length * 12) + '" height="34" fill="#fff"/><text x="' + (vertical ? 150 : 32 + (46 + n.length * 12) / 2) + '" y="' + (vertical ? 350 : 176) + '" ' + F + ' font-size="20" font-weight="800" text-anchor="middle" fill="' + c1 + '">×' + n + "</text>" : "";
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + H + '"><defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></linearGradient>' +
+      '<radialGradient id="b" cx=".7" cy=".45" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>' +
+      '<rect width="' + W + '" height="' + H + '" fill="url(#a)"/><rect width="' + W + '" height="' + H + '" fill="url(#b)"/>' +
+      (vertical
+        ? '<g transform="translate(60 50) scale(1.5)">' + tema[4] + '</g><text x="150" y="262" text-anchor="middle" ' + F + ' font-size="13" font-weight="700" letter-spacing="1" fill="' + tinta + '" opacity=".85">CLAVE SORPRESA</text><text x="150" y="300" text-anchor="middle" ' + F + ' font-size="34" font-weight="800" fill="#fff">' + tema[1] + "</text>"
+        : '<g transform="translate(300 38) scale(1.18)">' + tema[4] + '</g><text x="32" y="98" ' + F + ' font-size="15" font-weight="700" letter-spacing="1" fill="' + tinta + '" opacity=".85">CLAVE SORPRESA</text><text x="32" y="136" ' + F + ' font-size="32" font-weight="800" fill="#fff">' + tema[1] + "</text>") +
+      chip + "</svg>";
+    return (cacheSor[k] = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg));
+  }
+  var mapaTitulos = null;
+  function juegoDeSorpresa(j) {
+    var m = String(j.titulo).match(/^(.+?)\s+or\s+mystery\b/i); if (!m || !datos) return null;
+    if (!mapaTitulos || mapaTitulos._n !== datos.juegos.length) { mapaTitulos = { _n: datos.juegos.length }; datos.juegos.forEach(function (x) { if (!x.sorpresa) { var k = normBusq(x.titulo); if (!mapaTitulos[k]) mapaTitulos[k] = x; } }); }
+    return mapaTitulos[normBusq(m[1])] || null;
+  }
   function urlsImagen(j, vertical) {
+    if (j.sorpresa) { var base = juegoDeSorpresa(j), ub = base && urlsImagen(base, vertical); return ub || [arteSorpresa(j.titulo, vertical)]; }
     var lista = [];
     [vertical ? j.cov : j.img, vertical ? j.img : j.cov].forEach(function (v) {
       if (!v) return;
@@ -1495,7 +1535,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     var u = urlsImagen(j, vertical);
     if (!u && j.tipo === "tarjeta") return tarjetaArte(j, clase);
     if (!u) return '<div class="pt-img vacia ' + clase + '">' + ICONO_MANDO + "</div>";
-    return '<div class="pt-img ' + clase + '"><img src="' + esc(u[0]) + '"' + (u.length > 1 ? ' data-alt="' + esc(u.slice(1).join("|")) + '"' : "") + ' alt="" loading="lazy" decoding="async"></div>';
+    return '<div class="pt-img ' + clase + '"><img src="' + esc(u[0]) + '"' + (u.length > 1 ? ' data-alt="' + esc(u.slice(1).join("|")) + '"' : "") + ' alt="" loading="lazy" decoding="async">' + (j.sorpresa && juegoDeSorpresa(j) ? '<i class="sor-tag">¿o sorpresa?</i>' : "") + "</div>";
   }
   // Si una imagen no carga: probamos la alternativa y, si tampoco, dejamos el hueco con el icono
   document.addEventListener("error", function (e) {
@@ -1528,7 +1568,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   }
   function mini(r) {
     var j = r.j, m = r.mejor, tm = tiendaPorId[m.tienda] || { nombre: m.tienda };
-    var tipo = j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición", tarjeta: "Tarjeta", software: "Software", skins: "Skin", otros: "Otros" }[j.tipo] || "") + "</span>" : "";
+    var tipo = j.sorpresa ? '<span class="tipo-tag t-sorpresa">Sorpresa</span>' : j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición", tarjeta: "Tarjeta", software: "Software", skins: "Skin", otros: "Otros" }[j.tipo] || "") + "</span>" : "";
     var tiendasVistas = {}; r.ofs.forEach(function (o) { tiendasVistas[o.tienda] = 1; });
     var n = Object.keys(tiendasVistas).length;
     var plats = j.plataformas.filter(function (p) { return p !== "Tarjeta regalo"; });
@@ -1579,7 +1619,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
       '<div class="j-cab"><div class="j-izq">' + (fichaDe(j) ? '<a class="j-cov-a" href="' + fichaDe(j) + '" tabindex="-1" aria-hidden="true">' + imagenJuego(j, true, "j-cov") + "</a>" : imagenJuego(j, true, "j-cov")) + '<div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") + etiquetaFecha(j) +
       (enMinimo ? '<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>' : "") +
       etiquetaPremio(j) +
-      (j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo", software: "Software", skins: "Skin", otros: "Otros" }[j.tipo] || "") + "</span>" : "") + campanaTitulo(j) + '<div class="plats">' +
+      (j.sorpresa ? '<span class="tipo-tag t-sorpresa">Clave sorpresa</span>' : j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo", software: "Software", skins: "Skin", otros: "Otros" }[j.tipo] || "") + "</span>" : "") + campanaTitulo(j) + '<div class="plats">' +
       j.plataformas.filter(function (p) { return p !== "Tarjeta regalo"; }).map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
       (r.nuevo != null || r.usado != null || j.pvp ? '<div class="resumen">' +
         (j.tipo === "tarjeta" && j.valor ? "<span>Valor <b>" + eur.format(j.valor) + "</b></span>" + (j.valor > total(m) ? "<span>Te ahorras <b>" + eur.format(j.valor - total(m)) + "</b></span>" : "") :
@@ -2218,7 +2258,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     }
     poner(caja, cab + '<ul class="dest-lista">' + xs.map(function (r) {
       var m = r.mejor, t = tiendaPorId[m.tienda] || { nombre: m.tienda };
-      return '<li><a href="juego/' + esc(r.j.id) + '/"><span class="dest-img">' + ((urlsImagen(r.j, false) || []).length ? '<img src="' + esc(urlsImagen(r.j, false)[0]) + '" alt="" loading="lazy" width="460" height="215">'
+      return '<li><a href="juego/' + esc(r.j.id) + '/"><span class="dest-img">' + (r.j.sorpresa && juegoDeSorpresa(r.j) ? '<i class="sor-tag">¿o sorpresa?</i>' : "") + ((urlsImagen(r.j, false) || []).length ? '<img src="' + esc(urlsImagen(r.j, false)[0]) + '" alt="" loading="lazy" width="460" height="215">'
         : '<span class="dest-tj" style="background:linear-gradient(135deg,' + ((TJ_MARCAS[r.j.marca] || ["#3b2bd6", "#0e7490"]).join(",")) + ')"><small>' + esc(r.j.marca || "") + "</small>" + esc(r.j.valor ? r.j.valor + " €" : "") + "</span>") + '<em>−' + r.dto + '%</em></span>' +
         '<b>' + esc(r.j.titulo) + '</b><span class="dest-p"><strong>' + eur.format(total(m)) + '</strong> ' + logoT(m.tienda, "c-logo") + esc(t.nombre) + "</span></a></li>";
     }).join("") + vacio + "</ul>");
