@@ -1,0 +1,26 @@
+name: Prueba temporal Impact (Loaded)
+on: workflow_dispatch
+jobs:
+  prueba:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mirar catálogos de Impact
+        env:
+          A: ${{ secrets.IMPACT_SID }}
+          B: ${{ secrets.IMPACT_TOKEN }}
+          C: ${{ secrets.IMPACT_SHEET }}
+          D: ${{ secrets.IMPACT_ACCOUNT_SID }}
+        run: |
+          echo "IMPACT_SID: ${#A} car. | IMPACT_TOKEN: ${#B} car. | IMPACT_SHEET: ${#C} car. | IMPACT_ACCOUNT_SID: ${#D} car."
+          SID="${A:-${D:-$C}}"
+          [ -n "$SID" ] && [ -n "$B" ] || { echo "Faltan credenciales"; exit 0; }
+          curl -s -u "$SID:$B" -H 'Accept: application/json' "https://api.impact.com/Mediapartners/$SID/Catalogs" > cat.json
+          python3 - <<'EOF'
+          import json
+          d=json.load(open('cat.json'))
+          print('claves:', list(d.keys()))
+          for c in d.get('Catalogs', []):
+              print({k: v for k, v in c.items() if k in ('Id','Name','AdvertiserName','CampaignName','NumberOfItems','Currency','Language','DateLastUpdated','ItemsUri','Locations')})
+          EOF
+          curl -s -u "$SID:$B" -H 'Accept: application/json' "https://api.impact.com/Mediapartners/$SID/Catalogs/12163/Items?PageSize=2" > it.json
+          python3 -c "import json;d=json.load(open('it.json'));print({k:v for k,v in d.items() if k!='Items'});[print(json.dumps(i)[:1500]) for i in d.get('Items',[])]"
