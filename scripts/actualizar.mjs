@@ -1250,12 +1250,23 @@ async function mediamarkt(juegos, avisos) {
 const KIN_TIPO = { GAME: null, PREORDER: null, DLC: "dlc", SOFTWARE: "software", HOSTING: "software", BUSINESS_STORE: "software",
   CSGO_SKINS: "skins", RANDOM_KEY: null, GAME_SERVER: "software", // OTHER: fuera hasta revisarlo
   PREPAID: "tarjeta", MOBILE_TOPUP: "tarjeta", MOBILE_TOPUP_GC: "tarjeta", CRYPTO_VOUCHERS: "tarjeta", IFRAME_TOP_UP: "tarjeta", BALANCE: "tarjeta", BALANCE_TOPUP: "tarjeta", DISCOUNT_VOUCHERS: "tarjeta" };
+// Lo que de verdad es una tarjeta de saldo, recarga o suscripción (no un juego que lleva «card» en el nombre)
+const TARJETA_DE_VERDAD = /\b(gift ?card|tarjeta|wallet|saldo|recarga|top ?up|prepago|prepaid|voucher|vale|cash card|shark card|psn|playstation (network|store|plus)|ps plus|eshop|nintendo switch online|game pass|xbox (live|gift|card)|ea play|ubisoft\+|points|puntos|coins|monedas|credits|creditos|robux|v ?bucks|minecoins|riot|valorant|apex coins|fc points|cod points|crypto|bitcoin|usdt|binance|google play|apple|itunes|netflix|spotify|amazon|steam card|steam wallet|razer gold|paysafecard|membership|suscripcion|subscription|\d+\s*(eur|euros|usd|gbp)|tinder|twitch|discord nitro|battle ?net balance)\b/;
+const JUEGO_CON_TARJETA = /(\s\+\s|\s&\s|\bbundle\b|\bedition\b|\bedición\b)/i;
+const juegoConTarjeta = (n) => /\bcard\b/i.test(n) && JUEGO_CON_TARJETA.test(n) && !/\bonline\b/i.test(n);
+// Sin cifras y sin nada de saldo, monedas o suscripción en el nombre: es un juego o un DLC («Card Cultivation», «… Deluxe Edition»)
+const noEsTarjeta = (n) => !/\d/.test(n) && !TARJETA_DE_VERDAD.test(limpiar(n));
 const KIN_PLAT_FEED = { "Steam": "PC", "GOG.com": "PC", "EA App": "PC", "Epic Games": "PC", "Ubisoft": "PC", "Battle.net": "PC", "Rockstar Games": "PC", "MS Store (PC)": "PC", "PC": "PC", "NCSoft": "PC", "Official Website": "PC",
   "Xbox One": "Xbox Series", "Xbox Series X|S": "Xbox Series", "PlayStation 4": "PS4", "PlayStation 5": "PS5", "PlayStation": "PS5", "Nintendo Switch": "Switch", "Nintendo Switch 2": "Switch 2", "Nintendo": "Switch" };
 const KIN_RUIDO = /\s*\b(pc|ps4|ps5|playstation( [45])?|xbox( (one|series( x\|s| x s)?|live))?|nintendo( switch( 2)?)?|switch( 2)?|steam|epic games?( store)?|ea app|origin|uplay|ubisoft connect|gog( com)?|battle ?net|rockstar( games)?( digital download)?|microsoft( store)?|windows( 10| 11)?|global|eu|emea|europe|row|us|uk|na|ar|latam|ru\/cis|cis|tr|in|au|asia|br|pl|de|fr|mx|cd key|key|digital download|code|eshop|psn)\b/gi;
 const nombreKin = (n, tipo) => {
   let t = html2txt(n).replace(/[™®©]/g, "");
-  if (tipo === "tarjeta" || tipo === "software" || tipo === "skins") return t.replace(/\s+\b[A-Z]{2}\b\s*$/, "").replace(/\s+/g, " ").trim();
+  if (tipo === "tarjeta" || tipo === "software" || tipo === "skins") {
+    // «… $1,500,000 Great White Shark Cash Card EU Xbox Series X|S CD Key» → «… Great White Shark Cash Card»
+    let r = t, antes;
+    do { antes = r; r = r.replace(/\s+(?:EU|US|UK|WW|ROW|Global|Europe|PC|Xbox One|XBOX One|Xbox Series X\|S|Xbox|PS4|PS5|PSN|Rockstar Digital Download|Rockstar Games|Rockstar|MS Store|Activation Code|Digital Download|Digital Code|CD Key|Key|Code|[A-Z]{2})\s*$/i, ""); } while (r !== antes);
+    return r.replace(/\s+/g, " ").trim();
+  }
   return t.replace(/\s*\/\s*/g, " ").replace(KIN_RUIDO, " ").replace(/\s+-\s*$/, "").replace(/\s+/g, " ").trim();
 };
 async function kinguinFeed(juegos, avisos) {
@@ -1269,6 +1280,8 @@ async function kinguinFeed(juegos, avisos) {
   for (const f of filas) {
     if (!(f.c in KIN_TIPO)) continue;
     let tipo = KIN_TIPO[f.c];
+    // «Grand Theft Auto V + Megalodon Shark Card», «… Premium Edition & … Bundle»: es el juego con monedas de regalo → va con los juegos
+    if (tipo === "tarjeta" && (juegoConTarjeta(f.n) || noEsTarjeta(f.n))) tipo = null;
     const plataforma = tipo === "tarjeta" ? "Tarjeta regalo" : tipo === "software" || tipo === "skins" ? "PC" : KIN_PLAT_FEED[f.p];
     if (!plataforma || !(f.pr > 0)) continue;
     const nombre = nombreKin(f.n, tipo);
@@ -1276,6 +1289,7 @@ async function kinguinFeed(juegos, avisos) {
     let j = (f.s && tipo !== "tarjeta" && porSteam.get(f.s)) || porLlave.get(llave(nombre));
     if (!j) { j = juego(nombre, { pop: 99999, tipo: tipo || (DLC_RE.test(limpiar(nombre)) ? "dlc" : tipoDe(nombre)) }); if (!j) continue; porLlave.set(llave(nombre), j); nuevos++; }
     if (j.tipo === "otros") j.tipo = tipo || "juego";
+    if (f.i && tipo !== "tarjeta") ponerImagen(j, "kinguin", f.i, f.i);
     const region = (f.r || "").replace(f.p || "", "").replace(/\s+/g, " ").trim();
     ofertar(j, { tienda: "kinguin", plataforma, precio: f.pr, regular: f.op > f.pr ? f.op : undefined, stock: true, drm: tipo === "tarjeta" ? undefined : f.p,
       condicion: tipo === "tarjeta" ? "Código digital" + (region && !/region free/i.test(region) ? " · " + region.toLowerCase() : "") : `Clave ${f.p || ""} · ${/region free/i.test(region) || !region ? "Region free" : region}`.replace(/\s+·/, " ·"),
@@ -1981,6 +1995,24 @@ async function main() {
   }
   // «otros» era un tipo provisional de Kinguin (skins, servidores, claves sorpresa, «Other»): ya no se usa
   if (GG_DIRECTO) for (const j of juegos.values()) j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-gamersgate");
+  // Repaso final:
+  // 1. «Tarjetas» que en realidad son juegos («Card Cultivation», «GTA V Enhanced & Great White Shark Card»): pasan a juegos
+  //    y se quitan sus ofertas marcadas como «Tarjeta regalo» (la próxima vez entran con su plataforma).
+  // 2. Precios absurdos de vendedores (San Andreas a 149 € en Kinguin cuando en otra tienda está a 4 €): fuera.
+  let reTipadas = 0, absurdas = 0;
+  for (const j of juegos.values()) {
+    if (j.tipo === "tarjeta" && (noEsTarjeta(j.titulo) || juegoConTarjeta(j.titulo))) {
+      j.tipo = juegoConTarjeta(j.titulo) ? "edicion" : tipoDe(j.titulo);
+      j.ofertas = j.ofertas.filter((o) => o.plataforma !== "Tarjeta regalo"); j.plataformas.delete("Tarjeta regalo"); reTipadas++;
+    }
+    if (j.ofertas.length > 1) {
+      const min = Math.min(...j.ofertas.map((o) => o.precio));
+      const n0 = j.ofertas.length;
+      j.ofertas = j.ofertas.filter((o) => !(o.precio > 30 && o.precio > min * 6));
+      absurdas += n0 - j.ofertas.length;
+    }
+  }
+  console.log(`Repaso: ${reTipadas} «tarjetas» que eran juegos; ${absurdas} precios absurdos quitados`);
   const lista = [...juegos.values()].filter((j) => j.ofertas.length && j.tipo !== "otros").sort((a, b) => a.pop - b.pop)
     .map(({ _buscarEn, _pvpFijo, _fechaOf, _fechaIG, _img, _imgP, _cov, _covP, plataformas, revisado, ...j }) => {
       const lanzamiento = _fechaOf || _fechaIG || fechaAnterior.get(j.id) || undefined;

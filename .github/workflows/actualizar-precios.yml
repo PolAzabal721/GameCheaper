@@ -29,7 +29,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: feeds/kinguin.json
-          key: kinguin-${{ steps.hoy.outputs.d }}
+          key: kinguin2-${{ steps.hoy.outputs.d }}
       - name: Descargar el catálogo de Kinguin (Admitad)
         if: steps.cache-kinguin.outputs.cache-hit != 'true'
         continue-on-error: true
