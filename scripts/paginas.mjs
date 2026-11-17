@@ -564,12 +564,19 @@ async function main() {
   const datos = JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8"));
   BUSCADOR = datos.buscador || "";
   const tiendaPorId = Object.fromEntries(datos.tiendas.map((t) => [t.id, t]));
+  // Latinoamérica: misma web en /latam/, con su propio archivo de precios (precios-latam.json, en dólares)
+  let latam = null; try { latam = JSON.parse(await readFile(join(RAIZ, "precios-latam.json"), "utf8")); } catch {}
+  const hayLatam = !!(latam && latam.juegos && latam.juegos.length);
   await rm(SALIDA, { recursive: true, force: true });
   await mkdir(SALIDA, { recursive: true });
 
   // 1. La web de siempre
   for (const f of await readdir(RAIZ)) {
-    if (/^(index|legal)\.html$/.test(f)) await writeFile(join(SALIDA, f), proteger(await readFile(join(RAIZ, f), "utf8"), datos.buscador));
+    if (/^(index|legal)\.html$/.test(f)) {
+      let html = await readFile(join(RAIZ, f), "utf8");
+      if (f === "index.html" && hayLatam) html = html.replace("</head>", "<script>window.PILLAO_LATAM=true</script>\n</head>");
+      await writeFile(join(SALIDA, f), proteger(html, datos.buscador));
+    }
     else if (/\.(html|txt|svg|png|ico)$/.test(f) || f === "minimos.json") await cp(join(RAIZ, f), join(SALIDA, f));
   }
   for (const d of ["fonts", "data/historial", "logos"]) if (existsSync(join(RAIZ, d))) await cp(join(RAIZ, d), join(SALIDA, d), { recursive: true });
@@ -583,6 +590,23 @@ async function main() {
   await writeFile(join(SALIDA, "precios.json"), JSON.stringify({ ...todo, totales, juegos: todo.juegos.filter((j) => primeros.has(j.id)), resto: "precios-resto.json" }) + "\n");
   await writeFile(join(SALIDA, "precios-resto.json"), JSON.stringify({ prefijos: todo.prefijos, juegos: todo.juegos.filter((j) => !primeros.has(j.id)) }) + "\n");
   await writeFile(join(SALIDA, ".nojekyll"), "");
+  if (hayLatam) {
+    await mkdir(join(SALIDA, "latam"), { recursive: true });
+    const tl = comprimir({ ...latam, buscador: undefined });
+    const primL = new Set([...tl.juegos].sort((a, b) => (a.pop || 99999) - (b.pop || 99999)).slice(0, PRIMEROS).map((j) => j.id));
+    const totL = { juegos: tl.juegos.length, ofertas: tl.juegos.reduce((n, j) => n + j.ofertas.length, 0) };
+    await writeFile(join(SALIDA, "latam", "precios.json"), JSON.stringify({ ...tl, totales: totL, juegos: tl.juegos.filter((j) => primL.has(j.id)), resto: "latam/precios-resto.json" }) + "\n");
+    await writeFile(join(SALIDA, "latam", "precios-resto.json"), JSON.stringify({ prefijos: tl.prefijos, juegos: tl.juegos.filter((j) => !primL.has(j.id)) }) + "\n");
+    // La página es la misma que la de Europa: base en la raíz (logos, fuentes, legal…), región LATAM y su dirección propia
+    const html = (await readFile(join(RAIZ, "index.html"), "utf8"))
+      .replace("<head>", '<head>\n<base href="/">')
+      .replace("</head>", '<script>window.PILLAO_REGION="latam";window.PILLAO_LATAM=true</script>\n</head>')
+      .replace('<link rel="canonical" href="https://pillaojuegos.com/">', '<link rel="canonical" href="https://pillaojuegos.com/latam/">')
+      .replace('<meta property="og:url" content="https://pillaojuegos.com/">', '<meta property="og:url" content="https://pillaojuegos.com/latam/">')
+      .replace('<html lang="es">', '<html lang="es-419">');
+    await writeFile(join(SALIDA, "latam", "index.html"), proteger(html, datos.buscador));
+    console.log(`Latinoamérica: ${totL.juegos} productos, ${totL.ofertas} ofertas en /latam/`);
+  }
   // Con dominio propio la web está en la raíz: aquí sí vale un robots.txt que indique el sitemap
   await writeFile(join(SALIDA, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /panel.html\n\nSitemap: ${SITIO}sitemap.xml\n`);
   await writeFile(join(SALIDA, "paginas.css"), estilos());
@@ -610,7 +634,7 @@ async function main() {
   await mkdir(join(SALIDA, "juegos"), { recursive: true });
   await writeFile(join(SALIDA, "juegos", "index.html"), paginaLista(hechas));
   const dia = datos.actualizado.slice(0, 10);
-  const urls = [SITIO, SITIO + "juegos/", `${SITIO}chollos/`, ...OFERTAS.map((o) => `${SITIO}${o.ruta}/`), ...hechas.map((j) => `${SITIO}juego/${j.id}/`)];
+  const urls = [SITIO, ...(hayLatam ? [SITIO + "latam/"] : []), SITIO + "juegos/", `${SITIO}chollos/`, ...OFERTAS.map((o) => `${SITIO}${o.ruta}/`), ...hechas.map((j) => `${SITIO}juego/${j.id}/`)];
   // Google admite como mucho 50.000 direcciones por mapa: se parte en trozos y sitemap.xml es el índice de todos
   const TROZO = 40000, trozos = [];
   for (let k = 0; k < urls.length; k += TROZO) {

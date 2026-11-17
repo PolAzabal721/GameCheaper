@@ -682,6 +682,39 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
   .ti-busca { order: 3; flex: 1 1 100%; margin-top: 4px; } .ti-filtro { display: flex; width: max-content; max-width: 100%; }
   .ti-filtro button { font-size: 13px; padding: 6px 11px; }
 }
+/* Selector de región (Europa / Latinoamérica) */
+.reg { position: relative; flex-shrink: 0; }
+.reg-btn { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px 0 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; }
+.reg-btn:hover { border-color: var(--accent); } .reg-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.reg-flag { font-size: 18px; line-height: 1; }
+.reg-menu { position: absolute; z-index: 60; top: calc(100% + 8px); left: 0; width: 320px; padding: 8px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 18px 50px rgba(0,0,0,.35); }
+.reg-tit { margin: 4px 8px 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.reg-menu button { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; width: 100%; padding: 10px; border: 0; border-radius: 12px; background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.reg-menu button:hover { background: var(--surface-2); }
+.reg-menu button .reg-flag { font-size: 24px; }
+.reg-menu b { display: block; font-size: 15px; } .reg-menu small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.reg-menu i { font-style: normal; color: var(--accent); font-weight: 800; visibility: hidden; }
+.reg-menu button[aria-checked="true"] { background: var(--surface-2); } .reg-menu button[aria-checked="true"] i { visibility: visible; }
+@media (max-width: 700px) {
+  .reg-btn { width: 40px; padding: 0; justify-content: center; } .reg-btn .reg-txt, .reg-btn svg { display: none; }
+  .reg-menu { position: fixed; top: auto; bottom: 0; left: 0; right: 0; width: auto; border-radius: 20px 20px 0 0; padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px)); }
+}
+/* Móvil: la región ocupa el sitio de «recargar»; en LATAM no hay disco ni segunda mano */
+@media (max-width: 700px) { #recargar { display: none !important; } .top-row .reg-btn { width: 40px; height: 40px; } }
+/* Aviso de región detectada */
+.reg-aviso { position: fixed; z-index: 80; right: 16px; top: 76px; width: 340px; padding: 16px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 20px 60px rgba(0,0,0,.4); animation: regIn .3s ease both; }
+.reg-aviso p { margin: 0 0 4px; font-weight: 800; font-size: 16px; font-family: var(--f-display); }
+.reg-aviso small { display: block; color: var(--muted); font-size: 13.5px; line-height: 1.4; margin-bottom: 12px; }
+.reg-aviso .acc { display: flex; gap: 8px; }
+.reg-aviso button { flex: 1; min-height: 42px; border-radius: 999px; font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; }
+.reg-aviso .si { background: var(--ink); color: var(--surface); border: 0; } .reg-aviso .no { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+@keyframes regIn { from { opacity: 0; transform: translateY(-8px) } }
+@media (max-width: 700px) { .reg-aviso { left: 12px; right: 12px; top: auto; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: auto; animation-name: regInM; } }
+@keyframes regInM { from { opacity: 0; transform: translateY(16px) } }
+body.latam #formato, body.latam #estado-f { display: none !important; }
+body.latam a.dest-todos { display: none; } /* las páginas de chollos son de Europa */
+/* En LATAM no hay packs, ni particulares, ni juegos en disco de importación */
+body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam label.switch:has(#imp) { display: none !important; }
 </style>
 
 </head>
@@ -689,7 +722,15 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 <header class="top">
   <div class="wrap">
     <div class="top-row">
-      <div class="logo" aria-label="Pillao"><span>Pillao</span><i>€</i></div>
+      <div class="logo" aria-label="Pillao"><span>Pillao</span><i id="logo-mon">€</i></div>
+      <div class="reg" id="reg">
+        <button type="button" class="reg-btn" id="reg-btn" aria-haspopup="true" aria-expanded="false" aria-label="Cambiar de región"><span class="reg-flag" id="reg-flag">🇪🇺</span><span class="reg-txt" id="reg-txt">Europa</span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="reg-menu" id="reg-menu" role="menu" hidden>
+          <p class="reg-tit">¿Dónde compras?</p>
+          <button type="button" role="menuitemradio" data-reg="es" aria-checked="true"><span class="reg-flag">🇪🇺</span><span><b>Europa</b><small>Precios en euros · claves de España, Europa y globales</small></span><i aria-hidden="true">✓</i></button>
+          <button type="button" role="menuitemradio" data-reg="latam" aria-checked="false"><span class="reg-flag">🌎</span><span><b>Latinoamérica</b><small>Precios en dólares · claves de Latinoamérica y globales</small></span><i aria-hidden="true">✓</i></button>
+        </div>
+      </div>
       <label class="search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input id="q" type="search" placeholder="Busca un juego…" autocomplete="off" aria-label="Buscar juego" list="recientes"><datalist id="recientes"></datalist>
@@ -738,7 +779,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
       </div>
       <div class="grupo">
         <h3>Precio máximo</h3>
-        <div class="rango"><output id="pmax-out" for="pmax">Sin límite</output><input type="range" id="pmax" min="5" max="100" step="1" value="100"><div class="ext"><span>5 €</span><span id="pmax-top">100 €</span></div></div>
+        <div class="rango"><output id="pmax-out" for="pmax">Sin límite</output><input type="range" id="pmax" min="5" max="100" step="1" value="100"><div class="ext"><span id="pmax-min">5 €</span><span id="pmax-top">100 €</span></div></div>
       </div>
       <div class="grupo" id="grupo-datos" hidden>
         <h3>Tus datos</h3>
@@ -847,7 +888,10 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
     var m = /^Clave (.+?) ·/.exec(o.condicion || "");
     return m ? "Clave " + m[1].trim() : null;
   }
-  var eur = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
+  // Región: Europa (raíz, euros) o Latinoamérica (/latam/, dólares). Misma web; cada una carga su archivo de precios.
+  var REGION = window.PILLAO_REGION === "latam" ? "latam" : "es";
+  var DATOS_REGION = REGION === "latam" ? "latam/" : "";
+  var eur = REGION === "latam" ? { format: function (n) { return "US$\u00a0" + new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n); } } : new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
   var $ = function (id) { return document.getElementById(id); };
 
   var datos = null, origen = "servidor", tiendaPorId = {}, abiertos = {}, otrasAbiertas = {}, desplegados = {}, bloquesAbiertos = {}, subtipos = {}, tiendasDeBloque = function () { return []; };
@@ -944,6 +988,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
     if (!prefsOk()) return base;
     try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g && k !== "q") base[k] = g[k]; } catch (e) {}  // la búsqueda no se recuerda: al volver, la portada sale limpia
     if (base.orden === "az") base.orden = "populares";
+    if (window.PILLAO_REGION === "latam") { base.formato = "todos"; base.estado = "todos"; base.part = true; base.imp = true; if (base.orden === "packs") base.orden = "populares"; } // en LATAM esos filtros no existen
     return base;
   }
   function guardarFiltros() { if (!prefsOk()) return; try { localStorage.setItem("pillao-filtros", JSON.stringify(f)); } catch (e) {} }
@@ -1037,6 +1082,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
   }
 
   function usarDatos(d, de) {
+    if (REGION === "latam") d.buscador = null; // la búsqueda en vivo y los avisos por email son de las tiendas de España
     if (de === "servidor") setTimeout(function () { if (datos) ventanaGTA(); }, 900);
     datos = validar(d);
     origen = de;
@@ -1082,7 +1128,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
     if (origen === "propio" && !manual) return;
     var est = $("estado"); est.className = "estado"; $("estado-txt").textContent = "Buscando precios…";
     // «no-cache»: el navegador pregunta si hay precios nuevos y solo los descarga si han cambiado
-    fetch("precios.json", { cache: "no-cache" })
+    fetch(DATOS_REGION + "precios.json", { cache: "no-cache" })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       .then(function (d) {
         // Primera vez: lo popular al momento y el resto por detrás
@@ -1212,7 +1258,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
     var max = 10;
     datos.juegos.forEach(function (j) { j.ofertas.forEach(function (o) { if (total(o) > max) max = total(o); }); });
     max = Math.ceil(max / 5) * 5;
-    var r = $("pmax"); r.max = max; $("pmax-top").textContent = max + " €";
+    var r = $("pmax"); r.max = max; $("pmax-top").textContent = REGION === "latam" ? "US$ " + max : max + " €"; if (REGION === "latam") $("pmax-min").textContent = "US$ 5";
     if (f.pmax != null && f.pmax >= max) f.pmax = null;
     r.value = f.pmax == null ? max : f.pmax;
     $("pmax-out").textContent = f.pmax == null ? "Sin límite" : "Hasta " + eur.format(f.pmax);
@@ -1643,11 +1689,11 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
     var c = $("modal-in").querySelector(".m-cerrar"); if (c) c.focus();
     // Historial propio (un punto al día) …
     var n = trozoDe(j.id);
-    var pTrozo = trozos[n] || (trozos[n] = fetch("data/historial/" + String(n).padStart(3, "0") + ".json", { cache: "no-cache" })
+    var pTrozo = REGION === "latam" ? Promise.resolve({}) : trozos[n] || (trozos[n] = fetch("data/historial/" + String(n).padStart(3, "0") + ".json", { cache: "no-cache" })
       .then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { delete trozos[n]; return {}; }));
     pTrozo.then(function (t) { if (modal.j !== j) return; modal.puntos = t[j.id] || []; pintarModal(); });
     // … y, en juegos de PC, el historial de tiendas de PC de IsThereAnyDeal para los días de antes
-    if (datos && datos.buscador && j.plataformas.indexOf("PC") >= 0) {
+    if (REGION !== "latam" && datos && datos.buscador && j.plataformas.indexOf("PC") >= 0) {
       var k = norm(j.titulo);
       var pItad = itadCache[k] || (itadCache[k] = fetch(datos.buscador.replace(/\/$/, "") + "/historial?titulo=" + encodeURIComponent(j.titulo))
         .then(function (r) { return r.ok ? r.json() : { puntos: [] }; }).catch(function () { delete itadCache[k]; return { puntos: [] }; }));
@@ -2156,7 +2202,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
   };
   var ORDEN_TODAS = null;
   function ajustarOrden() {
-    var fuera = [].concat(ORDEN_NO[f.tipo] || [], f.formato === "fisico" || f.estado === "usado" ? ORDEN_NO.fisico : []);
+    var fuera = [].concat(ORDEN_NO[f.tipo] || [], f.formato === "fisico" || f.estado === "usado" ? ORDEN_NO.fisico : [], REGION === "latam" ? ["packs"] : []);
     // Se quitan del desplegable (no basta con ocultarlas: el iPhone enseña igual las opciones ocultas)
     var sel = $("orden");
     if (!ORDEN_TODAS) ORDEN_TODAS = [].map.call(sel.options, function (o) { return [o.value, o.textContent]; });
@@ -2246,6 +2292,47 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
     div.addEventListener("click", function (e) { if (e.target === div || e.target.closest(".gta-x,[data-cerrar]")) cerrar(); });
     document.addEventListener("keydown", tecla); div.querySelector(".gta-acc a").focus({ preventScroll: true });
   }
+  // ---------- Selector de región y aviso de región según la zona horaria del dispositivo ----------
+  (function () {
+    var btn = $("reg-btn"), menu = $("reg-menu");
+    var regionP = REGION;
+    function aplicar() {
+      $("reg-flag").textContent = regionP === "latam" ? "🌎" : "🇪🇺";
+      $("reg-txt").textContent = regionP === "latam" ? "Latinoamérica" : "Europa";
+      document.documentElement.lang = regionP === "latam" ? "es-419" : "es-ES";
+      $("logo-mon").textContent = regionP === "latam" ? "$" : "€";
+      [].forEach.call(menu.querySelectorAll("[data-reg]"), function (b) { b.setAttribute("aria-checked", b.dataset.reg === regionP); });
+    }
+    function irRegion(r) { location.href = (r === "latam" ? "/latam/" : "/") + location.search.replace(/[?&]latam\b/, ""); }
+    if (!window.PILLAO_LATAM && REGION !== "latam") { var opL = menu.querySelector('[data-reg="latam"]'); if (opL) opL.hidden = true; }
+    btn.addEventListener("click", function (e) { e.stopPropagation(); menu.hidden = !menu.hidden; btn.setAttribute("aria-expanded", !menu.hidden); });
+    document.addEventListener("click", function (e) { if (!e.target.closest("#reg")) { menu.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
+    menu.addEventListener("click", function (e) { var b = e.target.closest("[data-reg]"); if (!b) return; irRegion(b.dataset.reg); });
+    aplicar();
+    if (regionP === "latam") document.body.classList.add("latam");
+    // En el móvil, el selector ocupa el sitio del botón de recargar (que en el móvil se quita)
+    var reg = $("reg"), arriba = reg.parentNode, siguiente = reg.nextSibling, movido = false;
+    function colocar() {
+      var movil = matchMedia("(max-width: 700px)").matches;
+      if (movil && !movido) { $("estado").parentNode.insertBefore(reg, $("estado").nextSibling); movido = true; }
+      else if (!movil && movido) { arriba.insertBefore(reg, siguiente); movido = false; }
+    }
+    colocar(); addEventListener("resize", colocar);
+    // Región según la zona horaria del dispositivo (no se envía nada a ningún sitio); sale en cada carga si no coincide
+    var tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+    var NORTE = /^America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Toronto|Vancouver|Edmonton|Winnipeg|Halifax|St_Johns|Regina|Detroit|Indiana|Kentucky|Boise|Juneau|Adak|Nome|Sitka|Yakutat|Metlakatla|Menominee|North_Dakota|Moncton|Glace_Bay|Goose_Bay|Iqaluit|Whitehorse|Dawson|Yellowknife|Inuvik|Cambridge_Bay|Rankin_Inlet|Resolute|Atikokan|Creston|Fort_Nelson|Swift_Current|Rainy_River|Nipigon|Thunder_Bay|Pangnirtung)/;
+    var detectada = /^America\//.test(tz) && !NORTE.test(tz) ? "latam" : /^(Europe\/|Atlantic\/Canary|Africa\/Ceuta)/.test(tz) ? "europa" : null;
+    var actual = regionP === "latam" ? "latam" : "europa";
+    if (detectada && detectada !== actual && (detectada !== "latam" || window.PILLAO_LATAM)) {
+      var av = document.createElement("div"); av.className = "reg-aviso"; av.setAttribute("role", "dialog"); av.setAttribute("aria-label", "Cambiar de región");
+      av.innerHTML = detectada === "latam"
+        ? '<p>🌎 Parece que estás en Latinoamérica</p><small>¿Quieres ver los precios en dólares y solo claves que funcionan allí?</small><div class="acc"><button class="si" type="button" data-ir="latam">Ver Latinoamérica</button><button class="no" type="button">Seguir en Europa</button></div>'
+        : '<p>🇪🇺 Parece que estás en España o en Europa</p><small>¿Quieres ver los precios en euros y las claves que funcionan allí?</small><div class="acc"><button class="si" type="button" data-ir="es">Ver Europa</button><button class="no" type="button">Seguir en Latinoamérica</button></div>';
+      document.body.appendChild(av);
+      av.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; if (b.dataset.ir) irRegion(b.dataset.ir); else av.remove(); });
+    }
+  })();
+
   function pintar() {
     ajustarOrden();
     var lista = $("lista");
