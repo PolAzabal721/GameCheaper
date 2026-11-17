@@ -942,7 +942,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
   function cargarFiltros() {
     var base = { q: "", formato: "todos", estado: "todos", plats: [], fuera: [], fueraSub: [], revOff: [], tipo: "todos", mkt: true, part: true, imp: true, stock: false, pmax: null, orden: "populares", vista: "lista", calOff: [] };
     if (!prefsOk()) return base;
-    try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g) base[k] = g[k]; } catch (e) {}
+    try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g && k !== "q") base[k] = g[k]; } catch (e) {}  // la búsqueda no se recuerda: al volver, la portada sale limpia
     if (base.orden === "az") base.orden = "populares";
     return base;
   }
