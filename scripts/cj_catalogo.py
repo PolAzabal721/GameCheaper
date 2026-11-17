@@ -40,9 +40,6 @@ def tramos(bajo, alto):
     return tramos(bajo, medio) + tramos(round(medio + 0.01, 2), alto)
 
 vistos, filas = set(), []
-import collections
-monedas = collections.Counter()
-print("tramos:", tramos(0, 5000))
 for bajo, alto in tramos(0, 5000):
     offset = 0
     while offset < 10000:
@@ -54,8 +51,7 @@ for bajo, alto in tramos(0, 5000):
             if clave in vistos:
                 continue
             vistos.add(clave)
-            monedas[(precio.get("currency"), x.get("catalogName"))] += 1
-            if precio.get("currency") != "EUR":
+            if precio.get("currency") != "EUR":  # cada país tiene su catálogo (EUR, GBP, USD…): solo el europeo
                 continue
             fila = {"l": x.get("link") or "", "n": x.get("title") or "", "p": float(precio.get("amount") or 0),
                     "r": float((x.get("price") or {}).get("amount") or 0), "img": x.get("imageLink") or ""}
@@ -67,6 +63,5 @@ for bajo, alto in tramos(0, 5000):
         if p["count"] < 1000:
             break
         offset += 1000
-print("monedas:", monedas.most_common(8), "vistos:", len(vistos))
 json.dump(filas, open(destino, "w"), ensure_ascii=False, separators=(",", ":"))
 print(f"CJ {anunciante}: {len(filas)} productos en euros ({'unidos: con enlace de afiliado' if UNIDO else 'aún sin aceptar: enlaces normales'})")

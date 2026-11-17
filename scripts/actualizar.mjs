@@ -853,6 +853,34 @@ function leerK4G(u) {
   }
   return null;
 }
+// K4G también por CJ: su catálogo europeo entero de una vez (feeds/k4g.json, lo baja el flujo de GitHub con scripts/cj_catalogo.py).
+// Mismos filtros que con su mapa (leerK4G: solo claves globales o europeas, sin cuentas ni regalos). Mientras CJ no nos acepte,
+// los enlaces son los normales de K4G; cuando nos acepte, el feed trae «cu» (enlace de CJ con nuestro PID) y se usa ese.
+let K4G_CJ = false;
+const K4G_RUIDO = /\s+(?:(?:RU\/CIS|CIS|Latam|LATAM|EU|Europe|EMEA|Global|Worldwide|US|ROW)\s+)?(?:Steam|Xbox(?: One)?(?: \/ Series X\|S)?(?: Series X\|S)?|Xbox Live|Nintendo Switch(?: 2)?|EA App|Origin|Uplay|Ubisoft Connect|GOG(?:\.com)?|Epic Games|Battle\.net|Rockstar(?: Games)?|Microsoft Store|Windows(?: 10| 11)?)?\s*(?:CD\s*)?Key$/i;
+async function k4gCJ(juegos) {
+  let filas; try { filas = JSON.parse(await readFile(join(RAIZ, "feeds", "k4g.json"), "utf8")); } catch { return 0; }
+  if (!filas.length) return 0;
+  const porLlave = new Map();
+  for (const j of juegos.values()) if (j.tipo !== "tarjeta") { const k = llave(j.titulo); if (!porLlave.has(k)) porLlave.set(k, j); }
+  let n = 0, nuevos = 0;
+  for (const f of filas) {
+    const p = leerK4G(f.l); if (!p) continue;
+    let j = porLlave.get(p.llave);
+    if (!j) {
+      const nombre = html2txt(f.n).replace(K4G_RUIDO, "").trim() || nombreDeSlug(p.llave);
+      if (NO_PRODUCTO.test(p.llave)) continue;
+      j = juego(nombre, { pop: 99999 }); if (!j) continue; porLlave.set(p.llave, j); nuevos++;
+    }
+    ofertar(j, { tienda: "k4g", plataforma: p.plat, precio: f.p, regular: f.r > f.p ? f.r : undefined, stock: true, drm: p.drm || undefined,
+      condicion: `Clave ${p.drm || (p.plat === "PC" ? "PC" : p.plat === "Xbox Series" ? "Xbox" : "Nintendo")} · ${p.region === "global" || p.region === "worldwide" ? "Global" : "Europa"}`,
+      url: f.cu || f.l, fuente: "k4g" });
+    j.revisado.add("k4g"); visitar("k4g", j); n++;
+  }
+  K4G_CJ = n > 0;
+  console.log(`K4G (CJ): ${n} precios de su catálogo europeo (${nuevos} productos nuevos en el catálogo)${filas.some((f) => f.cu) ? " · con enlace de afiliado" : ""}`);
+  return n;
+}
 const MERCADOS = {
   driffle: {
     nombre: "Driffle", mapa: "https://driffle.com/sitemap.xml", // Solo los mapas en inglés: los de otros idiomas (/de/, /el/…) repiten los mismos productos con otra dirección
@@ -1796,8 +1824,10 @@ async function main() {
       cuenta.kinguin = nKin;
     } catch (e) { avisos.push(`kinguin: ${e.message}`); caidas.add("kinguin"); }
   }
+  try { cuenta.k4gcj = await k4gCJ(juegos); } catch (e) { avisos.push("k4g (CJ): " + e.message); }
   for (const id of Object.keys(MERCADOS)) {
     if (ENV["SIN_" + id.toUpperCase()] === "1") continue;
+    if (id === "k4g" && K4G_CJ) continue; // ya está entero por CJ: no hace falta ir ficha a ficha
     try { await recorrerMercado(id, juegos, cuenta, avisos, caidas); }
     catch (e) { avisos.push(`${id}: ${e.message}`); caidas.add(id); }
   }
