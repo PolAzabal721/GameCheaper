@@ -15,29 +15,20 @@ jobs:
       - run: |
           gunzip -f kinguin-uk-eur.csv.gz
           cat > a.py <<'P'
-          import csv,re,collections,sys,random
+          import csv,re,collections,random
           csv.field_size_limit(10**9)
-          f=open('kinguin-uk-eur.csv',newline='',encoding='utf-8',errors='replace')
-          r=csv.reader(f,delimiter=';'); cab=next(r); print('COLUMNAS',cab)
-          n=0; cats=collections.Counter(); cur=collections.Counter(); filas=[]
-          for row in r:
-            d=dict(zip(cab,row)); n+=1; cats[d.get('category','')[:60]]+=1; cur[d.get('currencyId','')]+=1
-            if n<=3: print('FILA',{k:re.sub(r'code=[a-z0-9]+','code=XXX',v)[:160] for k,v in d.items()})
-            filas.append((d.get('name',''),d.get('price'),d.get('oldprice'),d.get('category',''),d.get('param','')[:150]))
-          print('TOTAL',n,'MONEDAS',cur.most_common(5)); print('CATEGORIAS',cats.most_common(40))
-          ACC=re.compile(r'\baccount\b|cuenta|shared|offline',re.I)
-          print('CUENTAS',sum(1 for x in filas if ACC.search(x[0])))
-          REG=collections.Counter()
-          for x in filas:
-            m=re.search(r'\b(GLOBAL|EU|EMEA|EUROPE|US|UK|RU|LATAM|ROW|ASIA|NA|TR|IN|AR|BR|PL|DE|FR)\b',x[0]); REG[m.group(1) if m else '-']+=1
-          print('REGIONES EN NOMBRE',REG.most_common(20))
-          PL=collections.Counter()
-          for x in filas:
-            m=re.search(r'\b(Steam|Epic Games|GOG|EA App|Origin|Ubisoft Connect|Uplay|Battle\.net|Rockstar|Microsoft Store|Xbox (Series X\|S|One|Live)|XBOX|PS5|PS4|PSN|Nintendo Switch|Switch)\b',x[0],re.I); PL[m.group(1).lower() if m else '-']+=1
-          print('PLATAFORMAS',PL.most_common(20))
-          random.seed(3)
-          for x in random.sample(filas,40): print('E',x[0][:100],'|',x[1],'|',x[2],'|',x[3][:30],'|',x[4][:80])
-          for q in ['Red Dead Redemption 2','Hollow Knight','Elden Ring','Cyberpunk 2077','Hogwarts Legacy']:
-            for x in [y for y in filas if q.lower() in y[0].lower()][:4]: print('B',q,'|',x[0][:90],'|',x[1])
+          r=csv.DictReader(open('kinguin-uk-eur.csv',newline='',encoding='utf-8',errors='replace'),delimiter=';')
+          F=list(r); print('TOTAL',len(F))
+          for k in ['categoryId','region','platform','type','delivery_type','available','vendor','steam_type']:
+            print('V',k,collections.Counter(x.get(k,'')[:40] for x in F).most_common(25))
+          cl=[x for x in F if x.get('country_limitations')]; print('CON LIMITACIONES',len(cl))
+          es_bloq=sum(1 for x in cl if re.search(r'(^|,)ES(,|$)',x['country_limitations'])); print('LIMITACIONES QUE INCLUYEN ES',es_bloq)
+          print('URL EJEMPLO',re.sub(r'code=[a-z0-9]+','code=XXX',F[5]['url'])[:300])
+          G=[x for x in F if x.get('categoryId')=='GAME']
+          ok=[x for x in G if not re.search(r'account|altergift',x['name'],re.I)]
+          print('JUEGOS (GAME)',len(G),'sin cuentas ni altergift',len(ok))
+          print('REGION JUEGOS',collections.Counter(x.get('region','') for x in ok).most_common(20))
+          random.seed(5)
+          for x in random.sample(ok,15): print('J',x['name'][:80],'|',x['price'],'|',x.get('region'),'|',x.get('platform'),'|',x.get('country_limitations','')[:60])
           P
           python3 a.py 2>&1 | cut -c1-700
