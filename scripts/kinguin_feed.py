@@ -14,6 +14,6 @@ with abrir(origen, "rt", encoding="utf-8", errors="replace", newline="") as f:
         try: pr = float(x.get("price") or 0); op = float(x.get("oldprice") or 0)
         except ValueError: continue
         if pr <= 0: continue
-        filas.append({"n": n, "c": c, "p": x.get("platform", ""), "r": x.get("region", ""), "pr": pr, "op": op, "u": x.get("url", ""), "s": x.get("steam_id", ""), "i": (x.get("picture") or x.get("image") or "").split(",")[0].strip()})
+        filas.append({"n": n, "c": c, "p": x.get("platform", ""), "r": x.get("region", ""), "pr": pr, "op": op, "u": re.sub(r"%3Fnosalesbooster%3D1%26currency%3DEUR$", "", x.get("url", "")), "s": x.get("steam_id", ""), "i": (x.get("picture") or x.get("image") or "").split(",")[0].strip()})
 json.dump(filas, open(destino, "w"), ensure_ascii=False, separators=(",", ":"))
 print(f"Kinguin: {len(filas)} productos válidos en España guardados")
