@@ -1,17 +1,43 @@
 name: prueba-kinguin
 on: workflow_dispatch
+permissions:
+  actions: read
+  contents: read
 jobs:
   p:
     runs-on: ubuntu-latest
     steps:
-      - env:
-          F: ${{ secrets.ALIEXPRESS_FEED }}
-        run: |
-          U=$(echo "$F" | sed -E 's#/(en|es)/webmaster#/es/webmaster#; s/feed_id=[0-9]+/feed_id=25659/; s/&fcid=[0-9]+//')
-          curl -sL -o kinguin-uk-eur.csv "$U"; ls -la kinguin-uk-eur.csv; head -c 300 kinguin-uk-eur.csv | sed 's/code=[a-z0-9]*/code=XXX/g'; echo
-          gzip -k kinguin-uk-eur.csv
-      - uses: actions/upload-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: kinguin-uk-eur
-          path: kinguin-uk-eur.csv.gz
-          retention-days: 7
+          run-id: 44078678228
+          github-token: ${{ github.token }}
+      - run: |
+          gunzip -f kinguin-uk-eur.csv.gz
+          cat > a.py <<'P'
+          import csv,re,collections,sys,random
+          csv.field_size_limit(10**9)
+          f=open('kinguin-uk-eur.csv',newline='',encoding='utf-8',errors='replace')
+          r=csv.reader(f,delimiter=';'); cab=next(r); print('COLUMNAS',cab)
+          n=0; cats=collections.Counter(); cur=collections.Counter(); filas=[]
+          for row in r:
+            d=dict(zip(cab,row)); n+=1; cats[d.get('category','')[:60]]+=1; cur[d.get('currencyId','')]+=1
+            if n<=3: print('FILA',{k:re.sub(r'code=[a-z0-9]+','code=XXX',v)[:160] for k,v in d.items()})
+            filas.append((d.get('name',''),d.get('price'),d.get('oldprice'),d.get('category',''),d.get('param','')[:150]))
+          print('TOTAL',n,'MONEDAS',cur.most_common(5)); print('CATEGORIAS',cats.most_common(40))
+          ACC=re.compile(r'\baccount\b|cuenta|shared|offline',re.I)
+          print('CUENTAS',sum(1 for x in filas if ACC.search(x[0])))
+          REG=collections.Counter()
+          for x in filas:
+            m=re.search(r'\b(GLOBAL|EU|EMEA|EUROPE|US|UK|RU|LATAM|ROW|ASIA|NA|TR|IN|AR|BR|PL|DE|FR)\b',x[0]); REG[m.group(1) if m else '-']+=1
+          print('REGIONES EN NOMBRE',REG.most_common(20))
+          PL=collections.Counter()
+          for x in filas:
+            m=re.search(r'\b(Steam|Epic Games|GOG|EA App|Origin|Ubisoft Connect|Uplay|Battle\.net|Rockstar|Microsoft Store|Xbox (Series X\|S|One|Live)|XBOX|PS5|PS4|PSN|Nintendo Switch|Switch)\b',x[0],re.I); PL[m.group(1).lower() if m else '-']+=1
+          print('PLATAFORMAS',PL.most_common(20))
+          random.seed(3)
+          for x in random.sample(filas,40): print('E',x[0][:100],'|',x[1],'|',x[2],'|',x[3][:30],'|',x[4][:80])
+          for q in ['Red Dead Redemption 2','Hollow Knight','Elden Ring','Cyberpunk 2077','Hogwarts Legacy']:
+            for x in [y for y in filas if q.lower() in y[0].lower()][:4]: print('B',q,'|',x[0][:90],'|',x[1])
+          P
+          python3 a.py 2>&1 | cut -c1-700
