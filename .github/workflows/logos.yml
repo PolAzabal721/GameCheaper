@@ -39,8 +39,8 @@ jobs:
               let propios=[];
               try{
                 const h=await (await fetch("https://www."+dom+"/",{headers:UA,redirect:"follow"})).text();
-                propios=[...h.matchAll(/<link[^>]+rel=["'][^"']*icon[^"']*["'][^>]*>/gi)].map(m=>{
-                  const href=/href=["']([^"']+)/i.exec(m[0]), tam=/sizes=["'](\d+)/i.exec(m[0]);
+                propios=[...h.matchAll(/<link[^>]+rel=["\x27][^"\x27]*icon[^"\x27]*["\x27][^>]*>/gi)].map(m=>{
+                  const href=/href=["\x27]([^"\x27]+)/i.exec(m[0]), tam=/sizes=["\x27](\d+)/i.exec(m[0]);
                   return href ? [new URL(href[1],"https://www."+dom+"/").href, tam ? +tam[1] : 0] : null;
                 }).filter(Boolean).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
               }catch(e){}
