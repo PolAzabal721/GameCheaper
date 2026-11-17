@@ -8,9 +8,9 @@ jobs:
         env:
           T: ${{ secrets.CJ_TOKEN }}
         run: |
-          echo "== Anunciantes con los que estás unido que se llaman GamersGate"
-          curl -s -H "Authorization: Bearer $T" "https://advertiser-lookup.api.cj.com/v2/advertiser-lookup?requestor-cid=8127571&advertiser-ids=joined&keywords=GamersGate" | head -c 3000; echo
-          echo "== Consultas de la API de productos"
+          echo "== Campos de un producto"
           curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" \
-            -d '{"query":"{ __type(name: \"Query\") { fields { name args { name type { name kind ofType { name kind } } } } } }"}' \
-            https://ads.api.cj.com/query | head -c 4000; echo
+            -d '{"query":"{ __type(name: \"Product\") { fields { name args { name } } } }"}' https://ads.api.cj.com/query | head -c 3000; echo
+          echo "== 3 productos de GamersGate (2821123)"
+          curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" \
+            -d '{"query":"{ products(companyId: \"8127571\", partnerIds: [\"2821123\"], limit: 3) { totalCount count resultList { id title price { amount currency } link imageLink availability targetCountry } } }"}' https://ads.api.cj.com/query | head -c 3000; echo
