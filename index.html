@@ -440,6 +440,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .minimo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--tag-ink); background: var(--tag); padding: 2px 7px; border-radius: 4px; }
 .tipo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
 .tipo-tag.t-tarjeta { background: var(--good-soft); color: var(--good); }
+.tipo-tag.t-skins { background: rgba(255,170,60,.18); color: #e8a23a; }
 .tipo-tag.t-software, .tipo-tag.t-otros { background: rgba(140,160,190,.18); color: var(--muted); }
 .vivo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--good); background: var(--good-soft); padding: 2px 7px; border-radius: 4px; }
 .busca-vivo { font-size: 14px; color: var(--muted); padding: 10px 14px; background: var(--surface); border: 1px dashed var(--line); border-radius: var(--r); }
@@ -536,7 +537,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .pk-p b { font-family: var(--f-mono); font-size: 30px; color: var(--ink); line-height: 1; }
 .pk-p .btn { text-decoration: none; }
 @media (max-width: 760px) { .pack { grid-template-columns: 1fr; } .pk-p { flex-direction: row; align-items: center; justify-content: space-between; text-align: left; } }
-@media (max-width: 560px) { .dest-tabs button { font-size: 15px; padding: 5px 11px; } }
+@media (max-width: 560px) { .dest-tabs button { font-size: 15px; padding: 5px 11px; } .dest-cab { flex-wrap: wrap; row-gap: 6px; } .dest-tabs { flex-wrap: nowrap; } .dest-todos, .dest-cab a { margin-left: auto; font-size: 14px; } }
 
 /* Logos de tiendas y movimiento */
 .t-logo { width: 20px; height: 20px; border-radius: 5px; background: #fff; object-fit: contain; padding: 1px; flex-shrink: 0; }
@@ -606,6 +607,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
         <button type="button" data-v="juego" aria-pressed="false">Juegos</button>
         <button type="button" data-v="dlc" aria-pressed="false">DLC</button>
         <button type="button" data-v="tarjeta" aria-pressed="false">Tarjetas regalo</button>
+        <button type="button" data-v="software" aria-pressed="false">Software</button>
       </div>
       <span class="sep"></span>
       <div id="plataformas" style="display:flex;gap:6px" role="group" aria-label="Plataforma"></div>
@@ -1152,7 +1154,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
       if (f.formato === "fisico" && !fisica) return false;
       if (f.estado === "usado" && !usada) return false;
       if (f.estado === "nuevo" && usada) return false;
-      if (fisica && (j.tipo === "dlc" || j.tipo === "tarjeta")) return false;
+      if (fisica && (j.tipo === "dlc" || j.tipo === "tarjeta" || j.tipo === "software" || j.tipo === "skins")) return false;
       // Tiendas que ya revisamos automáticamente para este juego: si no hay precio, es que no lo tienen
       if ((j.revisado || []).indexOf(t.id) >= 0) return false;
       // Tiendas que no podemos revisar: solo si otra tienda demuestra que el juego existe en ese formato
@@ -1319,7 +1321,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
   }
   function mini(r) {
     var j = r.j, m = r.mejor, tm = tiendaPorId[m.tienda] || { nombre: m.tienda };
-    var tipo = j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición", tarjeta: "Tarjeta", software: "Software", otros: "Otros" }[j.tipo] || "") + "</span>" : "";
+    var tipo = j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición", tarjeta: "Tarjeta", software: "Software", skins: "Skin", otros: "Otros" }[j.tipo] || "") + "</span>" : "";
     var tiendasVistas = {}; r.ofs.forEach(function (o) { tiendasVistas[o.tienda] = 1; });
     var n = Object.keys(tiendasVistas).length;
     var plats = j.plataformas.filter(function (p) { return p !== "Tarjeta regalo"; });
@@ -1370,7 +1372,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
       '<div class="j-cab"><div class="j-izq">' + (fichaDe(j) ? '<a class="j-cov-a" href="' + fichaDe(j) + '" tabindex="-1" aria-hidden="true">' + imagenJuego(j, true, "j-cov") + "</a>" : imagenJuego(j, true, "j-cov")) + '<div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") + etiquetaFecha(j) +
       (enMinimo ? '<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>' : "") +
       etiquetaPremio(j) +
-      (j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo", software: "Software", otros: "Otros" }[j.tipo] || "") + "</span>" : "") + campanaTitulo(j) + '<div class="plats">' +
+      (j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo", software: "Software", skins: "Skin", otros: "Otros" }[j.tipo] || "") + "</span>" : "") + campanaTitulo(j) + '<div class="plats">' +
       j.plataformas.filter(function (p) { return p !== "Tarjeta regalo"; }).map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
       (r.nuevo != null || r.usado != null || j.pvp ? '<div class="resumen">' +
         (j.tipo === "tarjeta" && j.valor ? "<span>Valor <b>" + eur.format(j.valor) + "</b></span>" + (j.valor > total(m) ? "<span>Te ahorras <b>" + eur.format(j.valor - total(m)) + "</b></span>" : "") :
@@ -1981,8 +1983,26 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
     // Con los filtros puestos puede que no quede ninguno: una tarjeta del mismo tamaño con el euro roto
     var vacio = xs.length ? "" : vacioHTML("No hay chollos con estos filtros", "Prueba a marcar más tiendas o plataformas");
     var cab = '<div class="dest-cab"><div class="dest-tabs" role="tablist"><button type="button" role="tab" data-dest="chollos" aria-selected="' + (destVista === "chollos") + '">🔥 Chollos de hoy</button>' +
-      '<button type="button" role="tab" data-dest="packs" aria-selected="' + (destVista === "packs") + '">📦 Packs</button></div>' +
-      (destVista === "packs" ? '<button type="button" class="dest-todos" data-ver-packs>Ver packs →</button>' : '<a class="dest-todos" href="chollos/">Ver chollos →</a>') + "</div>";
+      '<button type="button" role="tab" data-dest="packs" aria-selected="' + (destVista === "packs") + '">📦 Packs</button>' +
+      '<button type="button" role="tab" data-dest="skins" aria-selected="' + (destVista === "skins") + '">🎨 Skins</button></div>' +
+      (destVista === "packs" ? '<button type="button" class="dest-todos" data-ver-packs>Ver packs →</button>' : destVista === "skins" ? '<button type="button" class="dest-todos" data-ver-skins>Ver skins →</button>' : '<a class="dest-todos" href="chollos/">Ver chollos →</a>') + "</div>";
+    if (destVista === "skins") {
+      // Skins: las más rebajadas de todo el catálogo (son de PC y digitales; no dependen de los filtros de arriba)
+      var sk = [];
+      datos.juegos.forEach(function (j) {
+        if (j.tipo !== "skins" || !j.ofertas.length) return;
+        var m = j.ofertas.reduce(function (a, o) { return total(o) < total(a) ? o : a; });
+        sk.push({ j: j, m: m, dto: m.regular > m.precio ? Math.round(100 - m.precio / m.regular * 100) : 0 });
+      });
+      sk = sk.sort(function (a, b) { return b.dto - a.dto || total(a.m) - total(b.m); }).slice(0, 10);
+      poner(caja, cab + '<ul class="dest-lista">' + sk.map(function (r) {
+        var t = tiendaPorId[r.m.tienda] || { nombre: r.m.tienda }, im = urlsImagen(r.j, false) || [];
+        return '<li><a href="juego/' + esc(r.j.id) + '/"><span class="dest-img">' + (im.length ? '<img src="' + esc(im[0]) + '" alt="" loading="lazy" width="460" height="215">'
+          : '<span class="dest-tj" style="background:linear-gradient(135deg,#7a1d1d,#d9480f)"><small>Skin</small>🎨</span>') + (r.dto ? '<em>−' + r.dto + '%</em>' : "") + '</span>' +
+          '<b>' + esc(r.j.titulo) + '</b><span class="dest-p"><strong>' + eur.format(total(r.m)) + '</strong> ' + logoT(r.m.tienda, "c-logo") + esc(t.nombre) + "</span></a></li>";
+      }).join("") + (sk.length ? "" : vacioHTML("Todavía no hay skins", "Se están cargando desde las tiendas")) + "</ul>");
+      return;
+    }
     if (destVista === "packs") {
       var ps = packsFiltrados(qTxt).slice(0, 10);
       poner(caja, cab + '<ul class="dest-lista">' + ps.map(tarjetaPackMini).join("") + (ps.length ? "" : vacioHTML("No hay packs con estos filtros", "Los packs son de PC y digitales")) + "</ul>");
@@ -2048,7 +2068,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
     });
     try { pintarDestacados(filas, qTxt); } catch (e) { $("destacados").hidden = true; }
     var nf = filas.length.toLocaleString("es-ES");
-    var nombreTipo = { juego: ["juego", "juegos"], dlc: ["DLC", "DLC"], tarjeta: ["tarjeta regalo", "tarjetas regalo"] }[f.tipo] || ["resultado", "resultados"];
+    var nombreTipo = { juego: ["juego", "juegos"], dlc: ["DLC", "DLC"], tarjeta: ["tarjeta regalo", "tarjetas regalo"], software: ["programa", "programas"], skins: ["skin", "skins"] }[f.tipo] || ["resultado", "resultados"];
     var nOf = filas.reduce(function (s, r) { return s + r.ofs.length; }, 0);
     // Mientras llega el resto del catálogo, sin búsqueda ni filtros se enseñan ya los totales (así el número no salta)
     if (restoPendiente && datos.totales && !qTxt && !nActivos() && f.orden === "populares") { nf = datos.totales.juegos.toLocaleString("es-ES"); nOf = datos.totales.ofertas; }
@@ -2297,6 +2317,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
   $("destacados").addEventListener("click", function (e) {
     var tab = e.target.closest("[data-dest]");
     if (tab) { destVista = tab.dataset.dest; pintar(); return; }
+    if (e.target.closest("[data-ver-skins]")) { f.tipo = "skins"; pintarControles(); cambio(); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
     if (e.target.closest("[data-ver-packs]")) { f.orden = "packs"; $("orden").value = "packs"; cambio(); window.scrollTo({ top: 0, behavior: "smooth" }); }
   });
   $("lista").addEventListener("click", function (e) {
