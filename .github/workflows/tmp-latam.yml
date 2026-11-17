@@ -1,0 +1,12 @@
+name: tmp prueba LATAM
+on: workflow_dispatch
+jobs:
+  x:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: LATAM_RAPIDO=1 LATAM_ITAD=60 node scripts/latam.mjs && node -e 'const d=require("./precios-latam.json");const c={};for(const j of d.juegos)for(const o of j.ofertas){const k=o.tienda+"|"+((o.condicion||"").match(/Solo \S+/)||["gen"])[0];if(!c[k]&&/steam|xbox|psstore|eshop/.test(o.tienda)){c[k]=1;console.log(k,"·",j.titulo,o.precio,o.condicion||"")}}'
+        env:
+          ITAD_KEY: ${{ secrets.ITAD_KEY }}

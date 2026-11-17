@@ -31,17 +31,31 @@ const K4G_RUIDO = /\s+(?:(?:RU\/CIS|CIS|Latam|LATAM|EU|Europe|EMEA|Global|Worldw
 
 // Cambios del día del Banco Central Europeo: cuántos dólares vale 1 € y 1 peso mexicano
 async function cambios() {
-  const c = { EUR: 1.08, MXN: 0.055, BRL: 0.18 };
+  // Dólares que vale 1 unidad de cada moneda. Primero open.er-api.com (tiene ARS, CLP, COP, PEN…); si falla, el BCE (frankfurter)
+  const c = { USD: 1, EUR: 1.08, MXN: 0.055, BRL: 0.18 };
   try {
-    const d = await (await fetch("https://api.frankfurter.app/latest?from=USD&to=EUR,MXN,BRL")).json();
-    if (d.rates?.EUR > 0.5 && d.rates.EUR < 2) c.EUR = 1 / d.rates.EUR;
-    if (d.rates?.MXN > 5 && d.rates.MXN < 40) c.MXN = 1 / d.rates.MXN;
-    if (d.rates?.BRL > 2 && d.rates.BRL < 15) c.BRL = 1 / d.rates.BRL;
-  } catch {}
+    const d = await (await fetch("https://open.er-api.com/v6/latest/USD")).json();
+    for (const [k, v] of Object.entries(d.rates || {})) if (v > 0) c[k] = 1 / v;
+  } catch {
+    try {
+      const d = await (await fetch("https://api.frankfurter.app/latest?from=USD&to=EUR,MXN,BRL")).json();
+      for (const [k, v] of Object.entries(d.rates || {})) if (v > 0) c[k] = 1 / v;
+    } catch {}
+  }
   return c;
 }
 const ES_PAIS = { Argentina: "Argentina", Mexico: "México", Chile: "Chile", Colombia: "Colombia", Peru: "Perú", Brazil: "Brasil", Uruguay: "Uruguay", Ecuador: "Ecuador", Venezuela: "Venezuela", Bolivia: "Bolivia", Paraguay: "Paraguay", "Costa Rica": "Costa Rica", Panama: "Panamá", Guatemala: "Guatemala", "Dominican Republic": "República Dominicana" };
 const mx = (n) => n.toLocaleString("es-MX", { maximumFractionDigits: 0 }) + " MXN";
+// Tiendas oficiales por país: PlayStation (idioma de su web), Microsoft (mercado) y Nintendo (país; Argentina no tiene eShop)
+const PAISES = [
+  { c: "MX", n: "México", ps: "es-mx", xb: "es-MX", eshop: true },
+  { c: "AR", n: "Argentina", ps: "es-ar", xb: "es-AR", eshop: false },
+  { c: "BR", n: "Brasil", ps: "pt-br", xb: "pt-BR", eshop: true },
+  { c: "CL", n: "Chile", ps: "es-cl", xb: "es-CL", eshop: true },
+  { c: "CO", n: "Colombia", ps: "es-co", xb: "es-CO", eshop: true },
+  { c: "PE", n: "Perú", ps: "es-pe", xb: "es-PE", eshop: true },
+];
+const cifra = (n, cur) => n.toLocaleString("es-MX", { maximumFractionDigits: n >= 100 ? 0 : 2 }) + " " + cur;
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 const CABECERAS = { "User-Agent": "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)", "Accept-Language": "es-MX,es;q=0.9" };
 const OFICIALES_PC = /^(steam|gog|epic|microsoft|ea app|ea store|origin|ubisoft|battle\.net|blizzard|rockstar|bethesda|square enix|nintendo)/i;
@@ -73,7 +87,14 @@ async function main() {
     j.ofertas.push(o); j.plataformas.add(o.plataforma);
   };
   const usd = (n) => Math.round(n * cambio * 100) / 100;
+  // Precio de la tienda de un país → dólares y la condición «Solo Argentina · 15.000 ARS ≈ en dólares»
+  const local = (pais, cur, n) => {
+    if (cur === "USD") return { precio: Math.round(n * 100) / 100, cond: "Solo " + pais.n };
+    if (!tasas[cur]) return null;
+    return { precio: Math.round(n * tasas[cur] * 100) / 100, cond: `Solo ${pais.n} · ${cifra(n, cur)} ≈ en dólares` };
+  };
   const cuenta = {};
+  const RAPIDO = process.env.LATAM_RAPIDO === "1";
 
   // Kinguin
   for (const f of await leer("feeds/kinguin-latam.json", [])) {
@@ -120,7 +141,8 @@ async function main() {
   }
 
   const populares = es.juegos.filter((j) => j.tipo !== "tarjeta").sort((a, b) => (a.pop || 99999) - (b.pop || 99999));
-  // Tiendas de PC por IsThereAnyDeal (país Argentina: precios en dólares)
+  // Tiendas de PC por IsThereAnyDeal. Argentina: todas sus tiendas, en dólares (es el precio de la región Latam en dólares de Steam y compañía).
+  // México, Brasil, Chile, Colombia y Perú: las tiendas oficiales (Steam, Epic, GOG…), que cobran en la moneda de cada país.
   const key = (process.env.ITAD_KEY || "").trim();
   if (key) try {
     const pc = populares.filter((j) => (j.plataformas || []).includes("PC")).slice(0, +(process.env.LATAM_ITAD || 4000));
@@ -132,80 +154,103 @@ async function main() {
       await esperar(300);
     }
     const claves = Object.keys(ids);
-    for (let i = 0; i < claves.length; i += 200) {
-      const lista = await (await fetch(`https://api.isthereanydeal.com/games/prices/v3?key=${encodeURIComponent(key)}&country=AR`, { method: "POST", headers: json, body: JSON.stringify(claves.slice(i, i + 200)) })).json();
-      for (const g of lista) {
-        const e = ids[g.id]; if (!e) continue;
-        for (const x of g.deals || []) {
-          if (x.price?.currency !== "USD" || !(x.price.amount > 0)) continue;
-          const nombre = x.shop?.name || String(x.shop?.id), id = /^steam$/i.test(nombre) ? "steam" : "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
-          const j = juego(e.titulo, e.tipo); if (!j) continue;
-          tienda(id, nombre, OFICIALES_PC.test(nombre) ? "oficial" : "revendedor");
-          ofertar(j, { tienda: id, plataforma: "PC", formato: "digital", estado: "nuevo", stock: true, precio: x.price.amount, regular: x.regular?.amount > x.price.amount ? x.regular.amount : undefined, url: x.url || undefined });
-          cuenta[id === "steam" ? "steam" : "pc (itad)"] = (cuenta[id === "steam" ? "steam" : "pc (itad)"] || 0) + 1;
-        }
+    for (const pais of [PAISES[1], PAISES[0], ...PAISES.slice(2)]) {
+      const general = pais.c === "AR";
+      for (let i = 0; i < claves.length; i += 200) {
+        try {
+          const lista = await (await fetch(`https://api.isthereanydeal.com/games/prices/v3?key=${encodeURIComponent(key)}&country=${pais.c}`, { method: "POST", headers: json, body: JSON.stringify(claves.slice(i, i + 200)) })).json();
+          for (const g of lista) {
+            const e = ids[g.id]; if (!e) continue;
+            for (const x of g.deals || []) {
+              if (!(x.price?.amount > 0)) continue;
+              const nombre = x.shop?.name || String(x.shop?.id), id = /^steam$/i.test(nombre) ? "steam" : "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
+              const oficial = OFICIALES_PC.test(nombre);
+              if (!general && !oficial) continue;
+              let precio, regular, condicion;
+              if (general) {
+                if (x.price.currency !== "USD") continue;
+                precio = x.price.amount; regular = x.regular?.amount > precio ? x.regular.amount : undefined;
+                condicion = oficial ? "Precio de Argentina y Latam en dólares" : undefined;
+              } else {
+                const l = local(pais, x.price.currency, x.price.amount); if (!l) continue;
+                if (x.price.currency === "USD") continue;   // en dólares es el mismo precio que el de Argentina y Latam
+                precio = l.precio; condicion = l.cond;
+                if (x.regular?.amount > x.price.amount) regular = local(pais, x.regular.currency || x.price.currency, x.regular.amount)?.precio;
+              }
+              const j = juego(e.titulo, e.tipo); if (!j) continue;
+              tienda(id, nombre, oficial ? "oficial" : "revendedor");
+              ofertar(j, { tienda: id, plataforma: "PC", formato: "digital", estado: "nuevo", stock: true, precio, regular, condicion, url: x.url || undefined });
+              const kc = (id === "steam" ? "steam" : "pc (itad)") + " " + pais.c; cuenta[kc] = (cuenta[kc] || 0) + 1;
+            }
+          }
+        } catch (e) { console.warn(`LATAM ITAD ${pais.c}: ${e.message}`); }
+        await esperar(300);
       }
-      await esperar(300);
     }
   } catch (e) { console.warn("LATAM ITAD: " + e.message); }
 
-  // Microsoft Store (Xbox y PC) en México
+  // Microsoft Store (Xbox y PC) en cada país: mismo producto que en España, con el precio de ese mercado
   try {
     const xb = new Map();
     for (const e of populares) for (const o of e.ofertas) if (o.tienda === "xbox" && /\/p\/([A-Z0-9]{12})/.test(o.url || "")) { const id = o.url.match(/\/p\/([A-Z0-9]{12})/)[1]; if (!xb.has(id)) xb.set(id, { e, plats: new Set() }); xb.get(id).plats.add(o.plataforma); }
-    const lista = [...xb.keys()].slice(0, +(process.env.LATAM_XBOX || 3000));
-    for (let i = 0; i < lista.length; i += 20) {
-      const d = await (await fetch(`https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${lista.slice(i, i + 20).join(",")}&market=MX&languages=es-mx`)).json();
-      for (const p of d.Products || []) {
-        const x = xb.get(p.ProductId); if (!x) continue;
-        let mejor = null;
-        for (const s of p.DisplaySkuAvailabilities || []) for (const a of s.Availabilities || []) {
-          const pr = a.OrderManagementData?.Price;
-          if (!pr || pr.CurrencyCode !== "MXN" || !(pr.ListPrice > 0) || !(a.Actions || []).includes("Purchase")) continue;
-          if (!mejor || pr.ListPrice < mejor.ListPrice) mejor = pr;
-        }
-        if (!mejor) continue;
-        const j = juego(x.e.titulo, x.e.tipo); if (!j) continue;
-        tienda("xbox", "Microsoft Store", "oficial");
-        for (const plat of x.plats) ofertar(j, { tienda: "xbox", plataforma: plat, formato: "digital", estado: "nuevo", stock: true, precio: Math.round(mejor.ListPrice * tasas.MXN * 100) / 100,
-          regular: mejor.MSRP > mejor.ListPrice ? Math.round(mejor.MSRP * tasas.MXN * 100) / 100 : undefined, condicion: `Solo México · ${mx(mejor.ListPrice)} ≈ en dólares`, url: `https://www.xbox.com/es-MX/games/store/p/${p.ProductId}` });
-        cuenta.xbox = (cuenta.xbox || 0) + 1;
+    const lista = [...xb.keys()].slice(0, RAPIDO ? 40 : +(process.env.LATAM_XBOX || 3000));
+    for (const pais of PAISES) {
+      for (let i = 0; i < lista.length; i += 20) {
+        try {
+          const d = await (await fetch(`https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${lista.slice(i, i + 20).join(",")}&market=${pais.c}&languages=${pais.xb.toLowerCase()}`)).json();
+          for (const p of d.Products || []) {
+            const x = xb.get(p.ProductId); if (!x) continue;
+            let mejor = null;
+            for (const sk of p.DisplaySkuAvailabilities || []) for (const a of sk.Availabilities || []) {
+              const pr = a.OrderManagementData?.Price;
+              if (!pr || !(pr.ListPrice > 0) || !(a.Actions || []).includes("Purchase")) continue;
+              if (!mejor || pr.ListPrice < mejor.ListPrice) mejor = pr;
+            }
+            if (!mejor) continue;
+            const l = local(pais, mejor.CurrencyCode, mejor.ListPrice); if (!l) continue;
+            const j = juego(x.e.titulo, x.e.tipo); if (!j) continue;
+            tienda("xbox", "Microsoft Store", "oficial");
+            for (const plat of x.plats) ofertar(j, { tienda: "xbox", plataforma: plat, formato: "digital", estado: "nuevo", stock: true, precio: l.precio,
+              regular: mejor.MSRP > mejor.ListPrice ? local(pais, mejor.CurrencyCode, mejor.MSRP)?.precio : undefined, condicion: l.cond, url: `https://www.xbox.com/${pais.xb}/games/store/p/${p.ProductId}` });
+            cuenta["xbox " + pais.c] = (cuenta["xbox " + pais.c] || 0) + 1;
+          }
+        } catch (e) { if (i === 0) console.warn(`LATAM Xbox ${pais.c}: ${e.message}`); }
+        await esperar(250);
       }
-      await esperar(250);
     }
   } catch (e) { console.warn("LATAM Xbox: " + e.message); }
 
-  // PlayStation Store de México: la misma ficha (concept) que en España, con el precio de México
+  // PlayStation Store de cada país: la misma ficha (concept o producto) que en España, con el precio de ese país
   try {
     const ps = await leer("data/playstation.json", { juegos: {} });
-    const lista = populares.filter((e) => ps.juegos[e.id]?.ids?.length).slice(0, +(process.env.LATAM_PS || 400));
-    for (const e of lista) {
-      for (const id of [...ps.juegos[e.id].ids].sort((x, y) => /^\d+$/.test(x) - /^\d+$/.test(y))) {
-        try {
-          const url = `https://store.playstation.com/es-mx/${/^\d+$/.test(id) ? "concept" : "product"}/${id}`;
-          const r = await fetch(url, { headers: CABECERAS }); if (!r.ok) continue;
-          const m = (await r.text()).match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/); if (!m) continue;
-          const ld = JSON.parse(m[1]), of = [].concat(ld.offers || [])[0];
-          if (!of || !(of.price > 0) || !/^(MXN|USD)$/.test(of.priceCurrency)) continue;
-          if (llave(ld.name || "") !== llave(e.titulo) && !llave(ld.name || "").startsWith(llave(e.titulo) + " ")) continue;
-          if (/\b(ultimate|deluxe|gold|premium|definitive|complete|collector|bundle|upgrade)\b/i.test(ld.name) && !/\b(ultimate|deluxe|gold|premium|definitive|complete|collector|bundle|upgrade)\b/i.test(e.titulo)) continue;
-          const j = juego(e.titulo, e.tipo); if (!j) break;
-          tienda("psstore", "PlayStation Store", "oficial");
-          const usd = of.priceCurrency === "USD" ? of.price : Math.round(of.price * tasas.MXN * 100) / 100;
-          ofertar(j, { tienda: "psstore", plataforma: (e.plataformas || []).includes("PS5") ? "PS5" : "PS4", formato: "digital", estado: "nuevo", stock: true, precio: usd,
-            condicion: "Solo México" + (of.priceCurrency === "MXN" ? ` · ${mx(of.price)} ≈ en dólares` : ""), url });
-          cuenta.psstore = (cuenta.psstore || 0) + 1;
-          break;
-        } catch {}
+    const conPs = populares.filter((e) => ps.juegos[e.id]?.ids?.length);
+    for (const pais of PAISES) {
+      const lista = conPs.slice(0, RAPIDO ? 5 : pais.c === "MX" ? +(process.env.LATAM_PS || 400) : +(process.env.LATAM_PS_OTROS || 200));
+      for (const e of lista) {
+        for (const id of [...ps.juegos[e.id].ids].sort((x, y) => /^\d+$/.test(x) - /^\d+$/.test(y))) {
+          try {
+            const url = `https://store.playstation.com/${pais.ps}/${/^\d+$/.test(id) ? "concept" : "product"}/${id}`;
+            const r = await fetch(url, { headers: CABECERAS }); if (!r.ok) continue;
+            const m = (await r.text()).match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/); if (!m) continue;
+            const ld = JSON.parse(m[1]), of = [].concat(ld.offers || [])[0];
+            if (!of || !(of.price > 0)) continue;
+            if (llave(ld.name || "") !== llave(e.titulo) && !llave(ld.name || "").startsWith(llave(e.titulo) + " ")) continue;
+            if (/\b(ultimate|deluxe|gold|premium|definitive|complete|collector|bundle|upgrade)\b/i.test(ld.name) && !/\b(ultimate|deluxe|gold|premium|definitive|complete|collector|bundle|upgrade)\b/i.test(e.titulo)) continue;
+            const l = local(pais, of.priceCurrency, +of.price); if (!l) break;
+            const j = juego(e.titulo, e.tipo); if (!j) break;
+            tienda("psstore", "PlayStation Store", "oficial");
+            ofertar(j, { tienda: "psstore", plataforma: (e.plataformas || []).includes("PS5") ? "PS5" : "PS4", formato: "digital", estado: "nuevo", stock: true, precio: l.precio, condicion: l.cond, url });
+            cuenta["psstore " + pais.c] = (cuenta["psstore " + pais.c] || 0) + 1;
+            break;
+          } catch {}
+          await esperar(500);
+        }
         await esperar(500);
       }
-      await esperar(500);
     }
   } catch (e) { console.warn("LATAM PlayStation: " + e.message); }
 
-
   // ---------- Fuentes leídas por nosotros (como en España): Instant Gaming, Yuplay, Driffle, Nintendo eShop México y GamersGate ----------
-  const RAPIDO = process.env.LATAM_RAPIDO === "1";
   const cacheL = await leer("data/latam-cache.json", {});
   const guardarCache = () => writeFile(join(RAIZ, "data", "latam-cache.json"), JSON.stringify(cacheL));
   const PAISES_LATAM = { argentina: "Argentina", mexico: "México", brasil: "Brasil", brazil: "Brasil", chile: "Chile", colombia: "Colombia", peru: "Perú" };
@@ -310,7 +355,7 @@ async function main() {
     cuenta.driffle = n;
   } catch (e) { console.warn("LATAM Driffle: " + e.message); }
 
-  // Nintendo eShop de México: las fichas de la tienda de América (su mapa de EE. UU.), el número de producto (nsuid) de la ficha
+  // Nintendo eShop (México, Brasil, Chile, Colombia y Perú): las fichas de la tienda de América (su mapa de EE. UU.), el número de producto (nsuid) de la ficha
   // de México (se guarda) y el precio en pesos de su API de precios, pasado a dólares
   try {
     const ns = (cacheL.eshop ||= {});
@@ -330,23 +375,28 @@ async function main() {
     }
     const conId = cand.filter((c) => ns[c.slug]);
     let n = 0;
-    for (let i = 0; i < conId.length; i += 50) {
-      const lote = conId.slice(i, i + 50);
-      const d = await (await fetch(`https://api.ec.nintendo.com/v1/price?country=MX&lang=es&ids=${lote.map((c) => ns[c.slug]).join(",")}`)).json();
-      for (const p of d.prices || []) {
-        if (p.sales_status !== "onsale" || p.regular_price?.currency !== "MXN") continue;
-        const c = lote.find((x) => ns[x.slug] === String(p.title_id)); if (!c) continue;
-        const reg = +p.regular_price.raw_value, pr = +(p.discount_price?.raw_value ?? reg);
-        if (/switch-2-edition/.test(c.slug) && reg < 500) continue;   // el pack de mejora, no el juego
-        const j = juego(c.e.titulo, c.e.tipo); if (!j) continue;
-        tienda("eshop", "Nintendo eShop", "oficial");
-        ofertar(j, { tienda: "eshop", plataforma: c.plat, formato: "digital", estado: "nuevo", stock: true, precio: Math.round(pr * tasas.MXN * 100) / 100,
-          regular: reg > pr ? Math.round(reg * tasas.MXN * 100) / 100 : undefined, condicion: `Solo México · ${mx(pr)} ≈ en dólares`, url: `https://www.nintendo.com/es-mx/store/products/${c.slug}/` });
-        n++;
+    for (const pais of PAISES.filter((x) => x.eshop)) {
+      for (let i = 0; i < conId.length; i += 50) {
+        try {
+          const lote = conId.slice(i, i + 50);
+          const d = await (await fetch(`https://api.ec.nintendo.com/v1/price?country=${pais.c}&lang=es&ids=${lote.map((c) => ns[c.slug]).join(",")}`)).json();
+          for (const p of d.prices || []) {
+            if (p.sales_status !== "onsale" || !p.regular_price?.currency) continue;
+            const c = lote.find((x) => ns[x.slug] === String(p.title_id)); if (!c) continue;
+            const cur = p.regular_price.currency, reg = +p.regular_price.raw_value, pr = +(p.discount_price?.raw_value ?? reg);
+            const l = local(pais, cur, pr); if (!l) continue;
+            if (/switch-2-edition/.test(c.slug) && l.precio < 25) continue;   // el pack de mejora, no el juego
+            const j = juego(c.e.titulo, c.e.tipo); if (!j) continue;
+            tienda("eshop", "Nintendo eShop", "oficial");
+            ofertar(j, { tienda: "eshop", plataforma: c.plat, formato: "digital", estado: "nuevo", stock: true, precio: l.precio,
+              regular: reg > pr ? local(pais, cur, reg)?.precio : undefined, condicion: l.cond, url: `https://www.nintendo.com/${pais.ps === "pt-br" ? "pt-br" : pais.ps}/store/products/${c.slug}/` });
+            n++; cuenta["eshop " + pais.c] = (cuenta["eshop " + pais.c] || 0) + 1;
+          }
+        } catch (e) { if (i === 0) console.warn(`LATAM eShop ${pais.c}: ${e.message}`); }
+        await esperar(300);
       }
-      await esperar(300);
     }
-    cuenta.eshop = n;
+
   } catch (e) { console.warn("LATAM eShop: " + e.message); }
 
   // GamersGate: su feed de América (EE. UU., en dólares); lo baja el flujo de GitHub
@@ -368,7 +418,7 @@ async function main() {
     .map((j) => ({ ...j, plataformas: [...j.plataformas], minimo: Math.min(...j.ofertas.map((o) => o.precio)) }));
   const salida = { region: "latam", moneda: "USD", cambio, actualizado: new Date().toISOString(), tiendas, juegos: lista };
   await writeFile(join(RAIZ, "precios-latam.json"), JSON.stringify(salida) + "\n");
-  console.log(`LATAM: ${lista.length} productos, ${lista.reduce((n, j) => n + j.ofertas.length, 0)} ofertas · ${JSON.stringify(cuenta)} · 1 € = ${cambio.toFixed(3)} US$ · 1 MXN = ${tasas.MXN.toFixed(4)} US$`);
+  console.log(`LATAM: ${lista.length} productos, ${lista.reduce((n, j) => n + j.ofertas.length, 0)} ofertas · ${JSON.stringify(cuenta)} · 1 € = ${cambio.toFixed(3)} US$ · 1 MXN = ${tasas.MXN.toFixed(4)} US$ · 1000 ARS = ${((tasas.ARS || 0) * 1000).toFixed(2)} US$`);
 }
 
 main().catch((e) => { console.error(e.stack || e.message); process.exit(1); });
