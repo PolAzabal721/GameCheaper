@@ -1,111 +1,111 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 1042,
+   "pendientes": 40570,
    "ejemplos": [
-    "Clone Drone in the Danger Zone",
-    "Worshippers of Cthulhu",
+    "Until Dawn",
+    "Littlelands",
     "Regions of Ruin",
-    "Grim Dawn",
-    "Winter Resort Simulator 2"
+    "Clone Drone in the Danger Zone",
+    "Worshippers of Cthulhu"
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 7017,
+   "pendientes": 47375,
    "ejemplos": [
-    "Passpartout 2: The Lost Artist",
-    "Tactical Breach Wizards",
-    "Where Angels Cry",
-    "Yono and the Celestial Elephants",
-    "Sockventure"
+    "Good Job!",
+    "Windstorm: Start of a Great Friendship",
+    "The Deer God",
+    "Shovel Knight: Specter of Torment",
+    "New Frontier Days ~Founding Pioneers~"
    ]
   },
   "game (consola)": {
-   "pendientes": 17204,
+   "pendientes": 23610,
    "ejemplos": [
-    "The Legend of Zelda: Ocarina of Time",
-    "Fire Emblem Engage",
-    "LIVE A LIVE",
+    "The End Is Nigh",
     "EA Sports FC 27 Ultimate Edition",
-    "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo"
+    "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo",
+    "1-2-Switch",
+    "Final Fantasy VII Rebirth Digital Deluxe Edition"
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 670,
+   "pendientes": 3778,
    "ejemplos": [
     "Football Manager 27",
+    "EA Sports FC 27 Ultimate Edition",
     "NBA 2K27",
     "Mortal Shell II",
-    "Minecraft Dungeons II Deluxe Edition",
-    "Cyberpunk 2077: Phantom Liberty"
+    "Grand Theft Auto: The Trilogy – The Definitive Edition"
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 14495,
+   "pendientes": 17625,
    "ejemplos": [
     "Dying Light - Shu Warrior Bundle",
+    "Sonic Racing: CrossWorlds",
     "DERELIKT",
     "Crusader Kings III: Tours & Tournaments",
-    "LEGO Marvel Super Heroes 2 Deluxe Edition",
-    "SNK HEROINES Tag Team Frenzy"
+    "LEGO Marvel Super Heroes 2 Deluxe Edition"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 670,
-  "sinFicha": 563,
-  "fichasEncontradas": 880
+  "sinPrecio": 3778,
+  "sinFicha": 3627,
+  "fichasEncontradas": 981
  },
  "fotos": {
   "juego": {
-   "total": 29040,
-   "con": 26800,
-   "porcentaje": 92
+   "total": 54035,
+   "con": 29163,
+   "porcentaje": 54
   },
   "edicion": {
-   "total": 2392,
-   "con": 2036,
-   "porcentaje": 85
+   "total": 5818,
+   "con": 3416,
+   "porcentaje": 59
   },
   "dlc": {
-   "total": 2435,
-   "con": 2202,
-   "porcentaje": 90
+   "total": 11017,
+   "con": 7345,
+   "porcentaje": 67
   },
   "tarjeta": {
-   "total": 396,
+   "total": 6733,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 7160,
+   "total": 10161,
    "probadas": 12,
    "fallan": 1,
    "ejemplos": [
-    "Sideways → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4111500/header.jpg"
+    "Ultima III: Exodus → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3067500/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 1952,
+   "total": 3321,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "nintendo": {
-   "total": 11855,
+   "total": 12446,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 9775,
+   "total": 13659,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "otras": {
-   "total": 296,
+   "total": 390,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
@@ -113,85 +113,113 @@
  },
  "enlaces": {
   "steam": {
-   "ofertas": 8377,
+   "ofertas": 9333,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "k4g": {
-   "ofertas": 1621,
+   "ofertas": 2632,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "kinguin": {
+   "ofertas": 56540,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "yuplay": {
-   "ofertas": 4925,
+   "ofertas": 6107,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "game": {
-   "ofertas": 1583,
+   "ofertas": 1666,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xbox": {
-   "ofertas": 13621,
+   "ofertas": 14012,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "instantgaming": {
-   "ofertas": 8343,
+   "ofertas": 8673,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "mediamarkt": {
+   "ofertas": 1073,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "eshop": {
-   "ofertas": 18612,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "ebay": {
-   "ofertas": 1740,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 6,
-   "ejemplos": []
-  },
-  "gameseminuevos": {
-   "ofertas": 409,
+   "ofertas": 18674,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "psstore": {
-   "ofertas": 743,
+   "ofertas": 839,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
+  "xtralife": {
+   "ofertas": 6103,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "gameseminuevos": {
+   "ofertas": 430,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "ebay": {
+   "ofertas": 1571,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
   "driffle": {
-   "ofertas": 1088,
+   "ofertas": 1775,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "alcampo": {
-   "ofertas": 11,
+   "ofertas": 12,
    "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "pcbox": {
+   "ofertas": 4,
+   "probadas": 4,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
@@ -205,32 +233,32 @@
   "ejemplos": []
  },
  "actualizado": {
-  "precios": "2026-11-16T08:48:09.534Z",
-  "diasDesdeLaUltima": 0.21
+  "precios": "2026-11-17T14:37:55.784Z",
+  "diasDesdeLaUltima": 0.01
  },
  "historial": {
-  "series": 33630,
+  "series": 83022,
   "rotas": 0,
-  "alDia": 33433,
-  "ultimoDia": "2026-11-16"
+  "alDia": 82747,
+  "ultimoDia": "2026-11-17"
  },
  "red": {
-  "comprobadas": 132,
+  "comprobadas": 154,
   "sinRespuesta": 0,
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 34263,
-  "ofertas": 124242,
-  "tiendas": 42,
-  "conFoto": "91 %"
+  "juegos": 83270,
+  "ofertas": 191782,
+  "tiendas": 46,
+  "conFoto": "48 %"
  },
- "fecha": "2026-11-16T13:52:30.719Z",
+ "fecha": "2026-11-17T14:45:25.694Z",
  "graves": [],
  "avisos": [
-  "xbox (PC o Xbox): 75 juegos populares aún sin consultar (p. ej. Passpartout 2: The Lost Artist, Tactical Breach Wizards, Where Angels Cry)",
-  "game (consola): 992 juegos populares aún sin consultar (p. ej. The Legend of Zelda: Ocarina of Time, Fire Emblem Engage, LIVE A LIVE)",
-  "psstore (PS4 o PS5): 64 juegos populares aún sin consultar (p. ej. Football Manager 27, NBA 2K27, Mortal Shell II)",
-  "ebay (consola, 2ª mano): 580 juegos populares aún sin consultar (p. ej. Dying Light - Shu Warrior Bundle, DERELIKT, Crusader Kings III: Tours & Tournaments)"
+  "xbox (PC o Xbox): 196 juegos populares aún sin consultar (p. ej. Good Job!, Windstorm: Start of a Great Friendship, The Deer God)",
+  "game (consola): 1127 juegos populares aún sin consultar (p. ej. The End Is Nigh, EA Sports FC 27 Ultimate Edition, Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo)",
+  "psstore (PS4 o PS5): 138 juegos populares aún sin consultar (p. ej. Football Manager 27, EA Sports FC 27 Ultimate Edition, NBA 2K27)",
+  "ebay (consola, 2ª mano): 441 juegos populares aún sin consultar (p. ej. Dying Light - Shu Warrior Bundle, Sonic Racing: CrossWorlds, DERELIKT)"
  ]
 }
