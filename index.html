@@ -2020,7 +2020,29 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
     }).join("") + vacio + "</ul>");
   }
 
+  // Ordenar: solo las opciones que tienen sentido con el tipo y el formato elegidos
+  // (tarjetas regalo sin lanzamientos ni premios; en disco o segunda mano no hay packs, skins ni claves sorpresa)
+  var ORDEN_NO = {
+    tarjeta: ["recientes", "proximos", "premiados", "packs", "skins", "sorpresa"],
+    software: ["premiados", "packs", "skins", "sorpresa"],
+    dlc: ["premiados", "packs", "skins", "sorpresa"],
+    fisico: ["packs", "skins", "sorpresa"]
+  };
+  var ORDEN_TODAS = null;
+  function ajustarOrden() {
+    var fuera = [].concat(ORDEN_NO[f.tipo] || [], f.formato === "fisico" || f.estado === "usado" ? ORDEN_NO.fisico : []);
+    // Se quitan del desplegable (no basta con ocultarlas: el iPhone enseña igual las opciones ocultas)
+    var sel = $("orden");
+    if (!ORDEN_TODAS) ORDEN_TODAS = [].map.call(sel.options, function (o) { return [o.value, o.textContent]; });
+    if (fuera.indexOf(f.orden) >= 0) f.orden = "populares";
+    var quedan = ORDEN_TODAS.filter(function (o) { return fuera.indexOf(o[0]) < 0; });
+    if ([].map.call(sel.options, function (o) { return o.value; }).join() !== quedan.map(function (o) { return o[0]; }).join())
+      sel.innerHTML = quedan.map(function (o) { return '<option value="' + o[0] + '">' + esc(o[1]) + "</option>"; }).join("");
+    sel.value = f.orden;
+  }
+
   function pintar() {
+    ajustarOrden();
     var lista = $("lista");
     var n = nActivos(); var nb = $("nfiltros"); nb.hidden = !n; nb.textContent = n;
     if (!datos) { lista.innerHTML = '<div class="vacio"><b>No hay precios cargados</b>Vuelve a probar en unos minutos.</div>'; return; }
