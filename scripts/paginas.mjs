@@ -205,6 +205,7 @@ function plantilla({ titulo, descripcion, canonica, raiz, cuerpo, jsonld, imagen
 <link rel="icon" href="${raiz}favicon.svg" type="image/svg+xml"><link rel="alternate icon" href="${raiz}favicon.ico" sizes="any"><link rel="icon" href="${raiz}icono-192.png" type="image/png" sizes="192x192"><link rel="apple-touch-icon" href="${raiz}icono-180.png">
 <link rel="stylesheet" href="${raiz}fonts/fuentes.css"><link rel="stylesheet" href="${raiz}paginas.css">
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>` : ""}
+<script src="/idiomas.js" defer></script>
 </head><body><header><div class="wrap"><a class="logo" href="${raiz}">Pillao<span>€</span></a><a class="ir-app" href="${raiz}">Ir al comparador →</a></div></header>
 <main class="wrap">${cuerpo}</main>
 <footer><div class="wrap">Pillao compara precios de videojuegos y no vende productos. Los precios son orientativos: el válido es siempre el de cada tienda. Algunos enlaces son de afiliado: si compras tras pulsarlos, la tienda puede pagarnos una comisión, sin coste para ti.
@@ -563,6 +564,9 @@ function paginaChollos(datos) {
 
 async function main() {
   const datos = completar(JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8")));
+  // Skins: solo mercados de compra o cambio de skins (como en la web), para que el total de juegos sea el mismo desde el principio
+  const MERC_SKINS = /^(dmarket|skinsmonkey|skinflow\.gg|swap\.gg|cs\.trade|shadowpay(\.com)?|qqskins|skinswap|tradeit(\.gg)?|cs\.money|skinport|waxpeer|skinbaron|lis-skins|rapidskins)\b/i;
+  datos.juegos = datos.juegos.filter((j) => j.tipo !== "skins" || MERC_SKINS.test(j.titulo || ""));
   BUSCADOR = datos.buscador || "";
   const tiendaPorId = Object.fromEntries(datos.tiendas.map((t) => [t.id, t]));
   // Latinoamérica: misma web en /latam/, con su propio archivo de precios (precios-latam.json, en dólares)
