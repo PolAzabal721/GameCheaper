@@ -634,7 +634,8 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .gta-ofs { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 6px; }
 .gta-ofs li a { display: grid; grid-template-columns: auto 1fr auto auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); color: inherit; text-decoration: none; transition: transform .15s, border-color .15s, background .15s; }
 .gta-ofs li a:hover { transform: translateY(-2px); border-color: rgba(255,159,67,.6); background: rgba(255,255,255,.07); }
-.gta-ofs li.top a { border-color: rgba(255,210,63,.55); background: linear-gradient(90deg, rgba(255,210,63,.12), rgba(255,255,255,.03)); }
+.gta-ofs li.gta-mejor { position: static; background: none; border: 0; }
+.gta-ofs li.gta-mejor a { border-color: rgba(255,210,63,.55); background: linear-gradient(90deg, rgba(255,210,63,.12), rgba(255,255,255,.03)); }
 .gta-ofs .t { font-weight: 700; font-size: 14.5px; } .gta-ofs .d { color: #9a97b8; font-size: 12.5px; }
 .gta-ofs .pr { font: 800 17px/1 var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; }
 .gta-ofs .pr small { display: block; font: 700 10px/1.4 var(--f-body, system-ui); color: #ffd23f; text-transform: uppercase; letter-spacing: .08em; }
@@ -2276,7 +2277,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
       (ya ? "" : '<div class="gta-cuenta" aria-label="Tiempo hasta el lanzamiento"><div><b data-gta="d">' + d + '</b><small>días</small></div><div><b data-gta="h">' + String(h).padStart(2, "0") + '</b><small>horas</small></div><div><b data-gta="m">' + String(m).padStart(2, "0") + "</b><small>min</small></div></div>") +
       '<ul class="gta-ofs">' + lista.map(function (o, i) {
         var t = tiendaPorId[o.tienda] || { nombre: o.tienda };
-        return '<li class="' + (i ? "" : "top") + '"><a href="' + esc(enlace(o, j) || "#") + '" target="_blank" rel="noopener noreferrer">' + (logoT(o.tienda) || "<span></span>") +
+        return '<li class="' + (i ? "" : "gta-mejor") + '"><a href="' + esc(enlace(o, j) || "#") + '" target="_blank" rel="noopener noreferrer">' + (logoT(o.tienda) || "<span></span>") +
           '<span><span class="t">' + esc(t.nombre) + '</span><br><span class="d">' + esc(o.plataforma) + " · " + (o.formato === "fisico" ? "En disco" : "Digital") + "</span></span>" +
           '<span class="pr">' + (i ? "" : "<small>Mejor precio</small>") + eur.format(total(o)) + '</span><span class="ir2" aria-hidden="true">↗</span></a></li>';
       }).join("") + "</ul>" +
