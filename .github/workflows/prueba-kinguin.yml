@@ -1,0 +1,17 @@
+name: prueba-kinguin
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          F: ${{ secrets.ALIEXPRESS_FEED }}
+        run: |
+          U=$(echo "$F" | sed -E 's#/(en|es)/webmaster#/es/webmaster#; s/feed_id=[0-9]+/feed_id=25659/; s/&fcid=[0-9]+//')
+          curl -sL -o kinguin-uk-eur.csv "$U"; ls -la kinguin-uk-eur.csv; head -c 300 kinguin-uk-eur.csv | sed 's/code=[a-z0-9]*/code=XXX/g'; echo
+          gzip -k kinguin-uk-eur.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kinguin-uk-eur
+          path: kinguin-uk-eur.csv.gz
+          retention-days: 7
