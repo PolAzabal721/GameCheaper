@@ -97,6 +97,20 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 
 .quick { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; padding-bottom: 12px; }
 .quick::-webkit-scrollbar { display: none; }
+.pl-linea { display: none; }
+@media (max-width: 700px) {
+  /* Móvil: formato, estado y tipo se recogen en una línea con una flecha; las plataformas siguen a la vista */
+  .pl-linea { order: 1; flex: 1 1 100%; display: flex; align-items: center; gap: 10px; height: 28px; border: 0; background: none; padding: 0 2px; cursor: pointer; color: var(--muted); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .pl-linea::before { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .pl-linea span { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--surface-2); }
+  .pl-linea.on span { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  .pl-linea svg { transition: transform .2s cubic-bezier(.23,1,.32,1); }
+  .pl-linea[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .pl-linea:focus-visible { outline: none; } .pl-linea:focus-visible span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .quick #plataformas { order: 2; }
+  .quick.recogido #formato, .quick.recogido #estado-f, .quick.recogido #tipo-f { display: none; }
+  @media (prefers-reduced-motion: reduce) { .pl-linea svg { transition: none; } }
+}
 .seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 3px; flex-shrink: 0; }
 .seg button { border: 0; background: transparent; padding: 6px 12px; border-radius: 7px; font-weight: 600; font-size: 14px; color: var(--muted); white-space: nowrap; }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
@@ -756,6 +770,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
         <button type="button" data-v="tarjeta" aria-pressed="false">Tarjetas regalo</button>
         <button type="button" data-v="software" aria-pressed="false">Software</button>
       </div>
+      <button type="button" class="pl-linea" id="pl-linea" aria-expanded="false" aria-controls="formato estado-f tipo-f" aria-label="Más filtros: formato, estado y tipo"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></button>
       <span class="sep"></span>
       <div id="plataformas" style="display:flex;gap:6px" role="group" aria-label="Plataforma"></div>
     </div>
@@ -1057,6 +1072,8 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     if (!d || typeof d !== "object") throw new Error("El JSON tiene que ser un objeto con una lista \"juegos\".");
     if (!Array.isArray(d.juegos)) throw new Error("Falta la lista \"juegos\".");
     expandir(d);
+    // GTA VI sale a medianoche del 18 al 19 de noviembre: algunas tiendas ponen el 18; en España es el 19
+    d.juegos.forEach(function (j) { if (j && j.id === "grand-theft-auto-vi" && j.lanzamiento === "2026-11-18") j.lanzamiento = "2026-11-19"; });
     var avisos = 0;
     d.tiendas = Array.isArray(d.tiendas) ? d.tiendas : [];
     d.juegos = d.juegos.filter(function (j, i) {
@@ -1272,6 +1289,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     [].forEach.call($("formato").children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === f.formato); });
     [].forEach.call($("estado-f").children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === f.estado); });
     [].forEach.call($("tipo-f").children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === (f.tipo || "todos")); });
+    $("pl-linea").classList.toggle("on", f.formato !== "todos" || f.estado !== "todos" || (f.tipo || "todos") !== "todos");
   }
 
   // Iconos genéricos de cada plataforma (no son los logos de las marcas): pantalla para PC,
@@ -2378,7 +2396,10 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
       filas = filas.slice(0, 12);
       hayParecidos = filas.length > 0;
     }
+    // Lanzamiento destacado: GTA VI va el primero en «Populares» sin búsqueda, hasta fin de año (explicado en el aviso legal)
+    var fijo = !palabras.length && f.orden === "populares" && new Date() < new Date("2027-01-01T00:00:00+01:00") ? "grand-theft-auto-vi" : "";
     if (!hayParecidos) filas.sort(function (a, b) {
+      if (fijo && (a.j.id === fijo) !== (b.j.id === fijo)) return a.j.id === fijo ? -1 : 1;
       if (!!b.j._vivo - !!a.j._vivo) return !!b.j._vivo - !!a.j._vivo;
       // Buscando y sin otro orden elegido: lo que mejor encaja con lo escrito, el juego antes que sus ediciones, DLC y tarjetas
       if (palabras.length && f.orden === "populares") return (b.nota || 0) - (a.nota || 0) || (TIPO_ORDEN[a.j.tipo] || 0) - (TIPO_ORDEN[b.j.tipo] || 0) || (a.j.pop || 99999) - (b.j.pop || 99999);
@@ -2548,6 +2569,15 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   }
 
   function cambio() { guardarFiltros(); mostrar = PAGINA; pintar(); }
+
+  // ---------- Línea de filtros recogida (móvil) ----------
+  (function () {
+    var quick = document.querySelector(".quick"), btn = $("pl-linea"), abierto = false;
+    try { abierto = localStorage.getItem("pillao-filtros-abiertos") === "1"; } catch (e) {}
+    function poner(a) { abierto = a; quick.classList.toggle("recogido", !a); btn.setAttribute("aria-expanded", a); btn.setAttribute("aria-label", (a ? "Recoger" : "Más filtros:") + " formato, estado y tipo"); }
+    poner(abierto);
+    btn.addEventListener("click", function () { poner(!abierto); try { localStorage.setItem("pillao-filtros-abiertos", abierto ? "1" : "0"); } catch (e) {} });
+  })();
 
   // ---------- Eventos ----------
   var temporizadorReciente = null;
