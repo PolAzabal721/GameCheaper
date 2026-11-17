@@ -2485,6 +2485,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
       if (restoPendiente) { poner(lista, '<div class="vacio"><b>Buscando en todo el catálogo…</b>Un momento.</div>'); return; }
       // Sin filtros puestos no se habla de filtros ni sale el botón de quitarlos (no hay nada que quitar)
       var conF = nActivos() > 0, ef = conF ? " con estos filtros" : "";
+      lista._h = null;  // lo que había antes ya no está: la próxima vez hay que volver a pintar aunque la lista sea la misma
       lista.innerHTML = estadoVivo + (vivo.cargando ? "" : '<div class="vacio"><b>' + (conF ? "Nada con estos filtros" : "No hay resultados") + '</b>' +
         (f.orden === "recientes" ? "No hay lanzamientos de los últimos 30 días" + ef + "." : f.orden === "proximos" ? "No hay juegos en reserva" + ef + "." : f.orden === "skins" ? "Todavía no hay skins" + ef + "." : f.orden === "sorpresa" ? "Todavía no hay claves sorpresa" + ef + "." :
           q ? "No tenemos «" + esc(qTxt) + "»" + ef + "." : conF ? "Prueba a quitar alguno." : "Vuelve a probar en unos minutos.") + (conF ? '<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button>' : "") + '</div>');
