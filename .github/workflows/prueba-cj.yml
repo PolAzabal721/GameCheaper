@@ -1,0 +1,20 @@
+name: Prueba temporal Kinguin Other
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/cache/restore@v4
+        with:
+          path: feeds/kinguin.json
+          key: kinguin-2026-11-17
+      - run: |
+          python3 -c "
+          import json,collections,random
+          d=json.load(open('feeds/kinguin.json'))
+          o=[x for x in d if x['c']=='OTHER']
+          print('OTHER:',len(o))
+          print(collections.Counter(x['p'] for x in o).most_common(12))
+          random.seed(3)
+          for x in sorted(random.sample(o,min(60,len(o))),key=lambda x:x['n']): print(f\"{x['pr']:>7.2f} € | {x['p'][:18]:18} | {x['n'][:110]}\")
+          "
