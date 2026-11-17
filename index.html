@@ -666,6 +666,8 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
             <option value="descuento">Mayor descuento</option>
             <option value="premiados">Premiados</option>
             <option value="packs">Packs y bundles</option>
+            <option value="skins">Skins</option>
+            <option value="sorpresa">Claves sorpresa</option>
           </select>
         </label>
         <button type="button" class="btn-vista" id="vista" aria-pressed="false" aria-label="Ver en cuadrícula" title="Ver en cuadrícula"></button>
@@ -2026,10 +2028,11 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
     if (f.orden === "packs") { pintarPacks(qTxt); return; }
     var palabras = q.split(/\s+/).filter(Boolean);
     var filas = [], vistos = {};
-    var porFecha = f.orden === "recientes" ? esReciente : f.orden === "proximos" ? esProximo : f.orden === "premiados" ? function (j) { return !!premio(j); } : null;
+    var porFecha = f.orden === "recientes" ? esReciente : f.orden === "proximos" ? esProximo : f.orden === "premiados" ? function (j) { return !!premio(j); } : f.orden === "skins" ? function (j) { return j.tipo === "skins"; } : f.orden === "sorpresa" ? function (j) { return !!j.sorpresa; } : null;
     // Juegos, DLC o tarjetas regalo: el filtro vale igual para lo del catálogo y para lo que acaban de traer las tiendas
     var esDelTipo = function (j) {
       var tipoJ = (j.tipo === "edicion" ? "juego" : j.tipo) || "juego"; // las ediciones especiales son juegos
+      if (f.orden === "skins") return j.tipo === "skins"; // la vista de skins manda sobre el tipo
       return !f.tipo || f.tipo === "todos" || f.tipo === "edicion" || tipoJ === f.tipo;
     };
     if (vivo.q === qTxt) vivo.juegos.forEach(function (j) {
@@ -2084,7 +2087,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
       lista.classList.toggle("cuadricula", f.vista === "cuadricula");
       if (restoPendiente) { poner(lista, '<div class="vacio"><b>Buscando en todo el catálogo…</b>Un momento.</div>'); return; }
       lista.innerHTML = estadoVivo + (vivo.cargando ? "" : '<div class="vacio"><b>Nada con estos filtros</b>' +
-        (f.orden === "recientes" ? "No hay lanzamientos de los últimos 30 días con estos filtros." : f.orden === "proximos" ? "No hay juegos en reserva con estos filtros." :
+        (f.orden === "recientes" ? "No hay lanzamientos de los últimos 30 días con estos filtros." : f.orden === "proximos" ? "No hay juegos en reserva con estos filtros." : f.orden === "skins" ? "Todavía no hay skins con estos filtros." : f.orden === "sorpresa" ? "Todavía no hay claves sorpresa con estos filtros." :
           q ? "No tenemos «" + esc(qTxt) + "» con estos filtros." : "Prueba a quitar alguno.") + '<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button></div>');
       return;
     }
@@ -2319,7 +2322,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
   $("destacados").addEventListener("click", function (e) {
     var tab = e.target.closest("[data-dest]");
     if (tab) { destVista = tab.dataset.dest; pintar(); return; }
-    if (e.target.closest("[data-ver-skins]")) { f.tipo = "skins"; pintarControles(); cambio(); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+    if (e.target.closest("[data-ver-skins]")) { f.orden = "skins"; $("orden").value = "skins"; cambio(); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
     if (e.target.closest("[data-ver-packs]")) { f.orden = "packs"; $("orden").value = "packs"; cambio(); window.scrollTo({ top: 0, behavior: "smooth" }); }
   });
   $("lista").addEventListener("click", function (e) {
