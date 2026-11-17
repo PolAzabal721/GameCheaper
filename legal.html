@@ -66,7 +66,7 @@ code { font-size: 13.5px; background: var(--surface-2); border: 1px solid var(--
 <main class="wrap">
   <div>
     <h1>Marco legal de Pillao</h1>
-    <p class="fecha">Última actualización: 11 de noviembre de 2026</p>
+    <p class="fecha">Última actualización: 17 de noviembre de 2026</p>
     <p class="intro">Pillao es un comparador de precios de videojuegos. No vendemos nada: te enseñamos dónde está más barato y te llevamos a la tienda. Aquí tienes, en lenguaje claro, quién está detrás, qué puedes esperar de la web y qué hacemos (y qué no) con tus datos.</p>
     <p class="aviso-borrador" id="borrador">Los datos marcados en naranja están pendientes de completar por el titular de la web.</p>
   </div>
@@ -83,7 +83,7 @@ code { font-size: 13.5px; background: var(--surface-2); border: 1px solid var(--
     </ul>
 
     <h3>Qué es Pillao</h3>
-    <p>Pillao es un servicio gratuito e informativo que recopila y compara precios de videojuegos (en formato digital, en disco y de segunda mano) publicados por tiendas de terceros. <strong>Pillao no vende productos, no gestiona pedidos ni cobros y no es parte en ninguna compra.</strong> Cuando pulsas en una oferta, sales de Pillao y la compra se realiza directamente con la tienda correspondiente, bajo sus propias condiciones.</p>
+    <p>Pillao es un servicio gratuito e informativo que recopila y compara precios de videojuegos (en formato digital, en disco y de segunda mano) y de productos relacionados (DLC, tarjetas regalo, recargas, software y objetos de juego) publicados por tiendas de terceros. <strong>Pillao no vende productos, no gestiona pedidos ni cobros y no es parte en ninguna compra.</strong> Cuando pulsas en una oferta, sales de Pillao y la compra se realiza directamente con la tienda correspondiente, bajo sus propias condiciones.</p>
 
     <h3>Cómo obtenemos los precios</h3>
     <p>Los precios se obtienen de forma automática y periódica (normalmente varias veces al día) de fuentes públicas: interfaces de programación (API) ofrecidas por las tiendas o por servicios de comparación, y páginas públicas de las propias tiendas. Por eso:</p>
@@ -94,7 +94,39 @@ code { font-size: 13.5px; background: var(--surface-2); border: 1px solid var(--
     </ul>
 
     <h3>Enlaces de afiliado</h3>
-    <p>Algunos enlaces a tiendas (por ejemplo, Instant Gaming o G2A) son <strong>enlaces de afiliado</strong>: si compras después de pulsarlos, la tienda puede pagar una pequeña comisión al titular de Pillao. <strong>Esto no cambia el precio que pagas</strong>, no altera los precios que mostramos y no determina qué oferta señalamos como la más barata, que se calcula siempre por precio.</p>
+    <p>Muchos enlaces a tiendas son <strong>enlaces de afiliado</strong> y, por tanto, tienen carácter publicitario: si compras después de pulsarlos, la tienda puede pagar una comisión al titular de Pillao, directamente o a través de una red de afiliación (como Admitad, Impact, Tradedoubler, CJ o Daisycon). Es el caso, por ejemplo, de Kinguin, MediaMarkt, Xtralife, PCbox, Instant Gaming o G2A; la relación puede cambiar con el tiempo.</p>
+    <ul>
+      <li><strong>No cambia el precio que pagas</strong> ni los precios que mostramos.</li>
+      <li><strong>Ninguna tienda paga por salir más arriba</strong> ni por aparecer como «Mejor precio»: el orden se calcula como se explica en el apartado siguiente.</li>
+      <li>Solo si dos ofertas cuestan exactamente lo mismo, puede salir primero la de una tienda con la que tenemos afiliación.</li>
+    </ul>
+
+    <h3>Cómo ordenamos las ofertas y los resultados</h3>
+    <p>Estos son los criterios principales con los que Pillao clasifica lo que te enseña:</p>
+    <ul>
+      <li><strong>«Mejor precio» de cada producto:</strong> la oferta con el precio total más bajo (precio más gastos de envío, cuando los conocemos), primero las que tienen stock. Las claves de varias tiendas de claves se agrupan en una fila con la más barata delante.</li>
+      <li><strong>Populares</strong> (orden por defecto): según la posición del producto en las listas de más vendidos o más populares de las tiendas que consultamos.</li>
+      <li><strong>Más barato</strong> y <strong>Mayor descuento:</strong> por precio total y por porcentaje de rebaja frente al precio habitual que publica la tienda o, si no lo hay, frente a su precio de venta recomendado.</li>
+      <li><strong>Lanzamientos recientes</strong> (últimos 30 días) y <strong>Próximos lanzamientos</strong> (reservas): por fecha de salida.</li>
+      <li><strong>Premiados:</strong> juegos ganadores y nominados al premio Juego del Año.</li>
+      <li><strong>Packs y bundles, Skins y Claves sorpresa:</strong> solo los productos de ese tipo.</li>
+      <li><strong>Chollos de hoy:</strong> los productos conocidos con más descuento en ese momento, sin contar mercados de claves ni ventas entre particulares.</li>
+      <li>Los <strong>filtros</strong> (formato, estado, tipo, plataforma, tiendas, precio máximo) solo ocultan o muestran ofertas; no cambian su orden.</li>
+    </ul>
+
+    <h3>Descuentos, precio habitual y mínimo histórico</h3>
+    <p>El porcentaje de descuento que ves junto a una oferta lo calculamos con el precio habitual que publica la propia tienda o con el precio de venta recomendado. El <strong>«mínimo histórico»</strong> es el precio más bajo que Pillao ha registrado para ese producto desde que lo sigue. La forma en que cada tienda anuncia sus rebajas es responsabilidad de esa tienda.</p>
+
+    <h3>Valoraciones de las tiendas</h3>
+    <p>Las estrellas de las tiendas son su nota pública en Trustpilot en la fecha indicada en «Tiendas que comparamos». <strong>Pillao no recoge ni verifica esas reseñas</strong>, por lo que no podemos garantizar que procedan de personas que hayan comprado en la tienda. No las mostramos junto a las ofertas cuando una tienda tiene menos de 30 reseñas ni en las tiendas oficiales, eBay y Alcampo, porque en esos casos la nota no refleja bien si la compra llega bien.</p>
+
+    <h3>Cupones de descuento</h3>
+    <p>Algunas ofertas muestran un <strong>código de descuento</strong> que nos facilita la propia tienda a través de su programa de afiliación. Junto a cada código indicamos sus condiciones conocidas (porcentaje, fecha de fin, importe máximo de la cesta, número de usos y productos a los que se aplica). Ten en cuenta que:</p>
+    <ul>
+      <li>Es la tienda quien decide si el código es válido y puede retirarlo o cambiar sus condiciones en cualquier momento; manda lo que diga la tienda al pagar.</li>
+      <li>El <strong>«precio con cupón»</strong> es orientativo: lo calculamos aplicando el porcentaje al precio mostrado y no incluye comisiones de pago de la tienda.</li>
+      <li>El cupón <strong>no cuenta</strong> para decidir qué oferta es la más barata.</li>
+    </ul>
 
     <h3>Marcas y propiedad intelectual</h3>
     <p>El diseño, los textos y el código propio de Pillao pertenecen a su titular. Los nombres de videojuegos, consolas, tiendas y sus logotipos son marcas de sus respectivos propietarios y se mencionan únicamente para identificar los productos y las ofertas. <strong>Pillao no está afiliado, patrocinado ni respaldado por</strong> Sony Interactive Entertainment, Nintendo, Microsoft, Valve ni por ninguna de las tiendas mencionadas, salvo la relación de afiliación indicada en el apartado anterior.</p>
@@ -102,7 +134,7 @@ code { font-size: 13.5px; background: var(--surface-2); border: 1px solid var(--
     <h3>Responsabilidad</h3>
     <p>Ponemos cuidado en que la información sea correcta, pero no podemos garantizar que esté libre de errores, que sea completa o que esté siempre actualizada, ya que depende de terceros. El titular no se hace responsable de:</p>
     <ul>
-      <li>Diferencias entre el precio o las condiciones mostradas en Pillao y las de la tienda.</li>
+      <li>Diferencias entre el precio o las condiciones mostradas en Pillao y las de la tienda, incluidos los cupones de descuento que la tienda no acepte.</li>
       <li>Las compras, los pagos, las entregas, las garantías, las devoluciones o cualquier incidencia con una tienda o con otro usuario: todo ello corresponde a la tienda o al vendedor.</li>
       <li>Los contenidos, la disponibilidad o la seguridad de las webs de terceros enlazadas.</li>
       <li>Interrupciones temporales del servicio por mantenimiento, fallos técnicos o causas ajenas.</li>
@@ -132,21 +164,29 @@ code { font-size: 13.5px; background: var(--surface-2); border: 1px solid var(--
     <h3>3. Las compras se hacen con la tienda</h3>
     <p>La relación de compra es siempre entre tú y la tienda o el vendedor. Antes de comprar, comprueba en la tienda el precio final, los gastos de envío, el estado del producto y sus condiciones de devolución y garantía.</p>
 
-    <h3>4. Claves digitales de revendedores y marketplaces</h3>
-    <p>Algunas ofertas son claves vendidas por revendedores o por vendedores dentro de marketplaces. Te recomendamos:</p>
+    <h3>4. Claves digitales y otros productos digitales</h3>
+    <p>Algunas ofertas son claves, códigos u objetos digitales vendidos por revendedores o por vendedores dentro de marketplaces. Te recomendamos:</p>
     <ul>
       <li>Comprobar que la <strong>región</strong> de la clave sirve para tu cuenta (en Pillao indicamos la región cuando la conocemos y descartamos las que sabemos que no valen en España).</li>
       <li>Revisar la <strong>plataforma de activación</strong> (Steam, EA App, Microsoft Store, PlayStation…).</li>
       <li>En los marketplaces, fijarte en la valoración del vendedor y en las protecciones que ofrezca la tienda.</li>
+      <li><strong>Tarjetas regalo y recargas:</strong> comprueba la región y la moneda de la tarjeta y la plataforma o el operador en que se canjea. Una vez entregado el código, normalmente no admiten devolución.</li>
+      <li><strong>Skins y otros objetos de juego:</strong> están sujetos a las normas del juego y de la plataforma (por ejemplo, Steam), que pueden limitar su uso, intercambio o devolución.</li>
+      <li><strong>Claves sorpresa:</strong> el juego que recibes se elige al azar entre los que indique la tienda; no sabes cuál será hasta canjearla.</li>
+      <li><strong>Software:</strong> revisa la edición, el número de dispositivos y la duración de la licencia.</li>
+      <li><strong>Vales de criptomonedas:</strong> Pillao solo compara el precio del vale; no presta servicios sobre criptoactivos ni da asesoramiento financiero. El valor de las criptomonedas puede variar mucho e incluso perderse.</li>
     </ul>
 
-    <h3>5. Segunda mano entre particulares</h3>
+    <h3>5. Juegos de importación</h3>
+    <p>Los juegos en disco marcados como <strong>«Importación»</strong> están editados para otro país. Funcionan en consolas españolas, pero la caja, los textos o el doblaje pueden venir en otro idioma. Puedes ocultarlos desde los filtros.</p>
+
+    <h3>6. Segunda mano entre particulares</h3>
     <p>En plataformas entre particulares (como Wallapop o eBay), la venta la realiza otra persona. Usa siempre los sistemas de pago y envío protegidos de la propia plataforma y desconfía de quien te pida pagar por fuera.</p>
 
-    <h3>6. Disponibilidad y cambios</h3>
+    <h3>7. Disponibilidad y cambios</h3>
     <p>Podemos modificar, ampliar, suspender o dejar de ofrecer Pillao, en todo o en parte, en cualquier momento. También podemos actualizar estas condiciones; la fecha de la última versión aparece al principio de esta página.</p>
 
-    <h3>7. Contacto</h3>
+    <h3>8. Contacto</h3>
     <p>Para cualquier duda o comunicación: <a href="mailto:pillaoavisos@gmail.com">pillaoavisos@gmail.com</a>.</p>
   </section>
 
@@ -179,7 +219,9 @@ code { font-size: 13.5px; background: var(--surface-2); border: 1px solid var(--
     <p>Brevo tiene su sede en Francia y trata los datos en la Unión Europea. GitHub, Inc. y Cloudflare, Inc. son empresas con sede en Estados Unidos. Según su propia documentación, las transferencias de datos desde la Unión Europea se amparan en el Marco de Privacidad de Datos UE-EE. UU. y/o en cláusulas contractuales tipo aprobadas por la Comisión Europea. Puedes consultar sus políticas de privacidad en sus webs.</p>
 
     <h3>Cuando sales de Pillao</h3>
-    <p>Al pulsar en una tienda pasas a su web, que tiene su propia política de privacidad y de cookies. En el caso de los enlaces de afiliado, es la tienda quien registra, en su propio dominio, que llegaste desde Pillao para poder atribuir la compra; Pillao no recibe tus datos personales ni los de tu compra.</p>
+    <p>Al pulsar en una tienda pasas a su web, que tiene su propia política de privacidad y de cookies. En los enlaces de afiliado, antes de llegar a la tienda pasas un instante por la web de la red de afiliación (por ejemplo, Admitad, Impact o Tradedoubler). Esa red y la tienda registran el clic en sus propios dominios (con datos como tu dirección IP, el navegador, la fecha y una cookie) para poder atribuir la compra a Pillao. Lo hacen como responsables de ese tratamiento, según sus propias políticas de privacidad.</p>
+    <p>Pillao solo recibe de ellas informes con el número de clics y de compras y la comisión correspondiente, <strong>sin datos que permitan identificarte</strong>.</p>
+    <p>Al pulsar «Copiar código» en un cupón, el código se copia en tu dispositivo; no se envía nada a Pillao.</p>
 
     <h3>Cuánto tiempo</h3>
     <p>Las preferencias se guardan en tu navegador hasta que las borres o retires el consentimiento. Los avisos por email: si no los confirmas, se borran a las 48 horas; una vez enviado el aviso, se borra a los 30 días; y si no se cumple nunca, hasta que lo borres tú. El contador de avisos por conexión se borra a la hora. Los correos que nos envíes, el tiempo necesario para atenderte y, después, durante los plazos legales aplicables. Los registros técnicos de los proveedores se conservan según sus propias políticas.</p>
@@ -188,7 +230,7 @@ code { font-size: 13.5px; background: var(--surface-2); border: 1px solid var(--
     <p>Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad escribiendo a <a href="mailto:pillaoavisos@gmail.com">pillaoavisos@gmail.com</a>. Si crees que no hemos atendido correctamente tu solicitud, puedes presentar una reclamación ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer">www.aepd.es</a>).</p>
 
     <h3>Menores</h3>
-    <p>Pillao no tiene cuentas de usuario. Los avisos por email están pensados para mayores de 14 años; si eres menor de esa edad, pide a tus padres o tutores que los creen por ti. Algunos videojuegos tienen calificación por edades (PEGI); te recomendamos respetarla.</p>
+    <p>Pillao no tiene cuentas de usuario. Los avisos por email están pensados para mayores de 14 años; si eres menor de esa edad, pide a tus padres o tutores que los creen por ti. Algunos videojuegos tienen calificación por edades (PEGI); te recomendamos respetarla. Muchas tiendas solo venden a mayores de 18 años y, en particular, los vales de criptomonedas y las claves sorpresa no están pensados para menores.</p>
   </section>
 
   <!-- ===================== COOKIES ===================== -->
@@ -220,7 +262,7 @@ code { font-size: 13.5px; background: var(--surface-2); border: 1px solid var(--
     <p>Puedes cambiar de opinión cuando quieras desde «Configurar cookies», en la parte inferior de la web, o con este botón: <button type="button" class="btn" id="abrir-cookies">Configurar cookies</button>. Al retirar el consentimiento borramos tus preferencias guardadas. También puedes borrar los datos de sitios desde la configuración de tu navegador.</p>
 
     <h3>Webs de terceros</h3>
-    <p>Las tiendas a las que enlazamos usan sus propias cookies cuando entras en ellas, incluidas, en su caso, las de afiliación. Consulta sus políticas de cookies en sus webs.</p>
+    <p>Pillao no instala cookies de afiliación. Cuando pulsas un enlace de afiliado, la red de afiliación (como Admitad, Impact o Tradedoubler) y la tienda pueden instalar las suyas en sus propios dominios para atribuir la compra; lo mismo ocurre con el resto de cookies de las tiendas cuando entras en ellas. Consulta sus políticas de cookies en sus webs.</p>
   </section>
 </main>
 
