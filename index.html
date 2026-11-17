@@ -2739,7 +2739,15 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
 
   // ?q=nombre en la dirección: llega desde la página de un juego
   var qUrl = new URLSearchParams(location.search).get("q");
-  if (qUrl) { f.q = qUrl.slice(0, 80); $("q").value = f.q; }
+  if (qUrl) {
+    f.q = qUrl.slice(0, 80); $("q").value = f.q;
+    // Se quita de la dirección en cuanto se lee: si no, al recargar volvía la misma búsqueda aunque la hubieras borrado
+    try { var uQ = new URL(location.href); uQ.searchParams.delete("q"); history.replaceState(null, "", uQ.pathname + uQ.search + uQ.hash); } catch (e) {}
+  }
+  // Safari/Chrome del móvil rellenan el buscador con lo último escrito al recargar o al volver atrás: se deja como está la búsqueda de verdad
+  function limpiarBuscador() { if ($("q").value !== f.q) $("q").value = f.q; }
+  window.addEventListener("pageshow", limpiarBuscador);
+  setTimeout(limpiarBuscador, 0);
   leerServidor(false);
   setInterval(function () { leerServidor(false); }, REFRESCO_MS);
   setInterval(pintarEstado, 60 * 1000);
