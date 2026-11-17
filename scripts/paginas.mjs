@@ -473,6 +473,48 @@ const OFERTAS = [
       ["¿Cuáles son los mejores juegos baratos de Instant Gaming?", "Los de esta página: los juegos conocidos con más descuento hoy en Instant Gaming, ordenados por popularidad y por precio. Cambian varias veces al día con las ofertas de la tienda."],
       ["¿Siempre es lo más barato?", "No siempre. Por eso en cada juego te decimos si Instant Gaming es la más barata de todas las tiendas que comparamos; si no lo es, en la ficha del juego ves dónde está mejor."],
       P_MINIMO, P_CADA] },
+  { ruta: "chollos-kinguin", corto: "Kinguin", h1: "Chollos de Kinguin", tienda: "kinguin",
+    plataformas: TODAS_PLATS,
+    titulo: "Chollos de Kinguin hoy: juegos baratos y mejores precios | Pillao",
+    intro: "Las mejores ofertas de hoy en Kinguin para PC, Xbox y Switch, comparadas con el resto de tiendas. Solo claves que se pueden activar en España.",
+    desc: "Juegos baratos en Kinguin hoy: por menos de 5, 10 y 20 €, en su mínimo histórico y con los mayores descuentos, comparados con más de 40 tiendas. Claves válidas en España.",
+    cta: { href: "?tienda=kinguin", texto: "Ver todo Kinguin en el comparador" },
+    preguntas: [
+      ["¿Es fiable Kinguin?", "Kinguin es un mercado de claves: venden muchos vendedores distintos y la tienda protege la compra. Tiene una nota de 4,6 sobre 5 en Trustpilot con más de 125.000 reseñas. Antes de pagar, mira la valoración del vendedor y el total final, porque suma comisiones al pagar."],
+      ["¿Las claves de Kinguin funcionan en España?", "Solo te enseñamos las que Kinguin no marca como bloqueadas en España (globales, europeas o sin restricción de región). Las demás las dejamos fuera."],
+      ["¿Hay cupones de descuento para Kinguin?", "A veces sí. Cuando hay un cupón activo, lo ves debajo de cada oferta de Kinguin en el comparador, con sus condiciones y un botón para copiarlo."],
+      P_MINIMO, P_CADA] },
+  { ruta: "chollos-gamersgate", corto: "GamersGate", h1: "Chollos de GamersGate", tienda: "gamersgate",
+    plataformas: ["PC"],
+    titulo: "Chollos de GamersGate hoy: juegos de PC baratos | Pillao",
+    intro: "Las mejores ofertas de hoy en GamersGate, tienda sueca de claves oficiales de PC, comparadas con el resto de tiendas.",
+    desc: "Juegos de PC baratos en GamersGate hoy: por menos de 5, 10 y 20 €, en su mínimo histórico y con los mayores descuentos, comparados con más de 40 tiendas.",
+    cta: { href: "?tienda=gamersgate", texto: "Ver todo GamersGate en el comparador" },
+    preguntas: [
+      ["¿Es fiable GamersGate?", "Sí. Es una de las tiendas de claves oficiales más veteranas: vende claves que le dan las propias editoras, sobre todo de Steam. Tiene una nota de 4,5 sobre 5 en Trustpilot."],
+      ["¿Las claves de GamersGate funcionan en España?", "Usamos su catálogo para España, así que lo que ves aquí está a la venta para España y con su precio en euros."],
+      ["¿Siempre es lo más barato?", "No siempre. En cada juego te decimos si GamersGate es la más barata de todas las tiendas que comparamos; si no lo es, en la ficha del juego ves dónde está mejor."],
+      P_MINIMO, P_CADA] },
+  { ruta: "chollos-xtralife", corto: "Xtralife", h1: "Chollos de xtralife", tienda: "xtralife",
+    plataformas: ["PS5", "PS4", "Xbox Series", "Switch", "Switch 2"],
+    titulo: "Chollos de xtralife hoy: juegos en disco baratos | Pillao",
+    intro: "Las mejores ofertas de hoy en xtralife, tienda online española de videojuegos, en juegos en disco para PlayStation, Xbox y Switch, comparadas con el resto de tiendas.",
+    desc: "Juegos en disco baratos en xtralife hoy para PS5, PS4, Xbox y Switch: por menos de 5, 10 y 20 €, mínimos históricos y los mayores descuentos.",
+    cta: { href: "?tienda=xtralife", texto: "Ver todo xtralife en el comparador" },
+    preguntas: [
+      ["¿Qué es xtralife?", "Una tienda online española especializada en videojuegos, consolas y merchandising, con mucho catálogo de juegos en disco, también de otras épocas."],
+      ["¿Qué son los juegos de importación?", "Juegos en disco editados para otro país. Funcionan en consolas españolas, pero la caja o los textos pueden venir en otro idioma. Los marcamos como «Importación» y puedes ocultarlos desde los filtros del comparador."],
+      P_MINIMO, P_CADA] },
+  { ruta: "chollos-mediamarkt", corto: "MediaMarkt", h1: "Chollos de MediaMarkt", tienda: "mediamarkt",
+    plataformas: ["PS5", "PS4", "Xbox Series", "Switch", "Switch 2"],
+    titulo: "Chollos de MediaMarkt hoy: juegos en disco baratos | Pillao",
+    intro: "Las mejores ofertas de hoy en juegos en disco de MediaMarkt para PlayStation, Xbox y Switch, comparadas con el resto de tiendas.",
+    desc: "Juegos en disco baratos en MediaMarkt hoy para PS5, PS4, Xbox y Switch: por menos de 5, 10 y 20 €, mínimos históricos y los mayores descuentos.",
+    cta: { href: "?tienda=mediamarkt", texto: "Ver todo MediaMarkt en el comparador" },
+    preguntas: [
+      ["¿MediaMarkt cobra gastos de envío?", "En algunos pedidos sí. Cuando lo sabemos, ya lo sumamos al precio que ves; antes de pagar, revisa siempre el total en la tienda."],
+      ["¿Siempre es lo más barato?", "No siempre. En cada juego te decimos si MediaMarkt es la más barata de todas las tiendas que comparamos; si no lo es, en la ficha del juego ves dónde está mejor."],
+      P_MINIMO, P_CADA] },
 ];
 
 // Cómo es el banner de cada página de chollos en /chollos/
@@ -484,6 +526,10 @@ const BANNERS = {
   "juegos-en-su-minimo-historico": { t: "En su mínimo histórico", sub: "Nunca habían estado tan baratos", c1: "#0f766e", c2: "#134e4a", ico: MIN_ICO },
   "chollos-instant-gaming": { t: "Chollos de Instant Gaming", sub: "PC y consolas", c1: "#ff5a00", c2: "#c2185b", logo: "instant-gaming.com" },
   "chollos-yuplay": { t: "Chollos de Yuplay", sub: "Claves oficiales de PC y Xbox", c1: "#5b21b6", c2: "#0f766e", logo: "yuplay.com" },
+  "chollos-kinguin": { t: "Chollos de Kinguin", sub: "Claves de PC, Xbox y Switch", c1: "#f15a22", c2: "#b4231a", logo: "kinguin.net" },
+  "chollos-gamersgate": { t: "Chollos de GamersGate", sub: "Claves oficiales de PC", c1: "#1f3a5f", c2: "#0f766e", logo: "gamersgate.com" },
+  "chollos-xtralife": { t: "Chollos de xtralife", sub: "Juegos en disco", c1: "#0b6e8a", c2: "#123047", logo: "xtralife.com" },
+  "chollos-mediamarkt": { t: "Chollos de MediaMarkt", sub: "Juegos en disco", c1: "#c4000f", c2: "#6b0008", logo: "mediamarkt.es" },
   "juegos-baratos-pc": { t: "Chollos de PC", sub: "Steam, GOG, Epic y tiendas de claves", c1: "#3b2bd6", c2: "#0e7490", ico: PC_ICO },
   "juegos-baratos-playstation": { t: "Chollos de PlayStation", sub: "PS5 y PS4", c1: "#0050b5", c2: "#00439c", logo: "playstation.com" },
   "juegos-baratos-xbox": { t: "Chollos de Xbox", sub: "Xbox Series X|S", c1: "#107c10", c2: "#0b4f0b", logo: "xbox.com" },
@@ -565,9 +611,17 @@ async function main() {
   await writeFile(join(SALIDA, "juegos", "index.html"), paginaLista(hechas));
   const dia = datos.actualizado.slice(0, 10);
   const urls = [SITIO, SITIO + "juegos/", `${SITIO}chollos/`, ...OFERTAS.map((o) => `${SITIO}${o.ruta}/`), ...hechas.map((j) => `${SITIO}juego/${j.id}/`)];
-  await writeFile(join(SALIDA, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
-    urls.map((u) => `<url><loc>${u}</loc><lastmod>${dia}</lastmod></url>`).join("\n") + "\n</urlset>\n");
-  console.log(`Web lista en _site: ${n} páginas de juego, sitemap con ${urls.length} direcciones (${SITIO}).`);
+  // Google admite como mucho 50.000 direcciones por mapa: se parte en trozos y sitemap.xml es el índice de todos
+  const TROZO = 40000, trozos = [];
+  for (let k = 0; k < urls.length; k += TROZO) {
+    const nombre = `sitemap-${trozos.length + 1}.xml`;
+    await writeFile(join(SALIDA, nombre), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+      urls.slice(k, k + TROZO).map((u) => `<url><loc>${u}</loc><lastmod>${dia}</lastmod></url>`).join("\n") + "\n</urlset>\n");
+    trozos.push(nombre);
+  }
+  await writeFile(join(SALIDA, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    trozos.map((t) => `<sitemap><loc>${SITIO}${t}</loc><lastmod>${dia}</lastmod></sitemap>`).join("\n") + "\n</sitemapindex>\n");
+  console.log(`Web lista en _site: ${n} páginas de juego, sitemap con ${urls.length} direcciones en ${trozos.length} trozos (${SITIO}).`);
 }
 
 main().catch((e) => { console.error(e.stack || e.message); process.exit(1); });
