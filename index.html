@@ -2745,8 +2745,13 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
 
   // ?q=nombre en la dirección: llega desde la página de un juego
   var qUrl = new URLSearchParams(location.search).get("q");
+  // Solo se aplica si vienes de una página de Pillao (el botón «Ver historial» de la ficha de un juego). Google tenía
+  // indexadas direcciones con ?q= (las sacaba de esos botones) y al entrar desde el buscador salía una búsqueda que no tocaba.
+  var desdePillao = false;
+  try { desdePillao = !!document.referrer && new URL(document.referrer).host === location.host; } catch (e) {}
   if (qUrl) {
-    f.q = qUrl.slice(0, 80); $("q").value = f.q;
+    try { var mr = document.createElement("meta"); mr.name = "robots"; mr.content = "noindex, follow"; document.head.appendChild(mr); } catch (e) {}  // que Google deje de mostrar estas direcciones
+    if (desdePillao) { f.q = qUrl.slice(0, 80); $("q").value = f.q; }
     // Se quita de la dirección en cuanto se lee: si no, al recargar volvía la misma búsqueda aunque la hubieras borrado
     try { var uQ = new URL(location.href); uQ.searchParams.delete("q"); history.replaceState(null, "", uQ.pathname + uQ.search + uQ.hash); } catch (e) {}
   }

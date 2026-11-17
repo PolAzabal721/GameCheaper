@@ -288,7 +288,7 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
 <p class="resumen">Comparamos <b>${ofs.length} oferta${ofs.length === 1 ? "" : "s"}</b> de <b>${nTiendas} tienda${nTiendas === 1 ? "" : "s"}</b>` +
     (minimo ? ` · Mínimo histórico <b>${eur(minimo)}</b>` : "") + (j.pvp && j.pvp > total(mejor) ? ` · Precio normal <b>${eur(j.pvp)}</b>` : "") + ` · Actualizado el ${fecha}</p></div>
 <div class="etiqueta"><small>Mejor precio</small><b>${eur(total(mejor))}</b><span>${esc(tm)} · ${esc(mejor.plataforma || "")}</span>${dtoPoster >= 5 ? `<i class="poster-dto">−${dtoPoster}%</i>` : ""}</div>${termometro}</div></section>
-<div class="cta"><a class="boton" href="../../?q=${encodeURIComponent(j.titulo)}">Ver historial y crear aviso de precio</a><a class="boton sec" href="../../">Comparar otros juegos</a></div>
+<div class="cta"><a class="boton" rel="nofollow" href="../../?q=${encodeURIComponent(j.titulo)}">Ver historial y crear aviso de precio</a><a class="boton sec" href="../../">Comparar otros juegos</a></div>
 <div class="lista-of"><ul>${filas}</ul>${resto ? `<details><summary><span class="c">Ver las ${todas40.length} ofertas</span><span class="a">Ver menos</span></summary><ul>${resto}</ul></details>` : ""}</div>
 ${relacionados.length ? `<h2>Otros juegos</h2><ul class="mas">${relacionados.map((r) => `<li><a href="../${r.id}/">${esc(r.titulo)}</a></li>`).join("")}</ul>` : ""}`;
   return plantilla({ titulo, descripcion, canonica, raiz: "../../", cuerpo, jsonld, imagen: imgPoster });
