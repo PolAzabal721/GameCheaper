@@ -4,7 +4,8 @@ import csv, json, re, sys, gzip
 csv.field_size_limit(10**9)
 origen, destino = sys.argv[1], sys.argv[2]
 destino_latam = sys.argv[3] if len(sys.argv) > 3 else None   # opcional: lo que vale en Latinoamérica (para pillaojuegos.com/latam/)
-LATAM = ("AR", "MX", "CL", "CO", "PE")                       # si la clave está bloqueada en alguno de estos, no vale para «LATAM»
+LATAM = ("AR", "MX", "CL", "CO", "PE")
+PAISES = {"AR": "Argentina", "MX": "Mexico", "CL": "Chile", "CO": "Colombia", "PE": "Peru", "BR": "Brazil", "UY": "Uruguay", "EC": "Ecuador", "VE": "Venezuela", "BO": "Bolivia", "PY": "Paraguay", "CR": "Costa Rica", "PA": "Panama", "GT": "Guatemala", "DO": "Dominican Republic"}                       # si la clave está bloqueada en alguno de estos, no vale para «LATAM»
 abrir = gzip.open if origen.endswith(".gz") else open
 # Nada de apuestas, casinos ni webs de abrir cajas de skins (Pol no las quiere y en España su publicidad está muy limitada)
 APUESTAS = re.compile(r"\b(casino|casinos|bet|bets|betting|apuestas|poker|slots?|lootbox|loot ?boxes|case ?opening|rainbet|csgoroll|csgoempire|csgofast|csgorun|csgowin|csgocasino|csgolombard|cscomps|csmarket|cs2land|csland|vscsgo|hypedrop|keydrop|key-drop|skinclub|clash\.gg|gamdom|stake|roobet|rollbit|duel|winna|rakebit|jemlit|gambagames|rustyloot|rustprofit|runehall|plunder|pirateswap|royale\.gg|empiredrop|forcedrop|ggdrop|diceblox|rorush|juice\.gg|paidskills|dotaboom|opduel|betterplayerwin|playersvipclub|spinarium|magic rust|bizzo|plg\.bet|upgrader|splits\.gg|tradeit|lootbox\.com|raided|datdrop|farmskins|hellcase|daddyskins|csgo500|bloodycase|g4skins)\b", re.I)
@@ -25,7 +26,11 @@ with abrir(origen, "rt", encoding="utf-8", errors="replace", newline="") as f:
         lim = set(re.split(r"\s*,\s*", x.get("country_limitations", "").upper())) - {""}
         fila = {"n": n, "c": c, "p": x.get("platform", ""), "r": x.get("region", ""), "pr": pr, "op": op, "u": re.sub(r"%3Fnosalesbooster%3D1%26currency%3DEUR$", "", x.get("url", "")), "s": x.get("steam_id", ""), "i": (x.get("picture") or x.get("image") or "").split(",")[0].strip()}
         if "ES" not in lim: filas.append(fila)
-        if destino_latam and not lim.intersection(LATAM): latam.append(fila)
+        if destino_latam:
+            # Vale en toda LATAM, o es de un país concreto de LATAM (p. ej. «Argentina»): entonces se marca «Solo …»
+            pais = next((nombre for cod, nombre in PAISES.items() if re.search(r"\b" + nombre + r"\b", x.get("region", ""), re.I) and cod not in lim), None)
+            if not lim.intersection(LATAM): latam.append(fila)
+            elif pais: latam.append({**fila, "solo": pais})
 json.dump(filas, open(destino, "w"), ensure_ascii=False, separators=(",", ":"))
 print(f"Kinguin: {len(filas)} productos válidos en España guardados")
 if destino_latam:
