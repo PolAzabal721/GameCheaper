@@ -606,6 +606,57 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .ti-cupones[open] summary { margin-bottom: 8px; } .ti-cupones .cu-flecha { transition: transform .2s; } .ti-cupones[open] .cu-flecha { transform: rotate(180deg); }
 .ti-cupones ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
 .ti-cupones li { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; } .ti-cupones li .btn { padding: 5px 12px; }
+/* Ventana de GTA VI al entrar (una vez por pestaña, hasta el 31 de diciembre) */
+.gta-fondo { position: fixed; inset: 0; z-index: 90; background: rgba(6,8,18,.62); backdrop-filter: blur(6px); display: grid; place-items: center; padding: 20px; animation: gtaIn .25s ease both; }
+.gta { position: relative; width: min(560px, 100%); max-height: calc(100dvh - 40px); overflow: auto; border-radius: 22px; background: #0d0f1c; color: #f4f1ff; border: 1px solid rgba(255,255,255,.08); box-shadow: 0 30px 80px rgba(0,0,0,.55); animation: gtaSube .35s cubic-bezier(.2,.8,.2,1) both; overscroll-behavior: contain; }
+.gta-arte { position: relative; aspect-ratio: 16 / 9; overflow: hidden; }
+.gta-arte img { width: 100%; height: 100%; object-fit: cover; object-position: 60% 30%; display: block; transform: scale(1.04); animation: gtaZoom 12s ease-in-out infinite alternate; }
+.gta-arte::before { content: ""; position: absolute; inset: 0; z-index: 1; background: radial-gradient(120% 90% at 0% 100%, rgba(255,77,141,.55), transparent 55%), radial-gradient(90% 80% at 100% 0%, rgba(31,209,193,.35), transparent 60%); mix-blend-mode: screen; }
+.gta-arte::after { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, transparent 40%, #0d0f1c 98%); }
+.gta-chip { position: absolute; z-index: 2; left: 16px; top: 16px; display: inline-flex; gap: 8px; align-items: center; padding: 6px 12px; border-radius: 999px; background: rgba(13,15,28,.72); backdrop-filter: blur(8px); font: 700 13px/1 var(--f-body, system-ui); color: #fff; border: 1px solid rgba(255,255,255,.14); }
+.gta-chip i { width: 8px; height: 8px; border-radius: 50%; background: #ff4d8d; box-shadow: 0 0 0 0 rgba(255,77,141,.7); animation: gtaLatido 1.6s infinite; }
+.gta-x { position: absolute; z-index: 3; right: 12px; top: 12px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.18); background: rgba(13,15,28,.6); color: #fff; font-size: 22px; line-height: 1; cursor: pointer; backdrop-filter: blur(8px); }
+.gta-x:hover { background: rgba(255,255,255,.15); }
+.gta-cuerpo { padding: 4px 24px 22px; margin-top: -54px; position: relative; z-index: 2; }
+.gta-cuerpo h2 { margin: 0; font: 800 clamp(26px, 6vw, 34px)/1.05 var(--f-display); letter-spacing: -.02em; }
+.gta-cuerpo h2 span { background: linear-gradient(90deg, #ff4d8d, #ff9f43 55%, #ffd23f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.gta-cuerpo > p { margin: 8px 0 16px; color: #b9b6d3; font-size: 15px; line-height: 1.45; }
+.gta-cuenta { display: flex; gap: 8px; margin: 0 0 16px; }
+.gta-cuenta div { flex: 1; text-align: center; padding: 10px 4px; border-radius: 12px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); }
+.gta-cuenta b { display: block; font: 800 24px/1 var(--f-mono); font-variant-numeric: tabular-nums; }
+.gta-cuenta small { color: #9a97b8; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+.gta-ofs { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 6px; }
+.gta-ofs li a { display: grid; grid-template-columns: auto 1fr auto auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); color: inherit; text-decoration: none; transition: transform .15s, border-color .15s, background .15s; }
+.gta-ofs li a:hover { transform: translateY(-2px); border-color: rgba(255,159,67,.6); background: rgba(255,255,255,.07); }
+.gta-ofs li.top a { border-color: rgba(255,210,63,.55); background: linear-gradient(90deg, rgba(255,210,63,.12), rgba(255,255,255,.03)); }
+.gta-ofs .t { font-weight: 700; font-size: 14.5px; } .gta-ofs .d { color: #9a97b8; font-size: 12.5px; }
+.gta-ofs .pr { font: 800 17px/1 var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.gta-ofs .pr small { display: block; font: 700 10px/1.4 var(--f-body, system-ui); color: #ffd23f; text-transform: uppercase; letter-spacing: .08em; }
+.gta-ofs .ir2 { color: #ff9f43; font-weight: 800; }
+.gta-acc { display: flex; gap: 10px; flex-wrap: wrap; }
+.gta-acc a, .gta-acc button { flex: 1 1 200px; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; font: 800 15px/1 var(--f-body, system-ui); cursor: pointer; text-decoration: none; transition: transform .12s, filter .15s; }
+.gta-acc a { background: linear-gradient(90deg, #ff4d8d, #ff9f43); color: #160b00; border: 0; }
+.gta-acc a:hover { filter: brightness(1.08); transform: translateY(-1px); } .gta-acc a:active, .gta-acc button:active { transform: scale(.98); }
+.gta-acc button { background: transparent; color: #cfcce6; border: 1px solid rgba(255,255,255,.18); flex: 0 1 140px; }
+.gta-acc a:focus-visible, .gta-acc button:focus-visible, .gta-x:focus-visible, .gta-ofs a:focus-visible { outline: 2px solid #ffd23f; outline-offset: 2px; }
+.gta-pie { margin: 12px 0 0; color: #6f6c8c; font-size: 11.5px; text-align: center; }
+@media (max-width: 560px) {
+  .gta-fondo { place-items: end center; padding: 0; }
+  .gta { width: 100%; border-radius: 22px 22px 0 0; max-height: 92dvh; animation-name: gtaSubeM; }
+  .gta-cuerpo { padding: 4px 16px 16px; margin-top: -40px; }
+  .gta-arte { aspect-ratio: 16 / 8; }
+  .gta-cuerpo > p { font-size: 14px; margin: 6px 0 12px; }
+  .gta-cuenta { margin-bottom: 12px; } .gta-cuenta div { padding: 7px 4px; } .gta-cuenta b { font-size: 20px; }
+  .gta-ofs { gap: 5px; margin-bottom: 12px; } .gta-ofs li a { padding: 8px 10px; } .gta-ofs li:nth-child(n+4) { display: none; }
+  .gta-acc { gap: 8px; } .gta-acc a, .gta-acc button { min-height: 46px; }
+  .gta-acc a { flex: 1 1 60%; } .gta-acc button { flex: 1 1 30%; }
+}
+@keyframes gtaIn { from { opacity: 0 } }
+@keyframes gtaSube { from { opacity: 0; transform: translateY(16px) scale(.98) } }
+@keyframes gtaSubeM { from { transform: translateY(100%) } }
+@keyframes gtaZoom { to { transform: scale(1.12) translate(-2%, -2%) } }
+@keyframes gtaLatido { 70% { box-shadow: 0 0 0 8px rgba(255,77,141,0) } 100% { box-shadow: 0 0 0 0 rgba(255,77,141,0) } }
+@media (prefers-reduced-motion: reduce) { .gta, .gta-fondo, .gta-arte img, .gta-chip i { animation: none !important; } }
 </style>
 
 </head>
@@ -941,6 +992,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
   }
 
   function usarDatos(d, de) {
+    if (de === "servidor") setTimeout(function () { if (datos) ventanaGTA(); }, 900);
     datos = validar(d);
     origen = de;
     tiendaPorId = {};
@@ -2110,6 +2162,44 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(cod).then(hecho, hecho); else hecho();
   });
 
+  // ---------- Ventana de GTA VI al entrar ----------
+  // Sale una vez por pestaña (sessionStorage, se borra al cerrarla), solo en la portada sin búsqueda y hasta el 31 de diciembre.
+  // Antes del 19 de noviembre: cuenta atrás y reservas; después: «¿Aún no lo tienes?». Las ofertas son las del catálogo.
+  function ventanaGTA() {
+    if (window._gta) return; window._gta = 1;
+    if (new Date() > new Date("2026-12-31T23:59:59+01:00") || location.search || location.hash) return;
+    try { if (sessionStorage.getItem("pillao-gta")) return; sessionStorage.setItem("pillao-gta", "1"); } catch (e) {}
+    var j = datos.juegos.find(function (x) { return x.id === "grand-theft-auto-vi"; }); if (!j) return;
+    var sale = new Date("2026-11-19T00:00:00+01:00"), ya = new Date() >= sale;
+    var ofs = j.ofertas.filter(function (o) { return o.stock !== false && o.estado !== "usado"; }).sort(function (a, b) { return total(a) - total(b); });
+    var vistas = {}, lista = [];
+    ofs.forEach(function (o) { var k = o.tienda + "|" + o.plataforma + "|" + o.formato; if (!vistas[k] && lista.length < 4) { vistas[k] = 1; lista.push(o); } });
+    var img = (j.img || "").replace(/\?w=\d+/, "?w=1100");
+    var falta = Math.max(0, sale - new Date()), d = Math.floor(falta / 864e5), h = Math.floor(falta / 36e5) % 24, m = Math.floor(falta / 6e4) % 60;
+    var div = document.createElement("div"); div.className = "gta-fondo"; div.setAttribute("role", "dialog"); div.setAttribute("aria-modal", "true"); div.setAttribute("aria-labelledby", "gta-t");
+    div.innerHTML = '<div class="gta"><div class="gta-arte">' + (img ? '<img src="' + esc(img) + '" alt="" width="1100" height="619">' : "") +
+      '<span class="gta-chip"><i></i>' + (ya ? "Ya a la venta" : "Sale el jueves 19 de noviembre") + '</span><button type="button" class="gta-x" aria-label="Cerrar">×</button></div>' +
+      '<div class="gta-cuerpo"><h2 id="gta-t">' + (ya ? "¿Aún no tienes <span>GTA VI</span>?" : "<span>GTA VI</span> está a punto de salir") + "</h2>" +
+      "<p>" + (ya ? "No te lo pierdas: estas son las tiendas donde está más barato ahora mismo." : "Resérvalo donde esté más barato: comparamos " + ofs.length + " ofertas para PS5 y Xbox Series, en digital y en disco.") + "</p>" +
+      (ya ? "" : '<div class="gta-cuenta" aria-label="Tiempo hasta el lanzamiento"><div><b data-gta="d">' + d + '</b><small>días</small></div><div><b data-gta="h">' + String(h).padStart(2, "0") + '</b><small>horas</small></div><div><b data-gta="m">' + String(m).padStart(2, "0") + "</b><small>min</small></div></div>") +
+      '<ul class="gta-ofs">' + lista.map(function (o, i) {
+        var t = tiendaPorId[o.tienda] || { nombre: o.tienda };
+        return '<li class="' + (i ? "" : "top") + '"><a href="' + esc(enlace(o, j) || "#") + '" target="_blank" rel="noopener noreferrer">' + (logoT(o.tienda) || "<span></span>") +
+          '<span><span class="t">' + esc(t.nombre) + '</span><br><span class="d">' + esc(o.plataforma) + " · " + (o.formato === "fisico" ? "En disco" : "Digital") + "</span></span>" +
+          '<span class="pr">' + (i ? "" : "<small>Mejor precio</small>") + eur.format(total(o)) + '</span><span class="ir2" aria-hidden="true">↗</span></a></li>';
+      }).join("") + "</ul>" +
+      '<div class="gta-acc"><a href="juego/' + esc(j.id) + '/">Ver las ' + ofs.length + ' ofertas</a><button type="button" data-cerrar>Ahora no</button></div>' +
+      '<p class="gta-pie">Precios orientativos · algunos enlaces son de afiliado</p></div></div>';
+    document.body.appendChild(div); document.body.style.overflow = "hidden";
+    var reloj = ya ? 0 : setInterval(function () {
+      var f = Math.max(0, sale - new Date()), q = function (k) { return div.querySelector('[data-gta="' + k + '"]'); };
+      if (!q("d")) return; q("d").textContent = Math.floor(f / 864e5); q("h").textContent = String(Math.floor(f / 36e5) % 24).padStart(2, "0"); q("m").textContent = String(Math.floor(f / 6e4) % 60).padStart(2, "0");
+    }, 20000);
+    var cerrar = function () { clearInterval(reloj); div.remove(); document.body.style.overflow = ""; document.removeEventListener("keydown", tecla); };
+    var tecla = function (e) { if (e.key === "Escape") cerrar(); };
+    div.addEventListener("click", function (e) { if (e.target === div || e.target.closest(".gta-x,[data-cerrar]")) cerrar(); });
+    document.addEventListener("keydown", tecla); div.querySelector(".gta-acc a").focus({ preventScroll: true });
+  }
   function pintar() {
     ajustarOrden();
     var lista = $("lista");

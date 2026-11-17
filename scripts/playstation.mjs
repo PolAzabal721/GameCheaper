@@ -83,6 +83,9 @@ async function precio(titulo, id) {
   const sinAp = (t) => limpiar(String(t).replace(/['’`´]/g, ""));
   const nombre = " " + sinAp(ld.name || "") + " ";
   if (!sinAp(titulo).split(" ").every((p) => nombre.includes(" " + p + " "))) return null;
+  // Y no otra edición: una ficha «Ultimate/Deluxe/Gold…» no vale para el juego normal (la de GTA VI daba el precio de la Ultimate)
+  const EDICION = /\b(ultimate|deluxe|gold|premium|definitive|complete|collector|vault|cross gen|bundle|pack|season pass|upgrade)\b/;
+  const ed = nombre.match(EDICION); if (ed && !(" " + sinAp(titulo) + " ").includes(" " + ed[1] + " ")) return null;
   const plats = (html.match(/"platforms"\s*:\s*\[([^\]]*)\]/) || [])[1] || "";
   const plataformas = ["PS5", "PS4"].filter((p) => plats.includes(`"${p}"`));
   return { precio: Number(oferta.price), plataformas: plataformas.length ? plataformas : ["PS5"], url };
@@ -118,7 +121,8 @@ async function main() {
     .sort((a, b) => Date.parse(a[1].actualizado || 0) - Date.parse(b[1].actualizado || 0)).slice(0, PRECIOS);
   for (const [, e] of conFicha) {
     let p = null;
-    for (const id of e.ids) {
+    // Primero los códigos de producto (EP…: una edición concreta) y después las fichas de concepto (agrupan ediciones)
+    for (const id of [...e.ids].sort((x, y) => /^\d+$/.test(x) - /^\d+$/.test(y))) {
       try { p = await precio(e.titulo, id); } catch (err) { if (avisos.length < 10) avisos.push(`precio ${e.titulo}: ${err.message}`); }
       await esperar(400);
       if (p) break;
