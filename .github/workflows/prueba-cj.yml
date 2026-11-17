@@ -13,4 +13,4 @@ jobs:
             -d '{"query":"{ __type(name: \"Product\") { fields { name args { name } } } }"}' https://ads.api.cj.com/query | head -c 3000; echo
           echo "== 3 productos de GamersGate (2821123)"
           curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" \
-            -d '{"query":"{ products(companyId: \"8127571\", partnerIds: [\"2821123\"], limit: 3) { totalCount count resultList { id title price { amount currency } link imageLink availability targetCountry } } }"}' https://ads.api.cj.com/query | head -c 3000; echo
+            -d '{"query":"{ products(companyId: \"8127571\", partnerIds: [\"2821123\"], limit: 3, targetCountry: [\"ES\"]) { totalCount count resultList { id title price { amount currency } link imageLink targetCountry catalogName salePrice { amount currency } ... on Shopping { availability } } } }"}' https://ads.api.cj.com/query | head -c 3000; echo
