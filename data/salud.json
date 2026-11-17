@@ -1,25 +1,28 @@
 {
- "revisado": "2026-11-17T12:13",
+ "revisado": "2026-11-17T19:16",
  "referencia": {
-  "steam": 2354,
-  "game": 554,
-  "xbox": 13610,
-  "itad": 40601,
-  "eshop": 4648,
-  "gameseminuevos": 108,
-  "instantgaming": 1943,
-  "psstore": 839,
-  "alcampo": 10,
-  "ebay": 233,
-  "k4g": 287,
-  "driffle": 220,
-  "yuplay": 2614,
-  "mediamarkt": 1068,
-  "kinguin": 56540,
-  "xtralife": 6103,
-  "pcbox": 4
+  "steam": 1829,
+  "game": 326,
+  "xbox": 14082,
+  "itad": 36947,
+  "eshop": 4686,
+  "gameseminuevos": 48,
+  "instantgaming": 1670,
+  "psstore": 782,
+  "alcampo": 11,
+  "ebay": 305,
+  "k4g": 2154,
+  "driffle": 151,
+  "yuplay": 2391,
+  "mediamarkt": 1036,
+  "kinguin": 54124,
+  "xtralife": 5625,
+  "pcbox": 5,
+  "loaded": 10552,
+  "gamersgate": 10055
  },
  "problemas": [
-  "steam: no ha traído precio de «Hogwarts Legacy» en esta ejecución"
+  "steam: no ha traído precio de «Hogwarts Legacy» en esta ejecución",
+  "itad: no ha traído precio de «Hogwarts Legacy» en esta ejecución"
  ]
 }
