@@ -1081,6 +1081,9 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     expandir(d);
     // GTA VI sale a medianoche del 18 al 19 de noviembre: algunas tiendas ponen el 18; en España es el 19
     d.juegos.forEach(function (j) { if (j && j.id === "grand-theft-auto-vi" && j.lanzamiento === "2026-11-18") j.lanzamiento = "2026-11-19"; });
+    // Skins: solo mercados de compra o cambio de skins (fuera saldos de webs de apuestas y de abrir cajas)
+    var MERC_SKINS = /^(dmarket|skinsmonkey|skinflow\.gg|swap\.gg|cs\.trade|shadowpay(\.com)?|qqskins|skinswap|tradeit(\.gg)?|cs\.money|skinport|waxpeer|skinbaron|lis-skins|rapidskins)\b/i;
+    d.juegos = d.juegos.filter(function (j) { return !j || j.tipo !== "skins" || MERC_SKINS.test(j.titulo || ""); });
     var avisos = 0;
     d.tiendas = Array.isArray(d.tiendas) ? d.tiendas : [];
     d.juegos = d.juegos.filter(function (j, i) {
@@ -1460,7 +1463,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     return mapaTitulos[normBusq(m[1])] || null;
   }
   function urlsImagen(j, vertical) {
-    if (j.sorpresa) { var base = juegoDeSorpresa(j), ub = base && urlsImagen(base, vertical); return ub || [arteSorpresa(j.titulo, vertical)]; }
+    if (j.sorpresa) { var base = juegoDeSorpresa(j), ub = base && urlsImagen(base, vertical); return (ub || []).concat([arteSorpresa(j.titulo, vertical)]); }
     var lista = [];
     [vertical ? j.cov : j.img, vertical ? j.img : j.cov].forEach(function (v) {
       if (!v) return;
@@ -1543,6 +1546,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     if (!im || im.tagName !== "IMG" || !im.parentNode || !im.parentNode.classList) return;
     // Tarjetas de chollos y packs: sin imagen, el hueco con el icono del mando (no el icono de imagen rota)
     if (im.parentNode.classList.contains("dest-img") || im.parentNode.classList.contains("pk-col")) {
+      if (im.dataset.alt) { var r2 = im.dataset.alt.split("|"), sig = r2.shift(); if (r2.length) im.dataset.alt = r2.join("|"); else delete im.dataset.alt; im.src = sig; return; }
       var hueco = document.createElement("span"); hueco.className = "dest-sin"; hueco.innerHTML = ICONO_MANDO; im.replaceWith(hueco); return;
     }
     if (!im.parentNode.classList.contains("pt-img")) return;
@@ -2258,7 +2262,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     }
     poner(caja, cab + '<ul class="dest-lista">' + xs.map(function (r) {
       var m = r.mejor, t = tiendaPorId[m.tienda] || { nombre: m.tienda };
-      return '<li><a href="juego/' + esc(r.j.id) + '/"><span class="dest-img">' + (r.j.sorpresa && juegoDeSorpresa(r.j) ? '<i class="sor-tag">¿o sorpresa?</i>' : "") + ((urlsImagen(r.j, false) || []).length ? '<img src="' + esc(urlsImagen(r.j, false)[0]) + '" alt="" loading="lazy" width="460" height="215">'
+      return '<li><a href="juego/' + esc(r.j.id) + '/"><span class="dest-img">' + (r.j.sorpresa && juegoDeSorpresa(r.j) ? '<i class="sor-tag">¿o sorpresa?</i>' : "") + ((urlsImagen(r.j, false) || []).length ? '<img src="' + esc(urlsImagen(r.j, false)[0]) + '"' + (urlsImagen(r.j, false).length > 1 ? ' data-alt="' + esc(urlsImagen(r.j, false).slice(1).join("|")) + '"' : "") + ' alt="" loading="lazy" width="460" height="215">'
         : '<span class="dest-tj" style="background:linear-gradient(135deg,' + ((TJ_MARCAS[r.j.marca] || ["#3b2bd6", "#0e7490"]).join(",")) + ')"><small>' + esc(r.j.marca || "") + "</small>" + esc(r.j.valor ? r.j.valor + " €" : "") + "</span>") + '<em>−' + r.dto + '%</em></span>' +
         '<b>' + esc(r.j.titulo) + '</b><span class="dest-p"><strong>' + eur.format(total(m)) + '</strong> ' + logoT(m.tienda, "c-logo") + esc(t.nombre) + "</span></a></li>";
     }).join("") + vacio + "</ul>");

@@ -81,7 +81,7 @@ function proteger(html, buscador) {
   const huellas = [...html.matchAll(/<script(?![^>]*\bsrc=)(?![^>]*type="application\/(?:ld\+)?json")[^>]*>([\s\S]*?)<\/script>/g)]
     .map((m) => `'sha256-${createHash("sha256").update(m[1], "utf8").digest("base64")}'`);
   const csp = [
-    "default-src 'self'", `script-src 'self' ${huellas.join(" ")}`.trim(), "style-src 'self' 'unsafe-inline'", `img-src 'self' data:${buscador ? " " + new URL(buscador).origin : ""} https://shared.akamai.steamstatic.com https://cdn.akamai.steamstatic.com https://fs-prod-cdn.nintendo-europe.com https://www.nintendo.com https://assets.nintendo.eu https://store-images.s-microsoft.com https://image.api.playstation.com https://media.game.es https://assets.isthereanydeal.com`,
+    "default-src 'self'", `script-src 'self' ${huellas.join(" ")}`.trim(), "style-src 'self' 'unsafe-inline'", `img-src 'self' data:${buscador ? " " + new URL(buscador).origin : ""} https://shared.akamai.steamstatic.com https://cdn.akamai.steamstatic.com https://fs-prod-cdn.nintendo-europe.com https://www.nintendo.com https://assets.nintendo.eu https://store-images.s-microsoft.com https://image.api.playstation.com https://media.game.es https://assets.isthereanydeal.com https://static.kinguin.net https://cdn.loaded.com https://sttc.gamersgate.com https://cdn.k4g.com https://www.yuplay.com https://i.gyazo.com`,
     "font-src 'self'", `connect-src 'self'${buscador ? " " + new URL(buscador).origin : ""}`, "object-src 'none'", "base-uri 'self'",
     "form-action 'self'", "upgrade-insecure-requests",
   ].join("; ");

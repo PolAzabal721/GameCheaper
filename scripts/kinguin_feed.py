@@ -12,6 +12,7 @@ APUESTAS = re.compile(r"\b(casino|casinos|bet|bets|betting|apuestas|poker|slots?
 SALDO = re.compile(r"gift ?card|coins?\b|balance|wallet|voucher|gems\b|[$€£₺]|\b(usd|eur|gbp|pln|chf)\b", re.I)
 # Cajas de skins (se abren con llave y dan algo al azar): fuera
 CAJAS = re.compile(r"\b(case|cases|capsule|souvenir package|package|caja|cajas)\b", re.I)
+MERCADOS_SKINS = re.compile(r"^(dmarket|skinsmonkey|skinflow\.gg|swap\.gg|cs\.trade|shadowpay(\.com)?|qqskins|skinswap|tradeit(\.gg)?|cs\.money|skinport|waxpeer|skinbaron|lis-skins|rapidskins)\b", re.I)
 filas, latam = [], []
 with abrir(origen, "rt", encoding="utf-8", errors="replace", newline="") as f:
     for x in csv.DictReader(f, delimiter=";"):
@@ -20,6 +21,9 @@ with abrir(origen, "rt", encoding="utf-8", errors="replace", newline="") as f:
         if re.search(r"\baccount\b|altergift|\bgift\b(?! card)", n, re.I): continue
         if APUESTAS.search(n) and SALDO.search(n): continue
         if c == "CSGO_SKINS" and CAJAS.search(n): continue
+        # Skins: casi todo lo de esta categoría son saldos de webs de apuestas o de abrir cajas (CSGOluck, Skin.Club, Rain.gg…)
+        # y «skin keys» al azar. Solo entran los mercados donde compras o cambias skins concretas (lista cerrada).
+        if c == "CSGO_SKINS" and not MERCADOS_SKINS.search(n): continue
         try: pr = float(x.get("price") or 0); op = float(x.get("oldprice") or 0)
         except ValueError: continue
         if pr <= 0: continue

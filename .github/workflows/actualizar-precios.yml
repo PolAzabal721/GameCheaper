@@ -31,7 +31,7 @@ jobs:
           path: |
             feeds/kinguin.json
             feeds/kinguin-latam.json
-          key: kinguin3-${{ steps.hoy.outputs.d }}
+          key: kinguin4-${{ steps.hoy.outputs.d }}
       - name: Descargar el catálogo de Kinguin (Admitad)
         if: steps.cache-kinguin.outputs.cache-hit != 'true'
         continue-on-error: true

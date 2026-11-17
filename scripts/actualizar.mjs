@@ -2047,7 +2047,9 @@ async function main() {
     }
   }
   console.log(`Repaso: ${reTipadas} «tarjetas» que eran juegos; ${absurdas} precios absurdos quitados`);
-  const lista = [...juegos.values()].filter((j) => j.ofertas.length && j.tipo !== "otros").sort((a, b) => a.pop - b.pop)
+  // Skins: solo mercados de compra o cambio de skins (las webs de apuestas y de abrir cajas, fuera, aunque vengan de antes)
+  const MERCADOS_SKINS = /^(dmarket|skinsmonkey|skinflow\.gg|swap\.gg|cs\.trade|shadowpay(\.com)?|qqskins|skinswap|tradeit(\.gg)?|cs\.money|skinport|waxpeer|skinbaron|lis-skins|rapidskins)\b/i;
+  const lista = [...juegos.values()].filter((j) => j.ofertas.length && j.tipo !== "otros" && (j.tipo !== "skins" || MERCADOS_SKINS.test(j.titulo))).sort((a, b) => a.pop - b.pop)
     .map(({ _buscarEn, _pvpFijo, _fechaOf, _fechaIG, _img, _imgP, _cov, _covP, plataformas, revisado, ...j }) => {
       const lanzamiento = _fechaOf || _fechaIG || fechaAnterior.get(j.id) || undefined;
       const [imgV, covV] = imgAnterior.get(j.id) || [];
