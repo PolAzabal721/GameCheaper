@@ -4,10 +4,6 @@ jobs:
   p:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - name: Catálogo de GamersGate por CJ
-        env:
-          CJ_TOKEN: ${{ secrets.CJ_TOKEN }}
+      - name: Un enlace de CJ lleva a la ficha en español
         run: |
-          python3 scripts/gamersgate_cj.py gg.json
-          python3 -c "import json,collections;d=json.load(open('gg.json'));print(len(d));print(collections.Counter(x['t'] or 'juego' for x in d));print(sum(1 for x in d if x['p']<x['r']),'rebajados');print(json.dumps(d[:2],ensure_ascii=False))"
+          curl -s -o /dev/null -L -A "Mozilla/5.0" -w "final: %{url_effective} (HTTP %{http_code}, %{num_redirects} redirecciones)\n" "https://www.anrdoezrs.net/click-101929112-13723186?url=https%3A%2F%2Fwww.gamersgate.com%2Fes%2Fproduct%2Foverpasstm-steam%2F%3Faff%3Dcj&cjsku=DD-OVERPASS-STM"
