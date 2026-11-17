@@ -167,13 +167,11 @@ async function main() {
               const oficial = OFICIALES_PC.test(nombre);
               if (!general && !oficial) continue;
               let precio, regular, condicion;
-              if (general) {
-                if (x.price.currency !== "USD") continue;
+              if (general && x.price.currency === "USD") {
                 precio = x.price.amount; regular = x.regular?.amount > precio ? x.regular.amount : undefined;
                 condicion = oficial ? "Precio de Argentina y Latam en dólares" : undefined;
               } else {
                 const l = local(pais, x.price.currency, x.price.amount); if (!l) continue;
-                if (x.price.currency === "USD") continue;   // en dólares es el mismo precio que el de Argentina y Latam
                 precio = l.precio; condicion = l.cond;
                 if (x.regular?.amount > x.price.amount) regular = local(pais, x.regular.currency || x.price.currency, x.regular.amount)?.precio;
               }
@@ -412,6 +410,19 @@ async function main() {
     }
   }
   await guardarCache();
+  // Precios de un país absurdamente bajos (tiendas que no han actualizado el precio a la inflación, p. ej. Microsoft en Argentina):
+  // fuera los «Solo <país>» por debajo del 30 % de lo que cuesta lo mismo en la misma tienda en los demás países
+  let raros = 0;
+  for (const j of juegos.values()) {
+    const grupos = {};
+    for (const o of j.ofertas) (grupos[o.tienda + "|" + o.plataforma] ||= []).push(o);
+    for (const g of Object.values(grupos)) {
+      if (g.length < 3) continue;
+      const v = g.map((o) => o.precio).sort((a, b) => a - b), med = v[Math.floor(v.length / 2)];
+      for (const o of g) if (/^Solo /.test(o.condicion || "") && o.precio < med * 0.3) { j.ofertas.splice(j.ofertas.indexOf(o), 1); raros++; }
+    }
+  }
+  if (raros) console.log(`LATAM: ${raros} precios de un país descartados por demasiado bajos`);
   for (const t of es.tiendas || []) if (tiendasL.has(t.id)) tiendasL.set(t.id, { ...t, busqueda: undefined });
   const tiendas = [...tiendasL.values()];
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
