@@ -40,6 +40,9 @@ def tramos(bajo, alto):
     return tramos(bajo, medio) + tramos(round(medio + 0.01, 2), alto)
 
 vistos, filas = set(), []
+import collections
+monedas = collections.Counter()
+print("tramos:", tramos(0, 5000))
 for bajo, alto in tramos(0, 5000):
     offset = 0
     while offset < 10000:
@@ -50,6 +53,7 @@ for bajo, alto in tramos(0, 5000):
                 continue
             vistos.add(x["id"])
             precio = (x.get("salePrice") or None) or x.get("price") or {}
+            monedas[precio.get("currency")] += 1
             if precio.get("currency") != "EUR":
                 continue
             fila = {"l": x.get("link") or "", "n": x.get("title") or "", "p": float(precio.get("amount") or 0),
@@ -62,5 +66,6 @@ for bajo, alto in tramos(0, 5000):
         if p["count"] < 1000:
             break
         offset += 1000
+print("monedas:", monedas.most_common(8), "vistos:", len(vistos))
 json.dump(filas, open(destino, "w"), ensure_ascii=False, separators=(",", ":"))
 print(f"CJ {anunciante}: {len(filas)} productos en euros ({'unidos: con enlace de afiliado' if UNIDO else 'aún sin aceptar: enlaces normales'})")
