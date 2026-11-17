@@ -4,21 +4,10 @@ jobs:
   p:
     runs-on: ubuntu-latest
     steps:
-      - name: Catálogos de GamersGate en CJ y enlace con el PID
+      - uses: actions/checkout@v5
+      - name: Catálogo de GamersGate por CJ
         env:
-          T: ${{ secrets.CJ_TOKEN }}
+          CJ_TOKEN: ${{ secrets.CJ_TOKEN }}
         run: |
-          q() { curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d "$1" https://ads.api.cj.com/query; echo; }
-          echo "== Campos de Shopping"
-          q '{"query":"{ __type(name: \"Shopping\") { fields { name } } }"}' | head -c 2500
-          echo "== Etiquetas de 3 productos"
-          q '{"query":"{ products(companyId: \"8127571\", partnerIds: [\"2821123\"], currency: \"EUR\", limit: 3, offset: 40) { resultList { id title customLabel0 customLabel1 customLabel2 customLabel3 customLabel4 brand description ... on Shopping { productType condition googleProductCategory { id name } } } } }"}' | head -c 3000
-          echo "== Límite por página"
-          q '{"query":"{ products(companyId: \"8127571\", partnerIds: [\"2821123\"], currency: \"EUR\", limit: 10000, offset: 9990) { count resultList { id } } }"}' | head -c 400
-          echo "== EUR: total y 3 de muestra con enlace de afiliado"
-          q '{"query":"{ products(companyId: \"8127571\", partnerIds: [\"2821123\"], currency: \"EUR\", limit: 3) { totalCount count resultList { id title catalogName targetCountry price { amount currency } link linkCode(pid: \"101929112\") { clickUrl } } } }"}' | head -c 3000
-          echo "== Nombres de catálogo (muestra de 1000 productos EUR)"
-          q '{"query":"{ products(companyId: \"8127571\", partnerIds: [\"2821123\"], currency: \"EUR\", limit: 1000) { count resultList { catalogName targetCountry } } }"}' > m.json
-          python3 -c "import json,collections;d=json.load(open('m.json'));r=d['data']['products']['resultList'];print(len(r),collections.Counter((x['catalogName'],x['targetCountry']) for x in r))" || head -c 500 m.json
-          echo "== Página siguiente (paginación)"
-          q '{"query":"{ products(companyId: \"8127571\", partnerIds: [\"2821123\"], currency: \"EUR\", limit: 2, offset: 2) { count resultList { id } } }"}' | head -c 600
+          python3 scripts/gamersgate_cj.py gg.json
+          python3 -c "import json,collections;d=json.load(open('gg.json'));print(len(d));print(collections.Counter(x['t'] or 'juego' for x in d));print(sum(1 for x in d if x['p']<x['r']),'rebajados');print(json.dumps(d[:2],ensure_ascii=False))"
