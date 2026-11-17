@@ -582,10 +582,34 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
   .ir-l { display: none; } .ir-c { display: inline; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Cupones de Kinguin: ticket bajo la oferta (en el móvil, en una sola línea) y bloque desplegable en «Tiendas que comparamos» */
+.cupon { list-style: none; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: -2px 0 10px; padding: 8px 10px 8px 12px; border: 1px dashed color-mix(in srgb, var(--good) 55%, transparent); border-radius: 12px; background: color-mix(in srgb, var(--good-soft) 70%, transparent); font-size: 13.5px; position: relative; }
+.cupon::before, .cupon::after { content: ""; position: absolute; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: var(--surface); border: 1px dashed color-mix(in srgb, var(--good) 55%, transparent); }
+.cupon::before { left: -7px; clip-path: inset(0 0 0 50%); } .cupon::after { right: -7px; clip-path: inset(0 50% 0 0); }
+.cupon .cu-cod, .ti-cupones code { font-family: var(--f-mono); font-weight: 700; letter-spacing: .06em; padding: 3px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); }
+.cupon .cu-dto { font-weight: 800; color: var(--good); }
+.cupon .cu-p { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-weight: 700; color: var(--ink); }
+.cupon .cu-meta { color: var(--muted); } .cupon .cu-meta.pronto { color: var(--warn); font-weight: 600; }
+.cupon .cu-corto { display: none; }
+.cupon button { margin-left: auto; font: inherit; font-weight: 700; font-size: 13px; padding: 7px 14px; min-height: 36px; border-radius: 999px; border: 1px solid var(--good); background: transparent; color: var(--good); cursor: pointer; touch-action: manipulation; transition: background .15s, color .15s, transform .1s; }
+.cupon button:hover, .cupon button.ok { background: var(--good); color: var(--surface); } .cupon button:active { transform: scale(.97); }
+.cupon button:focus-visible, .ti-cupones summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 599px) {
+  .cupon { flex-wrap: nowrap; gap: 6px; padding: 5px 6px 5px 10px; margin: -2px 0 8px; font-size: 12.5px; border-radius: 10px; }
+  .cupon::before, .cupon::after, .cupon .cu-largo { display: none; } .cupon .cu-corto { display: inline; }
+  .cupon .cu-cod { padding: 1px 6px; font-size: 12px; } .cupon .cu-meta { font-size: 11.5px; white-space: nowrap; }
+  .cupon button { padding: 4px 10px; min-height: 30px; font-size: 12px; }
+}
+.ti-cupones { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--good-soft) 70%, transparent); border: 1px dashed color-mix(in srgb, var(--good) 55%, transparent); font-size: 13.5px; }
+.ti-cupones summary { list-style: none; display: flex; justify-content: space-between; align-items: center; cursor: pointer; } .ti-cupones summary::-webkit-details-marker { display: none; }
+.ti-cupones[open] summary { margin-bottom: 8px; } .ti-cupones .cu-flecha { transition: transform .2s; } .ti-cupones[open] .cu-flecha { transform: rotate(180deg); }
+.ti-cupones ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.ti-cupones li { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; } .ti-cupones li .btn { padding: 5px 12px; }
 </style>
 
 </head>
-<body>
+<body><div id="cupon-vivo" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
 <header class="top">
   <div class="wrap">
     <div class="top-row">
@@ -794,6 +818,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
         (i.d ? "<p>" + esc(i.d) + "</p>" : "") +
         (i.v && i.v.length ? '<ul class="si">' + i.v.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>" : "") +
         (i.x && i.x.length ? '<ul class="no">' + i.x.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>" : "") +
+        (t.id === "kinguin" ? cuponesTiendaHTML() : "") +
         '<div class="ti-pie"><span class="ti-of">' + (conOf[t.id] ? conOf[t.id].toLocaleString("es-ES") + " ofertas ahora" : "Solo enlace de búsqueda") + "</span>" +
         (conOf[t.id] ? '<a href="?tienda=' + encodeURIComponent(t.id) + '">Ver sus juegos →</a>' : "") + "</div></article>";
     };
@@ -1409,6 +1434,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
           '<div class="of-d">' + detalle + "</div>" +
           '<div class="of-p"><b>' + eur.format(total(o)) + "</b><small>" + antes(o, j) + (dif > 0.004 ? "+" + eur.format(dif) : "el más barato") + "</small></div>" +
           (url ? '<a class="ir" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" data-t="' + esc(o.tienda) + '" data-j="' + esc(j.id) + '">' + (o.url ? '<span class="ir-l">Ver oferta</span><span class="ir-c">Ir</span>' : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
+        if (n === 1 || g.claves) fila += cuponHTML(o, j);
         if (n > 1 && abierto) fila += g.ofs.map(function (x) {
           var u = enlace(x, j);
           var tx = tiendaPorId[x.tienda] || { nombre: x.tienda };
@@ -1418,7 +1444,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
             '<div class="of-d"><span>' + (g.claves || esEb ? esc(x.plataforma || "—") : (x.formato === "fisico" ? "En disco" : "Digital")) + "</span>" + (resto ? "<span>·</span><span>" + esc(resto) + "</span>" : "") +
             (x.envio ? "<span>·</span><span>+ " + eur.format(x.envio) + " envío</span>" : "") + (x.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
             '<div class="of-p"><b>' + eur.format(total(x)) + "</b>" + (antes(x, j) ? "<small>" + antes(x, j).replace(/ · $/, "") + "</small>" : "") + "</div>" +
-            (u ? '<a class="ir" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer" data-t="' + esc(x.tienda) + '" data-j="' + esc(j.id) + '">' + (x.url ? "Ver" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
+            (u ? '<a class="ir" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer" data-t="' + esc(x.tienda) + '" data-j="' + esc(j.id) + '">' + (x.url ? "Ver" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>" + (g.claves && x !== o ? cuponHTML(x, j) : "");
         }).join("");
         return fila;
       }).join("") + "</ol>" +
@@ -2043,6 +2069,46 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
       sel.innerHTML = quedan.map(function (o) { return '<option value="' + o[0] + '">' + esc(o[1]) + "</option>"; }).join("");
     sel.value = f.orden;
   }
+
+
+  // ---------- Cupones de Kinguin (Admitad) ----------
+  // Se aplican según el tipo de producto; se ocultan solos al caducar o si el precio pasa de la cesta máxima.
+  // El precio con cupón es orientativo y no cuenta para el «más barato» (lo explica el aviso legal).
+  var CUPONES = [
+    { c: "INGAME5", pct: 5, hasta: null, para: ["skins"], max: 150, usos: 5, txt: "5 % en objetos y skins" },
+    { c: "COZY5", pct: 5, hasta: "2026-11-30", para: ["juego", "edicion", "dlc", "software", "skins"], max: 150, usos: 2, txt: "5 % en juegos, DLC, software y objetos" },
+    { c: "PREBF", pct: 3, hasta: "2026-11-26", para: ["tarjeta"], max: 150, usos: 2, txt: "3 % en tarjetas y recargas" }
+  ];
+  function cuponVivo(c) { return !c.hasta || new Date(c.hasta + "T23:59:59") >= new Date(); }
+  function cuponDe(o, j) {
+    if (o.tienda !== "kinguin") return null;
+    var tipo = j.tipo || "juego";
+    return CUPONES.filter(function (c) { return c.para.indexOf(tipo) >= 0 && cuponVivo(c) && total(o) <= c.max; })[0] || null;
+  }
+  function cuponHTML(o, j) {
+    var c = cuponDe(o, j); if (!c) return "";
+    var conC = Math.round(o.precio * (100 - c.pct)) / 100 + (o.envio || 0);
+    var dias = c.hasta ? Math.ceil((new Date(c.hasta + "T23:59:59") - new Date()) / 864e5) : null;
+    var fecha = c.hasta ? new Date(c.hasta + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short" }) : null;
+    var pronto = dias !== null && dias <= 3;
+    return '<li class="cupon"><span aria-hidden="true">🎟️</span><span class="cu-largo">Con el cupón</span><span class="cu-cod" translate="no">' + c.c + "</span>" +
+      '<span class="cu-dto">−' + c.pct + '&nbsp;%</span><span class="cu-largo" aria-hidden="true">→</span><span class="cu-p">' + eur.format(conC) + "</span>" +
+      '<span class="cu-meta' + (pronto ? " pronto" : "") + '"><span class="cu-largo">' + (dias === null ? "Sin fecha de fin" : pronto ? "Caduca en " + dias + (dias === 1 ? " día" : " días") : "Hasta el " + fecha) +
+      " · cesta máx. " + c.max + "&nbsp;€ · " + c.usos + ' usos por persona</span><span class="cu-corto">' + (dias === null ? "" : pronto ? "caduca en " + dias + " d" : "hasta " + fecha) + "</span></span>" +
+      '<button type="button" data-copiar="' + c.c + '" aria-label="Copiar el código ' + c.c + '">Copiar<span class="cu-largo"> código</span></button></li>';
+  }
+  function cuponesTiendaHTML() {
+    var vivos = CUPONES.filter(cuponVivo); if (!vivos.length) return "";
+    return '<details class="ti-cupones"><summary><b>🎟️ Cupones activos (' + vivos.length + ')</b><span class="cu-flecha" aria-hidden="true">▾</span></summary><ul>' + vivos.map(function (c) {
+      return '<li><code translate="no">' + c.c + "</code><span>" + c.txt + (c.hasta ? " · hasta el " + new Date(c.hasta + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short" }) : "") + " · cesta máx. " + c.max + '&nbsp;€</span><button type="button" class="btn" data-copiar="' + c.c + '" aria-label="Copiar el código ' + c.c + '">Copiar</button></li>';
+    }).join("") + "</ul></details>";
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-copiar]"); if (!b) return;
+    var cod = b.dataset.copiar, antes = b.innerHTML;
+    var hecho = function () { b.textContent = "¡Copiado!"; b.classList.add("ok"); var v = $("cupon-vivo"); if (v) v.textContent = "Código " + cod + " copiado"; setTimeout(function () { b.innerHTML = antes; b.classList.remove("ok"); }, 1800); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(cod).then(hecho, hecho); else hecho();
+  });
 
   function pintar() {
     ajustarOrden();
