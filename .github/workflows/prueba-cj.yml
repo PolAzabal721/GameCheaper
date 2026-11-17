@@ -4,10 +4,9 @@ jobs:
   p:
     runs-on: ubuntu-latest
     steps:
-      - name: K4G en CJ
+      - name: Productos de K4G sin estar unido
         env:
           T: ${{ secrets.CJ_TOKEN }}
         run: |
-          for r in joined notjoined; do echo "== K4G ($r)"; curl -s -H "Authorization: Bearer $T" "https://advertiser-lookup.api.cj.com/v2/advertiser-lookup?requestor-cid=8127571&advertiser-ids=$r&keywords=K4G" | grep -oE '<advertiser-id>[^<]*|<advertiser-name>[^<]*|<relationship-status>[^<]*|<total-matched>[^<]*|total-matched="[0-9]*"|<default>[^<]*' | head -20; done
-          echo "== valores de partnerStatus"
-          curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d '{"query":"{ __type(name: \"PartnerStatus\") { enumValues { name } } }"}' https://ads.api.cj.com/query; echo
+          curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d '{"query":"{ products(companyId: \"8127571\", partnerIds: [\"5923171\"], partnerStatus: NOT_JOINED, limit: 3) { totalCount count resultList { title catalogName targetCountry price { amount currency } link } } }"}' https://ads.api.cj.com/query | head -c 2500; echo
+          curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d '{"query":"{ products(companyId: \"8127571\", partnerIds: [\"5923171\"], partnerStatus: NOT_JOINED, currency: \"EUR\", limit: 1) { totalCount } }"}' https://ads.api.cj.com/query; echo
