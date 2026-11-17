@@ -1,0 +1,35 @@
+name: prueba2
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        fid: [50247, 106116]
+    steps:
+      - env:
+          T: ${{ secrets.TRADEDOUBLER_TOKEN }}
+        run: |
+          F=${{ matrix.fid }}
+          for i in 1 2 3 4 5 6 7 8; do
+            c=$(curl -sL -o f.zip -w "%{http_code}" "https://api.tradedoubler.com/1.0/productsUnlimited.json;compress=zip;fid=$F?token=$T")
+            echo "[$F] intento $i HTTP $c $(stat -c%s f.zip)"; [ "$c" = 200 ] && [ $(stat -c%s f.zip) -gt 1000 ] && break; head -c 200 f.zip; echo; sleep 45
+          done
+          unzip -p f.zip > f.json 2>/dev/null || cp f.zip f.json
+          python3 - "$F" <<'P'
+          import json,collections,re,sys
+          F=sys.argv[1]
+          try: d=json.load(open('f.json'))
+          except Exception as e: print(f'[{F}] NOJSON',open('f.json',errors='replace').read(200)); raise SystemExit
+          ps=d.get('products',d) if isinstance(d,dict) else d
+          if not isinstance(ps,list): print(f'[{F}] RESP',json.dumps(d)[:300]); raise SystemExit
+          print(f'[{F}] PRODUCTOS',len(ps))
+          def campo(x,n): return next((f.get('value') for f in x.get('fields',[]) if f.get('name')==n),None)
+          print(f'[{F}] CATS', collections.Counter(str([c.get('tdCategoryName') or c.get('name') for c in x.get('categories',[])]) for x in ps).most_common(15))
+          for k in ['category_second_level','category_third_level']:
+            print(f'[{F}]',k, collections.Counter(campo(x,k) for x in ps).most_common(20))
+          J=[x for x in ps if re.search(r'\b(ps5|ps4|switch|xbox)\b',x.get('name',''),re.I) and re.search(r'juego|videojuego|game',json.dumps([x.get('categories'),x.get('fields')],ensure_ascii=False),re.I)]
+          print(f'[{F}] JUEGOS CANDIDATOS',len(J))
+          for x in J[:25]: o=(x.get('offers') or [{}])[0]; print(f'[{F}] J',x.get('name','')[:100],'|',(o.get('priceHistory') or [{}])[0].get('price',{}).get('value'),'|',o.get('availability'),'|',campo(x,'condition') or o.get('condition'))
+          P
