@@ -5,6 +5,7 @@
 // el precio de antes tachado, el de ahora, el descuento y la tienda. Sin música: así cada quien le pone
 // el audio de moda al publicarlo, que es lo que más ayuda en TikTok y en Reels.
 // Los deja en videos/ y escribe videos/index.json con los datos de cada uno.
+import { completar } from "./completar.mjs";
 import { readFile, writeFile, mkdir, rm, readdir, copyFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { execFile, spawn } from "node:child_process";
@@ -20,7 +21,7 @@ const SITIO = "pillaojuegos.com";
 const CANAL = "@pillaoChollos";
 const leer = async (r, d) => { try { return JSON.parse(await readFile(r, "utf8")); } catch { return d; } };
 
-const precios = await leer("precios.json", { juegos: [], tiendas: [] });
+const precios = completar(await leer("precios.json", { juegos: [], tiendas: [] }));
 const estado = await leer("data/telegram.json", { publicados: {} });
 const tienda = Object.fromEntries((precios.tiendas || []).map((t) => [t.id, t]));
 const porId = new Map(precios.juegos.map((j) => [j.id, j]));

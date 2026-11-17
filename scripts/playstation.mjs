@@ -8,6 +8,7 @@
 //   2. Precio: la ficha de la tienda (store.playstation.com/es-es/concept/…) trae el precio en un bloque JSON-LD.
 // Resultado: data/playstation.json, que el actualizador principal mezcla con el resto de precios.
 
+import { completar } from "./completar.mjs";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -92,7 +93,7 @@ async function precio(titulo, id) {
 }
 
 async function main() {
-  const catalogo = await leer("precios.json", { juegos: [] });
+  const catalogo = completar(await leer("precios.json", { juegos: [] }));
   const estado = await leer("data/playstation.json", { juegos: {} });
   const ahora = Date.now();
   const cuenta = { descubiertos: 0, sinFicha: 0, precios: 0, fallos: 0 };

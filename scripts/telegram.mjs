@@ -6,6 +6,7 @@
 //   - y queda al menos un 50 % por debajo de su precio normal, o es su mínimo histórico con al menos un 30 % menos;
 //   - solo juegos conocidos (los POPULARES primeros del catálogo), nuevos y con stock; ni tarjetas regalo ni DLC sueltos.
 // Como mucho MAXIMO mensajes por actualización, y un juego ya publicado no vuelve a salir en 15 días (en ninguna tienda, aunque baje más).
+import { completar } from "./completar.mjs";
 import { readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { tarjetaHTML } from "./tg-tarjeta.mjs";
@@ -18,10 +19,10 @@ const SITIO = "https://pillaojuegos.com/";
 if (!TOKEN || !CANAL) { console.log("Telegram: faltan TELEGRAM_BOT_TOKEN o TELEGRAM_CANAL; no publico nada."); process.exit(0); }
 
 const leer = async (r, d) => { try { return JSON.parse(await readFile(r, "utf8")); } catch { return d; } };
-const ahora = await leer("precios.json", { juegos: [], tiendas: [] });
+const ahora = completar(await leer("precios.json", { juegos: [], tiendas: [] }));
 // La versión anterior de los precios es la del último commit (este paso va antes de guardar los nuevos)
 let antes = { juegos: [] };
-try { antes = ENV.TG_ANTES ? JSON.parse(await readFile(ENV.TG_ANTES, "utf8")) : JSON.parse(execFileSync("git", ["show", "HEAD:precios.json"], { maxBuffer: 1 << 30 }).toString()); } catch { console.log("Telegram: no hay versión anterior; no comparo."); process.exit(0); }
+try { antes = ENV.TG_ANTES ? JSON.parse(await readFile(ENV.TG_ANTES, "utf8")) : JSON.parse(execFileSync("git", ["show", "HEAD:precios.json"], { maxBuffer: 1 << 30 }).toString()); completar(antes); } catch { console.log("Telegram: no hay versión anterior; no comparo."); process.exit(0); }
 const estado = await leer("data/telegram.json", { publicados: {} });
 
 const tienda = Object.fromEntries((ahora.tiendas || []).map((t) => [t.id, t]));

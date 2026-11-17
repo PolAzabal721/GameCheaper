@@ -9,6 +9,7 @@
 //   5. Precios raros: tarjetas de saldo lejos de su valor, precios imposibles, regiones que no valen en España.
 //   6. Datos viejos: precios que llevan demasiado tiempo sin revisarse.
 // Deja el informe en data/auditoria.json y en el resumen de la ejecución. Si hay problemas graves, termina en rojo.
+import { completar } from "./completar.mjs";
 import { readFile, writeFile, mkdir, appendFile } from "node:fs/promises";
 
 const ENV = process.env;
@@ -18,7 +19,7 @@ const leer = async (r, d) => { try { return JSON.parse(await readFile(r, "utf8")
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
 
-const precios = await leer("precios.json", { juegos: [], tiendas: [] });
+const precios = completar(await leer("precios.json", { juegos: [], tiendas: [] }));
 const ps = (await leer("data/playstation.json", { juegos: {} })).juegos;
 const juegos = precios.juegos;
 const tienda = Object.fromEntries((precios.tiendas || []).map((t) => [t.id, t]));

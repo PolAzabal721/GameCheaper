@@ -4,6 +4,7 @@
 //   - juegos/ con la lista de todos los juegos (enlaza todas las páginas) y sitemap.xml
 // Uso: node scripts/paginas.mjs      (lo lanza el flujo «Publicar web»)
 
+import { completar } from "./completar.mjs";
 import { readFile, writeFile, mkdir, cp, rm, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -561,7 +562,7 @@ function paginaChollos(datos) {
 }
 
 async function main() {
-  const datos = JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8"));
+  const datos = completar(JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8")));
   BUSCADOR = datos.buscador || "";
   const tiendaPorId = Object.fromEntries(datos.tiendas.map((t) => [t.id, t]));
   // Latinoamérica: misma web en /latam/, con su propio archivo de precios (precios-latam.json, en dólares)

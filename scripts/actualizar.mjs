@@ -16,6 +16,7 @@
 //   - config/manual.json: ofertas que metes a mano.
 // Si una fuente falla, se conservan sus ofertas anteriores para no dejar huecos.
 
+import { completar, compactar } from "./completar.mjs";
 import { readFile, writeFile } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import { guardarHistorial } from "./historial.mjs";
@@ -1659,7 +1660,7 @@ async function main() {
   }
   // Prueba rápida de Alcampo con el catálogo actual, sin tocar precios.json (PRUEBA_ALCAMPO=1)
   if (ENV.PRUEBA_ALCAMPO) {
-    for (const v of JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8")).juegos) { const j = juego(v.titulo, { pop: v.pop, tipo: v.tipo }); if (j) v.plataformas.forEach((p) => j.plataformas.add(p)); }
+    for (const v of completar(JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8"))).juegos) { const j = juego(v.titulo, { pop: v.pop, tipo: v.tipo }); if (j) v.plataformas.forEach((p) => j.plataformas.add(p)); }
     const lista = [...juegos.values()].filter((j) => j.tipo !== "dlc" && j.tipo !== "tarjeta" && [...j.plataformas].some((p) => p !== "PC")).sort((a, b) => a.pop - b.pop);
     await alcampo(() => {});
     for (const j of juegos.values()) if (j.ofertas.some((o) => o.tienda === "alcampo")) console.log("ALCAMPO", j.titulo, "→", j.ofertas.filter((o) => o.tienda === "alcampo").map((o) => `${o.plataforma} ${o.precio}${o.stock ? "" : " (agotado)"} ${o.url}`).join(" | "));
@@ -1676,7 +1677,7 @@ async function main() {
   const tiendas = await leer("config/tiendas.json");
   const seguimiento = await leer("config/seguimiento.json", []);
   const manual = await leer("config/manual.json", []);
-  const anterior = await leer("precios.json", { juegos: [] });
+  const anterior = completar(await leer("precios.json", { juegos: [] }));
   const avisos = [], cuenta = {};
   const intentar = async (nombre, fn) => {
     try { const n = await fn(); cuenta[nombre] = (cuenta[nombre] || 0) + (n || 0); return true; }
@@ -2046,7 +2047,7 @@ async function main() {
       const lanzamiento = _fechaOf || _fechaIG || fechaAnterior.get(j.id) || undefined;
       const [imgV, covV] = imgAnterior.get(j.id) || [];
       // «fuente» solo se guarda cuando no es la propia tienda (el archivo pesa menos; al leerlo se repone)
-      j.ofertas = j.ofertas.map((o) => { if (o.fuente !== o.tienda) return o; const { fuente, ...r } = o; return r; });
+      j.ofertas = j.ofertas.map(compactar);
       return { ...j, plataformas: [...plataformas], pvp: j.pvp || undefined, revisado: revisado.size ? [...revisado] : undefined,
         img: _img || imgV || undefined, cov: _cov || covV || undefined,
         lanzamiento, reserva: lanzamiento > HOY || j.ofertas.some((o) => /^Reserva/.test(o.condicion || "")) || undefined };

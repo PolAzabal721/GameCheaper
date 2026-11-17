@@ -4,10 +4,11 @@
 //   1. Juegos testigo: juegos muy populares que cada tienda tiene que traer en cada ejecución.
 //   2. Volumen: si una tienda trae menos del 40 % de los precios nuevos que trajo la última vez que estaba bien.
 //   3. Fuentes caídas: las que el actualizador ha tenido que parar por errores.
+import { completar } from "./completar.mjs";
 import { readFile, writeFile, appendFile } from "node:fs/promises";
 
 const leer = async (r, d) => { try { return JSON.parse(await readFile(r, "utf8")); } catch { return d; } };
-const precios = await leer("precios.json", { juegos: [] });
+const precios = completar(await leer("precios.json", { juegos: [] }));
 const anterior = await leer("data/salud.json", { referencia: {} });
 const grupo = (t) => (t.startsWith("itad-") ? "itad" : t);
 const norm = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim();

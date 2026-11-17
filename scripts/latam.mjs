@@ -8,6 +8,7 @@
 //   - PlayStation Store: sus precios en México (pesos mexicanos → dólares)
 //   - Loaded: su catálogo en dólares (feeds/loaded-latam.json), solo claves globales o de Latinoamérica
 // Pendiente: Nintendo eShop de México (usa otros números de producto que la de España).
+import { completar } from "./completar.mjs";
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -61,7 +62,7 @@ const CABECERAS = { "User-Agent": "Mozilla/5.0 (compatible; Pillao-comparador/2.
 const OFICIALES_PC = /^(steam|gog|epic|microsoft|ea app|ea store|origin|ubisoft|battle\.net|blizzard|rockstar|bethesda|square enix|nintendo)/i;
 
 async function main() {
-  const es = await leer("precios.json", { juegos: [] });
+  const es = completar(await leer("precios.json", { juegos: [] }));
   const porLlaveES = new Map(); for (const j of es.juegos) { const k = llave(j.titulo); if (!porLlaveES.has(k)) porLlaveES.set(k, j); }
   const tasas = await cambios(), cambio = tasas.EUR;
   const tiendasL = new Map();
