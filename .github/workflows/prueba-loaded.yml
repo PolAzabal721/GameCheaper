@@ -9,9 +9,10 @@ jobs:
           U: ${{ secrets.LOADED_FTP_USER }}
           P: ${{ secrets.LOADED_FTP_PASS }}
         run: |
-          echo "usuario: ${#U} car. | contraseña: ${#P} car."
-          curl -sS --max-time 60 -u "$U:$P" "ftp://products.impact.com/" || true
-          echo "--- catalogs_info_file.xml"
-          curl -sS --max-time 60 -u "$U:$P" "ftp://products.impact.com/catalogs_info_file.xml" || true
-          echo; echo "--- nombres"
           curl -sS --max-time 60 -l -u "$U:$P" "ftp://products.impact.com/" || true
+          curl -sS --max-time 60 -u "$U:$P" "ftp://products.impact.com/catalogs_info_file.xml" | head -c 2000 || true
+      - name: Iconos de xtralife
+        run: |
+          UA='Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)'
+          curl -sSL -A "$UA" --max-time 30 https://www.xtralife.com/ | grep -oiE '<link[^>]*(icon|manifest)[^>]*>' | head -20
+          for u in "https://www.google.com/s2/favicons?domain=xtralife.com&sz=64" https://www.xtralife.com/favicon.ico; do curl -sSL -A "$UA" --max-time 30 -o x "$u" -w "%{http_code} %{content_type} %{size_download} $u\n"; file x; done
