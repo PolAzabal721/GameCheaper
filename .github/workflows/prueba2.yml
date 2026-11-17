@@ -26,18 +26,13 @@ jobs:
           if not isinstance(ps,list): print(f'[{F}] RESP',json.dumps(d)[:300]); raise SystemExit
           print(f'[{F}] PRODUCTOS',len(ps))
           def campo(x,n): return next((f.get('value') for f in x.get('fields',[]) if f.get('name')==n),None)
-          nombres=collections.Counter(f.get('name') for x in ps[:3000] for f in x.get('fields',[])); print(f'[{F}] CAMPOS',nombres.most_common(40))
-          print(f'[{F}] CLAVES',sorted(ps[0].keys()), 'OFERTA', sorted((ps[0].get('offers') or [{}])[0].keys()))
-          for k,_ in nombres.most_common(40):
-            vals=collections.Counter(str(campo(x,k))[:40] for x in ps)
-            if 2<len(vals)<400: print(f'[{F}] V',k,vals.most_common(12))
-          PLAT=re.compile(r'\b(ps5|ps4|switch 2|nintendo switch 2|switch|xbox series|xbox one)\b',re.I)
-          ACC=re.compile(r'mando|gamepad|volante|cargador|cable|funda|soporte|adaptador|auricular|cascos|tarjeta|suscripci|consola|figura|banda sonora|camiseta|taza|peluche|kit|base|bolsa|protector|grip|teclado|rat[oó]n|pedal|joy-?con|amiibo|memoria|disco duro|ssd|bater[ií]a|estuche|llavero|libro|cómic|comic|poster|póster|carcasa|skin|thrustmaster|headset|micro|c[aá]mara|lote|pack de|steelbook$',re.I)
-          J=[x for x in ps if PLAT.search(x.get('name','')) and not ACC.search(x.get('name',''))]
-          imp=[x for x in J if re.search(r'\b(imp|uk|usa|jp|asia|ita|fr|de)\b',x.get('name',''),re.I)]
-          pre=[x for x in J if ((x.get('offers') or [{}])[0].get('availability')=='preorder')]
-          print(f'[{F}] JUEGOS',len(J),'importados',len(imp),'reserva',len(pre))
-          pl=collections.Counter(PLAT.search(x['name']).group(1).lower() for x in J); print(f'[{F}] PLATAFORMAS',pl.most_common())
-          import random; random.seed(1)
-          for x in random.sample(J,min(30,len(J))): o=(x.get('offers') or [{}])[0]; print(f'[{F}] J',x.get('name','')[:90],'|',(o.get('priceHistory') or [{}])[0].get('price',{}).get('value'),'|',o.get('availability'),'|',(o.get('productUrl') or '')[:40])
+          import random; random.seed(2)
+          for k in ['productType','google_product_category']:
+            c=collections.Counter(str(campo(x,k)) for x in ps)
+            if len(c)<2: continue
+            print(f'[{F}] TIPOS',k,len(c),c.most_common(60))
+            for v,_ in c.most_common(60):
+              if re.search(r'jueg|game|video|consol|1279|ps5|ps4|switch|xbox',v,re.I):
+                xs=[x for x in ps if str(campo(x,k))==v]
+                for x in random.sample(xs,min(5,len(xs))): o=(x.get('offers') or [{}])[0]; print(f'[{F}] E',v[:40],'|',x.get('name','')[:80],'|',(o.get('priceHistory') or [{}])[0].get('price',{}).get('value'),'|',o.get('availability'))
           P
