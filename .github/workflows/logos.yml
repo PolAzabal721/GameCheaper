@@ -35,7 +35,16 @@ jobs:
               const dest="logos/"+dom.replace(/[^a-z0-9.-]/g,"")+".png";
               if(fs.existsSync(dest) && fs.statSync(dest).size>300){ continue; }
               let hecho=false;
-              for(const u of fuentes(dom)){
+              // Primero los iconos que la propia web declara en su portada (<link rel="icon"…>), el más grande antes
+              let propios=[];
+              try{
+                const h=await (await fetch("https://www."+dom+"/",{headers:UA,redirect:"follow"})).text();
+                propios=[...h.matchAll(/<link[^>]+rel=["'][^"']*icon[^"']*["'][^>]*>/gi)].map(m=>{
+                  const href=/href=["']([^"']+)/i.exec(m[0]), tam=/sizes=["'](\d+)/i.exec(m[0]);
+                  return href ? [new URL(href[1],"https://www."+dom+"/").href, tam ? +tam[1] : 0] : null;
+                }).filter(Boolean).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+              }catch(e){}
+              for(const u of [...propios,...fuentes(dom)]){
                 try{
                   const r=await fetch(u,{headers:UA,redirect:"follow"});
                   const b=Buffer.from(await r.arrayBuffer());
