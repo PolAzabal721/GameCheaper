@@ -1,0 +1,19 @@
+# Convierte el catálogo CSV de Kinguin (Admitad) en feeds/kinguin.json, solo con lo que vale en España.
+# Fuera: cuentas (GAME_ACCOUNT y nombres con «Account»), regalos de Steam (Altergift / Gift) y claves bloqueadas en España.
+import csv, json, re, sys, gzip
+csv.field_size_limit(10**9)
+origen, destino = sys.argv[1], sys.argv[2]
+abrir = gzip.open if origen.endswith(".gz") else open
+filas = []
+with abrir(origen, "rt", encoding="utf-8", errors="replace", newline="") as f:
+    for x in csv.DictReader(f, delimiter=";"):
+        c, n = x.get("categoryId", ""), x.get("name", "")
+        if c in ("GAME_ACCOUNT", "GAME_ACCOUNT_PREPAID", "ALTERGIFT"): continue
+        if re.search(r"\baccount\b|altergift|\bgift\b(?! card)", n, re.I): continue
+        if re.search(r"(^|,)ES(,|$)", x.get("country_limitations", "")): continue
+        try: pr = float(x.get("price") or 0); op = float(x.get("oldprice") or 0)
+        except ValueError: continue
+        if pr <= 0: continue
+        filas.append({"n": n, "c": c, "p": x.get("platform", ""), "r": x.get("region", ""), "pr": pr, "op": op, "u": x.get("url", ""), "s": x.get("steam_id", "")})
+json.dump(filas, open(destino, "w"), ensure_ascii=False, separators=(",", ":"))
+print(f"Kinguin: {len(filas)} productos válidos en España guardados")

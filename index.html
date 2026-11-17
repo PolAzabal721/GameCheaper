@@ -440,6 +440,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .minimo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--tag-ink); background: var(--tag); padding: 2px 7px; border-radius: 4px; }
 .tipo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
 .tipo-tag.t-tarjeta { background: var(--good-soft); color: var(--good); }
+.tipo-tag.t-software, .tipo-tag.t-otros { background: rgba(140,160,190,.18); color: var(--muted); }
 .vivo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--good); background: var(--good-soft); padding: 2px 7px; border-radius: 4px; }
 .busca-vivo { font-size: 14px; color: var(--muted); padding: 10px 14px; background: var(--surface); border: 1px dashed var(--line); border-radius: var(--r); }
 .busca-vivo.err { color: var(--warn); }
@@ -605,6 +606,8 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
         <button type="button" data-v="juego" aria-pressed="false">Juegos</button>
         <button type="button" data-v="dlc" aria-pressed="false">DLC</button>
         <button type="button" data-v="tarjeta" aria-pressed="false">Tarjetas regalo</button>
+        <button type="button" data-v="software" aria-pressed="false">Software</button>
+        <button type="button" data-v="otros" aria-pressed="false">Otros</button>
       </div>
       <span class="sep"></span>
       <div id="plataformas" style="display:flex;gap:6px" role="group" aria-label="Plataforma"></div>
@@ -1318,7 +1321,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
   }
   function mini(r) {
     var j = r.j, m = r.mejor, tm = tiendaPorId[m.tienda] || { nombre: m.tienda };
-    var tipo = j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición", tarjeta: "Tarjeta" }[j.tipo] || "") + "</span>" : "";
+    var tipo = j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición", tarjeta: "Tarjeta", software: "Software", otros: "Otros" }[j.tipo] || "") + "</span>" : "";
     var tiendasVistas = {}; r.ofs.forEach(function (o) { tiendasVistas[o.tienda] = 1; });
     var n = Object.keys(tiendasVistas).length;
     var plats = j.plataformas.filter(function (p) { return p !== "Tarjeta regalo"; });
@@ -1369,7 +1372,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
       '<div class="j-cab"><div class="j-izq">' + (fichaDe(j) ? '<a class="j-cov-a" href="' + fichaDe(j) + '" tabindex="-1" aria-hidden="true">' + imagenJuego(j, true, "j-cov") + "</a>" : imagenJuego(j, true, "j-cov")) + '<div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") + etiquetaFecha(j) +
       (enMinimo ? '<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>' : "") +
       etiquetaPremio(j) +
-      (j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo" }[j.tipo] || "") + "</span>" : "") + campanaTitulo(j) + '<div class="plats">' +
+      (j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo", software: "Software", otros: "Otros" }[j.tipo] || "") + "</span>" : "") + campanaTitulo(j) + '<div class="plats">' +
       j.plataformas.filter(function (p) { return p !== "Tarjeta regalo"; }).map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
       (r.nuevo != null || r.usado != null || j.pvp ? '<div class="resumen">' +
         (j.tipo === "tarjeta" && j.valor ? "<span>Valor <b>" + eur.format(j.valor) + "</b></span>" + (j.valor > total(m) ? "<span>Te ahorras <b>" + eur.format(j.valor - total(m)) + "</b></span>" : "") :

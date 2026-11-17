@@ -72,7 +72,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 const eur = (n) => new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n);
 const total = (o) => o.precio + (o.envio || 0);
 const AFILIADAS = { instantgaming: 1, yuplay: 1, g2a: 1, gamivo: 1 };
-const TIPO = { dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo" };
+const TIPO = { dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo", software: "Software", otros: "Otros" };
 
 // Política de seguridad (CSP): el navegador solo ejecuta los scripts de Pillao (por su huella exacta),
 // solo se conecta con la propia web y con el buscador, y no deja que otra web meta Pillao dentro ni envíe formularios fuera.
