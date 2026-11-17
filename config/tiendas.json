@@ -61,6 +61,14 @@
   ]
  },
  {
+  "id": "loaded",
+  "nombre": "Loaded",
+  "tipo": "revendedor",
+  "formatos": [
+   "digital"
+  ]
+ },
+ {
   "id": "yuplay",
   "nombre": "Yuplay",
   "tipo": "revendedor",

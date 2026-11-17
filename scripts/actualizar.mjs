@@ -1327,6 +1327,30 @@ async function gamersgateFeed(juegos) {
   return n;
 }
 
+// ---------- Loaded (antes CDKeys), catálogo de Impact por FTP ----------
+// El flujo de GitHub lo baja como mucho una vez al día (feeds/loaded.json). Ya viene con el enlace de afiliado.
+async function loadedFeed(juegos) {
+  let filas; try { filas = JSON.parse(await readFile(join(RAIZ, "feeds", "loaded.json"), "utf8")); } catch { return 0; }
+  if (!filas.length) return 0;
+  const porLlave = new Map();
+  for (const j of juegos.values()) { const k = llave(j.titulo); if (!porLlave.has(k)) porLlave.set(k, j); }
+  let n = 0, nuevos = 0;
+  for (const f of filas) {
+    const nombre = html2txt(f.n).replace(/[™®©]/g, "").replace(/\s+/g, " ").trim();
+    if (!nombre || NO_PRODUCTO.test(limpiar(nombre))) continue;
+    const tipo = f.t || (DLC_RE.test(limpiar(nombre)) ? "dlc" : null);
+    let j = porLlave.get(llave(nombre));
+    if (!j) { j = juego(nombre, { pop: 99999, tipo: tipo || tipoDe(nombre) }); if (!j) continue; porLlave.set(llave(nombre), j); nuevos++; }
+    if (f.img && f.t !== "tarjeta") ponerImagen(j, "loaded", f.img, f.img);
+    const region = /worldwide/i.test(f.reg) ? "Global" : /spain/i.test(f.reg) ? "España" : "Europa";
+    ofertar(j, { tienda: "loaded", plataforma: f.pl, precio: f.p, regular: f.r > f.p ? f.r : undefined, stock: true, drm: f.pl === "PC" ? f.d || undefined : undefined,
+      condicion: (f.t === "tarjeta" ? "Código digital" : `Clave ${f.pl === "PC" ? f.d || "PC" : f.d || f.pl}`) + " · " + region, url: f.u, fuente: "loaded" });
+    j.revisado.add("loaded"); visitar("loaded", j); n++;
+  }
+  console.log(`Loaded: ${n} precios de su catálogo (${nuevos} productos nuevos en el catálogo)`);
+  return n;
+}
+
 // ---------- Otros feeds de Tradedoubler (juegos en disco): xtralife y PCbox ----------
 // Igual que MediaMarkt: solo se descargan cuando cambian (Tradedoubler permite 3 descargas por versión de catálogo al día).
 const TD_PLATS = { "PS5": "PS5", "PS4": "PS4", "Switch": "Switch", "Switch 2": "Switch 2", "Nintendo Switch 2": "Switch 2", "Nintendo Switch": "Switch", "Xbox Series": "Xbox Series", "Xbox Series X": "Xbox Series", "Xbox Series X|S": "Xbox Series" };
@@ -1855,6 +1879,7 @@ async function main() {
   if (ENV.TRADEDOUBLER_TOKEN) { try { await mediamarkt(juegos, avisos); } catch (e) { avisos.push("mediamarkt: " + e.message); caidas.add("mediamarkt"); } }
   if (ENV.TRADEDOUBLER_TOKEN) { try { await feedsTD(juegos, avisos); } catch (e) { avisos.push("tradedoubler: " + e.message); } }
   try { cuenta.kinguin = await kinguinFeed(juegos, avisos); } catch (e) { avisos.push("kinguin: " + e.message); caidas.add("kinguin"); }
+  try { cuenta.loaded = await loadedFeed(juegos); } catch (e) { avisos.push("loaded: " + e.message); caidas.add("loaded"); }
   try { cuenta.gamersgate = await gamersgateFeed(juegos); } catch (e) { avisos.push("gamersgate: " + e.message); caidas.add("gamersgate"); }
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) {

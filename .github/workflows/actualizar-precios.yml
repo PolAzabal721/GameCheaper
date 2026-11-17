@@ -48,6 +48,23 @@ jobs:
           curl -sSL --max-time 300 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/gamersgate.xml "https://feeds.gamersgate.com/feeds/products?country=ESP&aff=15600f04623a9a73fa267b81bfec59911a3e5263"
           python3 scripts/gamersgate_feed.py feeds/gamersgate.xml feeds/gamersgate.json
           rm feeds/gamersgate.xml
+      - name: Catálogo de Loaded (como mucho una descarga al día)
+        id: cache-loaded
+        uses: actions/cache@v4
+        with:
+          path: feeds/loaded.json
+          key: loaded-${{ steps.hoy.outputs.d }}
+      - name: Descargar el catálogo de Loaded (FTP de Impact, en euros y en español)
+        if: steps.cache-loaded.outputs.cache-hit != 'true'
+        continue-on-error: true
+        env:
+          U: ${{ secrets.LOADED_FTP_USER }}
+          P: ${{ secrets.LOADED_FTP_PASS }}
+        run: |
+          mkdir -p feeds
+          curl -sS --max-time 300 -u "$U:$P" -o feeds/loaded.xml.gz "ftp://products.impact.com/Loaded/Loaded-ProductFeedEURSpanish_CUSTOM.xml.gz"
+          python3 scripts/loaded_feed.py feeds/loaded.xml.gz feeds/loaded.json
+          rm feeds/loaded.xml.gz
       - name: Catálogo de K4G por CJ (con enlace de afiliado cuando CJ nos acepte)
         continue-on-error: true
         env:
