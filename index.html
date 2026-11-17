@@ -510,6 +510,8 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .dest-lista a, .pk-grid a { display: flex; flex-direction: column; gap: 6px; height: 100%; padding: 8px 8px 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); text-decoration: none; transition: transform .18s ease, border-color .18s ease; }
 @media (hover: hover) { .dest-lista a:hover, .pk-grid a:hover { transform: translateY(-2px); border-color: var(--accent); } }
 .dest-img { position: relative; display: block; border-radius: 9px; overflow: hidden; aspect-ratio: 460/215; background: var(--surface-2); }
+.dest-sin { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); opacity: .5; }
+.dest-sin svg { width: 44px; height: 44px; }
 .dest-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s ease; }
 @media (hover: hover) { .dest-lista a:hover .dest-img img { transform: scale(1.03); } }
 .dest-tj { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 8px 10px; color: #fff; font-family: var(--f-display); font-weight: 800; font-size: 26px; line-height: 1; }
@@ -1498,7 +1500,12 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   // Si una imagen no carga: probamos la alternativa y, si tampoco, dejamos el hueco con el icono
   document.addEventListener("error", function (e) {
     var im = e.target;
-    if (!im || im.tagName !== "IMG" || !im.parentNode || !im.parentNode.classList || !im.parentNode.classList.contains("pt-img")) return;
+    if (!im || im.tagName !== "IMG" || !im.parentNode || !im.parentNode.classList) return;
+    // Tarjetas de chollos y packs: sin imagen, el hueco con el icono del mando (no el icono de imagen rota)
+    if (im.parentNode.classList.contains("dest-img") || im.parentNode.classList.contains("pk-col")) {
+      var hueco = document.createElement("span"); hueco.className = "dest-sin"; hueco.innerHTML = ICONO_MANDO; im.replaceWith(hueco); return;
+    }
+    if (!im.parentNode.classList.contains("pt-img")) return;
     if (im.dataset.alt) {
       var resto = im.dataset.alt.split("|");
       var siguiente = resto.shift();

@@ -166,14 +166,19 @@ button, input, select { font: inherit; color: inherit; }
   const fechaCorta = (f) => +f.slice(8) + " " + MESES[+f.slice(5, 7) - 1];
 
   let datos = null, rango = +(guardado("pillao-panel-rango") || 7), tienda = "";
-  let nombresTienda = {}, titulos = {};
+  let nombresTienda = {}, titulos = {}, todasTiendas = [];
 
   // Nombres de tiendas y de juegos, del propio catálogo de la web
   fetch("precios.json").then((r) => r.json()).then((d) => {
-    (d.tiendas || []).forEach((t) => { nombresTienda[t.id] = t.nombre; });
+    (d.tiendas || []).forEach((t) => { nombresTienda[t.id] = t.nombre; if (!todasTiendas.includes(t.id)) todasTiendas.push(t.id); });
     (d.juegos || []).forEach((j) => { titulos[j.id] = j.titulo; });
     if (datos) pintar();
     if (d.resto) fetch(d.resto).then((r) => r.json()).then((x) => { (x.juegos || []).forEach((j) => { titulos[j.id] = j.titulo; }); if (datos) pintar(); }).catch(() => {});
+  }).catch(() => {});
+  // Tiendas de Latinoamérica (las que no están en España también salen en el selector)
+  fetch("latam/precios.json").then((r) => r.json()).then((d) => {
+    (d.tiendas || []).forEach((t) => { if (!nombresTienda[t.id]) nombresTienda[t.id] = t.nombre + " (Latam)"; if (!todasTiendas.includes(t.id)) todasTiendas.push(t.id); });
+    if (datos) pintar();
   }).catch(() => {});
   const nomTienda = (id) => nombresTienda[id] || id;
   const nomJuego = (id) => titulos[id] || id.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
@@ -246,9 +251,12 @@ button, input, select { font: inherit; color: inherit; }
     lista($("l-origen"), agrupa(dd.origen || {}, dias).slice(0, 15).map(([k, v]) => ({ n: k, v })));
     lista($("l-paginas"), agrupa(dd.paginas || {}, dias).slice(0, 15).map(([k, v]) => ({ n: k === "/" ? "/ (portada)" : k, v })));
     // Selector de tiendas
-    const sel = $("f-tienda"), opts = agrupa(clicsDia, Object.keys(clicsDia)).map(([k]) => k);
-    if (tienda && !opts.includes(tienda)) opts.unshift(tienda);
-    sel.replaceChildren(new Option("Todas las tiendas", ""), ...opts.map((k) => new Option(nomTienda(k), k)));
+    // Primero las que tienen clics en el periodo (de más a menos); después todas las demás que comparamos, por nombre
+    const sel = $("f-tienda"), conClics = agrupa(clicsDia, dias).map(([k]) => k);
+    const resto = todasTiendas.filter((k) => !conClics.includes(k)).sort((a, b) => nomTienda(a).localeCompare(nomTienda(b), "es"));
+    if (tienda && !conClics.includes(tienda) && !resto.includes(tienda)) conClics.unshift(tienda);
+    const grupo = (txt, ids) => { const g = document.createElement("optgroup"); g.label = txt; ids.forEach((k) => g.append(new Option(nomTienda(k), k))); return g; };
+    sel.replaceChildren(new Option("Todas las tiendas", ""), ...(conClics.length ? [grupo("Con clics en este periodo", conClics)] : []), ...(resto.length ? [grupo("Sin clics", resto)] : []));
     sel.value = tienda;
   }
 

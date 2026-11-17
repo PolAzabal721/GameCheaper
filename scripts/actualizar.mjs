@@ -1366,8 +1366,10 @@ const nombreTD = (n) => nombreMM(html2txt(n)
   .replace(/\s+[-–]\s*$/, "").trim();
 const FEEDS_TD = [
   { id: "xtralife", fid: 106116, nombre: "xtralife",
-    elegir(p, campo) { const m = /^Juegos > (PS5|PS4|Switch 2|Switch|Xbox Series) > Físico/.exec(html2txt(campo(p, "productType")));
-      return m ? TD_PLATS[m[1]] : null; } },
+    // Juegos en disco y en código digital de las plataformas actuales (y los de Xbox One y PC, que también se juegan en ellas)
+    elegir(p, campo) { const m = /^Juegos > (PS5|PS4|Switch 2|Switch|Xbox Series|Xbox One|PC) > (Físico|Digital)/.exec(html2txt(campo(p, "productType")));
+      if (!m) return null;
+      return { plat: m[1] === "Xbox One" ? "Xbox Series" : TD_PLATS[m[1]] || m[1], formato: m[2] === "Digital" ? "digital" : "fisico", cond: m[1] === "Xbox One" ? "Edición Xbox One" : undefined }; } },
   { id: "pcbox", fid: 50247, nombre: "PCbox",
     elegir(p) { const n = p.name || "", cats = JSON.stringify(p.categories || []);
       if (!/^juego\b/i.test(n) && !/videojuego/i.test(cats)) return null;
@@ -1386,7 +1388,7 @@ async function feedsTD(juegos, avisos) {
     let ultima = null;
     try { ultima = (await (await pedir(`https://api.tradedoubler.com/1.0/productsUnlimited/lastUpdated.json;compress=zip;fid=${F.fid}?token=${token}`)).json()).lastUpdatedTime || null; }
     catch (e) { console.warn(`${F.nombre}: no se sabe cuándo cambió el feed (${e.message.slice(0, 80)})`); }
-    if (!cache.productos || !ultima || ultima !== cache.ultima) {
+    if (!cache.productos || cache.v !== 2 || !ultima || ultima !== cache.ultima) {
       try {
         const r = await fetch(`https://api.tradedoubler.com/1.0/productsUnlimited.json;compress=zip;fid=${F.fid}?token=${token}`, { redirect: "follow" });
         if (r.status !== 200) throw new Error("HTTP " + r.status + (r.status === 202 ? " (Tradedoubler está preparando el archivo)" : ""));
@@ -1397,17 +1399,20 @@ async function feedsTD(juegos, avisos) {
         const campo = (p, n) => ((p.fields || []).find((x) => x.name === n) || {}).value || "";
         const productos = [];
         for (const p of d.products || []) {
-          const plat = F.elegir(p, campo), o = (p.offers || [])[0];
-          if (!plat || !o) continue;
+          const el = F.elegir(p, campo), o = (p.offers || [])[0];
+          if (!el || !o) continue;
+          const plat = typeof el === "string" ? el : el.plat, formato = typeof el === "string" ? "fisico" : el.formato, cond = typeof el === "string" ? undefined : el.cond;
           const precio = +(o.priceHistory?.[0]?.price?.value || 0), antes = +campo(p, "PreviousPrice") || 0;
           if (!(precio > 0) || (o.condition && o.condition !== "new")) continue;
           const envio = +((o.shippingCost || "").match(/([\d.]+)\s*EUR/) || [])[1] || 0;
-          productos.push({ nombre: nombreTD(html2txt(p.name || "")), plat, precio, normal: antes, envio, imp: RE_IMPORT.test(p.name || "") || undefined,
+          productos.push({ nombre: nombreTD(html2txt(p.name || "")), plat, formato, cond, precio, normal: antes, envio, imp: RE_IMPORT.test(p.name || "") || undefined,
             stock: !/out of stock/i.test(o.availability || ""), reserva: /pre.?order/i.test(o.availability || "") || undefined, url: enlaceTD(o.productUrl) });
         }
         // Copia ligera de TODO el catálogo (nombre, categoría, disponibilidad) para revisar qué se queda fuera sin volver a descargar
         await writeFile(join(RAIZ, "data", F.id + "-todo.json"), JSON.stringify((d.products || []).map((p) => [html2txt(p.name || ""), html2txt(campo(p, "productType")), ((p.offers || [])[0] || {}).availability || ""])));
-        cache = { ultima: ultima || new Date().toISOString(), descargado: new Date().toISOString(), productos };
+        // Muestra de los productos sin categoría con todos sus campos (para ver cómo reconocer su plataforma)
+        await writeFile(join(RAIZ, "data", F.id + "-sincat.json"), JSON.stringify((d.products || []).filter((p) => !campo(p, "productType")).slice(0, 60)));
+        cache = { v: 2, ultima: ultima || new Date().toISOString(), descargado: new Date().toISOString(), productos };
         await writeFile(archivo, JSON.stringify(cache));
         console.log(`${F.nombre}: feed nuevo descargado (${(d.products || []).length} productos, ${productos.length} juegos en disco, ${productos.filter((x) => x.imp).length} de importación)`);
       } catch (e) {
@@ -1421,8 +1426,8 @@ async function feedsTD(juegos, avisos) {
       if (!p.nombre || NO_PRODUCTO.test(limpiar(p.nombre))) continue;
       let j = porLlave.get(llave(p.nombre));
       if (!j) { j = juego(p.nombre, { pop: 99999 }); if (!j) continue; porLlave.set(llave(p.nombre), j); nuevos++; }
-      ofertar(j, { tienda: F.id, plataforma: p.plat, formato: "fisico", estado: "nuevo", precio: p.precio, regular: p.normal > p.precio ? p.normal : undefined,
-        envio: p.envio || undefined, stock: p.stock, url: enlaceTD(p.url), fuente: F.id, ...(p.imp ? { imp: 1, condicion: "Importación" } : {}) });
+      ofertar(j, { tienda: F.id, plataforma: p.plat, formato: p.formato || "fisico", estado: "nuevo", precio: p.precio, regular: p.normal > p.precio ? p.normal : undefined,
+        envio: p.envio || undefined, stock: p.stock, url: enlaceTD(p.url), fuente: F.id, ...(p.imp ? { imp: 1, condicion: "Importación" } : p.cond ? { condicion: p.cond } : {}) });
       j.revisado.add(F.id); visitar(F.id, j); n++;
     }
     console.log(`${F.nombre}: ${n} precios de juegos en disco (${nuevos} juegos nuevos en el catálogo)`);
