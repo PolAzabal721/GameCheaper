@@ -993,7 +993,8 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     return base;
   }
   // La búsqueda nunca se guarda (si se guardaba, una versión antigua de la página en la caché del navegador la volvía a poner al entrar)
-  function guardarFiltros() { if (!prefsOk()) return; try { var g = {}; for (var k in f) if (k !== "q") g[k] = f[k]; localStorage.setItem("pillao-filtros", JSON.stringify(g)); } catch (e) {} }
+  var filtrosDeLaUrl = false;  // true: esta visita llegó con filtros en la dirección; no se guardan como tus filtros
+  function guardarFiltros() { if (!prefsOk() || filtrosDeLaUrl) return; try { var g = {}; for (var k in f) if (k !== "q") g[k] = f[k]; localStorage.setItem("pillao-filtros", JSON.stringify(g)); } catch (e) {} }
   guardarFiltros();  // borra la búsqueda que quedara guardada de antes
 
   // Búsquedas recientes (solo con permiso de preferencias)
@@ -2718,9 +2719,23 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   if (/[?&]datos\b/.test(location.search)) $("grupo-datos").hidden = false;
   $("json-reset").addEventListener("click", function () { origen = "servidor"; msg("", true); leerServidor(true); });
 
-  // ?tienda=instantgaming en la dirección: se entra con el filtro de esa tienda ya puesto
-  // (lo usan las páginas de cada tienda; se aplica una sola vez, al cargar el catálogo)
-  var tiendaUrl = (new URLSearchParams(location.search).get("tienda") || "").trim().toLowerCase().slice(0, 40);
+  // ---------- Datos en la dirección (?tienda=, ?plat=, ?q=) ----------
+  // Regla para todos: solo se aplican si vienes de otra página de Pillao (botones de las fichas y de las páginas de
+  // chollos). Google indexó esas direcciones y al entrar desde él salían búsquedas y filtros que no tocaban.
+  // Lo que se aplica desde la dirección es solo para esa visita: no se guarda como tus filtros.
+  // Y esas direcciones llevan noindex para que Google deje de enseñarlas (la buena es la portada, la canónica).
+  var desdePillao = false;
+  try { desdePillao = !!document.referrer && new URL(document.referrer).host === location.host; } catch (e) {}
+  var paramsUrl = new URLSearchParams(location.search);
+  if (/[?&](q|tienda|plat)=/.test(location.search)) {
+    try { var mr = document.createElement("meta"); mr.name = "robots"; mr.content = "noindex, follow"; document.head.appendChild(mr); } catch (e) {}
+    if (desdePillao) filtrosDeLaUrl = true;
+  }
+  function quitarDeLaUrl(clave) { try { var u = new URL(location.href); u.searchParams.delete(clave); history.replaceState(null, "", u.pathname + u.search + u.hash); } catch (e) {} }
+
+  // ?tienda=instantgaming: se entra con el filtro de esa tienda ya puesto (páginas de cada tienda; una vez, al cargar el catálogo)
+  var tiendaUrl = desdePillao ? (paramsUrl.get("tienda") || "").trim().toLowerCase().slice(0, 40) : "";
+  if (paramsUrl.has("tienda") && !desdePillao) quitarDeLaUrl("tienda");
   var tiendaPuesta = false;
   function aplicarTiendaDeLaUrl() {
     if (!tiendaUrl || tiendaPuesta || !datos || !datos.tiendas.length) return;
@@ -2737,20 +2752,13 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   }
 
   // ?plat=PC (o PS5,PS4) en la dirección: llega desde las páginas de chollos; se aplica una vez y se quita
-  var platUrl = (new URLSearchParams(location.search).get("plat") || "").slice(0, 60);
-  if (platUrl) {
-    f.plats = platUrl.split(",").map(function (p) { return p.trim(); }).filter(Boolean);
-    try { var uP = new URL(location.href); uP.searchParams.delete("plat"); history.replaceState(null, "", uP.pathname + uP.search + uP.hash); } catch (e) {}
-  }
+  var platUrl = desdePillao ? (paramsUrl.get("plat") || "").slice(0, 60) : "";
+  if (platUrl) f.plats = platUrl.split(",").map(function (p) { return p.trim(); }).filter(Boolean);
+  if (paramsUrl.has("plat")) quitarDeLaUrl("plat");
 
   // ?q=nombre en la dirección: llega desde la página de un juego
   var qUrl = new URLSearchParams(location.search).get("q");
-  // Solo se aplica si vienes de una página de Pillao (el botón «Ver historial» de la ficha de un juego). Google tenía
-  // indexadas direcciones con ?q= (las sacaba de esos botones) y al entrar desde el buscador salía una búsqueda que no tocaba.
-  var desdePillao = false;
-  try { desdePillao = !!document.referrer && new URL(document.referrer).host === location.host; } catch (e) {}
   if (qUrl) {
-    try { var mr = document.createElement("meta"); mr.name = "robots"; mr.content = "noindex, follow"; document.head.appendChild(mr); } catch (e) {}  // que Google deje de mostrar estas direcciones
     if (desdePillao) { f.q = qUrl.slice(0, 80); $("q").value = f.q; }
     // Se quita de la dirección en cuanto se lee: si no, al recargar volvía la misma búsqueda aunque la hubieras borrado
     try { var uQ = new URL(location.href); uQ.searchParams.delete("q"); history.replaceState(null, "", uQ.pathname + uQ.search + uQ.hash); } catch (e) {}

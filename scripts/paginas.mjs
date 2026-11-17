@@ -382,7 +382,7 @@ function paginaOfertas(datos, tiendaPorId, { ruta, titulo, h1, intro, plataforma
 <section class="hero"><h1>${esc(h1)}</h1><p class="resumen">${intro} Precios actualizados el ${fecha}${tienda ? "" : `, de ${nTiendas} tiendas`}.</p>
 <nav class="saltos">${secciones.map((s) => `<a href="#${s.id}">${s.t}</a>`).join("")}</nav></section>
 ${secciones.map((s) => `<h2 id="${s.id}">${s.t}</h2><ul class="ofertas">${s.xs.map(tarjeta).join("")}</ul>`).join("\n")}
-<div class="cta"><a class="boton" href="../${cta.href}">${esc(cta.texto)}</a></div>
+<div class="cta"><a class="boton" rel="nofollow" href="../${cta.href}">${esc(cta.texto)}</a></div>
 <h2>Preguntas frecuentes</h2><div class="faq">${preguntas.map(([q, r]) => `<details><summary>${q}</summary><p>${r}</p></details>`).join("")}</div>
 <h2 class="mas-ch">Más chollos</h2><nav class="saltos otras"><a href="../chollos/">Todos los chollos</a>${otras}</nav>`;
   const jsonld = [{
