@@ -218,7 +218,7 @@ function ofertar(j, o) {
   // Una sola oferta por tienda + plataforma + estado: la más barata
   // (y por tipo de clave, para poder filtrar "solo claves de Steam" en Instant Gaming)
   // (y en segunda mano de particulares, una por estado del artículo: como nuevo, muy bueno, bueno…)
-  const igual = j.ofertas.find((x) => x.tienda === o.tienda && x.plataforma === o.plataforma && (x.estado || "nuevo") === (o.estado || "nuevo") && (x.drm || "") === (o.drm || "") && (x.calidad || "") === (o.calidad || ""));
+  const igual = j.ofertas.find((x) => x.tienda === o.tienda && x.plataforma === o.plataforma && (x.estado || "nuevo") === (o.estado || "nuevo") && (x.drm || "") === (o.drm || "") && (x.calidad || "") === (o.calidad || "") && !!x.imp === !!o.imp);
   const nueva = { estado: "nuevo", stock: true, formato: "digital", ...o, precio: redondear(o.precio), t: o.t || AHORA };
   // Preferimos lo que hay en stock; a igualdad, lo más barato
   const tot = (x) => x.precio + (x.envio || 0);
@@ -1214,6 +1214,81 @@ async function mediamarkt(juegos, avisos) {
   return n;
 }
 
+// ---------- Otros feeds de Tradedoubler (juegos en disco): xtralife y PCbox ----------
+// Igual que MediaMarkt: solo se descargan cuando cambian (Tradedoubler permite 3 descargas por versión de catálogo al día).
+const TD_PLATS = { "PS5": "PS5", "PS4": "PS4", "Switch": "Switch", "Switch 2": "Switch 2", "Nintendo Switch 2": "Switch 2", "Nintendo Switch": "Switch", "Xbox Series": "Xbox Series", "Xbox Series X": "Xbox Series", "Xbox Series X|S": "Xbox Series" };
+// Juegos de importación: se muestran con la marca «Importación» (el usuario puede ocultarlos en los filtros)
+const RE_IMPORT = /\(import\)|\bimp(ortaci[oó]n)?\.?\s*(usa|uk|jp|asia|eu|ita|fr|de)?\b|(^|[\s(,-])(uk|usa|jp|asia)(?=[\s),]|$)|\(uk[^)]*\)|\(multi-?language\)/i;
+const PLAT_FIN = /\s*[-–]?\s*(edici[oó]n\s+)?(ps5|ps4|nintendo switch 2|nintendo switch|switch 2|switch|xbox series x\s*\|?\s*s|xbox series x|xbox series)\s*$/i;
+const nombreTD = (n) => nombreMM(html2txt(n)
+  .replace(/^juego\s+(sony\s+|nintendo\s+|microsoft\s+)?/i, "")
+  .replace(/\s*-\s*(gkc|ciab)\b.*$/i, "").replace(/\((import|multi-?language)\)/gi, "").replace(/\s*-?\s*imp\.?\s*(usa|uk|jp|asia|eu)\b/gi, "")
+  .replace(/\s*-\s*(uk|usa|jp)\b/gi, "").replace(/\(uk[^)]*\)/gi, "").replace(/\b(ita\/esp|esp\/ita)\b/gi, "")
+  .replace(/\s+/g, " ").trim().replace(PLAT_FIN, "").replace(PLAT_FIN, ""))
+  .replace(/\s+[-–]\s*$/, "").trim();
+const FEEDS_TD = [
+  { id: "xtralife", fid: 106116, nombre: "xtralife",
+    elegir(p, campo) { const m = /^Juegos > (PS5|PS4|Switch 2|Switch|Xbox Series) > Físico/.exec(html2txt(campo(p, "productType")));
+      return m ? TD_PLATS[m[1]] : null; } },
+  { id: "pcbox", fid: 50247, nombre: "PCbox",
+    elegir(p) { const n = p.name || "", cats = JSON.stringify(p.categories || []);
+      if (!/^juego\b/i.test(n) && !/videojuego/i.test(cats)) return null;
+      if (/mando|gamepad|volante|cargador|cable|funda|soporte|adaptador|auricular|consola|kit|joystick|pedal|teclado|rat[oó]n/i.test(n)) return null;
+      const m = /\b(PS5|PS4|Nintendo Switch 2|Switch 2|Nintendo Switch|Switch|Xbox Series X\|S|Xbox Series X|Xbox Series)\b/i.exec(n);
+      return m ? TD_PLATS[Object.keys(TD_PLATS).find((k) => k.toLowerCase() === m[1].toLowerCase())] : null; } },
+];
+async function feedsTD(juegos, avisos) {
+  const token = (ENV.TRADEDOUBLER_TOKEN || "").replace(/\s+/g, "");
+  if (!token) return;
+  const porLlave = new Map();
+  for (const j of juegos.values()) if (j.tipo !== "tarjeta") { const k = llave(j.titulo); if (!porLlave.has(k)) porLlave.set(k, j); }
+  for (const F of FEEDS_TD) {
+    const archivo = join(RAIZ, "data", F.id + ".json");
+    let cache = {}; try { cache = JSON.parse(await readFile(archivo, "utf8")); } catch {}
+    let ultima = null;
+    try { ultima = (await (await pedir(`https://api.tradedoubler.com/1.0/productsUnlimited/lastUpdated.json;compress=zip;fid=${F.fid}?token=${token}`)).json()).lastUpdatedTime || null; }
+    catch (e) { console.warn(`${F.nombre}: no se sabe cuándo cambió el feed (${e.message.slice(0, 80)})`); }
+    if (!cache.productos || !ultima || ultima !== cache.ultima) {
+      try {
+        const r = await fetch(`https://api.tradedoubler.com/1.0/productsUnlimited.json;compress=zip;fid=${F.fid}?token=${token}`, { redirect: "follow" });
+        if (r.status !== 200) throw new Error("HTTP " + r.status + (r.status === 202 ? " (Tradedoubler está preparando el archivo)" : ""));
+        const zip = join(RAIZ, F.id + ".zip");
+        await writeFile(zip, Buffer.from(await r.arrayBuffer()));
+        const d = JSON.parse(execFileSync("unzip", ["-p", zip], { maxBuffer: 1024 * 1024 * 1024 }).toString("utf8"));
+        execFileSync("rm", ["-f", zip]);
+        const campo = (p, n) => ((p.fields || []).find((x) => x.name === n) || {}).value || "";
+        const productos = [];
+        for (const p of d.products || []) {
+          const plat = F.elegir(p, campo), o = (p.offers || [])[0];
+          if (!plat || !o) continue;
+          const precio = +(o.priceHistory?.[0]?.price?.value || 0), antes = +campo(p, "PreviousPrice") || 0;
+          if (!(precio > 0) || (o.condition && o.condition !== "new")) continue;
+          const envio = +((o.shippingCost || "").match(/([\d.]+)\s*EUR/) || [])[1] || 0;
+          productos.push({ nombre: nombreTD(html2txt(p.name || "")), plat, precio, normal: antes, envio, imp: RE_IMPORT.test(p.name || "") || undefined,
+            stock: !/out of stock/i.test(o.availability || ""), reserva: /pre.?order/i.test(o.availability || "") || undefined, url: enlaceTD(o.productUrl) });
+        }
+        cache = { ultima: ultima || new Date().toISOString(), descargado: new Date().toISOString(), productos };
+        await writeFile(archivo, JSON.stringify(cache));
+        console.log(`${F.nombre}: feed nuevo descargado (${(d.products || []).length} productos, ${productos.length} juegos en disco, ${productos.filter((x) => x.imp).length} de importación)`);
+      } catch (e) {
+        avisos.push(F.id + ": " + e.message.slice(0, 120));
+        if (!cache.productos) continue;
+        console.warn(`${F.nombre}: se usan los precios guardados`);
+      }
+    } else console.log(`${F.nombre}: el feed no ha cambiado; se usan los ${cache.productos.length} juegos guardados`);
+    let n = 0, nuevos = 0;
+    for (const p of cache.productos) {
+      if (!p.nombre || NO_PRODUCTO.test(limpiar(p.nombre))) continue;
+      let j = porLlave.get(llave(p.nombre));
+      if (!j) { j = juego(p.nombre, { pop: 99999 }); if (!j) continue; porLlave.set(llave(p.nombre), j); nuevos++; }
+      ofertar(j, { tienda: F.id, plataforma: p.plat, formato: "fisico", estado: "nuevo", precio: p.precio, regular: p.normal > p.precio ? p.normal : undefined,
+        envio: p.envio || undefined, stock: p.stock, url: enlaceTD(p.url), fuente: F.id, ...(p.imp ? { imp: 1, condicion: "Importación" } : {}) });
+      j.revisado.add(F.id); visitar(F.id, j); n++;
+    }
+    console.log(`${F.nombre}: ${n} precios de juegos en disco (${nuevos} juegos nuevos en el catálogo)`);
+  }
+}
+
 // ---------- Alcampo (juegos en disco) ----------
 // Su tienda online tiene un buscador con los datos de cada producto (nombre, precio, disponibilidad y sección).
 // Su robots.txt permite consultarlo. Solo cogemos productos de la sección «Videojuegos» que no sean consolas ni accesorios,
@@ -1661,6 +1736,7 @@ async function main() {
   }
   if (!(await intentar("alcampo", () => alcampo((j) => visitar("alcampo", j))))) caidas.add("alcampo");
   if (ENV.TRADEDOUBLER_TOKEN) { try { await mediamarkt(juegos, avisos); } catch (e) { avisos.push("mediamarkt: " + e.message); caidas.add("mediamarkt"); } }
+  if (ENV.TRADEDOUBLER_TOKEN) { try { await feedsTD(juegos, avisos); } catch (e) { avisos.push("tradedoubler: " + e.message); } }
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) {
     // Juegos en disco (no DLC ni tarjetas): los populares siempre y el resto por turnos, hasta cubrir todo el catálogo
