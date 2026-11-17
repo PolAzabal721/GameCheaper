@@ -1,0 +1,13 @@
+name: Prueba temporal CJ (K4G)
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - name: K4G en CJ
+        env:
+          T: ${{ secrets.CJ_TOKEN }}
+        run: |
+          for r in joined notjoined; do echo "== K4G ($r)"; curl -s -H "Authorization: Bearer $T" "https://advertiser-lookup.api.cj.com/v2/advertiser-lookup?requestor-cid=8127571&advertiser-ids=$r&keywords=K4G" | grep -oE '<advertiser-id>[^<]*|<advertiser-name>[^<]*|<relationship-status>[^<]*|<total-matched>[^<]*|total-matched="[0-9]*"|<default>[^<]*' | head -20; done
+          echo "== valores de partnerStatus"
+          curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d '{"query":"{ __type(name: \"PartnerStatus\") { enumValues { name } } }"}' https://ads.api.cj.com/query; echo
