@@ -103,6 +103,7 @@ async function main() {
     const plataforma = tipo === "tarjeta" ? "Tarjeta regalo" : tipo === "software" || tipo === "skins" ? "PC" : KIN_PLAT[f.p];
     if (!plataforma || !(f.pr > 0)) continue;
     let nombre = html2txt(f.n).replace(/[™®©]/g, "");
+    if (tipo === "juego" || tipo === "dlc") nombre = nombre.replace(/\s*\+\s*pre-?order bonus( dlc)?\b/gi, " ").replace(/\s*[-(]?\s*\bpre-?order\b\s*\)?/gi, " ");
     nombre = tipo === "juego" || tipo === "dlc" ? nombre.replace(/\s*\/\s*/g, " ").replace(KIN_RUIDO, " ").replace(/\s+-\s*$/, "").replace(/\s+/g, " ").trim() : nombre.replace(/\s+/g, " ").trim();
     const j = juego(nombre, tipo); if (!j) continue;
     if (!j.img && f.i && tipo !== "tarjeta") j.img = f.i;

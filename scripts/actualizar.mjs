@@ -1268,6 +1268,8 @@ const nombreKin = (n, tipo) => {
     do { antes = r; r = r.replace(/\s+(?:EU|US|UK|WW|ROW|Global|Europe|PC|Xbox One|XBOX One|Xbox Series X\|S|Xbox|PS4|PS5|PSN|Rockstar Digital Download|Rockstar Games|Rockstar|MS Store|Activation Code|Digital Download|Digital Code|CD Key|Key|Code|[A-Z]{2})\s*$/i, ""); } while (r !== antes);
     return r.replace(/\s+/g, " ").trim();
   }
+  // «Grand Theft Auto VI PRE-ORDER» y «… + Pre-Order Bonus DLC PRE-ORDER» son la reserva del mismo juego
+  t = t.replace(/\s*\+\s*pre-?order bonus( dlc)?\b/gi, " ").replace(/\s*[-(]?\s*\bpre-?order\b\s*\)?/gi, " ");
   return t.replace(/\s*\/\s*/g, " ").replace(KIN_RUIDO, " ").replace(/\s+-\s*$/, "").replace(/\s+/g, " ").trim();
 };
 async function kinguinFeed(juegos, avisos) {
@@ -1926,6 +1928,7 @@ async function main() {
     for (const o of viejo.ofertas || []) {
       if (!o.fuente) o.fuente = o.tienda;                                 // al guardar se omite cuando es la propia tienda
       if (o.fuente === "psstore" || o.fuente === "manual") continue;     // estas se recargan enteras en cada ejecución
+      if (o.fuente === "kinguin" && (cuenta.kinguin || 0) > 1000) continue;  // su catálogo llega entero: lo que ya no está, fuera
       if (/^(steam (deck|controller|machine|frame|link)|valve index)/i.test(viejo.titulo)) continue; // hardware, no juegos
       if (VISITAS.get(o.fuente)?.has(viejo.id)) continue;                // revisado ahora: manda lo nuevo
       if (Date.parse(o.t || anterior.actualizado) < limite) continue;    // demasiado antiguo
