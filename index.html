@@ -102,6 +102,8 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
 .sep { width: 1px; height: 24px; background: var(--line); flex-shrink: 0; }
 #plataformas { flex-wrap: wrap; }
+/* Ordenador: todos los filtros rápidos en una sola fila */
+@media (min-width: 1260px) { .quick { flex-wrap: nowrap; gap: 8px; } .quick .seg button { padding: 6px 9px; } #plataformas { flex-wrap: nowrap; gap: 5px !important; } #plataformas .chip-plat { padding-inline: 10px; } }
 @media (max-width: 700px) { .quick { justify-content: center; } #plataformas { justify-content: center; } .sep { display: none; } .seg button { padding: 6px 10px; } }
 .chip { border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; border-radius: 99px; font-size: 14px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
 .chip-plat { display: inline-flex; align-items: center; gap: 6px; }
