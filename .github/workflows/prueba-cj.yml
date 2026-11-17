@@ -1,0 +1,11 @@
+name: Prueba temporal enlace Kinguin
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for u in "https://ficca2021.com/g/ai7w5urbcid007a92f8d73f469699a/?f_id=25659&ulp=https%3A%2F%2Fwww.kinguin.net%2Fen%2Fcategory%2F15548%2Fgrand-theft-auto-san-andreas-eu-steam-key%3Fnosalesbooster%3D1%26currency%3DEUR"; do
+            curl -s -o /dev/null -L --max-redirs 10 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130 Safari/537.36" -w "final: %{url_effective} (HTTP %{http_code}, %{num_redirects} redirecciones)\n" "$u"
+            curl -s -I -A "Mozilla/5.0" "$u" | grep -i '^location' | head -2
+          done
