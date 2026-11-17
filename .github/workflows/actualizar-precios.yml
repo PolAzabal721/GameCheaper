@@ -41,6 +41,13 @@ jobs:
           curl -sL --max-time 900 -o feeds/kinguin.csv "$U"
           python3 scripts/kinguin_feed.py feeds/kinguin.csv feeds/kinguin.json
           rm feeds/kinguin.csv
+      - name: Descargar el catálogo de GamersGate para España (feed público con el enlace de afiliado)
+        continue-on-error: true
+        run: |
+          mkdir -p feeds
+          curl -sSL --max-time 300 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/gamersgate.xml "https://feeds.gamersgate.com/feeds/products?country=ESP&aff=15600f04623a9a73fa267b81bfec59911a3e5263"
+          python3 scripts/gamersgate_feed.py feeds/gamersgate.xml feeds/gamersgate.json
+          rm feeds/gamersgate.xml
       - run: |
           # quita espacios o saltos de línea que se cuelan al pegar claves
           export ITAD_KEY=$(printf '%s' "$ITAD_KEY" | tr -d '[:space:]') EBAY_CLIENT_ID=$(printf '%s' "$EBAY_CLIENT_ID" | tr -d '[:space:]') EBAY_CLIENT_SECRET=$(printf '%s' "$EBAY_CLIENT_SECRET" | tr -d '[:space:]')

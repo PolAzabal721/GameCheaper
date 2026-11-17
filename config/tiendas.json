@@ -53,6 +53,14 @@
   "busqueda": "https://ficca2021.com/g/ai7w5urbcid007a92f8d73f469699a/?ulp=https%3A%2F%2Fwww.kinguin.net%2Flisting%3Factive%3D1%26phrase%3D{q}"
  },
  {
+  "id": "gamersgate",
+  "nombre": "GamersGate",
+  "tipo": "revendedor",
+  "formatos": [
+   "digital"
+  ]
+ },
+ {
   "id": "yuplay",
   "nombre": "Yuplay",
   "tipo": "revendedor",

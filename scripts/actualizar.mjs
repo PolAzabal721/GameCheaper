@@ -1259,6 +1259,32 @@ async function kinguinFeed(juegos, avisos) {
   return n;
 }
 
+// ---------- GamersGate (feed propio para España, con el enlace de afiliado puesto) ----------
+// El flujo de GitHub lo descarga en cada ejecución y lo deja en feeds/gamersgate.json. Sustituye a GamersGate vía ITAD.
+let GG_DIRECTO = false;
+async function gamersgateFeed(juegos) {
+  let filas; try { filas = JSON.parse(await readFile(join(RAIZ, "feeds", "gamersgate.json"), "utf8")); } catch { return 0; }
+  if (!filas.length) return 0;
+  const porLlave = new Map();
+  for (const j of juegos.values()) if (j.tipo !== "tarjeta") { const k = llave(j.titulo); if (!porLlave.has(k)) porLlave.set(k, j); }
+  let n = 0, nuevos = 0;
+  for (const f of filas) {
+    const nombre = html2txt(f.n).replace(/[™®©]/g, "").replace(/\s+/g, " ").trim();
+    if (!nombre) continue;
+    const tipo = f.t === "dlc" || f.t === "season pass" ? "dlc" : f.t === "game" || f.t === "bundle" ? null : (DLC_RE.test(limpiar(nombre)) ? "dlc" : null);
+    let j = porLlave.get(llave(nombre));
+    if (!j) { j = juego(nombre, { pop: 99999, tipo: tipo || tipoDe(nombre) }); if (!j) continue; porLlave.set(llave(nombre), j); nuevos++; }
+    if (f.img) ponerImagen(j, "gamersgate", f.img, f.img);
+    const drm = f.d && f.d !== "Other DRM" ? f.d : "";
+    ofertar(j, { tienda: "gamersgate", plataforma: "PC", precio: f.p, regular: f.r > f.p ? f.r : undefined, stock: true, drm: drm || undefined,
+      condicion: (f.res ? "Reserva · " : "") + (drm === "DRM Free" ? "Sin DRM" : drm ? "Clave " + drm.replace("GOG.COM", "GOG") : "Clave digital"), url: f.u, fuente: "gamersgate" });
+    j.revisado.add("gamersgate"); visitar("gamersgate", j); n++;
+  }
+  GG_DIRECTO = n > 0; // con el feed propio sobra GamersGate a través de ITAD (sin afiliación): se quita al guardar
+  console.log(`GamersGate: ${n} precios del feed (${nuevos} productos nuevos en el catálogo)`);
+  return n;
+}
+
 // ---------- Otros feeds de Tradedoubler (juegos en disco): xtralife y PCbox ----------
 // Igual que MediaMarkt: solo se descargan cuando cambian (Tradedoubler permite 3 descargas por versión de catálogo al día).
 const TD_PLATS = { "PS5": "PS5", "PS4": "PS4", "Switch": "Switch", "Switch 2": "Switch 2", "Nintendo Switch 2": "Switch 2", "Nintendo Switch": "Switch", "Xbox Series": "Xbox Series", "Xbox Series X": "Xbox Series", "Xbox Series X|S": "Xbox Series" };
@@ -1783,6 +1809,7 @@ async function main() {
   if (ENV.TRADEDOUBLER_TOKEN) { try { await mediamarkt(juegos, avisos); } catch (e) { avisos.push("mediamarkt: " + e.message); caidas.add("mediamarkt"); } }
   if (ENV.TRADEDOUBLER_TOKEN) { try { await feedsTD(juegos, avisos); } catch (e) { avisos.push("tradedoubler: " + e.message); } }
   try { cuenta.kinguin = await kinguinFeed(juegos, avisos); } catch (e) { avisos.push("kinguin: " + e.message); caidas.add("kinguin"); }
+  try { cuenta.gamersgate = await gamersgateFeed(juegos); } catch (e) { avisos.push("gamersgate: " + e.message); caidas.add("gamersgate"); }
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) {
     // Juegos en disco (no DLC ni tarjetas): los populares siempre y el resto por turnos, hasta cubrir todo el catálogo
@@ -1923,6 +1950,7 @@ async function main() {
     try { await buscarImagenes(juegos, imgAnterior); } catch (e) { console.warn("Imágenes por nombre: " + e.message); }
   }
   // «otros» era un tipo provisional de Kinguin (skins, servidores, claves sorpresa, «Other»): ya no se usa
+  if (GG_DIRECTO) for (const j of juegos.values()) j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-gamersgate");
   const lista = [...juegos.values()].filter((j) => j.ofertas.length && j.tipo !== "otros").sort((a, b) => a.pop - b.pop)
     .map(({ _buscarEn, _pvpFijo, _fechaOf, _fechaIG, _img, _imgP, _cov, _covP, plataformas, revisado, ...j }) => {
       const lanzamiento = _fechaOf || _fechaIG || fechaAnterior.get(j.id) || undefined;
