@@ -1,9 +1,0 @@
-name: Prueba temporal CJ (GamersGate)
-on: workflow_dispatch
-jobs:
-  p:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Un enlace de CJ lleva a la ficha en español
-        run: |
-          curl -s -o /dev/null -L -A "Mozilla/5.0" -w "final: %{url_effective} (HTTP %{http_code}, %{num_redirects} redirecciones)\n" "https://www.anrdoezrs.net/click-101929112-13723186?url=https%3A%2F%2Fwww.gamersgate.com%2Fes%2Fproduct%2Foverpasstm-steam%2F%3Faff%3Dcj&cjsku=DD-OVERPASS-STM"
