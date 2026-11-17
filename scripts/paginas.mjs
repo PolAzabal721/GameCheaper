@@ -578,7 +578,7 @@ async function main() {
       if (f === "index.html" && hayLatam) html = html.replace("</head>", "<script>window.PILLAO_LATAM=true</script>\n</head>");
       await writeFile(join(SALIDA, f), proteger(html, datos.buscador));
     }
-    else if (/\.(html|txt|svg|png|ico)$/.test(f) || f === "minimos.json") await cp(join(RAIZ, f), join(SALIDA, f));
+    else if (/\.(html|txt|svg|png|ico)$/.test(f) || f === "minimos.json" || f === "idiomas.js") await cp(join(RAIZ, f), join(SALIDA, f));
   }
   for (const d of ["fonts", "data/historial", "logos"]) if (existsSync(join(RAIZ, d))) await cp(join(RAIZ, d), join(SALIDA, d), { recursive: true });
   // El catálogo en dos partes: los juegos más populares (y las tiendas y packs) llegan primero y se ven al momento;

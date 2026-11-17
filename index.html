@@ -905,6 +905,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   <div class="modal-in" id="modal-in"></div>
 </div>
 
+<script src="idiomas.js"></script>
 <script type="application/json" id="datos-incrustados"></script>
 <script>
 (function () {
@@ -2409,7 +2410,8 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     if (!lang) lang = /^pt/i.test(langNav) ? "pt-BR" : /^en/i.test(langNav) ? "en" : /^es-(ES)?$/i.test(langNav) || /^es$/i.test(langNav) ? (REGION === "latam" ? "es-419" : "es-ES") : /^es/i.test(langNav) ? "es-419" : REGION === "latam" ? "es-419" : "es-ES";
     function marcarIdioma() { [].forEach.call(menu.querySelectorAll("[data-lang]"), function (b) { b.setAttribute("aria-checked", b.dataset.lang === lang); }); $("reg-auto").textContent = manual ? "Idioma elegido por ti." : "Elegido según el idioma de tu " + (matchMedia("(max-width: 700px)").matches ? "teléfono" : "navegador") + ". Puedes cambiarlo cuando quieras."; }
     marcarIdioma();
-    menu.addEventListener("click", function (e) { var b = e.target.closest("[data-lang]"); if (!b || b.getAttribute("aria-disabled") === "true") return; e.stopPropagation(); lang = b.dataset.lang; manual = true; try { localStorage.setItem("pillao-idioma", lang); } catch (x) {} marcarIdioma(); });
+    menu.addEventListener("click", function (e) { var b = e.target.closest("[data-lang]"); if (!b || b.getAttribute("aria-disabled") === "true") return; e.stopPropagation(); if (b.dataset.lang === lang) return; lang = b.dataset.lang; manual = true; try { localStorage.setItem("pillao-idioma", lang); } catch (x) {} location.reload(); });
+    if (window.PILLAO_IDIOMA) window.PILLAO_IDIOMA(lang);
     aplicar();
     if (regionP === "latam") document.body.classList.add("latam");
     // En el móvil, el selector ocupa el sitio del botón de recargar (que en el móvil se quita)
