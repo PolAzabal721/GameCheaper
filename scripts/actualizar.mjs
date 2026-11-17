@@ -1289,7 +1289,7 @@ async function kinguinFeed(juegos, avisos) {
     let j = (f.s && tipo !== "tarjeta" && porSteam.get(f.s)) || porLlave.get(llave(nombre));
     if (!j) { j = juego(nombre, { pop: 99999, tipo: tipo || (DLC_RE.test(limpiar(nombre)) ? "dlc" : tipoDe(nombre)) }); if (!j) continue; porLlave.set(llave(nombre), j); nuevos++; }
     if (j.tipo === "otros") j.tipo = tipo || "juego";
-    if (f.i && tipo !== "tarjeta") ponerImagen(j, "kinguin", f.i, f.i);
+    if (f.i && tipo !== "tarjeta") ponerImagen(j, "kinguin", f.i);
     const region = (f.r || "").replace(f.p || "", "").replace(/\s+/g, " ").trim();
     ofertar(j, { tienda: "kinguin", plataforma, precio: f.pr, regular: f.op > f.pr ? f.op : undefined, stock: true, drm: tipo === "tarjeta" ? undefined : f.p,
       condicion: tipo === "tarjeta" ? "Código digital" + (region && !/region free/i.test(region) ? " · " + region.toLowerCase() : "") : `Clave ${f.p || ""} · ${/region free/i.test(region) || !region ? "Region free" : region}`.replace(/\s+·/, " ·"),
@@ -1316,7 +1316,7 @@ async function gamersgateFeed(juegos) {
     const tipo = f.t === "dlc" || f.t === "season pass" ? "dlc" : f.t === "game" || f.t === "bundle" ? null : (DLC_RE.test(limpiar(nombre)) ? "dlc" : null);
     let j = porLlave.get(llave(nombre));
     if (!j) { j = juego(nombre, { pop: 99999, tipo: tipo || tipoDe(nombre) }); if (!j) continue; porLlave.set(llave(nombre), j); nuevos++; }
-    if (f.img) ponerImagen(j, "gamersgate", f.img, f.img);
+    if (f.img) ponerImagen(j, "gamersgate", f.img);
     const drm = f.d && f.d !== "Other DRM" ? f.d : "";
     ofertar(j, { tienda: "gamersgate", plataforma: "PC", precio: f.p, regular: f.r > f.p ? f.r : undefined, stock: true, drm: drm || undefined,
       condicion: (f.res ? "Reserva · " : "") + (drm === "DRM Free" ? "Sin DRM" : drm ? "Clave " + drm.replace("GOG.COM", "GOG") : "Clave digital"), url: f.u, fuente: "gamersgate" });
@@ -1341,7 +1341,7 @@ async function loadedFeed(juegos) {
     const tipo = f.t || (DLC_RE.test(limpiar(nombre)) ? "dlc" : null);
     let j = porLlave.get(llave(nombre));
     if (!j) { j = juego(nombre, { pop: 99999, tipo: tipo || tipoDe(nombre) }); if (!j) continue; porLlave.set(llave(nombre), j); nuevos++; }
-    if (f.img && f.t !== "tarjeta") ponerImagen(j, "loaded", f.img, f.img);
+    if (f.img && f.t !== "tarjeta") ponerImagen(j, "loaded", f.img);
     const region = /worldwide/i.test(f.reg) ? "Global" : /spain/i.test(f.reg) ? "España" : "Europa";
     ofertar(j, { tienda: "loaded", plataforma: f.pl, precio: f.p, regular: f.r > f.p ? f.r : undefined, stock: true, drm: f.pl === "PC" ? f.d || undefined : undefined,
       condicion: (f.t === "tarjeta" ? "Código digital" : `Clave ${f.pl === "PC" ? f.d || "PC" : f.d || f.pl}`) + " · " + region, url: f.u, fuente: "loaded" });
@@ -1918,6 +1918,7 @@ async function main() {
   let conservadas = 0;
   for (const viejo of anterior.juegos || []) {
     for (const o of viejo.ofertas || []) {
+      if (!o.fuente) o.fuente = o.tienda;                                 // al guardar se omite cuando es la propia tienda
       if (o.fuente === "psstore" || o.fuente === "manual") continue;     // estas se recargan enteras en cada ejecución
       if (/^(steam (deck|controller|machine|frame|link)|valve index)/i.test(viejo.titulo)) continue; // hardware, no juegos
       if (VISITAS.get(o.fuente)?.has(viejo.id)) continue;                // revisado ahora: manda lo nuevo
@@ -2044,6 +2045,8 @@ async function main() {
     .map(({ _buscarEn, _pvpFijo, _fechaOf, _fechaIG, _img, _imgP, _cov, _covP, plataformas, revisado, ...j }) => {
       const lanzamiento = _fechaOf || _fechaIG || fechaAnterior.get(j.id) || undefined;
       const [imgV, covV] = imgAnterior.get(j.id) || [];
+      // «fuente» solo se guarda cuando no es la propia tienda (el archivo pesa menos; al leerlo se repone)
+      j.ofertas = j.ofertas.map((o) => { if (o.fuente !== o.tienda) return o; const { fuente, ...r } = o; return r; });
       return { ...j, plataformas: [...plataformas], pvp: j.pvp || undefined, revisado: revisado.size ? [...revisado] : undefined,
         img: _img || imgV || undefined, cov: _cov || covV || undefined,
         lanzamiento, reserva: lanzamiento > HOY || j.ofertas.some((o) => /^Reserva/.test(o.condicion || "")) || undefined };
