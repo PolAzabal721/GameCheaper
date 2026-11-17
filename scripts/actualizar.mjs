@@ -1380,6 +1380,8 @@ async function feedsTD(juegos, avisos) {
           productos.push({ nombre: nombreTD(html2txt(p.name || "")), plat, precio, normal: antes, envio, imp: RE_IMPORT.test(p.name || "") || undefined,
             stock: !/out of stock/i.test(o.availability || ""), reserva: /pre.?order/i.test(o.availability || "") || undefined, url: enlaceTD(o.productUrl) });
         }
+        // Copia ligera de TODO el catálogo (nombre, categoría, disponibilidad) para revisar qué se queda fuera sin volver a descargar
+        await writeFile(join(RAIZ, "data", F.id + "-todo.json"), JSON.stringify((d.products || []).map((p) => [html2txt(p.name || ""), html2txt(campo(p, "productType")), ((p.offers || [])[0] || {}).availability || ""])));
         cache = { ultima: ultima || new Date().toISOString(), descargado: new Date().toISOString(), productos };
         await writeFile(archivo, JSON.stringify(cache));
         console.log(`${F.nombre}: feed nuevo descargado (${(d.products || []).length} productos, ${productos.length} juegos en disco, ${productos.filter((x) => x.imp).length} de importación)`);
