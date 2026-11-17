@@ -2551,6 +2551,9 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   // ---------- Eventos ----------
   var temporizadorReciente = null;
   $("q").addEventListener("input", function (e) {
+    // Solo cuenta lo que escribe la persona (con el buscador seleccionado). Si el navegador rellena el campo solo
+    // al entrar (restaura lo último que había), se ignora y se vuelve a dejar como estaba.
+    if (document.activeElement !== e.target) { e.target.value = f.q; return; }
     f.q = e.target.value; cambio(); buscarEnVivo();
     clearTimeout(temporizadorReciente);
     temporizadorReciente = setTimeout(function () { anadirReciente(f.q); }, 2000);
@@ -2748,9 +2751,17 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     try { var uQ = new URL(location.href); uQ.searchParams.delete("q"); history.replaceState(null, "", uQ.pathname + uQ.search + uQ.hash); } catch (e) {}
   }
   // Safari/Chrome del móvil rellenan el buscador con lo último escrito al recargar o al volver atrás: se deja como está la búsqueda de verdad
-  function limpiarBuscador() { if ($("q").value !== f.q) $("q").value = f.q; }
-  window.addEventListener("pageshow", limpiarBuscador);
-  setTimeout(limpiarBuscador, 0);
+  var qEntrada = f.q;  // la única búsqueda válida al entrar: la que llega en la dirección (o ninguna)
+  function limpiarBuscador() {
+    if (document.activeElement === $("q")) return;  // está escribiendo: no se toca
+    var cambiado = f.q !== qEntrada;
+    if (cambiado) f.q = qEntrada;
+    if ($("q").value !== f.q) $("q").value = f.q;
+    if (cambiado) cambio();
+  }
+  // pageshow también salta cuando el navegador saca la página de su memoria (atrás/adelante o pestaña recuperada) con la búsqueda vieja
+  window.addEventListener("pageshow", function (e) { if (e.persisted) qEntrada = ""; limpiarBuscador(); });
+  [0, 300, 1000].forEach(function (ms) { setTimeout(limpiarBuscador, ms); });
   leerServidor(false);
   setInterval(function () { leerServidor(false); }, REFRESCO_MS);
   setInterval(pintarEstado, 60 * 1000);
