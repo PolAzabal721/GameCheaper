@@ -423,6 +423,20 @@ async function main() {
     }
   }
   if (raros) console.log(`LATAM: ${raros} precios de un país descartados por demasiado bajos`);
+  // El mismo precio en dólares en varios países (p. ej. Steam en México, Chile, Colombia y Perú): una sola oferta «Solo México, Chile, Colombia y Perú»
+  for (const j of juegos.values()) {
+    const grupos = new Map();
+    for (const o of j.ofertas) {
+      const m = (o.condicion || "").match(/^Solo ([^·]+)$/); if (!m) continue;
+      const k = o.tienda + "|" + o.plataforma + "|" + o.precio; if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push({ o, pais: m[1].trim() });
+    }
+    for (const g of grupos.values()) {
+      if (g.length < 2) continue;
+      const ps = g.map((x) => x.pais);
+      g[0].o.condicion = "Solo " + ps.slice(0, -1).join(", ") + " y " + ps[ps.length - 1];
+      for (const x of g.slice(1)) j.ofertas.splice(j.ofertas.indexOf(x.o), 1);
+    }
+  }
   for (const t of es.tiendas || []) if (tiendasL.has(t.id)) tiendasL.set(t.id, { ...t, busqueda: undefined });
   const tiendas = [...tiendasL.values()];
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
