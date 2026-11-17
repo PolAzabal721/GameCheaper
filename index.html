@@ -95,7 +95,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .estado.error .dot { background: var(--danger); }
 .icon-btn { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); }
 
-.quick { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; padding-bottom: 12px; }
+.quick { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; justify-content: center; padding-bottom: 12px; }
 .quick::-webkit-scrollbar { display: none; }
 .pl-linea { display: none; }
 @media (max-width: 700px) {
@@ -718,7 +718,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .reg-menu i { font-style: normal; color: var(--accent); font-weight: 800; visibility: hidden; }
 .reg-menu button[aria-checked="true"] { background: var(--surface-2); } .reg-menu button[aria-checked="true"] i { visibility: visible; }
 @media (max-width: 700px) {
-  .reg-btn { width: 40px; padding: 0; justify-content: center; } .reg-btn .reg-txt, .reg-btn svg { display: none; }
+  .reg-btn { width: 40px; padding: 0; justify-content: center; } .reg-btn .reg-txt, .reg-btn > svg { display: none; }
   .reg-menu { position: fixed; top: auto; bottom: 0; left: 0; right: 0; width: auto; border-radius: 20px 20px 0 0; padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px)); }
 }
 /* Móvil: la región ocupa el sitio de «recargar»; en LATAM no hay disco ni segunda mano */
