@@ -26,7 +26,7 @@ def unido():
 
 UNIDO = unido()
 ESTADO = "JOINED" if UNIDO else "NOT_JOINED"
-CAMPOS = "id title link imageLink price { amount currency } salePrice { amount currency }" + (' linkCode(pid: "%s") { clickUrl }' % PID if UNIDO else "")
+CAMPOS = "id catalogName title link imageLink price { amount currency } salePrice { amount currency }" + (' linkCode(pid: "%s") { clickUrl }' % PID if UNIDO else "")
 
 def total(bajo, alto):
     return consulta('{ products(companyId: "%s", partnerIds: ["%s"], partnerStatus: %s, lowPrice: %s, highPrice: %s, limit: 1) { totalCount } }'
@@ -49,11 +49,12 @@ for bajo, alto in tramos(0, 5000):
         p = consulta('{ products(companyId: "%s", partnerIds: ["%s"], partnerStatus: %s, lowPrice: %s, highPrice: %s, limit: 1000, offset: %d) { count resultList { %s } } }'
                      % (CID, anunciante, ESTADO, bajo, alto, offset, CAMPOS))
         for x in p["resultList"]:
-            if x["id"] in vistos:
-                continue
-            vistos.add(x["id"])
             precio = (x.get("salePrice") or None) or x.get("price") or {}
-            monedas[precio.get("currency")] += 1
+            clave = (x["id"], precio.get("currency"), x.get("link"))
+            if clave in vistos:
+                continue
+            vistos.add(clave)
+            monedas[(precio.get("currency"), x.get("catalogName"))] += 1
             if precio.get("currency") != "EUR":
                 continue
             fila = {"l": x.get("link") or "", "n": x.get("title") or "", "p": float(precio.get("amount") or 0),
