@@ -7,4 +7,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: node scripts/tmp/explorar.mjs
+      - run: LATAM_RAPIDO=1 node scripts/latam.mjs && node -e 'const d=require("./precios-latam.json");const c={};for(const j of d.juegos)for(const o of j.ofertas){if(["instantgaming","yuplay","driffle","eshop"].includes(o.tienda)&&!c[o.tienda]){c[o.tienda]=1;console.log(j.titulo,JSON.stringify(o))}}'

@@ -50,6 +50,8 @@ jobs:
           curl -sSL --max-time 300 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/gamersgate.xml "https://feeds.gamersgate.com/feeds/products?country=ESP&aff=15600f04623a9a73fa267b81bfec59911a3e5263"
           python3 scripts/gamersgate_feed.py feeds/gamersgate.xml feeds/gamersgate.json
           rm feeds/gamersgate.xml
+          curl -sSL --max-time 300 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/gamersgate-usa.xml "https://feeds.gamersgate.com/feeds/products?country=USA&aff=15600f04623a9a73fa267b81bfec59911a3e5263" && python3 scripts/gamersgate_feed.py feeds/gamersgate-usa.xml feeds/gamersgate-usa.json || true
+          rm -f feeds/gamersgate-usa.xml
       - name: Catálogo de Loaded (como mucho una descarga al día)
         id: cache-loaded
         uses: actions/cache@v4
@@ -111,7 +113,7 @@ jobs:
         run: |
           git config user.name "pillao-bot"
           git config user.email "pillao-bot@users.noreply.github.com"
-          git add precios.json $(ls precios-latam.json 2>/dev/null) minimos.json data/historial data/salud.json $(ls data/telegram.json data/mercados.json data/yuplay.json data/imagenes.json data/mediamarkt.json data/xtralife.json data/pcbox.json data/xtralife-todo.json data/pcbox-todo.json 2>/dev/null)
+          git add precios.json $(ls precios-latam.json 2>/dev/null) minimos.json data/historial data/salud.json $(ls data/telegram.json data/mercados.json data/yuplay.json data/imagenes.json data/mediamarkt.json data/xtralife.json data/pcbox.json data/xtralife-todo.json data/pcbox-todo.json data/latam-cache.json 2>/dev/null)
           git diff --cached --quiet && exit 0
           git commit -m "Precios actualizados"
           # Si mientras tanto se ha subido otra versión de los precios, manda la de esta ejecución (es la más reciente)
