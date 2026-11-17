@@ -28,8 +28,10 @@ jobs:
         id: cache-kinguin
         uses: actions/cache@v4
         with:
-          path: feeds/kinguin.json
-          key: kinguin2-${{ steps.hoy.outputs.d }}
+          path: |
+            feeds/kinguin.json
+            feeds/kinguin-latam.json
+          key: kinguin3-${{ steps.hoy.outputs.d }}
       - name: Descargar el catálogo de Kinguin (Admitad)
         if: steps.cache-kinguin.outputs.cache-hit != 'true'
         continue-on-error: true
@@ -39,7 +41,7 @@ jobs:
           mkdir -p feeds
           U=$(printf '%s' "$F" | sed -E 's#/(en|es)/webmaster#/es/webmaster#; s/feed_id=[0-9]+/feed_id=25659/; s/&fcid=[0-9]+//')
           curl -sL --max-time 900 -o feeds/kinguin.csv "$U"
-          python3 scripts/kinguin_feed.py feeds/kinguin.csv feeds/kinguin.json
+          python3 scripts/kinguin_feed.py feeds/kinguin.csv feeds/kinguin.json feeds/kinguin-latam.json
           rm feeds/kinguin.csv
       - name: Descargar el catálogo de GamersGate para España (feed público con el enlace de afiliado)
         continue-on-error: true
@@ -72,6 +74,7 @@ jobs:
         run: |
           mkdir -p feeds
           python3 scripts/cj_catalogo.py 5923171 feeds/k4g.json
+          python3 scripts/cj_catalogo.py 5923171 feeds/k4g-latam.json USD
       - run: |
           # quita espacios o saltos de línea que se cuelan al pegar claves
           export ITAD_KEY=$(printf '%s' "$ITAD_KEY" | tr -d '[:space:]') EBAY_CLIENT_ID=$(printf '%s' "$EBAY_CLIENT_ID" | tr -d '[:space:]') EBAY_CLIENT_SECRET=$(printf '%s' "$EBAY_CLIENT_SECRET" | tr -d '[:space:]')
@@ -82,6 +85,9 @@ jobs:
           EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
           EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
           BUSCADOR_URL: ${{ vars.BUSCADOR_URL }}
+      - name: Catálogo de Latinoamérica (precios-latam.json, en dólares)
+        continue-on-error: true
+        run: node scripts/latam.mjs
       - name: Revisar que todas las tiendas dan precios
         run: node scripts/salud.mjs
       - name: Navegador para las imágenes de Telegram
@@ -99,7 +105,7 @@ jobs:
         run: |
           git config user.name "pillao-bot"
           git config user.email "pillao-bot@users.noreply.github.com"
-          git add precios.json minimos.json data/historial data/salud.json $(ls data/telegram.json data/mercados.json data/yuplay.json data/imagenes.json data/mediamarkt.json data/xtralife.json data/pcbox.json data/xtralife-todo.json data/pcbox-todo.json 2>/dev/null)
+          git add precios.json $(ls precios-latam.json 2>/dev/null) minimos.json data/historial data/salud.json $(ls data/telegram.json data/mercados.json data/yuplay.json data/imagenes.json data/mediamarkt.json data/xtralife.json data/pcbox.json data/xtralife-todo.json data/pcbox-todo.json 2>/dev/null)
           git diff --cached --quiet && exit 0
           git commit -m "Precios actualizados"
           # Si mientras tanto se ha subido otra versión de los precios, manda la de esta ejecución (es la más reciente)

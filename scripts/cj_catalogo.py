@@ -8,6 +8,7 @@ import json, os, sys, urllib.request
 CID, PID = "8127571", "101929112"
 TOKEN = os.environ.get("CJ_TOKEN", "").strip()
 anunciante, destino = sys.argv[1], sys.argv[2]
+MONEDA = sys.argv[3] if len(sys.argv) > 3 else "EUR"   # EUR: catálogo europeo (España); USD: el de EE. UU. (para LATAM)
 
 def consulta(q):
     r = urllib.request.Request("https://ads.api.cj.com/query", data=json.dumps({"query": q}).encode(),
@@ -51,7 +52,7 @@ for bajo, alto in tramos(0, 5000):
             if clave in vistos:
                 continue
             vistos.add(clave)
-            if precio.get("currency") != "EUR":  # cada país tiene su catálogo (EUR, GBP, USD…): solo el europeo
+            if precio.get("currency") != MONEDA:  # cada país tiene su catálogo (EUR, GBP, USD…): solo el de la moneda pedida
                 continue
             fila = {"l": x.get("link") or "", "n": x.get("title") or "", "p": float(precio.get("amount") or 0),
                     "r": float((x.get("price") or {}).get("amount") or 0), "img": x.get("imageLink") or ""}
@@ -64,4 +65,4 @@ for bajo, alto in tramos(0, 5000):
             break
         offset += 1000
 json.dump(filas, open(destino, "w"), ensure_ascii=False, separators=(",", ":"))
-print(f"CJ {anunciante}: {len(filas)} productos en euros ({'unidos: con enlace de afiliado' if UNIDO else 'aún sin aceptar: enlaces normales'})")
+print(f"CJ {anunciante}: {len(filas)} productos en {MONEDA} ({'unidos: con enlace de afiliado' if UNIDO else 'aún sin aceptar: enlaces normales'})")
