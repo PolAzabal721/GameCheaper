@@ -992,7 +992,9 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     if (window.PILLAO_REGION === "latam") { base.formato = "todos"; base.estado = "todos"; base.part = true; base.imp = true; if (base.orden === "packs") base.orden = "populares"; } // en LATAM esos filtros no existen
     return base;
   }
-  function guardarFiltros() { if (!prefsOk()) return; try { localStorage.setItem("pillao-filtros", JSON.stringify(f)); } catch (e) {} }
+  // La búsqueda nunca se guarda (si se guardaba, una versión antigua de la página en la caché del navegador la volvía a poner al entrar)
+  function guardarFiltros() { if (!prefsOk()) return; try { var g = {}; for (var k in f) if (k !== "q") g[k] = f[k]; localStorage.setItem("pillao-filtros", JSON.stringify(g)); } catch (e) {} }
+  guardarFiltros();  // borra la búsqueda que quedara guardada de antes
 
   // Búsquedas recientes (solo con permiso de preferencias)
   function leerRecientes() {
