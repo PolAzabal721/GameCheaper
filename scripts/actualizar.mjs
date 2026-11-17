@@ -794,6 +794,8 @@ async function fichaKinguin(url) {
   const region = (html.match(/"region":\{"displayName":[^,]*,"name":"([^"]+)"/) || [])[1] || "";
   return { nombre, precio: Number(of[1]), stock: /InStock/.test(of[3]), plat, region };
 }
+// Enlace de afiliado de Kinguin (Admitad): deeplink con la página de destino en «ulp»
+const afKinguin = (u) => u && !/ficca2021\.com/.test(u) ? "https://ficca2021.com/g/ai7w5urbcid007a92f8d73f469699a/?ulp=" + encodeURIComponent(u) : u;
 async function kinguinUno(j, p) {
   const f = await fichaKinguin(p.url);
   await esperar(KIN_ESPERA);
@@ -801,7 +803,7 @@ async function kinguinUno(j, p) {
   const plataforma = KIN_PLAT[f.plat.toLowerCase()] || (/xbox/i.test(f.plat) ? "Xbox Series" : /play ?station|psn/i.test(f.plat) ? null : "PC");
   if (!plataforma) return 0;   // las claves de PlayStation de reventa son de cuenta y de región: no las ponemos
   ofertar(j, { tienda: "kinguin", plataforma, precio: f.precio, stock: f.stock, drm: f.plat || undefined,
-    condicion: `Clave ${f.plat || ""} · ${f.region || "Region free"}`.replace(/\s+·/, " ·"), url: p.url, fuente: "kinguin" });
+    condicion: `Clave ${f.plat || ""} · ${f.region || "Region free"}`.replace(/\s+·/, " ·"), url: afKinguin(p.url), fuente: "kinguin" });
   return 1;
 }
 
