@@ -1,0 +1,16 @@
+name: Prueba temporal CJ (GamersGate)
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Programa de GamersGate en CJ y consultas de productos disponibles
+        env:
+          T: ${{ secrets.CJ_TOKEN }}
+        run: |
+          echo "== Anunciantes con los que estás unido que se llaman GamersGate"
+          curl -s -H "Authorization: Bearer $T" "https://advertiser-lookup.api.cj.com/v2/advertiser-lookup?requestor-cid=8127571&advertiser-ids=joined&keywords=GamersGate" | head -c 3000; echo
+          echo "== Consultas de la API de productos"
+          curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" \
+            -d '{"query":"{ __type(name: \"Query\") { fields { name args { name type { name kind ofType { name kind } } } } } }"}' \
+            https://ads.api.cj.com/query | head -c 4000; echo
