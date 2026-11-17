@@ -1962,7 +1962,7 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
     lista.classList.remove("cuadricula");
     // En cuadrícula, tarjetas pequeñas como las de la tira de arriba
     if (ps.length && f.vista === "cuadricula") { poner(lista, '<ul class="pk-grid">' + ps.map(tarjetaPackMini).join("") + "</ul>"); return; }
-    poner(lista, ps.length ? ps.map(tarjetaPack).join("") : '<div class="vacio"><b>No hay packs con estos filtros</b>Los packs son de PC y digitales: quita los filtros de disco, segunda mano o consolas.<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button></div>');
+    poner(lista, ps.length ? ps.map(tarjetaPack).join("") : '<div class="vacio"><b>No hay packs con estos filtros</b>Los packs son de PC y digitales: quita los filtros de disco, segunda mano o consolas.' + (nActivos() ? '<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button>' : "") + '</div>');
   }
 
   // Chollos de hoy: una tira con los juegos conocidos más rebajados, solo en la portada sin búsqueda ni filtros
@@ -2086,9 +2086,11 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
     if (!filas.length) {
       lista.classList.toggle("cuadricula", f.vista === "cuadricula");
       if (restoPendiente) { poner(lista, '<div class="vacio"><b>Buscando en todo el catálogo…</b>Un momento.</div>'); return; }
-      lista.innerHTML = estadoVivo + (vivo.cargando ? "" : '<div class="vacio"><b>Nada con estos filtros</b>' +
-        (f.orden === "recientes" ? "No hay lanzamientos de los últimos 30 días con estos filtros." : f.orden === "proximos" ? "No hay juegos en reserva con estos filtros." : f.orden === "skins" ? "Todavía no hay skins con estos filtros." : f.orden === "sorpresa" ? "Todavía no hay claves sorpresa con estos filtros." :
-          q ? "No tenemos «" + esc(qTxt) + "» con estos filtros." : "Prueba a quitar alguno.") + '<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button></div>');
+      // Sin filtros puestos no se habla de filtros ni sale el botón de quitarlos (no hay nada que quitar)
+      var conF = nActivos() > 0, ef = conF ? " con estos filtros" : "";
+      lista.innerHTML = estadoVivo + (vivo.cargando ? "" : '<div class="vacio"><b>' + (conF ? "Nada con estos filtros" : "No hay resultados") + '</b>' +
+        (f.orden === "recientes" ? "No hay lanzamientos de los últimos 30 días" + ef + "." : f.orden === "proximos" ? "No hay juegos en reserva" + ef + "." : f.orden === "skins" ? "Todavía no hay skins" + ef + "." : f.orden === "sorpresa" ? "Todavía no hay claves sorpresa" + ef + "." :
+          q ? "No tenemos «" + esc(qTxt) + "»" + ef + "." : conF ? "Prueba a quitar alguno." : "Vuelve a probar en unos minutos.") + (conF ? '<br><br><button class="btn" type="button" data-limpiar>Quitar filtros</button>' : "") + '</div>');
       return;
     }
     if (hayParecidos) estadoVivo += '<div class="busca-vivo">No encontramos «' + esc(qTxt) + '» tal cual. Esto es lo que más se parece:</div>';
