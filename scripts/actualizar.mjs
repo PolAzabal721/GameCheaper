@@ -16,7 +16,7 @@
 //   - config/manual.json: ofertas que metes a mano.
 // Si una fuente falla, se conservan sus ofertas anteriores para no dejar huecos.
 
-import { completar, compactar } from "./completar.mjs";
+import { completar, compactar, partir } from "./completar.mjs";
 import { readFile, writeFile } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import { guardarHistorial } from "./historial.mjs";
@@ -2064,7 +2064,10 @@ async function main() {
   for (const j of lista) for (const o of j.ofertas) if (!tiendas.some((t) => t.id === o.tienda) && o.tienda.startsWith("itad-"))
     tiendas.push({ id: o.tienda, nombre: NOMBRES_ITAD[o.tienda] || o.tienda.slice(5).replace(/^./, (c) => c.toUpperCase()), tipo: "revendedor", formatos: ["digital"] });
   const salida = { actualizado: new Date().toISOString(), ejemplo: false, revisadoV: 2, caidas: caidas.size ? [...caidas] : undefined, buscador: buscador || undefined, tiendas, packs: packs.filter((p) => !p.expira || Date.parse(p.expira) > Date.now()), juegos: lista };
-  await writeFile(join(RAIZ, "precios.json"), JSON.stringify(salida) + "\n");
+  // Partido en dos (precios.json con los más populares y precios-2.json con el resto): GitHub no deja subir archivos de más de 100 MB
+  const { principal, segunda } = partir(salida);
+  await writeFile(join(RAIZ, "precios.json"), JSON.stringify(principal) + "\n");
+  await writeFile(join(RAIZ, "precios-2.json"), JSON.stringify(segunda) + "\n");
   console.log(`precios.json listo: ${lista.length} juegos, ${total} ofertas.`);
   if (consultasCortadas) console.log(`Tiempo agotado (${LIMITE_MIN} min): ${consultasCortadas} consultas se dejan para la próxima actualización; lo no revisado conserva su precio.`);
   // Historial diario (gráfica de la web) y precios mínimos (avisos por email)
