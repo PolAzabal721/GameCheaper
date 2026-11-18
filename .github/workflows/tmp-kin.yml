@@ -1,0 +1,13 @@
+name: tmp-kin
+on: workflow_dispatch
+permissions: { contents: read }
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for id in 952468/grand-theft-auto-vi-pre-order-xbox-series-x-s-cd-key 554694/grand-theft-auto-vi-pre-order-eu-xbox-series-x-s-cd-key; do
+            curl -sL -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o p.html -w "%{http_code} %{size_download}\n" "https://www.kinguin.net/en/category/$id"
+            grep -o '"price"[^,]\{0,40\}\|"lowPrice"[^,]\{0,30\}\|"priceCurrency"[^,]\{0,20\}\|application/ld+json' p.html | head -20
+            grep -o 'cf-chl\|Just a moment' p.html | head -2
+          done
