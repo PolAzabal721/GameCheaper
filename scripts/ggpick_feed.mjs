@@ -11,7 +11,7 @@ const FIN = Date.now() + +(process.env.GGPICK_MIN || 12) * 60000;
 const limpia = (s) => String(s || "").replace(/^(Buy|Comprar)\s+/i, "").replace(/\s+[—–-]\s+(Instant|Entrega|Recarga|Delivery).*$/i, "").replace(/\s*\|\s*GGPICK.*$/i, "").trim();
 const sm = await (await fetch("https://ggpick.com/sitemap.xml", { headers: H })).text();
 const urls = [...new Set([...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]).filter((u) => /\/en\//.test(u)))]
-  .filter((u) => /\/en\/games\/[^/]+\/$/.test(u) || /\/en\/(gift-card|top-up)\/[^/]+\/$/.test(u))
+  .filter((u) => /\/en\/games\/[^/]+\/$/.test(u) || /\/en\/(gift-card|top-up)\/[^/]+\/$/.test(u) || /\/en\/subscriptions\/[^/]+\/[^/]+\/$/.test(u))
   .filter((u) => !/account/.test(u));
 const filas = [];
 let leidas = 0;
@@ -19,6 +19,15 @@ for (const u of urls) {
   if (Date.now() > FIN) break;
   try {
     const h = await (await fetch(u, { headers: H })).text(); leidas++;
+    // Suscripciones (Duolingo, NordVPN, YouTube…): sus planes van en los datos de la página; las que son cuentas, fuera
+    if (/\/subscriptions\//.test(u)) {
+      for (const m of h.matchAll(/\\"price\\":([\d.]+),\\"quantity\\":1\},\\"analyticsCurrency\\":\\"USD\\"[\s\S]{0,300}?\\"title\\":\\"([^"\\]+)\\"/g)) {
+        const titulo = m[2], pr = +m[1];
+        if (!(pr > 0) || /\b(account|shared|profile|cuenta)\b/i.test(titulo)) continue;
+        filas.push({ n: titulo, t: "tarjeta", pl: "Tarjeta regalo", p: pr, u: AFI + encodeURIComponent(u), d: "Suscripción", reg: "GLOBAL", img: "" });
+      }
+      await esperar(400); continue;
+    }
     for (const [, js] of h.matchAll(/<script[^>]*ld\+json[^>]*>([\s\S]*?)<\/script>/g)) {
       let d; try { d = JSON.parse(js); } catch { continue; }
       for (const p of d["@graph"] || [d]) {
