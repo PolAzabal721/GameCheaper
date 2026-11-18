@@ -6,23 +6,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - env: { F: "${{ secrets.ALIEXPRESS_FEED }}" }
-        run: |
-          mkdir -p feeds
-          U=$(printf '%s' "$F" | sed -E 's#/(en|es)/webmaster#/es/webmaster#; s/feed_id=[0-9]+/feed_id=25659/; s/&fcid=[0-9]+//')
-          curl -sL --max-time 900 -o feeds/kinguin.csv "$U"
-          python3 scripts/kinguin_feed.py feeds/kinguin.csv feeds/kinguin.json feeds/kinguin-latam.json
-          python3 -c "
-          import json
-          for f in ['feeds/kinguin.json','feeds/kinguin-latam.json']:
-            for r in json.load(open(f)):
-              if 'Grand Theft Auto VI' in r.get('n',''): print('GTA',f,json.dumps(r,ensure_ascii=False))"
       - run: |
           curl -sL --max-time 300 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o cjs.txt "https://www.cjs-cdkeys.com/autokey/productFeed/gocdkeysFeedRead.php?utm_source=pillao&utm_campaign=feed"
-          ls -la cjs.txt; file cjs.txt; head -c 4000 cjs.txt; echo; echo ====; wc -l cjs.txt
-          python3 - <<'P'
-          import re
-          s=open('cjs.txt',encoding='utf-8',errors='replace').read()
-          print('items', s.count('<item'), s.count('<product'), s.count('<entry'))
-          i=s.find('Grand Theft Auto VI'); print(s[max(0,i-1500):i+1500] if i>=0 else 'no gta6')
-          P
+          python3 scripts/cjs_probe.py cjs.txt
