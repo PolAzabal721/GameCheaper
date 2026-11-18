@@ -55,6 +55,7 @@ const PAISES = [
   { c: "CL", n: "Chile", ps: "es-cl", xb: "es-CL", eshop: true },
   { c: "CO", n: "Colombia", ps: "es-co", xb: "es-CO", eshop: true },
   { c: "PE", n: "Perú", ps: "es-pe", xb: "es-PE", eshop: true },
+  { c: "PY", n: "Paraguay", ps: "es-py", xb: "es-PY", eshop: false },
 ];
 const cifra = (n, cur) => n.toLocaleString("es-MX", { maximumFractionDigits: n >= 100 ? 0 : 2 }) + " " + cur;
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -285,7 +286,7 @@ async function main() {
   // ---------- Fuentes leídas por nosotros (como en España): Instant Gaming, Yuplay, Driffle, Nintendo eShop México y GamersGate ----------
   const cacheL = await leer("data/latam-cache.json", {});
   const guardarCache = () => writeFile(join(RAIZ, "data", "latam-cache.json"), JSON.stringify(cacheL));
-  const PAISES_LATAM = { argentina: "Argentina", mexico: "México", brasil: "Brasil", brazil: "Brasil", chile: "Chile", colombia: "Colombia", peru: "Perú" };
+  const PAISES_LATAM = { argentina: "Argentina", mexico: "México", brasil: "Brasil", brazil: "Brasil", chile: "Chile", colombia: "Colombia", peru: "Perú", paraguay: "Paraguay" };
   const ofertasES = (id) => { const r = []; for (const e of es.juegos) for (const o of e.ofertas) if (o.tienda === id) r.push({ e, o }); return r; };
   const porPop = (a, b) => (a.e.pop || 99999) - (b.e.pop || 99999);
 
@@ -479,7 +480,7 @@ async function main() {
   const tiendas = [...tiendasL.values()];
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
     .map((j) => ({ ...j, plataformas: [...j.plataformas], minimo: Math.min(...j.ofertas.map((o) => o.precio)) }));
-  const salida = { region: "latam", moneda: "USD", cambio, monedas: { MXN: tasas.MXN, ARS: tasas.ARS, BRL: tasas.BRL, CLP: tasas.CLP, COP: tasas.COP, PEN: tasas.PEN, VES: tasas.VES }, actualizado: new Date().toISOString(), tiendas, juegos: lista };
+  const salida = { region: "latam", moneda: "USD", cambio, monedas: { MXN: tasas.MXN, ARS: tasas.ARS, BRL: tasas.BRL, CLP: tasas.CLP, COP: tasas.COP, PEN: tasas.PEN, VES: tasas.VES, PYG: tasas.PYG }, actualizado: new Date().toISOString(), tiendas, juegos: lista };
   await writeFile(join(RAIZ, "precios-latam.json"), JSON.stringify(salida) + "\n");
   console.log(`LATAM: ${lista.length} productos, ${lista.reduce((n, j) => n + j.ofertas.length, 0)} ofertas · ${JSON.stringify(cuenta)} · 1 € = ${cambio.toFixed(3)} US$ · 1 MXN = ${tasas.MXN.toFixed(4)} US$ · 1000 ARS = ${((tasas.ARS || 0) * 1000).toFixed(2)} US$`);
 }
