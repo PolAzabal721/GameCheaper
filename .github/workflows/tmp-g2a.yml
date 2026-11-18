@@ -1,0 +1,12 @@
+name: tmp g2a
+on: workflow_dispatch
+jobs:
+  x:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          F: ${{ secrets.ALIEXPRESS_FEED }}
+        run: |
+          for id in 15446 15444; do U=$(printf '%s' "$F" | sed -E 's#/(en|es)/webmaster#/es/webmaster#; s/feed_id=[0-9]+/feed_id='$id'/; s/&fcid=[0-9]+//'); curl -sL --max-time 900 -o g$id.csv "$U"; ls -la g$id.csv; done
+          python3 scripts/tmp/g2a.py g15446.csv g15444.csv
