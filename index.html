@@ -715,6 +715,9 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .reg-menu .ri-cab { background: var(--surface-2); border-radius: 0; }
 .reg-menu .ri-cab .ri-fl { color: var(--muted); font-size: 12px; transition: transform .2s cubic-bezier(.23,1,.32,1); }
 .ri-sel.abierto .ri-cab .ri-fl { transform: rotate(180deg); }
+.reg-menu .ri-cab { align-items: center; } .reg-menu .ri-cab .ri-fl { align-self: center; margin-top: -6px; }
+.ri-lista button[aria-checked="true"], .ri-lista button.on { display: none !important; }
+.reg-menu .ri-cab > i, .ri-lista button > i { align-self: center; }
 .ri-lista { border-top: 1px solid var(--line); max-height: 236px; overflow-y: auto; overscroll-behavior: contain; }
 .ri-lista button { border-radius: 0 !important; border-bottom: 1px solid var(--line) !important; } .ri-lista button:last-child { border-bottom: 0 !important; }
 .ri-band svg { display: block; width: 28px; height: 19px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0,0,0,.12); }
