@@ -1376,6 +1376,31 @@ async function g2aFeed(juegos) {
   return n;
 }
 
+// ---------- GGPick (Admitad; sin feed: lo lee scripts/ggpick_feed.mjs de su web, en dólares) ----------
+// España: claves globales de juegos, tarjetas regalo en euros o globales y recargas de juegos; precio pasado a euros
+async function ggpickFeed(juegos) {
+  let filas; try { filas = JSON.parse(await readFile(join(RAIZ, "feeds", "ggpick.json"), "utf8")); } catch { return 0; }
+  if (!filas.length) return 0;
+  let usd = 0.86;
+  try { const xml = await (await pedir("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml")).text(); const m = xml.match(/currency='USD' rate='([0-9.]+)'/); if (m) usd = 1 / +m[1]; } catch {}
+  const porLlave = new Map();
+  for (const j of juegos.values()) { const k = llave(j.titulo); if (!porLlave.has(k)) porLlave.set(k, j); }
+  let n = 0;
+  for (const f of filas) {
+    if (f.t === "tarjeta" && !/^(GLOBAL|EUR)$/.test(f.reg)) continue;   // tarjetas de otros países: no valen en España
+    const nombre = html2txt(f.n).replace(/[™®©]/g, "").replace(/\s+/g, " ").trim();
+    if (!nombre || ES_CUENTA.test(nombre)) continue;
+    let j = porLlave.get(llave(nombre));
+    if (!j) { j = juego(nombre, { pop: 99999, tipo: f.t || tipoDe(nombre) }); if (!j) continue; porLlave.set(llave(nombre), j); }
+    if (f.img && f.t !== "tarjeta") ponerImagen(j, "ggpick", f.img);
+    ofertar(j, { tienda: "ggpick", plataforma: f.pl, precio: Math.round(f.p * usd * 100) / 100, stock: true,
+      condicion: f.t === "tarjeta" ? f.d : `Clave ${f.d} · Global`, url: f.u, fuente: "ggpick" });
+    j.revisado.add("ggpick"); visitar("ggpick", j); n++;
+  }
+  console.log(`GGPick: ${n} precios`);
+  return n;
+}
+
 // ---------- Otros feeds de Tradedoubler (juegos en disco): xtralife y PCbox ----------
 // Igual que MediaMarkt: solo se descargan cuando cambian (Tradedoubler permite 3 descargas por versión de catálogo al día).
 const TD_PLATS = { "PS5": "PS5", "PS4": "PS4", "Switch": "Switch", "Switch 2": "Switch 2", "Nintendo Switch 2": "Switch 2", "Nintendo Switch": "Switch", "Xbox Series": "Xbox Series", "Xbox Series X": "Xbox Series", "Xbox Series X|S": "Xbox Series" };
@@ -1911,6 +1936,7 @@ async function main() {
   try { cuenta.kinguin = await kinguinFeed(juegos, avisos); } catch (e) { avisos.push("kinguin: " + e.message); caidas.add("kinguin"); }
   try { cuenta.loaded = await loadedFeed(juegos); } catch (e) { avisos.push("loaded: " + e.message); caidas.add("loaded"); }
   try { cuenta.g2a = await g2aFeed(juegos); } catch (e) { avisos.push("g2a: " + e.message); caidas.add("g2a"); }
+  try { cuenta.ggpick = await ggpickFeed(juegos); } catch (e) { avisos.push("ggpick: " + e.message); caidas.add("ggpick"); }
   try { cuenta.gamersgate = await gamersgateFeed(juegos); } catch (e) { avisos.push("gamersgate: " + e.message); caidas.add("gamersgate"); }
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) {

@@ -6,9 +6,9 @@ import csv, json, re, sys, html
 origen, destino = sys.argv[1], sys.argv[2]
 LATAM = len(sys.argv) > 3 and sys.argv[3] == "latam"
 REG_OK = {"GLOBAL", "LATAM", "LATIN AMERICA", "MEXICO"} if LATAM else {"GLOBAL", "EUROPE", "EU", "SPAIN"}
-FUERA = re.compile(r"\b(account|gift\b(?! card)|try to get|random|mystery|crypto|bitcoin|btc|usdt|casino|bet|betting|poker|rewarble|unipin|paysafecard|neosurf|binance|skin\.?club|case|cases|top ?up)\b", re.I)
+FUERA = re.compile(r"\b(account|gift\b(?! card)|try to get|random|mystery|casino|bet|betting|poker|skin\.?club|case|cases)\b", re.I)
 TARJETAS = re.compile(r"\b(psn|playstation|xbox|nintendo|steam|ea play|ubisoft|battle\.?net|blizzard|roblox|v-?bucks|fortnite|riot|valorant|league of legends|game pass|ps plus|playstation plus|nintendo switch online)\b", re.I)
-CAT_FUERA = {"Gift Me Crypto", "Crypto Voucher", "Rewarble"}
+CAT_FUERA = set()
 filas = []
 for x in csv.DictReader(open(origen, encoding="utf-8", errors="replace"), delimiter=";"):
     n = html.unescape(x.get("name", "")).strip()
@@ -20,8 +20,7 @@ for x in csv.DictReader(open(origen, encoding="utf-8", errors="replace"), delimi
     try: pr = float(x.get("price") or 0); op = float(x.get("oldprice") or 0)
     except ValueError: continue
     if pr <= 0 or not x.get("url"): continue
-    tarjeta = x.get("categoryId") == "Cash gift cards" or re.search(r"\b(gift card|card|points|credits?|wallet)\b", nombre, re.I)
-    if tarjeta and not TARJETAS.search(n): continue
+    tarjeta = x.get("categoryId") in ("Cash gift cards", "Gift Me Crypto", "Crypto Voucher", "Rewarble", "Other") or re.search(r"\b(gift card|card|points|credits?|wallet|voucher|top ?up)\b", nombre, re.I)
     # Plataforma: lo que va entre paréntesis en el nombre, o la tienda de la clave
     pm = re.search(r"\((PC|Xbox Series X/S|Xbox One|Xbox One / Series X/S|PS5|PS4|Nintendo Switch|Nintendo Switch 2|Mac)\)\s*$", nombre)
     plat_txt = pm.group(1) if pm else llave

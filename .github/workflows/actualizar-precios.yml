@@ -64,6 +64,17 @@ jobs:
             curl -sL --max-time 900 -o feeds/g2a.csv "$U" && python3 scripts/g2a_feed.py feeds/g2a.csv $2 $3 || true
             rm -f feeds/g2a.csv
           done
+      - name: Catálogo de GGPick (lo leemos de su web; como mucho una vez al día)
+        id: cache-ggpick
+        uses: actions/cache@v4
+        with:
+          path: feeds/ggpick.json
+          key: ggpick-${{ steps.hoy.outputs.d }}
+      - name: Leer GGPick
+        if: steps.cache-ggpick.outputs.cache-hit != 'true'
+        continue-on-error: true
+        timeout-minutes: 15
+        run: node scripts/ggpick_feed.mjs
       - name: Descargar el catálogo de GamersGate para España (feed público con el enlace de afiliado)
         continue-on-error: true
         run: |

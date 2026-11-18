@@ -254,5 +254,13 @@
    "digital"
   ],
   "busqueda": "https://k4g.com/store/games?q={q}"
+ },
+ {
+  "id": "ggpick",
+  "nombre": "GGPick",
+  "tipo": "revendedor",
+  "formatos": [
+   "digital"
+  ]
  }
 ]

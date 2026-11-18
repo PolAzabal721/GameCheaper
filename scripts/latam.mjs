@@ -149,6 +149,18 @@ async function main() {
     cuenta.g2a = (cuenta.g2a || 0) + 1;
   }
 
+  // GGPick: ya en dólares; claves globales, tarjetas en dólares o de países de Latinoamérica, y recargas
+  for (const f of await leer("feeds/ggpick.json", [])) {
+    if (f.t === "tarjeta" && !/^(GLOBAL|USD|MXN|ARS|BRL|CLP|COP|PEN|LATAM)$/.test(f.reg)) continue;
+    const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
+    if (!j.img && f.img && f.t !== "tarjeta") j.img = f.img;
+    tienda("ggpick", "GGPick", "revendedor");
+    const solo = { MXN: "México", ARS: "Argentina", BRL: "Brasil", CLP: "Chile", COP: "Colombia", PEN: "Perú" }[f.reg];
+    ofertar(j, { tienda: "ggpick", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: f.p,
+      condicion: f.t === "tarjeta" ? f.d + (solo ? " · Solo " + solo : "") : `Clave ${f.d} · Global`, url: f.u });
+    cuenta.ggpick = (cuenta.ggpick || 0) + 1;
+  }
+
   // Loaded en dólares
   for (const f of await leer("feeds/loaded-latam.json", [])) {
     const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
