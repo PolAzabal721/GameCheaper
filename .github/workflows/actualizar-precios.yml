@@ -89,8 +89,13 @@ jobs:
         timeout-minutes: 10
         run: |
           mkdir -p feeds
-          curl -sL --max-time 400 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/cjs.xml "https://www.cjs-cdkeys.com/autokey/productFeed/gocdkeysFeedRead.php?utm_source=pillao&utm_campaign=feed"
-          python3 scripts/cjs_feed.py feeds/cjs.xml feeds/cjs.json feeds/cjs-latam.json
+          # hasta 3 intentos: a veces corta la descarga a la primera
+          for i in 1 2 3; do
+            curl -sSL --retry 2 --max-time 400 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/cjs.xml "https://www.cjs-cdkeys.com/autokey/productFeed/gocdkeysFeedRead.php?utm_source=pillao&utm_campaign=feed" || true
+            ls -la feeds/cjs.xml || true
+            python3 scripts/cjs_feed.py feeds/cjs.xml feeds/cjs.json feeds/cjs-latam.json && break
+            sleep 30
+          done
           rm -f feeds/cjs.xml
       - name: Descargar el catálogo de GamersGate para España (feed público con el enlace de afiliado)
         continue-on-error: true
