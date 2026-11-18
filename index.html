@@ -1669,16 +1669,18 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
       if (!g) { g = porTienda[o.tienda] = { id: o.tienda, t: tiendaPorId[o.tienda] || { nombre: o.tienda, tipo: "tienda" }, ofs: [] }; grupos.push(g); }
       g.ofs.push(o);
     });
-    // Todos los revendedores de claves en una sola fila: el más barato delante y el resto en el desplegable
-    var deClaves = grupos.filter(function (g) { return g.t.tipo === "revendedor" || g.t.tipo === "marketplace"; });
-    if (deClaves.length > 1) {
+    // Revendedores de claves en una fila y mercados de claves en otra (no se mezclan):
+    // en cada una, la más barata delante y el resto en el desplegable
+    ["revendedor", "marketplace"].forEach(function (tipo) {
+      var deClaves = grupos.filter(function (g) { return g.t.tipo === tipo; });
+      if (deClaves.length < 2) return;
       var ofsClaves = [];
       deClaves.forEach(function (g) { ofsClaves.push.apply(ofsClaves, g.ofs); });
       ofsClaves.sort(porPrecio);
       grupos = grupos.filter(function (g) { return deClaves.indexOf(g) < 0; });
       var primera = tiendaPorId[ofsClaves[0].tienda] || { nombre: ofsClaves[0].tienda };
-      grupos.push({ id: "claves", claves: true, nTiendas: deClaves.length, t: { nombre: primera.nombre, tipo: "revendedor" }, ofs: ofsClaves });
-    }
+      grupos.push({ id: "claves-" + tipo, claves: true, nTiendas: deClaves.length, t: { nombre: primera.nombre, tipo: tipo }, ofs: ofsClaves });
+    });
     // La opción más barata siempre arriba, sea la tienda que sea (las agotadas al final)
     grupos.sort(function (a, b) { return porPrecio(a.ofs[0], b.ofs[0]); });
     var todas = abiertos[j.id];
