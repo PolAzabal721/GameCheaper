@@ -1296,7 +1296,8 @@ async function kinguinFeed(juegos, avisos) {
     const region = (f.r || "").replace(f.p || "", "").replace(/\s+/g, " ").trim();
     // La reserva con el DLC de regalo es otra oferta del mismo juego: se enseñan las dos
     const bonus = /pre-?order bonus/i.test(f.n) ? "Con DLC de reserva" : undefined;
-    ofertar(j, { tienda: "kinguin", plataforma, precio: f.pr, ed: bonus, regular: f.op > f.pr ? f.op : undefined, stock: true, drm: tipo === "tarjeta" ? undefined : f.p,
+    // y cada región (EU, OTHER, Region free…) es una clave distinta: también se enseñan todas
+    ofertar(j, { tienda: "kinguin", plataforma, precio: f.pr, ed: [bonus, tipo === "tarjeta" ? "" : region].filter(Boolean).join(" · ") || undefined, regular: f.op > f.pr ? f.op : undefined, stock: true, drm: tipo === "tarjeta" ? undefined : f.p,
       condicion: tipo === "tarjeta" ? "Código digital" + (region && !/region free/i.test(region) ? " · " + region.toLowerCase() : "") : `Clave ${f.p || ""} · ${/region free/i.test(region) || !region ? "Region free" : region}${bonus ? " · " + bonus : ""}`.replace(/\s+·/, " ·"),
       url: f.u, fuente: "kinguin" });
     if (f.c === "RANDOM_KEY") j.sorpresa = 1; // claves sorpresa: van con los juegos, marcadas para poder filtrarlas
