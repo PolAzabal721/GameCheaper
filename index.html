@@ -739,7 +739,6 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 @media (max-width: 700px) { .reg-aviso { left: 12px; right: 12px; top: auto; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: auto; animation-name: regInM; } }
 @keyframes regInM { from { opacity: 0; transform: translateY(16px) } }
 body.latam #formato, body.latam #estado-f { display: none !important; }
-body.latam a.dest-todos { display: none; } /* las páginas de chollos son de Europa */
 /* En LATAM no hay packs, ni particulares, ni juegos en disco de importación */
 body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam label.switch:has(#imp) { display: none !important; }
 </style>
@@ -2260,7 +2259,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     var cab = '<div class="dest-cab"><div class="dest-tabs" role="tablist"><button type="button" role="tab" data-dest="chollos" aria-selected="' + (destVista === "chollos") + '">🔥 Chollos de hoy</button>' +
       '<button type="button" role="tab" data-dest="packs" aria-selected="' + (destVista === "packs") + '">📦 Packs</button>' +
       '<button type="button" role="tab" data-dest="skins" aria-selected="' + (destVista === "skins") + '">🎨 Skins</button></div>' +
-      (destVista === "packs" ? '<button type="button" class="dest-todos" data-ver-packs>Ver packs →</button>' : destVista === "skins" ? '<button type="button" class="dest-todos" data-ver-skins>Ver skins →</button>' : '<a class="dest-todos" href="chollos/">Ver chollos →</a>') + "</div>";
+      (destVista === "packs" ? '<button type="button" class="dest-todos" data-ver-packs>Ver packs →</button>' : destVista === "skins" ? '<button type="button" class="dest-todos" data-ver-skins>Ver skins →</button>' : '<a class="dest-todos" href="' + (REGION === "latam" ? "latam/chollos/" : "chollos/") + '">Ver chollos →</a>') + "</div>";
     if (destVista === "skins") {
       // Skins: las más rebajadas de todo el catálogo (son de PC y digitales; no dependen de los filtros de arriba)
       var sk = [];
