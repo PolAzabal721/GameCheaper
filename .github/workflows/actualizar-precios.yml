@@ -15,7 +15,7 @@ concurrency:
 jobs:
   actualizar:
     runs-on: ubuntu-latest
-    timeout-minutes: 200
+    timeout-minutes: 330
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -91,12 +91,6 @@ jobs:
           EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
           EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
           BUSCADOR_URL: ${{ vars.BUSCADOR_URL }}
-      - name: Catálogo de Latinoamérica (precios-latam.json, en dólares)
-        continue-on-error: true
-        timeout-minutes: 55
-        run: node scripts/latam.mjs
-        env:
-          ITAD_KEY: ${{ secrets.ITAD_KEY }}
       - name: Revisar que todas las tiendas dan precios
         run: node scripts/salud.mjs
       - name: Navegador para las imágenes de Telegram
@@ -111,6 +105,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CANAL: ${{ secrets.TELEGRAM_CANAL }}
       - name: Guardar cambios
+        if: always()
         run: |
           git config user.name "pillao-bot"
           git config user.email "pillao-bot@users.noreply.github.com"
@@ -118,6 +113,27 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m "Precios actualizados"
           # Si mientras tanto se ha subido otra versión de los precios, manda la de esta ejecución (es la más reciente)
+          for i in 1 2 3; do
+            git pull --rebase -X theirs origin main && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep 10
+          done
+          exit 1
+      # Latinoamérica va después de guardar los precios de España: si se alarga o falla, España ya está guardada
+      - name: Catálogo de Latinoamérica (precios-latam.json, en dólares)
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 55
+        run: node scripts/latam.mjs
+        env:
+          ITAD_KEY: ${{ secrets.ITAD_KEY }}
+      - name: Guardar Latinoamérica
+        if: always()
+        continue-on-error: true
+        run: |
+          git add $(ls precios-latam.json data/latam-cache.json 2>/dev/null)
+          git diff --cached --quiet && exit 0
+          git commit -m "Precios de Latinoamérica actualizados"
           for i in 1 2 3; do
             git pull --rebase -X theirs origin main && git push && exit 0
             git rebase --abort 2>/dev/null || true
