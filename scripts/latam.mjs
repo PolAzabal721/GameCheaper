@@ -138,6 +138,17 @@ async function main() {
     cuenta.k4g = (cuenta.k4g || 0) + 1;
   }
 
+  // G2A: su catálogo de México (en pesos, pasado a dólares); claves GLOBAL, LATAM y de México («Solo México»)
+  for (const f of await leer("feeds/g2a-latam.json", [])) {
+    const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
+    if (!j.img && f.img && f.t !== "tarjeta") j.img = f.img;
+    tienda("g2a", "G2A", "marketplace");
+    const pr = Math.round(f.p * tasas.MXN * 100) / 100, re = f.r > f.p ? Math.round(f.r * tasas.MXN * 100) / 100 : undefined;
+    ofertar(j, { tienda: "g2a", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: pr, regular: re,
+      condicion: `Clave ${f.d || f.pl} · ` + (f.reg === "MEXICO" ? `Solo México · ${mx(f.p)} ≈ en dólares` : f.reg === "GLOBAL" ? "Global" : "Latam"), url: f.u });
+    cuenta.g2a = (cuenta.g2a || 0) + 1;
+  }
+
   // Loaded en dólares
   for (const f of await leer("feeds/loaded-latam.json", [])) {
     const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;

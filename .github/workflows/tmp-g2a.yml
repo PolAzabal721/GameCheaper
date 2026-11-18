@@ -8,5 +8,11 @@ jobs:
       - env:
           F: ${{ secrets.ALIEXPRESS_FEED }}
         run: |
-          for id in 15446 15444; do U=$(printf '%s' "$F" | sed -E 's#/(en|es)/webmaster#/es/webmaster#; s/feed_id=[0-9]+/feed_id='$id'/; s/&fcid=[0-9]+//'); curl -sL --max-time 900 -o g$id.csv "$U"; ls -la g$id.csv; done
-          python3 scripts/tmp/g2a.py g15446.csv g15444.csv
+          for par in "15446 g2a.json" "15444 g2a-latam.json latam"; do set -- $par
+          U=$(printf '%s' "$F" | sed -E 's#/(en|es)/webmaster#/es/webmaster#; s/feed_id=[0-9]+/feed_id='$1'/; s/&fcid=[0-9]+//'); curl -sL --max-time 900 -o g.csv "$U"; python3 scripts/g2a_feed.py g.csv $2 $3; done
+          python3 -c "
+          import json,collections
+          for f in ['g2a.json','g2a-latam.json']:
+            d=json.load(open(f));print(f,collections.Counter(x['pl'] for x in d),collections.Counter(x['t'] for x in d),collections.Counter(x['reg'] for x in d))
+            print([ (x['n'],x['pl'],x['p'],x['d']) for x in d if 'grand theft auto' in x['n'].lower()][:6])
+            print([ x['n'] for x in d if x['t']=='tarjeta'][:15])"

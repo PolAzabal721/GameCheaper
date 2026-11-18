@@ -43,6 +43,27 @@ jobs:
           curl -sL --max-time 900 -o feeds/kinguin.csv "$U"
           python3 scripts/kinguin_feed.py feeds/kinguin.csv feeds/kinguin.json feeds/kinguin-latam.json
           rm feeds/kinguin.csv
+      - name: Catálogo de G2A (como mucho una descarga al día)
+        id: cache-g2a
+        uses: actions/cache@v4
+        with:
+          path: |
+            feeds/g2a.json
+            feeds/g2a-latam.json
+          key: g2a-${{ steps.hoy.outputs.d }}
+      - name: Descargar el catálogo de G2A (Admitad; Alemania en euros para España y México en pesos para Latinoamérica)
+        if: steps.cache-g2a.outputs.cache-hit != 'true'
+        continue-on-error: true
+        env:
+          F: ${{ secrets.ALIEXPRESS_FEED }}
+        run: |
+          mkdir -p feeds
+          for par in "15446 feeds/g2a.json" "15444 feeds/g2a-latam.json latam"; do
+            set -- $par
+            U=$(printf '%s' "$F" | sed -E 's#/(en|es)/webmaster#/es/webmaster#; s/feed_id=[0-9]+/feed_id='$1'/; s/&fcid=[0-9]+//')
+            curl -sL --max-time 900 -o feeds/g2a.csv "$U" && python3 scripts/g2a_feed.py feeds/g2a.csv $2 $3 || true
+            rm -f feeds/g2a.csv
+          done
       - name: Descargar el catálogo de GamersGate para España (feed público con el enlace de afiliado)
         continue-on-error: true
         run: |
