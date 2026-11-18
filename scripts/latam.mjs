@@ -196,7 +196,9 @@ async function main() {
             const e = ids[g.id]; if (!e) continue;
             for (const x of g.deals || []) {
               if (!(x.price?.amount > 0)) continue;
-              const nombre = x.shop?.name || String(x.shop?.id), id = /^steam$/i.test(nombre) ? "steam" : "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
+              const nombre = x.shop?.name || String(x.shop?.id), id0 = /^steam$/i.test(nombre) ? "steam" : "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
+              // Microsoft Store y GamersGate ya tienen tienda propia: van con ella, no repetidas
+              const id = { "itad-microsoftstore": "xbox", "itad-gamersgate": "gamersgate" }[id0] || id0;
               const oficial = OFICIALES_PC.test(nombre);
               if (!general && !oficial) continue;
               let precio, regular, condicion;

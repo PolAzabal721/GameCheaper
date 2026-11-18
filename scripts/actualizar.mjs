@@ -219,7 +219,7 @@ function ofertar(j, o) {
   // Una sola oferta por tienda + plataforma + estado: la más barata
   // (y por tipo de clave, para poder filtrar "solo claves de Steam" en Instant Gaming)
   // (y en segunda mano de particulares, una por estado del artículo: como nuevo, muy bueno, bueno…)
-  const igual = j.ofertas.find((x) => x.tienda === o.tienda && x.plataforma === o.plataforma && (x.estado || "nuevo") === (o.estado || "nuevo") && (x.drm || "") === (o.drm || "") && (x.calidad || "") === (o.calidad || "") && !!x.imp === !!o.imp);
+  const igual = j.ofertas.find((x) => x.tienda === o.tienda && x.plataforma === o.plataforma && (x.estado || "nuevo") === (o.estado || "nuevo") && (x.drm || "") === (o.drm || "") && (x.calidad || "") === (o.calidad || "") && (x.ed || "") === (o.ed || "") && !!x.imp === !!o.imp);
   const nueva = { estado: "nuevo", stock: true, formato: "digital", ...o, precio: redondear(o.precio), t: o.t || AHORA };
   // Preferimos lo que hay en stock; a igualdad, lo más barato
   const tot = (x) => x.precio + (x.envio || 0);
@@ -1294,8 +1294,10 @@ async function kinguinFeed(juegos, avisos) {
     if (j.tipo === "otros") j.tipo = tipo || "juego";
     if (f.i && tipo !== "tarjeta") ponerImagen(j, "kinguin", f.i);
     const region = (f.r || "").replace(f.p || "", "").replace(/\s+/g, " ").trim();
-    ofertar(j, { tienda: "kinguin", plataforma, precio: f.pr, regular: f.op > f.pr ? f.op : undefined, stock: true, drm: tipo === "tarjeta" ? undefined : f.p,
-      condicion: tipo === "tarjeta" ? "Código digital" + (region && !/region free/i.test(region) ? " · " + region.toLowerCase() : "") : `Clave ${f.p || ""} · ${/region free/i.test(region) || !region ? "Region free" : region}`.replace(/\s+·/, " ·"),
+    // La reserva con el DLC de regalo es otra oferta del mismo juego: se enseñan las dos
+    const bonus = /pre-?order bonus/i.test(f.n) ? "Con DLC de reserva" : undefined;
+    ofertar(j, { tienda: "kinguin", plataforma, precio: f.pr, ed: bonus, regular: f.op > f.pr ? f.op : undefined, stock: true, drm: tipo === "tarjeta" ? undefined : f.p,
+      condicion: tipo === "tarjeta" ? "Código digital" + (region && !/region free/i.test(region) ? " · " + region.toLowerCase() : "") : `Clave ${f.p || ""} · ${/region free/i.test(region) || !region ? "Region free" : region}${bonus ? " · " + bonus : ""}`.replace(/\s+·/, " ·"),
       url: f.u, fuente: "kinguin" });
     if (f.c === "RANDOM_KEY") j.sorpresa = 1; // claves sorpresa: van con los juegos, marcadas para poder filtrarlas
     j.revisado.add("kinguin"); visitar("kinguin", j); n++; porTipo[tipo || "juego"] = (porTipo[tipo || "juego"] || 0) + 1;
