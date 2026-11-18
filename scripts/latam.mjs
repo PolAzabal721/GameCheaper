@@ -96,6 +96,12 @@ async function main() {
   };
   const cuenta = {};
   const RAPIDO = process.env.LATAM_RAPIDO === "1";
+  // Tiempo: el paso de GitHub no puede alargar la actualización. Cada fuente tiene su tiempo máximo (y todas juntas, LATAM_MIN);
+  // lo que no da tiempo se completa en la siguiente actualización (las cachés guardan lo ya visto).
+  const FIN = Date.now() + +(process.env.LATAM_MIN || 45) * 60000;
+  let FIN_SEC = FIN;
+  const seccion = (min) => { FIN_SEC = Math.min(FIN, Date.now() + min * 60000); };
+  const queda = () => Date.now() < FIN_SEC;
 
   // Kinguin
   for (const f of await leer("feeds/kinguin-latam.json", [])) {
@@ -143,6 +149,7 @@ async function main() {
   }
 
   const populares = es.juegos.filter((j) => j.tipo !== "tarjeta").sort((a, b) => (a.pop || 99999) - (b.pop || 99999));
+  seccion(6);
   // Tiendas de PC por IsThereAnyDeal. Argentina: todas sus tiendas, en dólares (es el precio de la región Latam en dólares de Steam y compañía).
   // México, Brasil, Chile, Colombia y Perú: las tiendas oficiales (Steam, Epic, GOG…), que cobran en la moneda de cada país.
   const key = (process.env.ITAD_KEY || "").trim();
@@ -158,7 +165,7 @@ async function main() {
     const claves = Object.keys(ids);
     for (const pais of [PAISES[1], PAISES[0], ...PAISES.slice(2)]) {
       const general = pais.c === "AR";
-      for (let i = 0; i < claves.length; i += 200) {
+      for (let i = 0; i < claves.length; i += 200) { if (!queda()) break;
         try {
           const lista = await (await fetch(`https://api.isthereanydeal.com/games/prices/v3?key=${encodeURIComponent(key)}&country=${pais.c}`, { method: "POST", headers: json, body: JSON.stringify(claves.slice(i, i + 200)) })).json();
           for (const g of lista) {
@@ -189,13 +196,14 @@ async function main() {
     }
   } catch (e) { console.warn("LATAM ITAD: " + e.message); }
 
+  seccion(5);
   // Microsoft Store (Xbox y PC) en cada país: mismo producto que en España, con el precio de ese mercado
   try {
     const xb = new Map();
     for (const e of populares) for (const o of e.ofertas) if (o.tienda === "xbox" && /\/p\/([A-Z0-9]{12})/.test(o.url || "")) { const id = o.url.match(/\/p\/([A-Z0-9]{12})/)[1]; if (!xb.has(id)) xb.set(id, { e, plats: new Set() }); xb.get(id).plats.add(o.plataforma); }
     const lista = [...xb.keys()].slice(0, RAPIDO ? 40 : +(process.env.LATAM_XBOX || 3000));
     for (const pais of PAISES) {
-      for (let i = 0; i < lista.length; i += 20) {
+      for (let i = 0; i < lista.length; i += 20) { if (!queda()) break;
         try {
           const d = await (await fetch(`https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${lista.slice(i, i + 20).join(",")}&market=${pais.c}&languages=${pais.xb.toLowerCase()}`)).json();
           for (const p of d.Products || []) {
@@ -220,13 +228,14 @@ async function main() {
     }
   } catch (e) { console.warn("LATAM Xbox: " + e.message); }
 
+  seccion(8);
   // PlayStation Store de cada país: la misma ficha (concept o producto) que en España, con el precio de ese país
   try {
     const ps = await leer("data/playstation.json", { juegos: {} });
     const conPs = populares.filter((e) => ps.juegos[e.id]?.ids?.length);
     for (const pais of PAISES) {
       const lista = conPs.slice(0, RAPIDO ? 5 : pais.c === "MX" ? +(process.env.LATAM_PS || 400) : +(process.env.LATAM_PS_OTROS || 200));
-      for (const e of lista) {
+      for (const e of lista) { if (!queda()) break;
         for (const id of [...ps.juegos[e.id].ids].sort((x, y) => /^\d+$/.test(x) - /^\d+$/.test(y))) {
           try {
             const url = `https://store.playstation.com/${pais.ps}/${/^\d+$/.test(id) ? "concept" : "product"}/${id}`;
@@ -257,13 +266,14 @@ async function main() {
   const ofertasES = (id) => { const r = []; for (const e of es.juegos) for (const o of e.ofertas) if (o.tienda === id) r.push({ e, o }); return r; };
   const porPop = (a, b) => (a.e.pop || 99999) - (b.e.pop || 99999);
 
+  seccion(6);
   // Instant Gaming: sus claves Worldwide valen en LATAM; la ficha, con la moneda en dólares (galleta currency=USD), da el precio en dólares
   try {
     const lista = ofertasES("instantgaming").filter((x) => /worldwide|global/i.test(x.o.condicion || "")).sort(porPop);
     const vistos = new Set(), cola = [];
     for (const x of lista) { const u = (x.o.url || "").split("?")[0]; if (u && !vistos.has(u)) { vistos.add(u); cola.push({ ...x, u }); } }
     let n = 0;
-    for (const x of cola.slice(0, RAPIDO ? 20 : +(process.env.LATAM_IG || 500))) {
+    for (const x of cola.slice(0, RAPIDO ? 20 : +(process.env.LATAM_IG || 500))) { if (!queda()) break;
       try {
         const r = await fetch(x.u, { headers: { ...CABECERAS, Cookie: "currency=USD" } }); if (!r.ok) continue;
         const h = await r.text();
@@ -280,6 +290,7 @@ async function main() {
     cuenta.instantgaming = n;
   } catch (e) { console.warn("LATAM Instant Gaming: " + e.message); }
 
+  seccion(6);
   // Yuplay: su listado sale en dólares; en cada ficha dicen en qué países se activa (se guarda 30 días)
   try {
     const jar = new Map(), cookie = () => [...jar].map(([k, v]) => k + "=" + v).join("; ");
@@ -287,7 +298,7 @@ async function main() {
       for (const c of r.headers.getSetCookie?.() || []) { const kv = c.split(";")[0], i = kv.indexOf("="); jar.set(kv.slice(0, i), kv.slice(i + 1)); } return r; };
     await ir("/"); await ir("/api/currency/usd/");
     const precios = new Map();
-    for (let pag = 1, total = 1; pag <= total && pag <= (RAPIDO ? 2 : 800); pag++) {
+    for (let pag = 1, total = 1; pag <= total && pag <= (RAPIDO ? 2 : 800); pag++) { if (!queda()) break;
       const r = await ir(`/api/products/?page=${pag}`, true); if (!r.ok) break;
       const d = await r.json(); total = d.extensions?.pagination?.num_pages || 1;
       for (const p of d.products || []) if (p.currency_code === "USD") precios.set(p.link, { precio: +p.price, normal: +p.base_price });
@@ -295,7 +306,7 @@ async function main() {
     }
     const paises = (cacheL.yuplay ||= {});
     let n = 0, fichas = 0;
-    for (const x of ofertasES("yuplay").sort(porPop)) {
+    for (const x of ofertasES("yuplay").sort(porPop)) { if (!queda()) break;
       const link = (x.o.url || "").replace(/^https?:\/\/[^/]+/, "").split("?")[0];
       const pr = precios.get(link); if (!pr || !(pr.precio > 0)) continue;
       let c = paises[link];
@@ -315,12 +326,13 @@ async function main() {
     cuenta.yuplay = n;
   } catch (e) { console.warn("LATAM Yuplay: " + e.message); }
 
+  seccion(7);
   // Driffle: las claves globales que ya tenemos de España, más las de Latam y de un país (Argentina, México…) de su mapa; precio con ?currency=USD
   try {
     const dr = (cacheL.driffle ||= { leidos: {}, productos: {} });
     const indice = [...(await (await fetch("https://driffle.com/sitemap.xml", { headers: CABECERAS })).text()).matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((m) => m[1]).filter((u) => /products-sitemap-\d+\.xml$/.test(u));
     const ronda = indice.sort((a, b) => (dr.leidos[a] || "").localeCompare(dr.leidos[b] || "")).slice(0, RAPIDO ? 2 : +(process.env.LATAM_DRIFFLE_MAPAS || 40));
-    for (const sm of ronda) {
+    for (const sm of ronda) { if (!queda()) break;
       try {
         for (const [, u] of (await (await fetch(sm, { headers: CABECERAS })).text()).matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)) {
           const m = u.match(/driffle\.com\/([a-z0-9-]+)-(latam|argentina|mexico|brazil|chile|colombia|peru)-(pc|xbox-series-xs|xbox-one|nintendo-switch)(?:-([a-z-]+?))?-(digital-key|cd-key|key|digital-code)-p\d+$/);
@@ -339,7 +351,7 @@ async function main() {
     for (const [url, p] of Object.entries(dr.productos)) { const e = enES.get(p.k); if (e) cola.push({ e, url, plat: p.plat, region: p.region }); }
     cola.sort(porPop);
     let n = 0;
-    for (const x of cola.slice(0, RAPIDO ? 15 : +(process.env.LATAM_DRIFFLE || 500))) {
+    for (const x of cola.slice(0, RAPIDO ? 15 : +(process.env.LATAM_DRIFFLE || 500))) { if (!queda()) break;
       try {
         const h = await (await fetch(x.url + "?currency=USD", { headers: CABECERAS })).text();
         const m = h.match(/"price"\s*:\s*"?([0-9.]+)"?\s*,\s*"priceCurrency"\s*:\s*"USD"/) || h.match(/"priceCurrency"\s*:\s*"USD"\s*,\s*"price"\s*:\s*"?([0-9.]+)/);
@@ -355,6 +367,7 @@ async function main() {
     cuenta.driffle = n;
   } catch (e) { console.warn("LATAM Driffle: " + e.message); }
 
+  seccion(5);
   // Nintendo eShop (México, Brasil, Chile, Colombia y Perú): las fichas de la tienda de América (su mapa de EE. UU.), el número de producto (nsuid) de la ficha
   // de México (se guarda) y el precio en pesos de su API de precios, pasado a dólares
   try {
@@ -368,7 +381,7 @@ async function main() {
     }
     cand.sort(porPop);
     let fichas = 0;
-    for (const c of cand) {
+    for (const c of cand) { if (!queda()) break;
       if (ns[c.slug] !== undefined || fichas >= (RAPIDO ? 10 : +(process.env.LATAM_ESHOP || 400))) continue;
       try { const h = await (await fetch(`https://www.nintendo.com/es-mx/store/products/${c.slug}/`, { headers: CABECERAS })).text(); const m = h.match(/"product":\{"name":"[^"]*","sku":"[^"]*","nsuid":"(\d+)"/); ns[c.slug] = m ? m[1] : null; } catch {}
       fichas++; await esperar(600);
@@ -376,7 +389,7 @@ async function main() {
     const conId = cand.filter((c) => ns[c.slug]);
     let n = 0;
     for (const pais of PAISES.filter((x) => x.eshop)) {
-      for (let i = 0; i < conId.length; i += 50) {
+      for (let i = 0; i < conId.length; i += 50) { if (!queda()) break;
         try {
           const lote = conId.slice(i, i + 50);
           const d = await (await fetch(`https://api.ec.nintendo.com/v1/price?country=${pais.c}&lang=es&ids=${lote.map((c) => ns[c.slug]).join(",")}`)).json();

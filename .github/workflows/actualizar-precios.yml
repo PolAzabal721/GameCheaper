@@ -93,6 +93,7 @@ jobs:
           BUSCADOR_URL: ${{ vars.BUSCADOR_URL }}
       - name: Catálogo de Latinoamérica (precios-latam.json, en dólares)
         continue-on-error: true
+        timeout-minutes: 55
         run: node scripts/latam.mjs
         env:
           ITAD_KEY: ${{ secrets.ITAD_KEY }}
