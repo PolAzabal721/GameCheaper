@@ -134,6 +134,8 @@
   REGLAS.pt.push([/^Notas de Trustpilot consultadas el (.+)\.$/, "Notas do Trustpilot consultadas em $1."], [/^En tiendas con menos de (\d+) reseñas tampoco, porque la nota aún no es fiable\.$/, "Nem em lojas com menos de $1 avaliações, porque a nota ainda não é confiável."], [/^· ([\d.,]+) ofertas$/, "· $1 ofertas"]);
   Object.assign(EN, { "Volver": "Back", "← Volver": "← Back", "Mínimo": "Lowest", "Ahora": "Now", "Normal": "Usual" });
   Object.assign(PT, { "Volver": "Voltar", "← Volver": "← Voltar", "Mínimo": "Mínimo", "Ahora": "Agora", "Normal": "Normal" });
+  Object.assign(EN, {"Las claves pueden ser de otra región: revisa que valga en tu país": "Keys may be from another region: check it works in your country", "Algunas claves no valen en todos los países: solo enseñamos las que se activan en Latinoamérica": "Some keys don't work in every country: we only show those that activate in Latin America", "Tiendas físicas en tu país": "Physical stores in your country"});
+  Object.assign(PT, {"Las claves pueden ser de otra región: revisa que valga en tu país": "As chaves podem ser de outra região: confira se valem no seu país", "Algunas claves no valen en todos los países: solo enseñamos las que se activan en Latinoamérica": "Algumas chaves não valem em todos os países: só mostramos as que ativam na América Latina", "Tiendas físicas en tu país": "Lojas físicas no seu país"});
   // Lo que nunca se traduce: nombres de juegos y de tiendas
   var NO = ".j-tit, .dest-lista b, .gta-ofs .t, .cuadro-tit, .pk-d b, .ti-nom, .t-nom, .of-t strong, .reg-idiomas b, [data-no-trad], script, style, svg, code, kbd";
 

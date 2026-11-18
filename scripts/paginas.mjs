@@ -70,7 +70,9 @@ function comprimir(datos) {
 const SITIO = (process.env.SITIO_URL || "https://pillaojuegos.com/").replace(/\/?$/, "/");
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const eur = (n) => new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n);
+// Moneda de las páginas que se están generando: euros (España) o dólares (Latinoamérica, en /latam/)
+let MONEDA = "EUR";
+const eur = (n) => MONEDA === "USD" ? "US$ " + new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) : new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n);
 const total = (o) => o.precio + (o.envio || 0);
 const AFILIADAS = { instantgaming: 1, yuplay: 1, g2a: 1, gamivo: 1 };
 const TIPO = { dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo", software: "Software", skins: "Skin", otros: "Otros" };
@@ -193,7 +195,7 @@ var ya=false;try{ya=!!sessionStorage.getItem("pillao-visita");sessionStorage.set
 if(!ya){var de="";try{de=document.referrer?new URL(document.referrer).hostname:""}catch(e){}if(de===location.hostname)de="";
 setTimeout(function(){px("/v?p="+encodeURIComponent(location.pathname.slice(0,60))+(de?"&r="+encodeURIComponent(de):""))},1500)}
 document.addEventListener("click",function(e){var a=e.target.closest?e.target.closest("a[data-t]"):null;if(a)px("/c?t="+encodeURIComponent(a.dataset.t)+"&j="+encodeURIComponent(a.dataset.j||""))},true)})();</script>`;
-function plantilla({ titulo, descripcion, canonica, raiz, cuerpo, jsonld, imagen }) {
+function plantilla({ titulo, descripcion, canonica, raiz, cuerpo, jsonld, imagen, inicio }) {
   // Imagen al compartir el enlace (WhatsApp, Telegram, X…): la del juego, o el icono de Pillao
   const og = imagen ? `<meta property="og:image" content="${esc(imagen)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(imagen)}">`
     : `<meta property="og:image" content="${SITIO}icono-192.png"><meta name="twitter:card" content="summary">`;
@@ -206,7 +208,7 @@ function plantilla({ titulo, descripcion, canonica, raiz, cuerpo, jsonld, imagen
 <link rel="stylesheet" href="${raiz}fonts/fuentes.css"><link rel="stylesheet" href="${raiz}paginas.css">
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>` : ""}
 <script src="/idiomas.js" defer></script>
-</head><body><header><div class="wrap"><a class="logo" href="${raiz}">Pillao<span>€</span></a><a class="ir-app" href="${raiz}">Ir al comparador →</a></div></header>
+</head><body><header><div class="wrap"><a class="logo" href="${inicio || raiz}">Pillao<span>${MONEDA === "USD" ? "$" : "€"}</span></a><a class="ir-app" href="${inicio || raiz}">Ir al comparador →</a></div></header>
 <main class="wrap">${cuerpo}</main>
 <footer><div class="wrap">Pillao compara precios de videojuegos y no vende productos. Los precios son orientativos: el válido es siempre el de cada tienda. Algunos enlaces son de afiliado: si compras tras pulsarlos, la tienda puede pagarnos una comisión, sin coste para ti.
 <nav><a href="${raiz}legal.html#aviso-legal">Aviso legal</a><a href="${raiz}legal.html#condiciones">Condiciones de uso</a><a href="${raiz}legal.html#privacidad">Privacidad</a><a href="${raiz}legal.html#cookies">Cookies</a></nav></div></footer>
@@ -221,7 +223,9 @@ function enlaceOferta(o, j, tiendaPorId) {
   return t?.busqueda ? t.busqueda.replace("{q}", encodeURIComponent(j.titulo)) : null;
 }
 
-function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
+function paginaJuego(j, tiendaPorId, relacionados, actualizado, pre = "") {
+  // pre: "" (España) o "latam/" (Latinoamérica: precios en dólares, mismas rutas dentro de /latam/)
+  const R = pre ? "/" : "../../", INI = pre ? "/" + pre : "../../";
   // Mismas tiendas que la web enseña por defecto (de los revendedores de claves, solo Instant Gaming)
   // Manda el precio; en un empate, primero las tiendas con las que somos afiliados
   const ofs = j.ofertas.filter(() => true)
@@ -233,18 +237,18 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
   const minimo = j.minimo ? Math.min(j.minimo, total(mejor)) : null;
   const plats = j.plataformas.filter((p) => p !== "Tarjeta regalo");
   const platTxt = plats.length ? ` (${plats.join(", ")})` : "";
-  const fecha = new Date(actualizado).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Madrid" });
+  const fecha = new Date(actualizado).toLocaleDateString(pre ? "es-MX" : "es-ES", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Madrid" });
   const titulo = `${j.titulo}: precio más barato${platTxt} | Pillao`;
   const descripcion = `Compara el precio de ${j.titulo} en ${nTiendas} tienda${nTiendas === 1 ? "" : "s"}. Ahora desde ${eur(total(mejor))} en ${tm}` +
     (minimo ? `; mínimo histórico ${eur(minimo)}` : "") + ". Precios digitales, en disco y de segunda mano actualizados cada pocas horas.";
-  const canonica = `${SITIO}juego/${j.id}/`;
+  const canonica = `${SITIO}${pre}juego/${j.id}/`;
   const nuevos = conStock.filter((o) => o.estado !== "usado").map(total);
   // Caducidad del precio: Google pide hasta cuándo vale; se actualiza varias veces al día, damos dos días de margen
   const valeHasta = new Date(Date.parse(actualizado) + 2 * 86400000).toISOString().slice(0, 10);
   const ofertasLD = ofs.slice(0, 20).map((o) => {
     const t = tiendaPorId[o.tienda], url = enlaceOferta(o, j, tiendaPorId);
     return {
-      "@type": "Offer", priceCurrency: "EUR", price: total(o).toFixed(2), priceValidUntil: valeHasta,
+      "@type": "Offer", priceCurrency: MONEDA, price: total(o).toFixed(2), priceValidUntil: valeHasta,
       availability: o.stock === false ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
       itemCondition: o.estado === "usado" ? "https://schema.org/UsedCondition" : "https://schema.org/NewCondition",
       ...(url ? { url } : {}), ...(t?.nombre ? { seller: { "@type": "Organization", name: t.nombre } } : {}),
@@ -254,11 +258,11 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
     "@context": "https://schema.org", "@type": "Product", name: j.titulo, url: canonica, description: descripcion,
     ...(imagenDe(j) ? { image: [imagenDe(j)] } : {}),
     ...(j.tipo === "tarjeta" && j.marca ? { brand: { "@type": "Brand", name: j.marca } } : {}),
-    offers: { "@type": "AggregateOffer", priceCurrency: "EUR", lowPrice: Math.min(...(nuevos.length ? nuevos : [total(mejor)])).toFixed(2),
+    offers: { "@type": "AggregateOffer", priceCurrency: MONEDA, lowPrice: Math.min(...(nuevos.length ? nuevos : [total(mejor)])).toFixed(2),
       highPrice: Math.max(...(nuevos.length ? nuevos : [total(mejor)])).toFixed(2), offerCount: ofs.length, offers: ofertasLD },
   }, {
     "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Pillao", item: SITIO },
+      { "@type": "ListItem", position: 1, name: "Pillao", item: SITIO + pre },
       { "@type": "ListItem", position: 2, name: "Juegos", item: SITIO + "juegos/" },
       { "@type": "ListItem", position: 3, name: j.titulo, item: canonica },
     ],
@@ -267,7 +271,7 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
   const fila = (o) => {
     const t = tiendaPorId[o.tienda], url = enlaceOferta(o, j, tiendaPorId), lg = logoDe(o.tienda);
     const forma = o.estado === "usado" ? "2ª mano" : o.formato === "fisico" ? "En disco" : "Digital";
-    return `<li class="${o === mejor ? "top" : ""}${o.stock ? "" : " ago"}">${lg ? `<img src="../../logos/${lg}.png" alt="" width="32" height="32" loading="lazy">` : `<span class="lg0"></span>`}` +
+    return `<li class="${o === mejor ? "top" : ""}${o.stock ? "" : " ago"}">${lg ? `<img src="${R}logos/${lg}.png" alt="" width="32" height="32" loading="lazy">` : `<span class="lg0"></span>`}` +
       `<span class="n"><b>${esc(t?.nombre || o.tienda)}${o === mejor ? '<span class="tag">MÁS BARATO</span>' : ""}</b><small>${esc(o.plataforma || "—")} · ${forma}${o.condicion ? " · " + esc(o.condicion) : ""}${o.stock ? "" : " · Agotado"}${o.envio ? " · envío incluido" : ""}</small></span>` +
       `<span class="p">${eur(total(o))}</span>${url ? `<a class="ir" href="${esc(url)}" rel="nofollow sponsored noopener" target="_blank" data-t="${esc(o.tienda)}" data-j="${esc(j.id)}">Ir ↗</a>` : "<span></span>"}</li>`;
   };
@@ -284,16 +288,16 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado) {
   const termometro = tope > minTermo + 0.5
     ? `<div class="barra"><div class="linea"><span class="punto" style="left:${Math.max(0, Math.min(100, ((total(mejor) - minTermo) / (tope - minTermo)) * 100)).toFixed(1)}%"></span></div><div class="eti"><span>Mínimo <b>${eur(minTermo)}</b></span><span class="ya">Ahora ${eur(total(mejor))}</span><span>Normal <b>${eur(tope)}</b></span></div></div>`
     : "";
-  const cuerpo = `${volver("../../")}
+  const cuerpo = `${volver(INI)}
 <section class="poster${imgPoster ? "" : " sin-img"}">${imgPoster ? `<img src="${esc(imgPoster)}" alt="" width="1280" height="720" fetchpriority="high">` : ""}<div class="poster-in"><div class="poster-d">${j.tipo && TIPO[j.tipo] ? `<span class="tipo">${TIPO[j.tipo]}</span> ` : ""}<h1>${esc(j.titulo)}</h1>
 <div class="plats">${plats.map((p) => `<span class="plat">${esc(p)}</span>`).join("")}</div>
 <p class="resumen">Comparamos <b>${ofs.length} oferta${ofs.length === 1 ? "" : "s"}</b> de <b>${nTiendas} tienda${nTiendas === 1 ? "" : "s"}</b>` +
     (minimo ? ` · Mínimo histórico <b>${eur(minimo)}</b>` : "") + (j.pvp && j.pvp > total(mejor) ? ` · Precio normal <b>${eur(j.pvp)}</b>` : "") + ` · Actualizado el ${fecha}</p></div>
 <div class="etiqueta"><small>Mejor precio</small><b>${eur(total(mejor))}</b><span>${esc(tm)} · ${esc(mejor.plataforma || "")}</span>${dtoPoster >= 5 ? `<i class="poster-dto">−${dtoPoster}%</i>` : ""}</div>${termometro}</div></section>
-<div class="cta"><a class="boton" rel="nofollow" href="../../?q=${encodeURIComponent(j.titulo)}">Ver historial y crear aviso de precio</a><a class="boton sec" href="../../">Comparar otros juegos</a></div>
+<div class="cta"><a class="boton" rel="nofollow" href="${INI}?q=${encodeURIComponent(j.titulo)}">Ver historial y crear aviso de precio</a><a class="boton sec" href="${INI}">Comparar otros juegos</a></div>
 <div class="lista-of"><ul>${filas}</ul>${resto ? `<details><summary><span class="c">Ver las ${todas40.length} ofertas</span><span class="a">Ver menos</span></summary><ul>${resto}</ul></details>` : ""}</div>
 ${relacionados.length ? `<h2>Otros juegos</h2><ul class="mas">${relacionados.map((r) => `<li><a href="../${r.id}/">${esc(r.titulo)}</a></li>`).join("")}</ul>` : ""}`;
-  return plantilla({ titulo, descripcion, canonica, raiz: "../../", cuerpo, jsonld, imagen: imgPoster });
+  return plantilla({ titulo, descripcion, canonica, raiz: R, cuerpo, jsonld, imagen: imgPoster, inicio: INI });
 }
 
 function paginaLista(juegos) {
@@ -572,6 +576,7 @@ async function main() {
   // Latinoamérica: misma web en /latam/, con su propio archivo de precios (precios-latam.json, en dólares)
   let latam = null; try { latam = JSON.parse(await readFile(join(RAIZ, "precios-latam.json"), "utf8")); } catch {}
   const hayLatam = !!(latam && latam.juegos && latam.juegos.length);
+  const fichasLatam = [];
   await rm(SALIDA, { recursive: true, force: true });
   await mkdir(SALIDA, { recursive: true });
 
@@ -597,6 +602,22 @@ async function main() {
   await writeFile(join(SALIDA, ".nojekyll"), "");
   if (hayLatam) {
     await mkdir(join(SALIDA, "latam"), { recursive: true });
+    // Fichas de Latinoamérica: los juegos más populares (no todos, para no pasar del tamaño máximo de la web)
+    const LATAM_FICHAS = +(process.env.LATAM_FICHAS || 4000);
+    const conFicha = [...latam.juegos].filter((j) => /^[a-z0-9-]{1,80}$/.test(j.id) && j.ofertas.length).sort((a, b) => (a.pop || 99999) - (b.pop || 99999)).slice(0, LATAM_FICHAS);
+    const tiendaL = Object.fromEntries((latam.tiendas || []).map((t) => [t.id, t]));
+    MONEDA = "USD";
+    for (let i = 0; i < conFicha.length; i++) {
+      const j = conFicha[i];
+      for (const o of j.ofertas) { if (o.stock === undefined) o.stock = true; }
+      const rel = conFicha.slice(Math.max(0, i - 4), i).concat(conFicha.slice(i + 1, i + 9)).slice(0, 10);
+      const html = paginaJuego(j, tiendaL, rel, latam.actualizado || datos.actualizado, "latam/");
+      if (!html) continue;
+      await mkdir(join(SALIDA, "latam", "juego", j.id), { recursive: true });
+      await writeFile(join(SALIDA, "latam", "juego", j.id, "index.html"), html);
+      j.fp = 1; fichasLatam.push(j.id);
+    }
+    MONEDA = "EUR";
     const tl = comprimir({ ...latam, buscador: undefined });
     const primL = new Set([...tl.juegos].sort((a, b) => (a.pop || 99999) - (b.pop || 99999)).slice(0, PRIMEROS).map((j) => j.id));
     const totL = { juegos: tl.juegos.length, ofertas: tl.juegos.reduce((n, j) => n + j.ofertas.length, 0) };
@@ -610,7 +631,7 @@ async function main() {
       .replace('<meta property="og:url" content="https://pillaojuegos.com/">', '<meta property="og:url" content="https://pillaojuegos.com/latam/">')
       .replace('<html lang="es">', '<html lang="es-419">');
     await writeFile(join(SALIDA, "latam", "index.html"), proteger(html, datos.buscador));
-    console.log(`Latinoamérica: ${totL.juegos} productos, ${totL.ofertas} ofertas en /latam/`);
+    console.log(`Latinoamérica: ${totL.juegos} productos, ${totL.ofertas} ofertas en /latam/, ${fichasLatam.length} fichas de juego`);
   }
   // Con dominio propio la web está en la raíz: aquí sí vale un robots.txt que indique el sitemap
   await writeFile(join(SALIDA, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /panel.html\n\nSitemap: ${SITIO}sitemap.xml\n`);
@@ -639,7 +660,7 @@ async function main() {
   await mkdir(join(SALIDA, "juegos"), { recursive: true });
   await writeFile(join(SALIDA, "juegos", "index.html"), paginaLista(hechas));
   const dia = datos.actualizado.slice(0, 10);
-  const urls = [SITIO, ...(hayLatam ? [SITIO + "latam/"] : []), SITIO + "juegos/", `${SITIO}chollos/`, ...OFERTAS.map((o) => `${SITIO}${o.ruta}/`), ...hechas.map((j) => `${SITIO}juego/${j.id}/`)];
+  const urls = [SITIO, ...(hayLatam ? [SITIO + "latam/"] : []), SITIO + "juegos/", `${SITIO}chollos/`, ...OFERTAS.map((o) => `${SITIO}${o.ruta}/`), ...hechas.map((j) => `${SITIO}juego/${j.id}/`), ...fichasLatam.map((id) => `${SITIO}latam/juego/${id}/`)];
   // Google admite como mucho 50.000 direcciones por mapa: se parte en trozos y sitemap.xml es el índice de todos
   const TROZO = 40000, trozos = [];
   for (let k = 0; k < urls.length; k += TROZO) {
