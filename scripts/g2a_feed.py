@@ -13,7 +13,7 @@ filas = []
 for x in csv.DictReader(open(origen, encoding="utf-8", errors="replace"), delimiter=";"):
     n = html.unescape(x.get("name", "")).strip()
     if not n or x.get("categoryId") in CAT_FUERA or FUERA.search(n): continue
-    m = re.match(r"^(.*?)\s*-\s*(.+?)\s*-\s*([A-Z][A-Z &/]+)$", n)
+    m = re.match(r"^(.*)\s-\s(.+?)\s-\s([A-Z][A-Z &/]+)$", n)
     if not m: continue
     nombre, llave, region = m.group(1).strip(), m.group(2).strip(), m.group(3).strip()
     if region not in REG_OK: continue
