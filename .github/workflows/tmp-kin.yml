@@ -6,8 +6,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          for id in 952468/grand-theft-auto-vi-pre-order-xbox-series-x-s-cd-key 554694/grand-theft-auto-vi-pre-order-eu-xbox-series-x-s-cd-key; do
-            curl -sL -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o p.html -w "%{http_code} %{size_download}\n" "https://www.kinguin.net/en/category/$id"
-            grep -o '"price"[^,]\{0,40\}\|"lowPrice"[^,]\{0,30\}\|"priceCurrency"[^,]\{0,20\}\|application/ld+json' p.html | head -20
-            grep -o 'cf-chl\|Just a moment' p.html | head -2
-          done
+          curl -sL -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o p.html -w "%{http_code} %{size_download}\n" "https://www.kinguin.net/en/category/952468/grand-theft-auto-vi-pre-order-xbox-series-x-s-cd-key"
+          grep -o '.\{120\}62[.,]5.\{60\}\|.\{120\}6251.\{60\}' p.html | head -5
+          grep -o '"cheapestOffer[^}]\{0,300\}\|"lowestOffer[^}]\{0,300\}\|"offer[A-Za-z]*Price[^,]\{0,40\}' p.html | head -10
+          grep -o '"amount":[0-9]*,"currency":"[A-Z]*"[^}]\{0,80\}' p.html | sort | uniq -c | sort -rn | head
+          sleep 3
+          curl -sL -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o q.html -w "%{http_code} %{size_download}\n" "https://www.kinguin.net/gta-6"
+          grep -o '.\{100\}62[.,]51.\{40\}' q.html | head -3
