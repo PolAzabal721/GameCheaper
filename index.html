@@ -771,7 +771,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
           <button type="button" role="menuitemradio" data-reg="latam" aria-checked="false"><span class="reg-flag">🌎</span><span><b>Latinoamérica</b><small>Precios en dólares · claves de Latinoamérica y globales</small></span><i aria-hidden="true">✓</i></button>
           </div></div>
           <div id="bloque-pais" hidden>
-          <p class="reg-tit">País · qué claves ves</p>
+          <p class="reg-tit">País</p>
           <div class="ri-sel" id="sel-pais"><button type="button" class="ri-cab" aria-expanded="false" aria-label="Elegir país"></button><div class="ri-lista" role="radiogroup" aria-label="País" hidden>
             <button type="button" role="radio" data-pais="TODO" aria-checked="false"><span class="reg-flag ri-band"><svg viewBox="0 0 30 20" width="28" height="19" aria-hidden="true"><rect width="30" height="20" rx="2" fill="#0e7490"/><circle cx="15" cy="10" r="7" fill="#22c55e"/><path d="M11 6c3 1 2 4 5 5s1 4-1 4" stroke="#0e7490" stroke-width="1.6" fill="none"/></svg></span><span><b>Toda Latinoamérica</b><small>Todas las claves de la región · en dólares</small></span><i aria-hidden="true">✓</i></button>
             <button type="button" role="radio" data-pais="MX" aria-checked="false"><span class="reg-flag ri-band"><svg viewBox="0 0 30 20" width="28" height="19" aria-hidden="true"><rect width="10" height="20" fill="#006847"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ce1126"/><circle cx="15" cy="10" r="2.6" fill="#8c5a1e"/></svg></span><span><b>México</b><small>Solo lo que se activa en México · en pesos</small></span><i aria-hidden="true">✓</i></button>
@@ -782,7 +782,6 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
             <button type="button" role="radio" data-pais="PE" aria-checked="false"><span class="reg-flag ri-band"><svg viewBox="0 0 30 20" width="28" height="19" aria-hidden="true"><rect width="10" height="20" fill="#d91023"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#d91023"/></svg></span><span><b>Perú</b><small>Solo lo que se activa en Perú · en soles</small></span><i aria-hidden="true">✓</i></button>
             <button type="button" role="radio" data-pais="VE" aria-checked="false"><span class="reg-flag ri-band"><svg viewBox="0 0 30 20" width="28" height="19" aria-hidden="true"><rect width="30" height="6.67" fill="#ffcc00"/><rect y="6.67" width="30" height="6.67" fill="#00247d"/><rect y="13.33" width="30" height="6.67" fill="#cf142b"/><circle cx="11.05" cy="10.86" r="0.55" fill="#fff"/><circle cx="11.78" cy="9.60" r="0.55" fill="#fff"/><circle cx="12.90" cy="8.66" r="0.55" fill="#fff"/><circle cx="14.27" cy="8.16" r="0.55" fill="#fff"/><circle cx="15.73" cy="8.16" r="0.55" fill="#fff"/><circle cx="17.10" cy="8.66" r="0.55" fill="#fff"/><circle cx="18.22" cy="9.60" r="0.55" fill="#fff"/><circle cx="18.95" cy="10.86" r="0.55" fill="#fff"/></svg></span><span><b>Venezuela</b><small>Solo lo que se activa en Venezuela · en bolívares</small></span><i aria-hidden="true">✓</i></button>
           </div></div>
-          <p class="reg-auto" id="pais-auto"></p>
           </div>
           <p class="reg-tit">Idioma</p>
           <div class="ri-sel" id="sel-lang"><button type="button" class="ri-cab" aria-expanded="false" aria-label="Elegir idioma"></button><div class="ri-lista" hidden>
@@ -793,7 +792,6 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
             <button type="button" role="radio" data-lang="en" aria-checked="false"><span class="reg-cod">EN</span><span><b>English</b></span><i aria-hidden="true">✓</i></button>
           </div>
           </div></div>
-          <p class="reg-auto" id="reg-auto">Elegido según el idioma de tu navegador. Puedes cambiarlo cuando quieras.</p>
         </div>
       </div>
       <label class="search">
@@ -2468,7 +2466,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     try { lang = localStorage.getItem("pillao-idioma"); } catch (e) {}
     var manual = !!lang;
     if (!lang) lang = /^pt/i.test(langNav) ? "pt-BR" : /^en/i.test(langNav) ? "en" : /^es-(ES)?$/i.test(langNav) || /^es$/i.test(langNav) ? (REGION === "latam" ? "es-419" : "es-ES") : /^es/i.test(langNav) ? "es-419" : REGION === "latam" ? "es-419" : "es-ES";
-    function marcarIdioma() { [].forEach.call(menu.querySelectorAll("[data-lang]"), function (b) { b.setAttribute("aria-checked", b.dataset.lang === lang); }); $("reg-auto").textContent = manual ? "Idioma elegido por ti." : "Elegido según el idioma de tu " + (matchMedia("(max-width: 700px)").matches ? "teléfono" : "navegador") + ". Puedes cambiarlo cuando quieras."; }
+    function marcarIdioma() { [].forEach.call(menu.querySelectorAll("[data-lang]"), function (b) { b.setAttribute("aria-checked", b.dataset.lang === lang); }); if ($("reg-auto")) $("reg-auto").textContent = manual ? "Idioma elegido por ti." : "Elegido según el idioma de tu " + (matchMedia("(max-width: 700px)").matches ? "teléfono" : "navegador") + ". Puedes cambiarlo cuando quieras."; }
     marcarIdioma();
     menu.addEventListener("click", function (e) { var b = e.target.closest("[data-lang]"); if (!b || b.getAttribute("aria-disabled") === "true") return; e.stopPropagation(); if (b.dataset.lang === lang) return; lang = b.dataset.lang; manual = true; try { localStorage.setItem("pillao-idioma", lang); } catch (x) {} location.reload(); });
     if (window.PILLAO_IDIOMA) window.PILLAO_IDIOMA(lang);
@@ -2476,7 +2474,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     if (REGION === "latam") {
       $("bloque-pais").hidden = false;
       [].forEach.call(menu.querySelectorAll("[data-pais]"), function (b) { b.setAttribute("aria-checked", b.dataset.pais === PAIS); });
-      $("pais-auto").textContent = PAIS_MANUAL ? "País elegido por ti." : "Elegido según la zona horaria de tu " + (matchMedia("(max-width: 700px)").matches ? "teléfono" : "ordenador") + ".";
+      if ($("pais-auto")) $("pais-auto").textContent = PAIS_MANUAL ? "País elegido por ti." : "Elegido según la zona horaria de tu " + (matchMedia("(max-width: 700px)").matches ? "teléfono" : "ordenador") + ".";
       menu.addEventListener("click", function (e) { var b = e.target.closest("[data-pais]"); if (!b) return; e.stopPropagation(); if (b.dataset.pais === PAIS) return; try { localStorage.setItem("pillao-pais", b.dataset.pais); } catch (x) {} location.reload(); });
     }
     // Cada grupo (región, país, idioma) enseña solo lo elegido; al tocarlo se abre su lista
