@@ -1,0 +1,13 @@
+name: tmp-cjs
+on: workflow_dispatch
+permissions: { contents: read }
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - run: |
+          mkdir -p feeds
+          curl -sL --max-time 400 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/cjs.xml "https://www.cjs-cdkeys.com/autokey/productFeed/gocdkeysFeedRead.php?utm_source=pillao&utm_campaign=feed"; echo "curl=$?"
+          ls -la feeds/cjs.xml; head -c 300 feeds/cjs.xml; echo
+          python3 scripts/cjs_feed.py feeds/cjs.xml feeds/cjs.json feeds/cjs-latam.json
