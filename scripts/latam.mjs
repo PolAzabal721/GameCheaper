@@ -479,7 +479,7 @@ async function main() {
   const tiendas = [...tiendasL.values()];
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
     .map((j) => ({ ...j, plataformas: [...j.plataformas], minimo: Math.min(...j.ofertas.map((o) => o.precio)) }));
-  const salida = { region: "latam", moneda: "USD", cambio, actualizado: new Date().toISOString(), tiendas, juegos: lista };
+  const salida = { region: "latam", moneda: "USD", cambio, monedas: { MXN: tasas.MXN, ARS: tasas.ARS, BRL: tasas.BRL, CLP: tasas.CLP, COP: tasas.COP, PEN: tasas.PEN }, actualizado: new Date().toISOString(), tiendas, juegos: lista };
   await writeFile(join(RAIZ, "precios-latam.json"), JSON.stringify(salida) + "\n");
   console.log(`LATAM: ${lista.length} productos, ${lista.reduce((n, j) => n + j.ofertas.length, 0)} ofertas · ${JSON.stringify(cuenta)} · 1 € = ${cambio.toFixed(3)} US$ · 1 MXN = ${tasas.MXN.toFixed(4)} US$ · 1000 ARS = ${((tasas.ARS || 0) * 1000).toFixed(2)} US$`);
 }

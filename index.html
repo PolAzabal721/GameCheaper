@@ -710,6 +710,15 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .reg-menu button .flag-eu { width: 28px; height: 19px; }
 .reg-aviso p .flag-eu { display: inline-block; vertical-align: -2px; margin-right: 4px; }
 .reg-menu { position: absolute; z-index: 60; top: calc(100% + 8px); left: 0; width: 360px; padding: 8px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 18px 50px rgba(0,0,0,.35); }
+.ri-sel { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 0 4px; }
+.ri-sel.abierto { border-color: var(--ink); }
+.reg-menu .ri-cab { background: var(--surface-2); border-radius: 0; }
+.reg-menu .ri-cab .ri-fl { color: var(--muted); font-size: 12px; transition: transform .2s cubic-bezier(.23,1,.32,1); }
+.ri-sel.abierto .ri-cab .ri-fl { transform: rotate(180deg); }
+.ri-lista { border-top: 1px solid var(--line); max-height: 236px; overflow-y: auto; overscroll-behavior: contain; }
+.ri-lista button { border-radius: 0 !important; border-bottom: 1px solid var(--line) !important; } .ri-lista button:last-child { border-bottom: 0 !important; }
+.ri-band svg { display: block; width: 28px; height: 19px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0,0,0,.12); }
+@media (prefers-reduced-motion: reduce) { .reg-menu .ri-cab .ri-fl { transition: none; } }
 .reg-cab { margin: 6px 8px 4px; font-size: 17px; font-weight: 800; color: var(--ink); }
 .reg-cod { width: 28px; text-align: center; font-weight: 800; font-size: 13px; color: var(--muted); }
 .reg-menu button[aria-disabled="true"] { opacity: .55; cursor: default; }
@@ -753,16 +762,30 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
         <button type="button" class="reg-btn" id="reg-btn" aria-haspopup="true" aria-expanded="false" aria-label="Región e idioma"><span class="reg-flag" id="reg-flag"><svg class="flag-eu" viewBox="0 0 30 20" width="22" height="15" aria-hidden="true" focusable="false"><rect width="30" height="20" rx="2" fill="#003399"/><polygon points="15.00,2.45 15.32,3.36 16.28,3.38 15.52,3.97 15.79,4.89 15.00,4.35 14.21,4.89 14.48,3.97 13.72,3.38 14.68,3.36" fill="#FFCC00"/><polygon points="18.10,3.28 18.42,4.19 19.38,4.21 18.62,4.80 18.89,5.72 18.10,5.18 17.31,5.72 17.58,4.80 16.82,4.21 17.78,4.19" fill="#FFCC00"/><polygon points="20.37,5.55 20.69,6.46 21.65,6.48 20.89,7.07 21.16,7.99 20.37,7.45 19.58,7.99 19.85,7.07 19.09,6.48 20.05,6.46" fill="#FFCC00"/><polygon points="21.20,8.65 21.52,9.56 22.48,9.58 21.72,10.17 21.99,11.09 21.20,10.55 20.41,11.09 20.68,10.17 19.92,9.58 20.88,9.56" fill="#FFCC00"/><polygon points="20.37,11.75 20.69,12.66 21.65,12.68 20.89,13.27 21.16,14.19 20.37,13.65 19.58,14.19 19.85,13.27 19.09,12.68 20.05,12.66" fill="#FFCC00"/><polygon points="18.10,14.02 18.42,14.92 19.38,14.95 18.62,15.54 18.89,16.46 18.10,15.92 17.31,16.46 17.58,15.54 16.82,14.95 17.78,14.92" fill="#FFCC00"/><polygon points="15.00,14.85 15.32,15.76 16.28,15.78 15.52,16.37 15.79,17.29 15.00,16.75 14.21,17.29 14.48,16.37 13.72,15.78 14.68,15.76" fill="#FFCC00"/><polygon points="11.90,14.02 12.22,14.92 13.18,14.95 12.42,15.54 12.69,16.46 11.90,15.92 11.11,16.46 11.38,15.54 10.62,14.95 11.58,14.92" fill="#FFCC00"/><polygon points="9.63,11.75 9.95,12.66 10.91,12.68 10.15,13.27 10.42,14.19 9.63,13.65 8.84,14.19 9.11,13.27 8.35,12.68 9.31,12.66" fill="#FFCC00"/><polygon points="8.80,8.65 9.12,9.56 10.08,9.58 9.32,10.17 9.59,11.09 8.80,10.55 8.01,11.09 8.28,10.17 7.52,9.58 8.48,9.56" fill="#FFCC00"/><polygon points="9.63,5.55 9.95,6.46 10.91,6.48 10.15,7.07 10.42,7.99 9.63,7.45 8.84,7.99 9.11,7.07 8.35,6.48 9.31,6.46" fill="#FFCC00"/><polygon points="11.90,3.28 12.22,4.19 13.18,4.21 12.42,4.80 12.69,5.72 11.90,5.18 11.11,5.72 11.38,4.80 10.62,4.21 11.58,4.19" fill="#FFCC00"/></svg></span><span class="reg-txt" id="reg-txt">Europa</span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="reg-menu" id="reg-menu" role="menu" hidden>
           <p class="reg-cab">Región e idioma</p>
-          <p class="reg-tit">Región · precios y tiendas</p>
+          <p class="reg-tit">Región</p>
+          <div class="ri-sel" id="sel-reg"><button type="button" class="ri-cab" aria-expanded="false" aria-label="Elegir región"></button><div class="ri-lista" hidden>
           <button type="button" role="menuitemradio" data-reg="es" aria-checked="true"><span class="reg-flag"><svg class="flag-eu" viewBox="0 0 30 20" width="22" height="15" aria-hidden="true" focusable="false"><rect width="30" height="20" rx="2" fill="#003399"/><polygon points="15.00,2.45 15.32,3.36 16.28,3.38 15.52,3.97 15.79,4.89 15.00,4.35 14.21,4.89 14.48,3.97 13.72,3.38 14.68,3.36" fill="#FFCC00"/><polygon points="18.10,3.28 18.42,4.19 19.38,4.21 18.62,4.80 18.89,5.72 18.10,5.18 17.31,5.72 17.58,4.80 16.82,4.21 17.78,4.19" fill="#FFCC00"/><polygon points="20.37,5.55 20.69,6.46 21.65,6.48 20.89,7.07 21.16,7.99 20.37,7.45 19.58,7.99 19.85,7.07 19.09,6.48 20.05,6.46" fill="#FFCC00"/><polygon points="21.20,8.65 21.52,9.56 22.48,9.58 21.72,10.17 21.99,11.09 21.20,10.55 20.41,11.09 20.68,10.17 19.92,9.58 20.88,9.56" fill="#FFCC00"/><polygon points="20.37,11.75 20.69,12.66 21.65,12.68 20.89,13.27 21.16,14.19 20.37,13.65 19.58,14.19 19.85,13.27 19.09,12.68 20.05,12.66" fill="#FFCC00"/><polygon points="18.10,14.02 18.42,14.92 19.38,14.95 18.62,15.54 18.89,16.46 18.10,15.92 17.31,16.46 17.58,15.54 16.82,14.95 17.78,14.92" fill="#FFCC00"/><polygon points="15.00,14.85 15.32,15.76 16.28,15.78 15.52,16.37 15.79,17.29 15.00,16.75 14.21,17.29 14.48,16.37 13.72,15.78 14.68,15.76" fill="#FFCC00"/><polygon points="11.90,14.02 12.22,14.92 13.18,14.95 12.42,15.54 12.69,16.46 11.90,15.92 11.11,16.46 11.38,15.54 10.62,14.95 11.58,14.92" fill="#FFCC00"/><polygon points="9.63,11.75 9.95,12.66 10.91,12.68 10.15,13.27 10.42,14.19 9.63,13.65 8.84,14.19 9.11,13.27 8.35,12.68 9.31,12.66" fill="#FFCC00"/><polygon points="8.80,8.65 9.12,9.56 10.08,9.58 9.32,10.17 9.59,11.09 8.80,10.55 8.01,11.09 8.28,10.17 7.52,9.58 8.48,9.56" fill="#FFCC00"/><polygon points="9.63,5.55 9.95,6.46 10.91,6.48 10.15,7.07 10.42,7.99 9.63,7.45 8.84,7.99 9.11,7.07 8.35,6.48 9.31,6.46" fill="#FFCC00"/><polygon points="11.90,3.28 12.22,4.19 13.18,4.21 12.42,4.80 12.69,5.72 11.90,5.18 11.11,5.72 11.38,4.80 10.62,4.21 11.58,4.19" fill="#FFCC00"/></svg></span><span><b>Europa</b><small>Precios en euros · claves de España, Europa y globales</small></span><i aria-hidden="true">✓</i></button>
           <button type="button" role="menuitemradio" data-reg="latam" aria-checked="false"><span class="reg-flag">🌎</span><span><b>Latinoamérica</b><small>Precios en dólares · claves de Latinoamérica y globales</small></span><i aria-hidden="true">✓</i></button>
+          </div></div>
+          <div id="bloque-pais" hidden>
+          <p class="reg-tit">País · qué claves ves</p>
+          <div class="ri-sel" id="sel-pais"><button type="button" class="ri-cab" aria-expanded="false" aria-label="Elegir país"></button><div class="ri-lista" role="radiogroup" aria-label="País" hidden>
+            <button type="button" role="radio" data-pais="TODO" aria-checked="false"><span class="reg-flag ri-band"><svg viewBox="0 0 30 20" width="28" height="19" aria-hidden="true"><rect width="30" height="20" rx="2" fill="#0e7490"/><circle cx="15" cy="10" r="7" fill="#22c55e"/><path d="M11 6c3 1 2 4 5 5s1 4-1 4" stroke="#0e7490" stroke-width="1.6" fill="none"/></svg></span><span><b>Toda Latinoamérica</b><small>Todas las claves de la región · en dólares</small></span><i aria-hidden="true">✓</i></button>
+            <button type="button" role="radio" data-pais="MX" aria-checked="false"><span class="reg-flag ri-band"><svg viewBox="0 0 30 20" width="28" height="19" aria-hidden="true"><rect width="10" height="20" fill="#006847"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ce1126"/><circle cx="15" cy="10" r="2.6" fill="#8c5a1e"/></svg></span><span><b>México</b><small>Solo lo que se activa en México · en pesos</small></span><i aria-hidden="true">✓</i></button>
+            <button type="button" role="radio" data-pais="AR" aria-checked="false"><span class="reg-flag ri-band"><svg viewBox="0 0 30 20" width="28" height="19" aria-hidden="true"><rect width="30" height="20" fill="#74acdf"/><rect y="6.67" width="30" height="6.67" fill="#fff"/><circle cx="15" cy="10" r="2.2" fill="#f6b40e"/></svg></span><span><b>Argentina</b><small>Solo lo que se activa en Argentina · en pesos</small></span><i aria-hidden="true">✓</i></button>
+            <button type="button" role="radio" data-pais="BR" aria-checked="false"><span class="reg-flag ri-band"><svg viewBox="0 0 30 20" width="28" height="19" aria-hidden="true"><rect width="30" height="20" fill="#009c3b"/><path d="M15 2.5 27 10 15 17.5 3 10z" fill="#ffdf00"/><circle cx="15" cy="10" r="4" fill="#002776"/></svg></span><span><b>Brasil</b><small>Solo lo que se activa en Brasil · en reales</small></span><i aria-hidden="true">✓</i></button>
+          </div></div>
+          <p class="reg-auto" id="pais-auto"></p>
+          </div>
           <p class="reg-tit">Idioma</p>
+          <div class="ri-sel" id="sel-lang"><button type="button" class="ri-cab" aria-expanded="false" aria-label="Elegir idioma"></button><div class="ri-lista" hidden>
           <div class="reg-idiomas" role="radiogroup" aria-label="Idioma">
             <button type="button" role="radio" data-lang="es-ES" aria-checked="false"><span class="reg-cod">ES</span><span><b>Español (España)</b></span><i aria-hidden="true">✓</i></button>
             <button type="button" role="radio" data-lang="es-419" aria-checked="false"><span class="reg-cod">ES</span><span><b>Español (Latinoamérica)</b></span><i aria-hidden="true">✓</i></button>
             <button type="button" role="radio" data-lang="pt-BR" aria-checked="false"><span class="reg-cod">PT</span><span><b>Português (Brasil)</b></span><i aria-hidden="true">✓</i></button>
             <button type="button" role="radio" data-lang="en" aria-checked="false"><span class="reg-cod">EN</span><span><b>English</b></span><i aria-hidden="true">✓</i></button>
           </div>
+          </div></div>
           <p class="reg-auto" id="reg-auto">Elegido según el idioma de tu navegador. Puedes cambiarlo cuando quieras.</p>
         </div>
       </div>
@@ -928,7 +951,17 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   // Región: Europa (raíz, euros) o Latinoamérica (/latam/, dólares). Misma web; cada una carga su archivo de precios.
   var REGION = window.PILLAO_REGION === "latam" ? "latam" : "es";
   var DATOS_REGION = REGION === "latam" ? "latam/" : "";
-  var eur = REGION === "latam" ? { format: function (n) { return "US$\u00a0" + new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n); } } : new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
+  // País en Latinoamérica: el guardado a mano o el de la zona horaria (México, Argentina, Brasil); si no, toda la región
+  var PAIS = "TODO", PAIS_MANUAL = false;
+  if (REGION === "latam") {
+    try { var pg = localStorage.getItem("pillao-pais"); if (pg) { PAIS = pg; PAIS_MANUAL = true; } } catch (e) {}
+    if (!PAIS_MANUAL) { var tzP = ""; try { tzP = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+      PAIS = /^America\/(Mexico_City|Cancun|Merida|Monterrey|Matamoros|Chihuahua|Ciudad_Juarez|Ojinaga|Mazatlan|Bahia_Banderas|Hermosillo|Tijuana)$/.test(tzP) ? "MX" : /^America\/(Argentina\/|Buenos_Aires|Cordoba|Mendoza)/.test(tzP) ? "AR" : /^America\/(Sao_Paulo|Bahia|Fortaleza|Recife|Belem|Manaus|Cuiaba|Campo_Grande|Porto_Velho|Boa_Vista|Rio_Branco|Maceio|Araguaina|Santarem|Noronha|Eirunepe)$/.test(tzP) ? "BR" : "TODO"; }
+    if (!/^(TODO|MX|AR|BR)$/.test(PAIS)) PAIS = "TODO";
+  }
+  var PAIS_INFO = { MX: { n: "México", m: "MXN", s: "MX$", l: "es-MX" }, AR: { n: "Argentina", m: "ARS", s: "AR$", l: "es-AR" }, BR: { n: "Brasil", m: "BRL", s: "R$", l: "pt-BR" } };
+  var TASA_PAIS = 0;   // dólares por unidad de la moneda del país (llega con los precios)
+  var eur = REGION === "latam" ? { format: function (n) { var pi = PAIS_INFO[PAIS]; if (pi && TASA_PAIS > 0) return pi.s + "\u00a0" + new Intl.NumberFormat(pi.l, { maximumFractionDigits: n / TASA_PAIS >= 100 ? 0 : 2, minimumFractionDigits: n / TASA_PAIS >= 100 ? 0 : 2 }).format(n / TASA_PAIS); return "US$\u00a0" + new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n); } } : new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
   var $ = function (id) { return document.getElementById(id); };
 
   var datos = null, origen = "servidor", tiendaPorId = {}, abiertos = {}, otrasAbiertas = {}, desplegados = {}, bloquesAbiertos = {}, subtipos = {}, tiendasDeBloque = function () { return []; };
@@ -1100,6 +1133,13 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     expandir(d);
     // GTA VI sale a medianoche del 18 al 19 de noviembre: algunas tiendas ponen el 18; en España es el 19
     d.juegos.forEach(function (j) { if (j && j.id === "grand-theft-auto-vi" && j.lanzamiento === "2026-11-18") j.lanzamiento = "2026-11-19"; });
+    // País elegido en Latinoamérica: fuera las claves de «Solo» otro país; precios en su moneda
+    if (REGION === "latam" && PAIS !== "TODO") {
+      var npais = PAIS_INFO[PAIS].n;
+      if (d.monedas && d.monedas[PAIS_INFO[PAIS].m]) TASA_PAIS = d.monedas[PAIS_INFO[PAIS].m];
+      d.juegos.forEach(function (j) { if (j && j.ofertas) j.ofertas = j.ofertas.filter(function (o) { var c = o.condicion || ""; return !/\bSolo /.test(c) || c.indexOf(npais) >= 0; }); });
+      d.juegos = d.juegos.filter(function (j) { return j && j.ofertas && j.ofertas.length; });
+    }
     // Skins: solo mercados de compra o cambio de skins (fuera saldos de webs de apuestas y de abrir cajas)
     var MERC_SKINS = /^(dmarket|skinsmonkey|skinflow\.gg|swap\.gg|cs\.trade|shadowpay(\.com)?|qqskins|skinswap|tradeit(\.gg)?|cs\.money|skinport|waxpeer|skinbaron|lis-skins|rapidskins)\b/i;
     d.juegos = d.juegos.filter(function (j) { return !j || j.tipo !== "skins" || MERC_SKINS.test(j.titulo || ""); });
@@ -2424,6 +2464,20 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     marcarIdioma();
     menu.addEventListener("click", function (e) { var b = e.target.closest("[data-lang]"); if (!b || b.getAttribute("aria-disabled") === "true") return; e.stopPropagation(); if (b.dataset.lang === lang) return; lang = b.dataset.lang; manual = true; try { localStorage.setItem("pillao-idioma", lang); } catch (x) {} location.reload(); });
     if (window.PILLAO_IDIOMA) window.PILLAO_IDIOMA(lang);
+    // País (solo en Latinoamérica): filtra las claves y pone los precios en su moneda
+    if (REGION === "latam") {
+      $("bloque-pais").hidden = false;
+      [].forEach.call(menu.querySelectorAll("[data-pais]"), function (b) { b.setAttribute("aria-checked", b.dataset.pais === PAIS); });
+      $("pais-auto").textContent = PAIS_MANUAL ? "País elegido por ti." : "Elegido según la zona horaria de tu " + (matchMedia("(max-width: 700px)").matches ? "teléfono" : "ordenador") + ".";
+      menu.addEventListener("click", function (e) { var b = e.target.closest("[data-pais]"); if (!b) return; e.stopPropagation(); if (b.dataset.pais === PAIS) return; try { localStorage.setItem("pillao-pais", b.dataset.pais); } catch (x) {} location.reload(); });
+    }
+    // Cada grupo (región, país, idioma) enseña solo lo elegido; al tocarlo se abre su lista
+    setTimeout(function () { [].forEach.call(menu.querySelectorAll(".ri-sel"), function (g) {
+      var cab = g.querySelector(".ri-cab"), lista = g.querySelector(".ri-lista");
+      var el = lista.querySelector('[aria-checked="true"]') || lista.querySelector("button:not([hidden])");
+      cab.innerHTML = (el ? el.innerHTML.replace(/<i aria-hidden="true">✓<\/i>/, "") : "") + '<span class="ri-fl" aria-hidden="true">▾</span>';
+      cab.addEventListener("click", function (e) { e.stopPropagation(); var abrir = lista.hidden; [].forEach.call(menu.querySelectorAll(".ri-sel"), function (o) { o.classList.remove("abierto"); o.querySelector(".ri-lista").hidden = true; o.querySelector(".ri-cab").setAttribute("aria-expanded", "false"); }); lista.hidden = !abrir; g.classList.toggle("abierto", abrir); cab.setAttribute("aria-expanded", abrir); });
+    }); }, 0);
     aplicar();
     if (regionP === "latam") document.body.classList.add("latam");
     // En el móvil, el selector ocupa el sitio del botón de recargar (que en el móvil se quita)
