@@ -1723,7 +1723,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
           '<div class="of-d">' + detalle + "</div>" +
           '<div class="of-p"><b>' + eur.format(total(o)) + "</b><small>" + antes(o, j) + (dif > 0.004 ? "+" + eur.format(dif) : "el más barato") + "</small></div>" +
           (url ? '<a class="ir" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" data-t="' + esc(o.tienda) + '" data-j="' + esc(j.id) + '">' + (o.url ? '<span class="ir-l">Ver oferta</span><span class="ir-c">Ir</span>' : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
-        if (n === 1 || g.claves) fila += cuponHTML(o, j);
+        fila += cuponHTML(o, j);
         if (n > 1 && abierto) fila += g.ofs.map(function (x) {
           var u = enlace(x, j);
           var tx = tiendaPorId[x.tienda] || { nombre: x.tienda };
@@ -1733,7 +1733,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
             '<div class="of-d"><span>' + (g.claves || esEb ? esc(x.plataforma || "—") : (x.formato === "fisico" ? "En disco" : "Digital")) + "</span>" + (resto ? "<span>·</span><span>" + esc(resto) + "</span>" : "") +
             (x.envio ? "<span>·</span><span>+ " + eur.format(x.envio) + " envío</span>" : "") + (x.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
             '<div class="of-p"><b>' + eur.format(total(x)) + "</b>" + (antes(x, j) ? "<small>" + antes(x, j).replace(/ · $/, "") + "</small>" : "") + "</div>" +
-            (u ? '<a class="ir" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer" data-t="' + esc(x.tienda) + '" data-j="' + esc(j.id) + '">' + (x.url ? "Ver" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>" + (g.claves && x !== o ? cuponHTML(x, j) : "");
+            (u ? '<a class="ir" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer" data-t="' + esc(x.tienda) + '" data-j="' + esc(j.id) + '">' + (x.url ? "Ver" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>" + (x !== o ? cuponHTML(x, j) : "");
         }).join("");
         return fila;
       }).join("") + "</ol>" +
