@@ -2320,16 +2320,21 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     { c: "COZY5", pct: 5, hasta: "2026-11-30", para: ["juego", "edicion", "dlc", "software", "skins"], max: 150, usos: 2, txt: "En juegos, DLC, software y objetos" },
     { c: "PREBF", pct: 3, hasta: "2026-11-26", para: ["tarjeta"], max: 150, usos: 2, txt: "En tarjetas regalo y recargas" },
     // GGPick: 5 % en todo (Admitad)
+    // G2A: sin código; con una compra de 10 € o más y apuntándote a su boletín, te dan un 10 % para la siguiente compra
+    { t: "g2a", c: null, pct: 10, hasta: null, min: 10, para: ["juego", "edicion", "dlc", "software", "skins", "tarjeta"], url: "https://bywiola.com/g/az4cfakslmd007a92f8d9b7920dcf6/?i=3",
+      txt: "10 % para tu siguiente compra", nota: "Solo a partir de tu segunda compra: compra 10 € o más y apúntate a su boletín" },
     { t: "ggpick", c: "NEWTOPUPGG", pct: 5, hasta: null, para: ["juego", "edicion", "dlc", "software", "skins", "tarjeta"], txt: "En todo GGPick" }
   ];
   var CUPON_TIENDAS = {}; CUPONES.forEach(function (c) { CUPON_TIENDAS[c.t || "kinguin"] = 1; });
   function cuponVivo(c) { return !c.hasta || new Date(c.hasta + "T23:59:59") >= new Date(); }
   function cuponDe(o, j) {
     var tipo = j.tipo || "juego";
-    return CUPONES.filter(function (c) { return (c.t || "kinguin") === o.tienda && c.para.indexOf(tipo) >= 0 && cuponVivo(c) && (!c.max || total(o) <= c.max); })[0] || null;
+    return CUPONES.filter(function (c) { return (c.t || "kinguin") === o.tienda && c.para.indexOf(tipo) >= 0 && cuponVivo(c) && (!c.max || total(o) <= c.max) && (!c.min || total(o) >= c.min); })[0] || null;
   }
   function cuponHTML(o, j) {
     var c = cuponDe(o, j); if (!c) return "";
+    if (!c.c) return '<li class="cupon"><span aria-hidden="true">🎟️</span><span class="cu-dto">−' + c.pct + '&nbsp;%</span><span class="cu-meta"><span class="cu-largo">' + esc(c.txt) + " · " + esc(c.nota) + '</span><span class="cu-corto">' + esc(c.txt) + '</span></span>' +
+      '<a class="btn" href="' + esc(c.url) + '" target="_blank" rel="sponsored noopener">Ver promoción ↗</a></li>';
     var conC = Math.round(o.precio * (100 - c.pct)) / 100 + (o.envio || 0);
     var dias = c.hasta ? Math.ceil((new Date(c.hasta + "T23:59:59") - new Date()) / 864e5) : null;
     var fecha = c.hasta ? new Date(c.hasta + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short" }) : null;
@@ -2343,7 +2348,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   function cuponesTiendaHTML(tid) {
     var vivos = CUPONES.filter(function (c) { return cuponVivo(c) && (c.t || "kinguin") === tid; }); if (!vivos.length) return "";
     return '<details class="ti-cupones"><summary><b>🎟️ Cupones activos (' + vivos.length + ')</b><span class="cu-flecha" aria-hidden="true">▾</span></summary><ul>' + vivos.map(function (c) {
-      return '<li><code translate="no">' + c.c + '</code><span class="cu-pct">−' + c.pct + '&nbsp;%</span><button type="button" class="btn" data-copiar="' + c.c + '" aria-label="Copiar el código ' + c.c + '">Copiar</button>' +
+      return '<li>' + (c.c ? '<code translate="no">' + c.c + '</code>' : "<code>Sin código</code>") + '<span class="cu-pct">−' + c.pct + '&nbsp;%</span>' + (c.c ? '<button type="button" class="btn" data-copiar="' + c.c + '" aria-label="Copiar el código ' + c.c + '">Copiar</button>' : '<a class="btn" href="' + c.url + '" target="_blank" rel="sponsored noopener">Ver ↗</a>') +
         '<span class="cu-que">' + c.txt + '</span><span class="cu-cond">' + (c.hasta ? "Hasta el " + new Date(c.hasta + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long" }) : "Sin fecha de fin") + (c.max ? " · cesta máx. " + c.max + "&nbsp;€" : "") + (c.usos ? " · " + c.usos + " usos por persona" : "") + (c.nota ? " · " + c.nota : "") + "</span></li>";
     }).join("") + "</ul></details>";
   }
