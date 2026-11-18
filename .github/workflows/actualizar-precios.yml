@@ -75,6 +75,23 @@ jobs:
         continue-on-error: true
         timeout-minutes: 15
         run: node scripts/ggpick_feed.mjs
+      - name: Catálogo de CJS CD Keys (como mucho una descarga al día)
+        id: cache-cjs
+        uses: actions/cache@v4
+        with:
+          path: |
+            feeds/cjs.json
+            feeds/cjs-latam.json
+          key: cjs-${{ steps.hoy.outputs.d }}
+      - name: Descargar el catálogo de CJS CD Keys (feed público con nuestro enlace de afiliado)
+        if: steps.cache-cjs.outputs.cache-hit != 'true'
+        continue-on-error: true
+        timeout-minutes: 10
+        run: |
+          mkdir -p feeds
+          curl -sL --max-time 400 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/cjs.xml "https://www.cjs-cdkeys.com/autokey/productFeed/gocdkeysFeedRead.php?utm_source=pillao&utm_campaign=feed"
+          python3 scripts/cjs_feed.py feeds/cjs.xml feeds/cjs.json feeds/cjs-latam.json
+          rm -f feeds/cjs.xml
       - name: Descargar el catálogo de GamersGate para España (feed público con el enlace de afiliado)
         continue-on-error: true
         run: |

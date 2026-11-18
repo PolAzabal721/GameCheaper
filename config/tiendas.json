@@ -262,5 +262,14 @@
   "formatos": [
    "digital"
   ]
+ },
+ {
+  "id": "cjs",
+  "nombre": "CJS CD Keys",
+  "tipo": "revendedor",
+  "formatos": [
+   "digital"
+  ],
+  "busqueda": "https://www.cjs-cdkeys.com/?utm_source=pillao"
  }
 ]

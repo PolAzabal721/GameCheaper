@@ -1378,6 +1378,33 @@ async function g2aFeed(juegos) {
   return n;
 }
 
+// ---------- CJS CD Keys (feed XML público con utm_source=pillao; lo pasa a JSON scripts/cjs_feed.py) ----------
+// España: claves Global, Europe y Spain, tarjetas regalo, recargas, suscripciones y software; precios en euros
+async function cjsFeed(juegos) {
+  let filas; try { filas = JSON.parse(await readFile(join(RAIZ, "feeds", "cjs.json"), "utf8")); } catch { return 0; }
+  if (!filas.length) return 0;
+  const porLlave = new Map();
+  for (const j of juegos.values()) { const k = llave(j.titulo); if (!porLlave.has(k)) porLlave.set(k, j); }
+  let n = 0, nuevos = 0;
+  for (const f of filas) {
+    const tipo = f.t || null;
+    const nombre = nombreKin(f.n, tipo === "tarjeta" || tipo === "software" ? tipo : undefined);
+    if (!nombre || nombre.length < 2 || ES_CUENTA.test(f.n) || (tipo !== "tarjeta" && NO_PRODUCTO.test(limpiar(nombre)))) continue;
+    let j = porLlave.get(llave(nombre));
+    if (!j) { j = juego(nombre, { pop: 99999, tipo: tipo || (DLC_RE.test(limpiar(nombre)) ? "dlc" : tipoDe(nombre)) }); if (!j) continue; porLlave.set(llave(nombre), j); nuevos++; }
+    if (j.tipo === "otros") j.tipo = tipo || "juego";
+    if (f.img && tipo !== "tarjeta") ponerImagen(j, "cjs", f.img);
+    const bonus = /pre-?order bonus/i.test(f.n) ? "Con DLC de reserva" : undefined;
+    const reg = f.reg === "Spain" ? "válida en España" : f.reg === "Europe" ? "Europa" : "Global";
+    ofertar(j, { tienda: "cjs", plataforma: f.pl, precio: f.p, stock: true, ed: bonus, drm: f.pl === "PC" ? f.d || undefined : undefined,
+      condicion: (tipo === "tarjeta" ? "Código digital" : `Clave ${f.d || f.pl}`) + " · " + reg + (f.pre ? " · Reserva" : "") + (bonus ? " · " + bonus : ""), url: f.u, fuente: "cjs" });
+    if (f.s) j.sorpresa = 1;
+    j.revisado.add("cjs"); visitar("cjs", j); n++;
+  }
+  console.log(`CJS CD Keys: ${n} precios de su catálogo (${nuevos} productos nuevos en el catálogo)`);
+  return n;
+}
+
 // ---------- GGPick (Admitad; sin feed: lo lee scripts/ggpick_feed.mjs de su web, en dólares) ----------
 // España: claves globales de juegos, tarjetas regalo en euros o globales y recargas de juegos; precio pasado a euros
 async function ggpickFeed(juegos) {
@@ -1939,6 +1966,7 @@ async function main() {
   try { cuenta.loaded = await loadedFeed(juegos); } catch (e) { avisos.push("loaded: " + e.message); caidas.add("loaded"); }
   try { cuenta.g2a = await g2aFeed(juegos); } catch (e) { avisos.push("g2a: " + e.message); caidas.add("g2a"); }
   try { cuenta.ggpick = await ggpickFeed(juegos); } catch (e) { avisos.push("ggpick: " + e.message); caidas.add("ggpick"); }
+  try { cuenta.cjs = await cjsFeed(juegos); } catch (e) { avisos.push("cjs: " + e.message); caidas.add("cjs"); }
   try { cuenta.gamersgate = await gamersgateFeed(juegos); } catch (e) { avisos.push("gamersgate: " + e.message); caidas.add("gamersgate"); }
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) {

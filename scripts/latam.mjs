@@ -151,6 +151,21 @@ async function main() {
   }
 
   // GGPick: ya en dólares; claves globales, tarjetas en dólares o de países de Latinoamérica, y recargas
+  // CJS CD Keys: claves Global, Latin America y de cada país («Solo Argentina»…), en euros → dólares
+  const PAIS_CJS = { AR: "Argentina", MX: "México", BR: "Brasil", CL: "Chile", CO: "Colombia", PE: "Perú", PY: "Paraguay", VE: "Venezuela" };
+  for (const f of await leer("feeds/cjs-latam.json", [])) {
+    let nombre = html2txt(f.n).replace(/[™®©]/g, "");
+    if (f.t !== "tarjeta" && f.t !== "software") nombre = nombre.replace(/\s*\+\s*pre-?order bonus( dlc)?\b/gi, " ").replace(/\s*[-(]?\s*\bpre-?order\b\s*\)?/gi, " ").replace(/\s*\/\s*/g, " ").replace(KIN_RUIDO, " ").replace(/\s+-\s*$/, "");
+    nombre = nombre.replace(/\s+/g, " ").trim(); if (nombre.length < 2) continue;
+    const j = juego(nombre, f.t || undefined); if (!j) continue;
+    if (!j.img && f.img && f.t !== "tarjeta") j.img = f.img;
+    tienda("cjs", "CJS CD Keys", "revendedor");
+    const zona = PAIS_CJS[f.reg] ? "Solo " + PAIS_CJS[f.reg] : f.reg === "Latin America" ? "Latam" : "Global";
+    ofertar(j, { tienda: "cjs", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: usd(f.p),
+      condicion: (f.t === "tarjeta" ? "Código digital" : `Clave ${f.d || f.pl}`) + " · " + zona + (/pre-?order bonus/i.test(f.n) ? " · Con DLC de reserva" : ""), url: f.u });
+    cuenta.cjs = (cuenta.cjs || 0) + 1;
+  }
+
   for (const f of await leer("feeds/ggpick.json", [])) {
     if (f.t === "tarjeta" && !/^(GLOBAL|USD|MXN|ARS|BRL|CLP|COP|PEN|LATAM)$/.test(f.reg)) continue;
     const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
