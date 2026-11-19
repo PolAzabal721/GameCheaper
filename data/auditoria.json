@@ -1,17 +1,17 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 1127,
+   "pendientes": 896,
    "ejemplos": [
-    "Call of Duty: World at War",
+    "KORRIDOR",
     "Until Dawn",
+    "Hypernet Explorer",
     "Littlelands",
-    "Regions of Ruin",
-    "Clone Drone in the Danger Zone"
+    "Regions of Ruin"
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 49014,
+   "pendientes": 65808,
    "ejemplos": [
     "The Apothecary Diaries: The False Imperial Brother",
     "Dwarves: Glory, Death and Loot",
@@ -21,7 +21,7 @@
    ]
   },
   "game (consola)": {
-   "pendientes": 25145,
+   "pendientes": 30892,
    "ejemplos": [
     "RIVE: Ultimate Edition",
     "EA Sports FC 27 Ultimate Edition",
@@ -31,83 +31,83 @@
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 3650,
+   "pendientes": 3979,
    "ejemplos": [
     "Football Manager 27",
+    "FINAL FANTASY VII REBIRTH",
     "EA Sports FC 27 Ultimate Edition",
     "Grand Theft Auto: The Trilogy – The Definitive Edition",
-    "NBA 2K27",
-    "Mortal Shell II"
+    "NBA 2K27"
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 18399,
+   "pendientes": 21862,
    "ejemplos": [
+    "Age of Empires II: Definitive Edition - Return of Rome",
+    "Age of Empires II: Definitive Edition - Victors and Vanquished",
     "Disney Dreamlight Valley: The Storybook Vale",
-    "Part Time UFO",
-    "Sonic Racing: CrossWorlds",
-    "Dying Light - Shu Warrior Bundle",
-    "DERELIKT"
+    "The Elder Scrolls Online",
+    "Part Time UFO"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 3650,
-  "sinFicha": 3416,
-  "fichasEncontradas": 1114
+  "sinPrecio": 3979,
+  "sinFicha": 3752,
+  "fichasEncontradas": 1170
  },
  "fotos": {
   "juego": {
-   "total": 55777,
-   "con": 53465,
-   "porcentaje": 96
+   "total": 68713,
+   "con": 66925,
+   "porcentaje": 97
   },
   "edicion": {
-   "total": 6356,
-   "con": 5891,
-   "porcentaje": 93
+   "total": 8834,
+   "con": 8520,
+   "porcentaje": 96
   },
   "dlc": {
-   "total": 13132,
-   "con": 12917,
-   "porcentaje": 98
+   "total": 16026,
+   "con": 15883,
+   "porcentaje": 99
   },
   "tarjeta": {
-   "total": 6657,
+   "total": 8657,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 4057,
+   "total": 3625,
    "probadas": 12,
    "fallan": 6,
    "ejemplos": [
-    "Against the Horde → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4083130/header.jpg",
-    "Political Life → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5111700/header.jpg",
-    "The Wrong Way → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5341070/header.jpg"
+    "Borderlands4 - Pack Historia 2: FL4K y las Últimas Vacaciones → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3802460/header.jpg",
+    "Plague Inc: Aliens & Anti-Vaxxers → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4508320/header.jpg",
+    "Wing Commander II: Vengeance of the Kilrathi: Edición del 35.º aniversario → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2008730/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 1730,
+   "total": 1678,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "nintendo": {
-   "total": 10153,
+   "total": 9938,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 11520,
+   "total": 11899,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "otras": {
-   "total": 49089,
+   "total": 68672,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
@@ -115,119 +115,137 @@
  },
  "enlaces": {
   "steam": {
-   "ofertas": 8144,
+   "ofertas": 8232,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
-  "psstore": {
-   "ofertas": 875,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "game": {
-   "ofertas": 1592,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "xbox": {
-   "ofertas": 14856,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "instantgaming": {
-   "ofertas": 9433,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "driffle": {
-   "ofertas": 1947,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "yuplay": {
-   "ofertas": 6426,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "mediamarkt": {
-   "ofertas": 1044,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "xtralife": {
-   "ofertas": 6124,
+  "k4g": {
+   "ofertas": 3770,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "kinguin": {
-   "ofertas": 53368,
+   "ofertas": 61782,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "loaded": {
-   "ofertas": 10602,
+   "ofertas": 10653,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
+  "g2a": {
+   "ofertas": 22225,
+   "probadas": 6,
+   "fallan": 6,
+   "bloqueados": 0,
+   "ejemplos": [
+    "Call of Duty: Black Ops 6 - Cold Trail Operator Skin | 15 min Double XP → 0",
+    "WARDOGS → 0",
+    "Outbound → 0"
+   ]
+  },
+  "yuplay": {
+   "ofertas": 7005,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "psstore": {
+   "ofertas": 980,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "game": {
+   "ofertas": 1652,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "xbox": {
+   "ofertas": 15369,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "instantgaming": {
+   "ofertas": 8309,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "driffle": {
+   "ofertas": 2242,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "mediamarkt": {
+   "ofertas": 1036,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "xtralife": {
+   "ofertas": 6029,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "cjs": {
+   "ofertas": 38769,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "gamersgate": {
-   "ofertas": 10047,
+   "ofertas": 9927,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "ebay": {
-   "ofertas": 1271,
+   "ofertas": 1136,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
-  "k4g": {
-   "ofertas": 3742,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
   "eshop": {
-   "ofertas": 18452,
+   "ofertas": 18525,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "gameseminuevos": {
-   "ofertas": 436,
+   "ofertas": 443,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "alcampo": {
-   "ofertas": 16,
+   "ofertas": 18,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -239,42 +257,54 @@
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
+  },
+  "ggpick": {
+   "ofertas": 1262,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
   }
  },
  "afiliados": {
   "instantGamingSinCodigo": 0
  },
  "preciosRaros": {
-  "total": 0,
-  "ejemplos": []
+  "total": 1,
+  "ejemplos": [
+   "MechWarrior 5: Mercenaries: kinguin con región que no vale en España (Clave Steam · United States)"
+  ]
  },
  "actualizado": {
-  "precios": "2026-11-18T13:10:01.303Z",
-  "diasDesdeLaUltima": 0.05
+  "precios": "2026-11-19T09:36:46.595Z",
+  "diasDesdeLaUltima": 0.21
  },
  "historial": {
   "series": 90977,
   "rotas": 0,
-  "alDia": 90631,
+  "alDia": 0,
   "ultimoDia": "2026-11-17"
  },
  "red": {
-  "comprobadas": 167,
-  "sinRespuesta": 0,
+  "comprobadas": 185,
+  "sinRespuesta": 6,
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 86189,
-  "ofertas": 203879,
-  "tiendas": 47,
-  "conFoto": "89 %"
+  "juegos": 106661,
+  "ofertas": 269359,
+  "tiendas": 50,
+  "conFoto": "90 %"
  },
- "fecha": "2026-11-18T14:23:15.694Z",
- "graves": [],
+ "fecha": "2026-11-19T14:42:56.285Z",
+ "graves": [
+  "g2a: fallan todos los enlaces probados (Call of Duty: Black Ops 6 - Cold Trail Operator Skin | 15 min Double XP → 0)",
+  "el historial no se escribe desde el 2026-11-17"
+ ],
  "avisos": [
-  "xbox (PC o Xbox): 193 juegos populares aún sin consultar (p. ej. The Apothecary Diaries: The False Imperial Brother, Dwarves: Glory, Death and Loot, You Suck at Parking)",
-  "game (consola): 1319 juegos populares aún sin consultar (p. ej. RIVE: Ultimate Edition, EA Sports FC 27 Ultimate Edition, Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo)",
-  "psstore (PS4 o PS5): 147 juegos populares aún sin consultar (p. ej. Football Manager 27, EA Sports FC 27 Ultimate Edition, Grand Theft Auto: The Trilogy – The Definitive Edition)",
-  "ebay (consola, 2ª mano): 492 juegos populares aún sin consultar (p. ej. Disney Dreamlight Valley: The Storybook Vale, Part Time UFO, Sonic Racing: CrossWorlds)"
+  "xbox (PC o Xbox): 224 juegos populares aún sin consultar (p. ej. The Apothecary Diaries: The False Imperial Brother, Dwarves: Glory, Death and Loot, You Suck at Parking)",
+  "game (consola): 1327 juegos populares aún sin consultar (p. ej. RIVE: Ultimate Edition, EA Sports FC 27 Ultimate Edition, Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo)",
+  "psstore (PS4 o PS5): 165 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
+  "ebay (consola, 2ª mano): 554 juegos populares aún sin consultar (p. ej. Age of Empires II: Definitive Edition - Return of Rome, Age of Empires II: Definitive Edition - Victors and Vanquished, Disney Dreamlight Valley: The Storybook Vale)"
  ]
 }
