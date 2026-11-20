@@ -1,7 +1,7 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 896,
+   "pendientes": 868,
    "ejemplos": [
     "KORRIDOR",
     "Until Dawn",
@@ -11,7 +11,7 @@
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 65808,
+   "pendientes": 65861,
    "ejemplos": [
     "The Apothecary Diaries: The False Imperial Brother",
     "Dwarves: Glory, Death and Loot",
@@ -21,17 +21,17 @@
    ]
   },
   "game (consola)": {
-   "pendientes": 30892,
+   "pendientes": 30731,
    "ejemplos": [
+    "The End Is Nigh",
     "RIVE: Ultimate Edition",
     "EA Sports FC 27 Ultimate Edition",
     "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo",
-    "1-2-Switch",
-    "Final Fantasy VII Rebirth Digital Deluxe Edition"
+    "1-2-Switch"
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 3979,
+   "pendientes": 3928,
    "ejemplos": [
     "Football Manager 27",
     "FINAL FANTASY VII REBIRTH",
@@ -41,73 +41,73 @@
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 21862,
+   "pendientes": 21594,
    "ejemplos": [
     "Age of Empires II: Definitive Edition - Return of Rome",
     "Age of Empires II: Definitive Edition - Victors and Vanquished",
     "Disney Dreamlight Valley: The Storybook Vale",
     "The Elder Scrolls Online",
-    "Part Time UFO"
+    "FINAL FANTASY XVI"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 3979,
-  "sinFicha": 3752,
-  "fichasEncontradas": 1170
+  "sinPrecio": 3928,
+  "sinFicha": 3631,
+  "fichasEncontradas": 1299
  },
  "fotos": {
   "juego": {
-   "total": 68713,
-   "con": 66925,
+   "total": 69053,
+   "con": 67226,
    "porcentaje": 97
   },
   "edicion": {
-   "total": 8834,
-   "con": 8520,
-   "porcentaje": 96
+   "total": 8916,
+   "con": 8605,
+   "porcentaje": 97
   },
   "dlc": {
-   "total": 16026,
-   "con": 15883,
+   "total": 16128,
+   "con": 15981,
    "porcentaje": 99
   },
   "tarjeta": {
-   "total": 8657,
+   "total": 8663,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 3625,
+   "total": 3870,
    "probadas": 12,
-   "fallan": 6,
+   "fallan": 5,
    "ejemplos": [
-    "Borderlands4 - Pack Historia 2: FL4K y las Últimas Vacaciones → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3802460/header.jpg",
-    "Plague Inc: Aliens & Anti-Vaxxers → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4508320/header.jpg",
-    "Wing Commander II: Vengeance of the Kilrathi: Edición del 35.º aniversario → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2008730/header.jpg"
+    "NebulArena → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3634320/header.jpg",
+    "Babel Legacy → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4699770/header.jpg",
+    "Cooking Adventure → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4729710/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 1678,
+   "total": 2209,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "nintendo": {
-   "total": 9938,
+   "total": 9867,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 11899,
+   "total": 11711,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "otras": {
-   "total": 68672,
+   "total": 68630,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
@@ -115,130 +115,130 @@
  },
  "enlaces": {
   "steam": {
-   "ofertas": 8232,
+   "ofertas": 8385,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "k4g": {
-   "ofertas": 3770,
+   "ofertas": 3687,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "kinguin": {
-   "ofertas": 61782,
+   "ofertas": 62036,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "loaded": {
-   "ofertas": 10653,
+   "ofertas": 10690,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "g2a": {
-   "ofertas": 22225,
+   "ofertas": 22246,
    "probadas": 6,
    "fallan": 6,
    "bloqueados": 0,
    "ejemplos": [
-    "Call of Duty: Black Ops 6 - Cold Trail Operator Skin | 15 min Double XP → 0",
-    "WARDOGS → 0",
-    "Outbound → 0"
+    "X-Morph: Defense Complete Pack → 0",
+    "Diablo II: Resurrected – Infernal Edition → 0",
+    "Snowrunner - 5-Year Anniversary Edition → 0"
    ]
   },
   "yuplay": {
-   "ofertas": 7005,
+   "ofertas": 7384,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "psstore": {
-   "ofertas": 980,
+   "ofertas": 1057,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "game": {
-   "ofertas": 1652,
+   "ofertas": 1658,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xbox": {
-   "ofertas": 15369,
+   "ofertas": 15667,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "instantgaming": {
-   "ofertas": 8309,
+   "ofertas": 8199,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "driffle": {
-   "ofertas": 2242,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "mediamarkt": {
-   "ofertas": 1036,
+   "ofertas": 2310,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xtralife": {
-   "ofertas": 6029,
+   "ofertas": 5992,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "cjs": {
-   "ofertas": 38769,
+   "ofertas": 39802,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "gamersgate": {
-   "ofertas": 9927,
+   "ofertas": 10031,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "ebay": {
-   "ofertas": 1136,
+   "ofertas": 1081,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
+  "mediamarkt": {
+   "ofertas": 1034,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
   "eshop": {
-   "ofertas": 18525,
+   "ofertas": 18389,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "gameseminuevos": {
-   "ofertas": 443,
+   "ofertas": 451,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -276,8 +276,8 @@
   ]
  },
  "actualizado": {
-  "precios": "2026-11-19T09:36:46.595Z",
-  "diasDesdeLaUltima": 0.21
+  "precios": "2026-11-20T09:42:04.351Z",
+  "diasDesdeLaUltima": 0.19
  },
  "historial": {
   "series": 90977,
@@ -291,20 +291,20 @@
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 106661,
-  "ofertas": 269359,
-  "tiendas": 50,
+  "juegos": 107186,
+  "ofertas": 268415,
+  "tiendas": 49,
   "conFoto": "90 %"
  },
- "fecha": "2026-11-19T14:42:56.285Z",
+ "fecha": "2026-11-20T14:21:11.888Z",
  "graves": [
-  "g2a: fallan todos los enlaces probados (Call of Duty: Black Ops 6 - Cold Trail Operator Skin | 15 min Double XP → 0)",
+  "g2a: fallan todos los enlaces probados (X-Morph: Defense Complete Pack → 0)",
   "el historial no se escribe desde el 2026-11-17"
  ],
  "avisos": [
-  "xbox (PC o Xbox): 224 juegos populares aún sin consultar (p. ej. The Apothecary Diaries: The False Imperial Brother, Dwarves: Glory, Death and Loot, You Suck at Parking)",
-  "game (consola): 1327 juegos populares aún sin consultar (p. ej. RIVE: Ultimate Edition, EA Sports FC 27 Ultimate Edition, Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo)",
-  "psstore (PS4 o PS5): 165 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
-  "ebay (consola, 2ª mano): 554 juegos populares aún sin consultar (p. ej. Age of Empires II: Definitive Edition - Return of Rome, Age of Empires II: Definitive Edition - Victors and Vanquished, Disney Dreamlight Valley: The Storybook Vale)"
+  "xbox (PC o Xbox): 233 juegos populares aún sin consultar (p. ej. The Apothecary Diaries: The False Imperial Brother, Dwarves: Glory, Death and Loot, You Suck at Parking)",
+  "game (consola): 1372 juegos populares aún sin consultar (p. ej. The End Is Nigh, RIVE: Ultimate Edition, EA Sports FC 27 Ultimate Edition)",
+  "psstore (PS4 o PS5): 168 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
+  "ebay (consola, 2ª mano): 578 juegos populares aún sin consultar (p. ej. Age of Empires II: Definitive Edition - Return of Rome, Age of Empires II: Definitive Edition - Victors and Vanquished, Disney Dreamlight Valley: The Storybook Vale)"
  ]
 }
