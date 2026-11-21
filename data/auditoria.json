@@ -1,37 +1,37 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 868,
+   "pendientes": 817,
    "ejemplos": [
     "KORRIDOR",
-    "Until Dawn",
     "Hypernet Explorer",
     "Littlelands",
-    "Regions of Ruin"
+    "Regions of Ruin",
+    "Clone Drone in the Danger Zone"
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 65861,
+   "pendientes": 66011,
    "ejemplos": [
-    "The Apothecary Diaries: The False Imperial Brother",
-    "Dwarves: Glory, Death and Loot",
-    "You Suck at Parking",
-    "Loot Loop",
-    "Moonrise Fall"
+    "Demon's Crystals",
+    "Soulblight",
+    "Six Sides of the World",
+    "Splash Blast Panic",
+    "Battle Group 2"
    ]
   },
   "game (consola)": {
-   "pendientes": 30731,
+   "pendientes": 30768,
    "ejemplos": [
     "The End Is Nigh",
     "RIVE: Ultimate Edition",
     "EA Sports FC 27 Ultimate Edition",
     "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo",
-    "1-2-Switch"
+    "Final Fantasy VII Rebirth Digital Deluxe Edition"
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 3928,
+   "pendientes": 3942,
    "ejemplos": [
     "Football Manager 27",
     "FINAL FANTASY VII REBIRTH",
@@ -41,73 +41,71 @@
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 21594,
+   "pendientes": 21264,
    "ejemplos": [
+    "Kirby y la tierra olvidada – Nintendo Switch 2 Edition + El mundo astral",
+    "The Binding of Isaac: Repentance+",
     "Age of Empires II: Definitive Edition - Return of Rome",
     "Age of Empires II: Definitive Edition - Victors and Vanquished",
-    "Disney Dreamlight Valley: The Storybook Vale",
-    "The Elder Scrolls Online",
-    "FINAL FANTASY XVI"
+    "Disney Dreamlight Valley: The Storybook Vale"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 3928,
-  "sinFicha": 3631,
-  "fichasEncontradas": 1299
+  "sinPrecio": 3942,
+  "sinFicha": 3612,
+  "fichasEncontradas": 1349
  },
  "fotos": {
   "juego": {
-   "total": 69053,
-   "con": 67226,
+   "total": 69336,
+   "con": 67496,
    "porcentaje": 97
   },
   "edicion": {
-   "total": 8916,
-   "con": 8605,
+   "total": 9028,
+   "con": 8723,
    "porcentaje": 97
   },
   "dlc": {
-   "total": 16128,
-   "con": 15981,
+   "total": 16374,
+   "con": 16227,
    "porcentaje": 99
   },
   "tarjeta": {
-   "total": 8663,
+   "total": 8745,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 3870,
+   "total": 3753,
    "probadas": 12,
-   "fallan": 5,
+   "fallan": 1,
    "ejemplos": [
-    "NebulArena → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3634320/header.jpg",
-    "Babel Legacy → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4699770/header.jpg",
-    "Cooking Adventure → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4729710/header.jpg"
+    "Borderlands4 - Pack Lote de recompensas 3: Un Zane por el que matar → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4598000/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 2209,
+   "total": 1712,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "nintendo": {
-   "total": 9867,
+   "total": 9664,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 11711,
+   "total": 11989,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "otras": {
-   "total": 68630,
+   "total": 69800,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
@@ -115,130 +113,56 @@
  },
  "enlaces": {
   "steam": {
-   "ofertas": 8385,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "k4g": {
-   "ofertas": 3687,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "kinguin": {
-   "ofertas": 62036,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "loaded": {
-   "ofertas": 10690,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 6,
-   "ejemplos": []
-  },
-  "g2a": {
-   "ofertas": 22246,
-   "probadas": 6,
-   "fallan": 6,
-   "bloqueados": 0,
-   "ejemplos": [
-    "X-Morph: Defense Complete Pack → 0",
-    "Diablo II: Resurrected – Infernal Edition → 0",
-    "Snowrunner - 5-Year Anniversary Edition → 0"
-   ]
-  },
-  "yuplay": {
-   "ofertas": 7384,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "psstore": {
-   "ofertas": 1057,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "game": {
-   "ofertas": 1658,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "xbox": {
-   "ofertas": 15667,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "instantgaming": {
-   "ofertas": 8199,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "driffle": {
-   "ofertas": 2310,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "xtralife": {
-   "ofertas": 5992,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "cjs": {
-   "ofertas": 39802,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 6,
-   "ejemplos": []
-  },
-  "gamersgate": {
-   "ofertas": 10031,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "ebay": {
-   "ofertas": 1081,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 6,
-   "ejemplos": []
-  },
-  "mediamarkt": {
-   "ofertas": 1034,
+   "ofertas": 8025,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "eshop": {
-   "ofertas": 18389,
+   "ofertas": 17975,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
-  "gameseminuevos": {
-   "ofertas": 451,
+  "psstore": {
+   "ofertas": 1072,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "game": {
+   "ofertas": 1654,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "xbox": {
+   "ofertas": 15721,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "instantgaming": {
+   "ofertas": 7706,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "driffle": {
+   "ofertas": 2380,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "yuplay": {
+   "ofertas": 7967,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -246,6 +170,80 @@
   },
   "alcampo": {
    "ofertas": 18,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "mediamarkt": {
+   "ofertas": 1044,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "xtralife": {
+   "ofertas": 5963,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "kinguin": {
+   "ofertas": 62038,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "loaded": {
+   "ofertas": 10735,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
+  "g2a": {
+   "ofertas": 22369,
+   "probadas": 6,
+   "fallan": 6,
+   "bloqueados": 0,
+   "ejemplos": [
+    "Fallout 76 - 25th Anniversary Bundle → 0",
+    "Crusader Kings III: Expansion Pass → 0",
+    "SnowRunner → 0"
+   ]
+  },
+  "cjs": {
+   "ofertas": 41553,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
+  "ebay": {
+   "ofertas": 989,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
+  "k4g": {
+   "ofertas": 3513,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "gamersgate": {
+   "ofertas": 10048,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "gameseminuevos": {
+   "ofertas": 444,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -259,7 +257,7 @@
    "ejemplos": []
   },
   "ggpick": {
-   "ofertas": 1262,
+   "ofertas": 1268,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -276,8 +274,8 @@
   ]
  },
  "actualizado": {
-  "precios": "2026-11-20T09:42:04.351Z",
-  "diasDesdeLaUltima": 0.19
+  "precios": "2026-11-21T09:30:09.992Z",
+  "diasDesdeLaUltima": 0.18
  },
  "historial": {
   "series": 90977,
@@ -291,20 +289,20 @@
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 107186,
-  "ofertas": 268415,
-  "tiendas": 49,
+  "juegos": 107906,
+  "ofertas": 268506,
+  "tiendas": 50,
   "conFoto": "90 %"
  },
- "fecha": "2026-11-20T14:21:11.888Z",
+ "fecha": "2026-11-21T13:46:16.859Z",
  "graves": [
-  "g2a: fallan todos los enlaces probados (X-Morph: Defense Complete Pack → 0)",
+  "g2a: fallan todos los enlaces probados (Fallout 76 - 25th Anniversary Bundle → 0)",
   "el historial no se escribe desde el 2026-11-17"
  ],
  "avisos": [
-  "xbox (PC o Xbox): 233 juegos populares aún sin consultar (p. ej. The Apothecary Diaries: The False Imperial Brother, Dwarves: Glory, Death and Loot, You Suck at Parking)",
-  "game (consola): 1372 juegos populares aún sin consultar (p. ej. The End Is Nigh, RIVE: Ultimate Edition, EA Sports FC 27 Ultimate Edition)",
-  "psstore (PS4 o PS5): 168 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
-  "ebay (consola, 2ª mano): 578 juegos populares aún sin consultar (p. ej. Age of Empires II: Definitive Edition - Return of Rome, Age of Empires II: Definitive Edition - Victors and Vanquished, Disney Dreamlight Valley: The Storybook Vale)"
+  "xbox (PC o Xbox): 268 juegos populares aún sin consultar (p. ej. Demon's Crystals, Soulblight, Six Sides of the World)",
+  "game (consola): 1385 juegos populares aún sin consultar (p. ej. The End Is Nigh, RIVE: Ultimate Edition, EA Sports FC 27 Ultimate Edition)",
+  "psstore (PS4 o PS5): 173 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
+  "ebay (consola, 2ª mano): 728 juegos populares aún sin consultar (p. ej. Kirby y la tierra olvidada – Nintendo Switch 2 Edition + El mundo astral, The Binding of Isaac: Repentance+, Age of Empires II: Definitive Edition - Return of Rome)"
  ]
 }
