@@ -1,70 +1,70 @@
 {
- "fecha": "2026-11-20T17:21:03.350Z",
+ "fecha": "2026-11-21T16:27:25.310Z",
  "videos": [
   {
-   "archivo": "videos/2026-11-20-tomb-raider-iv-vi-remastered.mp4",
-   "juego": "Tomb Raider IV-VI Remastered",
-   "precio": 5.07,
-   "antes": 28.99,
+   "archivo": "videos/2026-11-21-across-the-obelisk.mp4",
+   "juego": "Across the Obelisk",
+   "precio": 3.48,
+   "antes": 19.99,
    "dto": 83,
-   "tienda": "Fanatical",
+   "tienda": "G2A",
    "plataforma": "PC",
    "minimo": true,
-   "guion": "Chollo de hoy en Pillao. Tomb Raider IV-VI Remastered, para PC. Costaba 28 euros con 99 y ahora está en 5 euros con 7. Un 83 por ciento menos en Fanatical. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
+   "guion": "Chollo de hoy en Pillao. Across the Obelisk, para PC. Costaba 19 euros con 99 y ahora está en 3 euros con 48. Un 83 por ciento menos en G2A. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
    "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=Tomb%20Raider%20IV-VI%20Remastered"
+   "url": "https://pillaojuegos.com/?q=Across%20the%20Obelisk"
   },
   {
-   "archivo": "videos/2026-11-20-my-friend-pedro.mp4",
-   "juego": "My Friend Pedro",
-   "precio": 3.35,
-   "antes": 18.5,
+   "archivo": "videos/2026-11-21-daemon-x-machina.mp4",
+   "juego": "DAEMON X MACHINA",
+   "precio": 8.72,
+   "antes": 49.99,
+   "dto": 83,
+   "tienda": "GamesPlanet UK",
+   "plataforma": "PC",
+   "minimo": false,
+   "guion": "Chollo de hoy en Pillao. DAEMON X MACHINA, para PC. Costaba 49 euros con 99 y ahora está en 8 euros con 72. Un 83 por ciento menos en GamesPlanet UK. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 13,
+   "url": "https://pillaojuegos.com/?q=DAEMON%20X%20MACHINA"
+  },
+  {
+   "archivo": "videos/2026-11-21-tom-clancy-s-ghost-recon-breakpoint.mp4",
+   "juego": "Tom Clancy's Ghost Recon Breakpoint",
+   "precio": 10.36,
+   "antes": 59.6,
+   "dto": 83,
+   "tienda": "CJS CD Keys",
+   "plataforma": "PC",
+   "minimo": false,
+   "guion": "Chollo de hoy en Pillao. Tom Clancy's Ghost Recon Breakpoint, para PC. Costaba 59 euros con 60 y ahora está en 10 euros con 36. Un 83 por ciento menos en CJS CD Keys. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 13,
+   "url": "https://pillaojuegos.com/?q=Tom%20Clancy's%20Ghost%20Recon%20Breakpoint"
+  },
+  {
+   "archivo": "videos/2026-11-21-tunic.mp4",
+   "juego": "TUNIC",
+   "precio": 5.16,
+   "antes": 28.99,
    "dto": 82,
-   "tienda": "Fanatical",
+   "tienda": "G2A",
    "plataforma": "PC",
    "minimo": true,
-   "guion": "Chollo de hoy en Pillao. My Friend Pedro, para PC. Costaba 18 euros con 50 y ahora está en 3 euros con 35. Un 82 por ciento menos en Fanatical. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
+   "guion": "Chollo de hoy en Pillao. TUNIC, para PC. Costaba 28 euros con 99 y ahora está en 5 euros con 16. Un 82 por ciento menos en G2A. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
    "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=My%20Friend%20Pedro"
+   "url": "https://pillaojuegos.com/?q=TUNIC"
   },
   {
-   "archivo": "videos/2026-11-20-the-swords-of-ditto-mormo-s-curse.mp4",
-   "juego": "The Swords of Ditto: Mormo's Curse",
-   "precio": 2.49,
-   "antes": 13.61,
+   "archivo": "videos/2026-11-21-warhammer-40-000-rogue-trader.mp4",
+   "juego": "Warhammer 40,000: Rogue Trader",
+   "precio": 8.76,
+   "antes": 49.99,
    "dto": 82,
-   "tienda": "Fanatical",
+   "tienda": "Yuplay",
    "plataforma": "PC",
    "minimo": true,
-   "guion": "Chollo de hoy en Pillao. The Swords of Ditto: Mormo's Curse, para PC. Costaba 13 euros con 61 y ahora está en 2 euros con 49. Un 82 por ciento menos en Fanatical. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
+   "guion": "Chollo de hoy en Pillao. Warhammer 40,000: Rogue Trader, para PC. Costaba 49 euros con 99 y ahora está en 8 euros con 76. Un 82 por ciento menos en Yuplay. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
    "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=The%20Swords%20of%20Ditto%3A%20Mormo's%20Curse"
-  },
-  {
-   "archivo": "videos/2026-11-20-street-fighter-6.mp4",
-   "juego": "Street Fighter 6",
-   "precio": 11.39,
-   "antes": 59.99,
-   "dto": 81,
-   "tienda": "Loaded",
-   "plataforma": "PC",
-   "minimo": true,
-   "guion": "Chollo de hoy en Pillao. Street Fighter 6, para PC. Costaba 59 euros con 99 y ahora está en 11 euros con 39. Un 81 por ciento menos en Loaded. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=Street%20Fighter%206"
-  },
-  {
-   "archivo": "videos/2026-11-20-cult-of-the-lamb.mp4",
-   "juego": "Cult of the Lamb",
-   "precio": 4.99,
-   "antes": 24.99,
-   "dto": 80,
-   "tienda": "Microsoft Store",
-   "plataforma": "Xbox Series",
-   "minimo": true,
-   "guion": "Chollo de hoy en Pillao. Cult of the Lamb, para Xbox Series. Costaba 24 euros con 99 y ahora está en 4 euros con 99. Un 80 por ciento menos en Microsoft Store. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=Cult%20of%20the%20Lamb"
+   "url": "https://pillaojuegos.com/?q=Warhammer%2040%2C000%3A%20Rogue%20Trader"
   }
  ]
 }
