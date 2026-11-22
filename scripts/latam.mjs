@@ -187,6 +187,18 @@ async function main() {
     cuenta.loaded = (cuenta.loaded || 0) + 1;
   }
 
+  // Nuuvem (Rakuten): tienda de Brasil, precios en reales → dólares; sus claves son para Brasil («Solo Brasil»)
+  for (const f of await leer("feeds/nuuvem.json", [])) {
+    if (!(f.p > 0) || !tasas.BRL) continue;
+    const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
+    if (!j.img && f.img && f.t !== "tarjeta") j.img = f.img;
+    tienda("nuuvem", "Nuuvem", "oficial");
+    const conv = (n) => Math.round(n * tasas.BRL * 100) / 100;
+    ofertar(j, { tienda: "nuuvem", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: conv(f.p), regular: f.r > f.p ? conv(f.r) : undefined,
+      condicion: (f.t === "tarjeta" ? "Código digital" : `Clave ${f.pl}`) + ` · Solo Brasil · R$ ${f.p.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} ≈ en dólares`, url: f.u });
+    cuenta.nuuvem = (cuenta.nuuvem || 0) + 1;
+  }
+
   const populares = es.juegos.filter((j) => j.tipo !== "tarjeta").sort((a, b) => (a.pop || 99999) - (b.pop || 99999));
   seccion(6);
   // Tiendas de PC por IsThereAnyDeal. Argentina: todas sus tiendas, en dólares (es el precio de la región Latam en dólares de Steam y compañía).

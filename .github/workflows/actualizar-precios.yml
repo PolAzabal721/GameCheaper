@@ -141,6 +141,33 @@ jobs:
           rm feeds/loaded.xml.gz
           curl -sS --max-time 300 -u "$U:$P" -o feeds/loaded-usd.xml.gz "ftp://products.impact.com/Loaded/Loaded-ProductFeedUSDEnglish_CUSTOM.xml.gz" && python3 scripts/loaded_feed.py feeds/loaded-usd.xml.gz feeds/loaded-latam.json latam && python3 scripts/loaded_feed.py feeds/loaded-usd.xml.gz feeds/loaded-us.json us || true
           rm -f feeds/loaded-usd.xml.gz
+      - name: Catálogo de Nuuvem (Rakuten, como mucho una descarga al día)
+        id: cache-nuuvem
+        uses: actions/cache@v4
+        with:
+          path: feeds/nuuvem.json
+          key: nuuvem-${{ steps.hoy.outputs.d }}
+      - name: Descargar el catálogo de Nuuvem (SFTP de Rakuten, en reales)
+        if: steps.cache-nuuvem.outputs.cache-hit != 'true'
+        continue-on-error: true
+        timeout-minutes: 10
+        env:
+          U: ${{ secrets.RAKUTEN_FTP_USER }}
+          P: ${{ secrets.RAKUTEN_FTP_PASS }}
+        run: |
+          [ -n "$U" ] || exit 0
+          U=$(printf '%s' "$U" | tr -d '[:space:]'); P=$(printf '%s' "$P" | tr -d '[:space:]')
+          mkdir -p feeds ~/.ssh && ssh-keyscan -T 20 aftp.linksynergy.com >> ~/.ssh/known_hosts 2>/dev/null
+          # El archivo de Nuuvem (anunciante 46796) aparece en la carpeta de Brasil cuando Rakuten lo genera
+          for d in GLOBAL/PT-BR_BRL GLOBAL/EN-US_BRL ADDITIONAL; do
+            F=$(curl -sS --max-time 60 -u "$U:$P" "sftp://aftp.linksynergy.com/$d/" | awk '{print $NF}' | grep '^46796_' | grep -v delta | head -1)
+            [ -n "$F" ] && break
+          done
+          [ -n "$F" ] || { echo "Nuuvem: Rakuten todavía no ha dejado el catálogo en el SFTP"; exit 0; }
+          echo "Nuuvem: $d/$F"
+          curl -sS --max-time 400 -u "$U:$P" -o "feeds/$F" "sftp://aftp.linksynergy.com/$d/$F"
+          python3 scripts/nuuvem_feed.py "feeds/$F" feeds/nuuvem.json
+          rm -f "feeds/$F"
       - name: Catálogo de K4G por CJ (con enlace de afiliado cuando CJ nos acepte)
         continue-on-error: true
         env:
