@@ -1,7 +1,7 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 817,
+   "pendientes": 323,
    "ejemplos": [
     "KORRIDOR",
     "Hypernet Explorer",
@@ -11,101 +11,103 @@
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 66011,
+   "pendientes": 65850,
    "ejemplos": [
+    "Lost in Harmony",
     "Demon's Crystals",
     "Soulblight",
     "Six Sides of the World",
-    "Splash Blast Panic",
-    "Battle Group 2"
+    "Splash Blast Panic"
    ]
   },
   "game (consola)": {
-   "pendientes": 30768,
+   "pendientes": 30466,
    "ejemplos": [
-    "The End Is Nigh",
-    "RIVE: Ultimate Edition",
-    "EA Sports FC 27 Ultimate Edition",
-    "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo",
-    "Final Fantasy VII Rebirth Digital Deluxe Edition"
+    "Kirby's Return to Dream Land Deluxe",
+    "Xenoblade Chronicles 3",
+    "LIVE A LIVE",
+    "Nintendo Switch Sports Resort",
+    "Fire Emblem Engage"
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 3942,
+   "pendientes": 3957,
    "ejemplos": [
     "Football Manager 27",
     "FINAL FANTASY VII REBIRTH",
     "EA Sports FC 27 Ultimate Edition",
-    "Grand Theft Auto: The Trilogy – The Definitive Edition",
-    "NBA 2K27"
+    "FINAL FANTASY VII REMAKE INTERGRADE",
+    "Grand Theft Auto: The Trilogy – The Definitive Edition"
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 21264,
+   "pendientes": 20418,
    "ejemplos": [
+    "Tesla vs Lovecraft",
+    "Gal*Gun 2",
+    "ACA NEOGEO WORLD HEROES 2 JET",
     "Kirby y la tierra olvidada – Nintendo Switch 2 Edition + El mundo astral",
-    "The Binding of Isaac: Repentance+",
-    "Age of Empires II: Definitive Edition - Return of Rome",
-    "Age of Empires II: Definitive Edition - Victors and Vanquished",
-    "Disney Dreamlight Valley: The Storybook Vale"
+    "Slayaway Camp: Butcher's Cut"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 3942,
-  "sinFicha": 3612,
-  "fichasEncontradas": 1349
+  "sinPrecio": 3957,
+  "sinFicha": 3497,
+  "fichasEncontradas": 1475
  },
  "fotos": {
   "juego": {
-   "total": 69336,
-   "con": 67496,
+   "total": 69690,
+   "con": 67729,
    "porcentaje": 97
   },
   "edicion": {
-   "total": 9028,
-   "con": 8723,
+   "total": 9118,
+   "con": 8803,
    "porcentaje": 97
   },
   "dlc": {
-   "total": 16374,
-   "con": 16227,
+   "total": 16532,
+   "con": 16373,
    "porcentaje": 99
   },
   "tarjeta": {
-   "total": 8745,
+   "total": 8765,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 3753,
+   "total": 3716,
    "probadas": 12,
-   "fallan": 1,
+   "fallan": 5,
    "ejemplos": [
-    "Borderlands4 - Pack Lote de recompensas 3: Un Zane por el que matar → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4598000/header.jpg"
+    "Trails in the Sky 2nd Chapter - What-If Costume Set → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4975700/header.jpg",
+    "Booster Pack Heroes - Supporter Pack → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5316330/header.jpg",
+    "Borderlands4 - Pack Historia 2: FL4K y las Últimas Vacaciones → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3802460/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 1712,
+   "total": 1749,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "nintendo": {
-   "total": 9664,
+   "total": 9627,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 11989,
+   "total": 12110,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "otras": {
-   "total": 69800,
+   "total": 70193,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
@@ -113,56 +115,56 @@
  },
  "enlaces": {
   "steam": {
-   "ofertas": 8025,
+   "ofertas": 7897,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "eshop": {
-   "ofertas": 17975,
+   "ofertas": 17783,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "psstore": {
-   "ofertas": 1072,
+   "ofertas": 1062,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "game": {
-   "ofertas": 1654,
+   "ofertas": 1658,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xbox": {
-   "ofertas": 15721,
+   "ofertas": 15760,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "instantgaming": {
-   "ofertas": 7706,
+   "ofertas": 8056,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "driffle": {
-   "ofertas": 2380,
+   "ofertas": 2506,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "yuplay": {
-   "ofertas": 7967,
+   "ofertas": 8077,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -176,74 +178,74 @@
    "ejemplos": []
   },
   "mediamarkt": {
-   "ofertas": 1044,
+   "ofertas": 1045,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xtralife": {
-   "ofertas": 5963,
+   "ofertas": 5953,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "kinguin": {
-   "ofertas": 62038,
+   "ofertas": 62240,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "loaded": {
-   "ofertas": 10735,
+   "ofertas": 10757,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "g2a": {
-   "ofertas": 22369,
+   "ofertas": 22376,
    "probadas": 6,
    "fallan": 6,
    "bloqueados": 0,
    "ejemplos": [
-    "Fallout 76 - 25th Anniversary Bundle → 0",
-    "Crusader Kings III: Expansion Pass → 0",
-    "SnowRunner → 0"
+    "Legendary Fishing → 0",
+    "Alpha Nomos → 0",
+    "Abiotic Factor → 0"
    ]
   },
   "cjs": {
-   "ofertas": 41553,
+   "ofertas": 41895,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "ebay": {
-   "ofertas": 989,
+   "ofertas": 1014,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "k4g": {
-   "ofertas": 3513,
+   "ofertas": 3359,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "gamersgate": {
-   "ofertas": 10048,
+   "ofertas": 10055,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "gameseminuevos": {
-   "ofertas": 444,
+   "ofertas": 439,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -274,8 +276,8 @@
   ]
  },
  "actualizado": {
-  "precios": "2026-11-21T09:30:09.992Z",
-  "diasDesdeLaUltima": 0.18
+  "precios": "2026-11-22T08:50:25.926Z",
+  "diasDesdeLaUltima": 0.2
  },
  "historial": {
   "series": 90977,
@@ -289,20 +291,20 @@
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 107906,
-  "ofertas": 268506,
+  "juegos": 108546,
+  "ofertas": 268461,
   "tiendas": 50,
   "conFoto": "90 %"
  },
- "fecha": "2026-11-21T13:46:16.859Z",
+ "fecha": "2026-11-22T13:39:15.867Z",
  "graves": [
-  "g2a: fallan todos los enlaces probados (Fallout 76 - 25th Anniversary Bundle → 0)",
+  "g2a: fallan todos los enlaces probados (Legendary Fishing → 0)",
   "el historial no se escribe desde el 2026-11-17"
  ],
  "avisos": [
-  "xbox (PC o Xbox): 268 juegos populares aún sin consultar (p. ej. Demon's Crystals, Soulblight, Six Sides of the World)",
-  "game (consola): 1385 juegos populares aún sin consultar (p. ej. The End Is Nigh, RIVE: Ultimate Edition, EA Sports FC 27 Ultimate Edition)",
-  "psstore (PS4 o PS5): 173 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
-  "ebay (consola, 2ª mano): 728 juegos populares aún sin consultar (p. ej. Kirby y la tierra olvidada – Nintendo Switch 2 Edition + El mundo astral, The Binding of Isaac: Repentance+, Age of Empires II: Definitive Edition - Return of Rome)"
+  "xbox (PC o Xbox): 282 juegos populares aún sin consultar (p. ej. Lost in Harmony, Demon's Crystals, Soulblight)",
+  "game (consola): 1355 juegos populares aún sin consultar (p. ej. Kirby's Return to Dream Land Deluxe, Xenoblade Chronicles 3, LIVE A LIVE)",
+  "psstore (PS4 o PS5): 187 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
+  "ebay (consola, 2ª mano): 814 juegos populares aún sin consultar (p. ej. Tesla vs Lovecraft, Gal*Gun 2, ACA NEOGEO WORLD HEROES 2 JET)"
  ]
 }
