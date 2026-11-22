@@ -1,0 +1,22 @@
+name: tmp-tc
+on: workflow_dispatch
+jobs:
+  ver:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          F: ${{ secrets.AWIN_TODOCONSOLAS_FEED }}
+        run: |
+          U=$(printf '%s' "$F" | tr -d '[:space:]')
+          curl -sSL --max-time 300 -o tc.zip "$U"
+          python3 - <<'PY'
+          import csv,zipfile,io,collections
+          z=zipfile.ZipFile("tc.zip"); d=io.TextIOWrapper(z.open(z.namelist()[0]),encoding="utf-8",errors="replace")
+          r=list(csv.DictReader(d)); print("filas",len(r)); print("columnas",list(r[0].keys()))
+          print(collections.Counter(x.get("merchant_category") for x in r).most_common(25))
+          v=[x for x in r if x.get("merchant_category")=="Videojuego"]
+          print("videojuego",len(v)); print(collections.Counter(x.get("product_type") for x in v).most_common(40))
+          print(collections.Counter(x.get("condition") for x in v).most_common())
+          print(collections.Counter((x.get("category_name"),x.get("merchant_product_category_path")) for x in r).most_common(40))
+          for x in r[:3]: print({k:x[k][:80] for k in x})
+          PY
