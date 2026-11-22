@@ -1,0 +1,23 @@
+name: tmp-awin
+on: workflow_dispatch
+permissions: { contents: read }
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+      - env: { F: "${{ secrets.AWIN_TODOCONSOLAS_FEED }}" }
+        run: |
+          [ -n "$F" ] || { echo "SIN SECRETO"; exit 0; }
+          U=$(printf '%s' "$F" | tr -d '[:space:]')
+          curl -sSL --max-time 300 -o f.bin -w "http %{http_code} %{size_download}\n" "$U" || true
+          file f.bin
+          (unzip -o -q f.bin -d x 2>/dev/null || (gunzip -c f.bin > x.csv 2>/dev/null && mkdir -p x && mv x.csv x/)) ; ls -la x 2>/dev/null
+          C=$(ls x/* 2>/dev/null | head -1); [ -n "$C" ] || C=f.bin
+          wc -l "$C"; head -c 1500 "$C"; echo
+          python3 - "$C" <<'P'
+          import csv,sys,collections
+          r=list(csv.DictReader(open(sys.argv[1],encoding='utf-8',errors='replace')))
+          print('filas',len(r)); print('columnas',list(r[0].keys()) if r else None)
+          c=collections.Counter(x.get('merchant_category') or x.get('category_name') or '' for x in r); print(c.most_common(25))
+          for x in r[:3]: print({k:x[k] for k in list(x)[:14]})
+          P
