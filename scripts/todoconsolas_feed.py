@@ -6,7 +6,7 @@ if zipfile.is_zipfile(origen):
     z = zipfile.ZipFile(origen); datos = io.TextIOWrapper(z.open(z.namelist()[0]), encoding="utf-8", errors="replace")
 else:
     datos = open(origen, encoding="utf-8", errors="replace")
-PLAT = {"PS5": "PS5", "PS4": "PS4", "Switch 2": "Switch 2", "Switch": "Switch", "Xbox Series": "Xbox Series", "Xbox Series X": "Xbox Series", "Xbox One": "Xbox Series"}
+PLAT = {"PC": "PC", "PS5": "PS5", "PS4": "PS4", "Switch 2": "Switch 2", "Switch": "Switch", "Xbox Series": "Xbox Series", "Xbox Series X": "Xbox Series", "Xbox One": "Xbox Series"}
 FIN = re.compile(r"\s*\((SP|ES|EU|UK|IT|FR|DE|PT|USA|JP|Import[^)]*)\)\s*$", re.I)
 PL_FIN = re.compile(r"\s+(PS5|PS4|Switch 2|Switch|Xbox Series X\|?S?|Xbox Series X|Xbox Series|Xbox One|XboxOne|XBOne)\s*$", re.I)
 filas = []
