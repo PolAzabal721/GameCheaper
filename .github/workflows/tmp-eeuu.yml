@@ -139,6 +139,8 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
+          git config user.name "pillao-bot"
+          git config user.email "pillao-bot@users.noreply.github.com"
           git add $(ls precios-us.json data/eeuu-cache.json 2>/dev/null)
           git diff --cached --quiet && exit 0
           git commit -m "Precios de Estados Unidos actualizados"

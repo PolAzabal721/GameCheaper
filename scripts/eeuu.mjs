@@ -387,6 +387,7 @@ async function main() {
       fichas++; await esperar(600);
     }
     const conId = cand.filter((c) => ns[c.slug]);
+    console.log(`EE. UU. eShop: ${urls.length} fichas en su mapa, ${cand.length} de juegos que tenemos, ${conId.length} con número de producto`);
     for (let i = 0; i < conId.length; i += 50) { if (!queda()) break;
       try {
         const lote = conId.slice(i, i + 50);
