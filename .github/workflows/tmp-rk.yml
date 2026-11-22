@@ -10,5 +10,5 @@ jobs:
         run: |
           U=$(printf '%s' "$U" | tr -d '[:space:]'); P=$(printf '%s' "$P" | tr -d '[:space:]')
           echo "usuario: ${#U} letras, clave: ${#P} letras"
-          for d in "" ADDITIONAL/ GLOBAL/; do echo "== $d"; curl -sS -l --max-time 60 -u "$U:$P" "ftp://aftp.linksynergy.com/$d" | head -60; curl -sS --max-time 60 -u "$U:$P" -Q "STAT $d" "ftp://aftp.linksynergy.com/" -o /dev/null -v 2>&1 | grep "^< 2" | head; done
-          for d in $(curl -sS -u "$U:$P" "ftp://aftp.linksynergy.com/GLOBAL/" | awk '$1 ~ /^d/ {print $NF}' | head -5); do echo "== GLOBAL/$d"; curl -sS -u "$U:$P" "ftp://aftp.linksynergy.com/GLOBAL/$d/" | head -20; done
+          mkdir -p ~/.ssh && ssh-keyscan -T 20 aftp.linksynergy.com >> ~/.ssh/known_hosts 2>/dev/null; ssh-keygen -lf ~/.ssh/known_hosts | head -3
+          for d in "" GLOBAL/ ADDITIONAL/; do echo "== sftp $d"; curl -sS --max-time 90 -u "$U:$P" "sftp://aftp.linksynergy.com/$d" | head -40; done
