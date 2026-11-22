@@ -71,10 +71,10 @@ export async function rutasContador(req, env, ctx, url) {
     const visitas = {};
     // Visitas de cada día (con metadatos, una sola lista)
     // Todo de una sola consulta a D1
-    if (!env.DB) return new Response("Falta la base D1 del contador.", { status: 503, headers: { "Access-Control-Allow-Origin": "*" } });
-    await tabla(env);
-    await migrar(env);
-    const filas = (await env.DB.prepare("SELECT k, v FROM n WHERE k LIKE 'n:%'").all()).results || [];
+    // Sin D1 todavía: se leen los recuentos antiguos del KV (leer no gasta el límite de escrituras)
+    let filas = [];
+    if (env.DB) { await tabla(env); await migrar(env); filas = (await env.DB.prepare("SELECT k, v FROM n WHERE k LIKE 'n:%'").all()).results || []; }
+    else { let cursor; do { const l = await env.PILLAO.list({ prefix: "n:", cursor, limit: 1000 }); for (const k of l.keys) filas.push({ k: k.name, v: k.metadata && k.metadata.v != null ? +k.metadata.v : 0 }); cursor = l.list_complete ? null : l.cursor; } while (cursor); }
     const leer = async (prefijo, conQue) => {
       const out = {};
       for (const { k, v: n } of filas) {
