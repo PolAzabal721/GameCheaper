@@ -1,0 +1,14 @@
+name: tmp-rk
+on: workflow_dispatch
+jobs:
+  ver:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          U: ${{ secrets.RAKUTEN_FTP_USER }}
+          P: ${{ secrets.RAKUTEN_FTP_PASS }}
+        run: |
+          U=$(printf '%s' "$U" | tr -d '[:space:]'); P=$(printf '%s' "$P" | tr -d '[:space:]')
+          echo "usuario: ${#U} letras, clave: ${#P} letras"
+          curl -sS --max-time 60 -u "$U:$P" "ftp://aftp.linksynergy.com/" | head -50 || true
+          curl -sS --max-time 60 --ftp-ssl -u "$U:$P" "ftp://aftp.linksynergy.com/" | head -5 || true
