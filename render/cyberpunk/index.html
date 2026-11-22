@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>cyberpunk</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#0a0618,#2a0b3a 45%,#7a1458 80%,#ff2a6a)",shader:["#0a0618","#2a0b3a","#7a1458","#ff2a6a","#0ff0fc"],acento:"#f3ff3a",suelo:"#0a0612"};
+const JUEGO={titulo:"Cyberpunk 2077",tituloCaja:"CYBERPUNK<br>2077",tiendaNombre:"CJS CD Keys",precio:15.52,pvp:49.99,plat:"Xbox Series",clave:"Clave Xbox"};
+
+const ESCENAS=[
+{f:"¿Sabías que *Cyberpunk 2077* salió tan *roto* que hasta lo quitaron de una tienda?", p:(lt)=>P.edificios("#160a28","#0ff0fc",4,1)+P.suelo("#0a0612")+P.etiqueta("ERROR",300,800,sg(lt,.4,.7),"#ff2a6a","#fff")+(Math.sin(lt*30)>.6?`<div style="position:absolute;left:0;right:0;top:${(lt*700)%1500}px;height:40px;background:rgba(15,240,252,.4)"></div>`:"")},
+{f:"Fue en *2020*: fallos, coches *voladores* sin querer y mucho enfado.", p:(lt)=>P.edificios("#160a28","#0ff0fc",4,1)+P.suelo("#0a0612")+P.coche(200+lt*60,1300-Math.abs(Math.sin(lt*2))*500,1,"#ff2a6a")+P.texto("2020",640,660,sg(lt,.2,.6),150,"rgba(255,255,255,.4)")},
+{f:"Pero el estudio no se rindió: lo arregló durante *años*, parche a parche.", p:(lt)=>P.edificios("#160a28","#0ff0fc",4,1)+P.suelo("#0a0612")+[0,1,2,3,4].map(i=>P.etiqueta("PARCHE "+(i+1)+".0",80+(i%2)*420,640+i*130,sg(lt,.3+i*.45,.6+i*.45),"#0ff0fc","#0a0618")).join("")},
+{f:"Con la versión *2.0* y la expansión *Phantom Liberty*, pasó a ser uno de los mejor valorados.", p:(lt)=>P.edificios("#160a28","#f3ff3a",8,1.05)+P.suelo("#0a0612")+P.etiqueta("2.0",160,760,sg(lt,.3,.6),"#f3ff3a","#0a0618")+P.etiqueta("★★★★★",440,900,sg(lt,1.6,2),"#ff2a6a","#fff")},
+{f:"Hoy recorres *Night City* con la ciudad brillando como *debió* ser desde el principio.", p:(lt)=>P.edificios("#160a28","#ff2a6a",9,1.1)+P.suelo("#0a0612")+P.velocidad(lt,"rgba(15,240,252,.6)")+P.coche(320,1480,1.2,"#f3ff3a")},
+
+];
+montar(); iniciar();
+</script></body></html>

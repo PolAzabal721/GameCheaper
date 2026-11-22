@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>arkascended</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#0f3a4a,#1f7a8a 40%,#7fd0b0 80%,#d8f0c0)",shader:["#0f3a4a","#1f7a8a","#3fa080","#7fd0b0","#0a2a30"],acento:"#b6ff5a",suelo:"#3f7a3a"};
+const JUEGO={titulo:"ARK: Survival Ascended",tituloCaja:"ARK<br>SURVIVAL ASCENDED",titCaja:.095,tiendaNombre:"PlayStation Store",precio:11.24,pvp:44.99,plat:"PS5"};
+
+const ESCENAS=[
+{f:"¿Sabías que en *ARK* te despiertas en una isla *sin nada*… llena de *dinosaurios*?", p:(lt)=>P.mar(lt,1300)+P.arena(1430,"#f2dca0")+P.palmera(160,420)+P.persona(560,1500,.9,"sorpresa","#f0c39a","#7a6a5a","#3a2a1a",0)+P.dino(900,1450,.7,"#4f8a3c",Math.abs(Math.sin(lt*3)))},
+{f:"Empiezas con las *manos*: piedra, madera… y una *lanza.*", p:(lt)=>P.suelo("#3f7a3a")+P.arbol(160,380)+P.persona(560,1500,1,"feliz","#f0c39a","#7a6a5a","#3a2a1a",0,`<rect x="300" y="200" width="10" height="200" fill="#8a6a3a"/><path d="M296 200 l9 -30 l9 30 Z" fill="#aaa"/>`)},
+{f:"Lo mejor: puedes *domesticarlos* y montar encima de un *T-Rex.*", p:(lt)=>P.suelo("#3f7a3a")+P.arbol(900,400)+P.dino(460+lt*40,1500,1.3,"#6a5a3a",Math.abs(Math.sin(lt*2))*.6)+P.persona(560+lt*40,1110,.5,"feliz","#f0c39a","#7a6a5a","#3a2a1a",0)+P.etiqueta("¡DOMADO!",300,700,sg(lt,1.4,1.8),"#b6ff5a","#0f3a4a")},
+{f:"Construyes una *base*, sobrevives al hambre… y a los ataques de otros *jugadores.*", p:(lt)=>P.suelo("#3f7a3a")+P.muro(140,1500,500,220,"#8a6a3a")+P.casita(240,1290,.8,"#a07a4a","#6a4a2a")+P.dino(860,1500,.8,"#4f8a3c",1)},
+{f:"*Ascended* es la versión rehecha del juego original, con gráficos nuevos.", p:(lt)=>P.mar(lt,1300)+P.arena(1430,"#f2dca0")+P.palmera(160,460)+P.palmera(920,400,8)+P.etiqueta("REHECHO",320,760,sg(lt,.4,.8),"#b6ff5a","#0f3a4a")},
+
+];
+montar(); iniciar();
+</script></body></html>

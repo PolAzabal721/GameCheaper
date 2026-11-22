@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>dreamlight</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#5a7fe0,#9fb8ff 45%,#ffd6f0 80%,#ffe9b8)",shader:["#5a7fe0","#9fb8ff","#c9a6ff","#ffd6f0","#7fd8c8"],acento:"#ff7ab6",suelo:"#3f9a5a"};
+const JUEGO={titulo:"Disney Dreamlight Valley",tituloCaja:"DREAMLIGHT<br>VALLEY",tiendaNombre:"Kinguin",precio:15.39,pvp:39.99,plat:"PC",clave:"Clave Steam"};
+
+const ESCENAS=[
+{f:"¿Sabías que en *Dreamlight Valley* llegas a un valle mágico… cubierto de *espinas*?", p:(lt)=>P.suelo("#2f4a3a")+P.arbol(160,320,"#3a4a3a")+P.casita(600,1500,1,"#8a8aa0","#4a4a60")+[...Array(9)].map((_,i)=>`<div style="position:absolute;left:${i*120}px;top:1380px;width:120px;height:140px;background:radial-gradient(circle,#5a2a6a,#2a1240 70%);clip-path:polygon(50% 0,60% 40%,100% 30%,70% 60%,90% 100%,50% 70%,10% 100%,30% 60%,0 30%,40% 40%)"></div>`).join("")},
+{f:"La *Noche Olvidada* lo ha dejado todo gris, y te toca a ti *devolverle* la luz.", p:(lt)=>P.suelo("#2f4a3a")+P.casita(600,1500,1,"#8a8aa0","#4a4a60")+`<div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 70%,rgba(255,230,140,${.6*sg(lt,1,3)}),transparent 60%)"></div>`+P.particulas(cl(lt-1.2),30,540,1200,"#ffe17a",500)},
+{f:"Plantas *huertos*, pescas, cocinas y decoras tu propia *casa.*", p:(lt)=>P.suelo("#3f9a5a")+P.casita(560,1500,1.1)+P.arbol(140,340)+[0,1,2,3,4,5].map(i=>P.flor(120+i*80,1500,sg(lt,.3+i*.25,.8+i*.25),["#ff7ab6","#ffd36a","#9a7aff"][i%3])).join("")},
+{f:"Y poco a poco se mudan al valle *vecinos* sacados de las películas de *Disney.*", p:(lt)=>P.suelo("#3f9a5a")+[0,1,2].map(i=>P.casita(40+i*340,1500,.95,["#f2c4a6","#c4e0f2","#f2e3a6"][i],["#c94a4a","#3a7bd5","#3fae6e"][i])).join("")+P.particulas(cl(lt-.5),40,540,900,"#ff7ab6",600)},
+{f:"Es un juego para ir a tu ritmo: *sin prisas* y sin enemigos.", p:(lt)=>P.sol(540,600,120,"#fff1b8")+P.suelo("#3f9a5a")+P.casita(380,1500,1.1)+P.arbol(160,300)+P.arbol(920,280)+[0,1,2,3,4,5,6].map(i=>P.flor(60+i*150,1500,1,["#ff7ab6","#ffd36a","#9a7aff"][i%3])).join("")+P.etiqueta("ZEN",680,820,sg(lt,.4,.8),"#ff7ab6","#fff")},
+
+];
+montar(); iniciar();
+</script></body></html>

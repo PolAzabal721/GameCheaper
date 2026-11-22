@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>nomanssky</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#0a0a2a,#2a1a5a 40%,#a04aa0 75%,#ff9a6a)",shader:["#0a0a2a","#2a1a5a","#a04aa0","#ff9a6a","#1a4a6a"],acento:"#ffb347",suelo:"#2a6a5a"};
+const JUEGO={titulo:"No Man’s Sky",tituloCaja:"NO MAN’S<br>SKY",tiendaNombre:"Loaded",precio:14.39,pvp:58.99,plat:"PC"};
+
+const ESCENAS=[
+{f:"¿Sabías que *No Man’s Sky* tiene más de *18 trillones* de planetas?", p:(lt)=>P.estrellas(120)+P.planeta(300,700,160,"#ff9a6a","#7a2a6a",true)+P.planeta(820,1100,110,"#5affb0","#1a4a5a")+P.planeta(700,520,60,"#ffd36a","#a05a1a")+P.texto("18.446.744.073.709.551.616",60,1360,sg(lt,.8,1.4),54,"#ffb347")},
+{f:"Tantos que *nadie* podrá visitarlos todos, ni en mil vidas.", p:(lt)=>P.estrellas(120)+[...Array(14)].map((_,i)=>P.planeta(rnd(i)*1080,600+rnd(i+5)*900,20+rnd(i+9)*60,["#ff9a6a","#5affb0","#ffd36a","#9a7aff"][i%4],"#2a1a4a")).join("")+P.nave(200+lt*120,900,.7)},
+{f:"Cuando salió en *2016* decepcionó a mucha gente: faltaban *muchas cosas.*", p:(lt)=>P.estrellas(80)+P.planeta(540,1100,300,"#7a7a8a","#3a3a4a")+P.texto("2016",120,640,sg(lt,.2,.6),160,"rgba(255,255,255,.45)")+P.etiqueta(":(",620,700,sg(lt,1.2,1.6),"#fff","#2a1a5a")},
+{f:"Pero sus creadores siguieron años sacando actualizaciones *gratis*… y le dieron la *vuelta.*", p:(lt)=>P.estrellas(80)+P.planeta(540,1100,300,"#5affb0","#1a5a4a",true)+[0,1,2,3].map(i=>P.etiqueta("GRATIS",80+(i%2)*500,620+i*120,sg(lt,.3+i*.4,.6+i*.4),"#ffb347","#14121c")).join("")},
+{f:"Hoy puedes ir de planeta en planeta, *sin cargas*, con tu nave y tu *base.*", p:(lt)=>P.suelo("#2a6a5a")+P.arbol(180,300,"#ff7ab6")+P.arbol(860,340,"#9a7aff")+P.astronauta(540,1500,1.2)+P.nave(540+Math.sin(lt)*30,600,1,"#c9cfe0",.6)},
+
+];
+montar(); iniciar();
+</script></body></html>

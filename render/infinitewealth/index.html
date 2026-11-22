@@ -1,0 +1,16 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>infinitewealth</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#1a3a8a,#3a8ae0 45%,#7ae0f0 80%,#fff0b8)",shader:["#1a3a8a","#3a8ae0","#7ae0f0","#ffd36a","#ff7a6a"],acento:"#ffd36a",suelo:"#f2cf8a"};
+const JUEGO={titulo:"Like a Dragon: Infinite Wealth",tituloCaja:"LIKE A DRAGON<br>INFINITE WEALTH",titCaja:.09,tiendaNombre:"Loaded",precio:5.99,pvp:69.99,plat:"PC",clave:"Clave Steam"};
+
+const ESCENAS=[
+{f:"¿Sabías que *Infinite Wealth* empieza con su héroe tirado en una playa de *Hawái*… casi *desnudo*?", p:(lt)=>P.mar(lt,1250,"#2a9ad0")+P.arena(1380)+P.palmera(140,460)+P.palmera(940,400,10)+P.persona(560,1500,.9,"sorpresa","#e8b08a","#f2cf8a","#1a1a1a",1)+P.etiqueta("HAWÁI",640,640,sg(lt,.8,1.2),"#ffd36a","#1a3a8a")},
+{f:"Los combates son *por turnos*, y pegas con lo que haya en la *calle.*", p:(lt)=>P.suelo("#5a5a66")+P.persona(300,1500,.9,"feliz","#e8b08a","#c94a4a","#1a1a1a",1,`<rect x="270" y="210" width="120" height="30" rx="8" fill="#4a7ad8"/>`)+P.persona(780,1500,.9,"sorpresa","#d8a080","#2a2a2a","#5a3a1a",0)+P.etiqueta("TURNO 1",380,700,sg(lt,.3,.7),"#fff","#1a3a8a")},
+{f:"Bicis, señales de tráfico, *sombrillas*… todo vale como *arma.*", p:(lt)=>P.suelo("#5a5a66")+["🚲","🚸","⛱️","🛹"].map((e,i)=>`<div style="position:absolute;left:${120+i*230}px;top:${900+Math.sin(lt*3+i)*30}px;font-size:150px;opacity:${sg(lt,.2+i*.4,.5+i*.4)}">${e}</div>`).join("")},
+{f:"Y tiene minijuegos *absurdos*, como una isla entera que gestionas tú.", p:(lt)=>P.mar(lt,1200,"#2a9ad0")+P.arena(1400)+P.casita(220,1400,.8)+P.casita(560,1400,.7,"#c4e0f2","#3a7bd5")+P.palmera(920,360)+P.etiqueta("TU ISLA",360,700,sg(lt,.4,.8),"#ffd36a","#1a3a8a")},
+
+];
+montar(); iniciar();
+</script></body></html>

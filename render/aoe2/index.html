@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>aoe2</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#3a5a8a,#7aa0d0 45%,#d0e0c0 85%,#e8e0b0)",shader:["#3a5a8a","#7aa0d0","#a0c0a0","#d0e0c0","#4a6a9a"],acento:"#ffcf5a",suelo:"#5a8a3a"};
+const JUEGO={titulo:"Age of Empires II: Definitive Edition",tituloCaja:"AGE OF EMPIRES II<br>DEFINITIVE",titCaja:.09,tiendaNombre:"CJS CD Keys",precio:10.55,pvp:32.99,plat:"PC",clave:"Clave Microsoft Store"};
+
+const ESCENAS=[
+{f:"¿Sabías que un juego de *1999* se sigue jugando en *torneos* con miles de personas mirando?", p:(lt)=>P.suelo("#5a8a3a")+P.castillo(280,1500,1,"#7a7f90","#ffcf5a")+P.texto("1999",640,640,sg(lt,.2,.6),150,"rgba(255,255,255,.5)")},
+{f:"Es *Age of Empires II*, y tiene un sonido *famoso*: el del monje.", p:(lt)=>P.suelo("#5a8a3a")+P.persona(540,1500,1.1,"feliz","#f0c39a","#8a6a3a","#5a4a3a",0)},
+{f:"El monje *canta*… y convierte a los soldados enemigos en *tuyos.*", p:(lt)=>P.suelo("#5a8a3a")+P.persona(260,1500,.9,"feliz","#f0c39a","#8a6a3a","#5a4a3a",0)+P.soldado(760,1560,1.4,lt>1.5?"#3a6fd8":"#d9433a")+P.texto("WOLOLO",300,780,sg(lt,.2,.6),110,"#ffcf5a")+(lt>1.4&&lt<1.6?`<div style="position:absolute;left:640px;top:1100px;width:260px;height:400px;border-radius:50%;background:rgba(255,255,255,.6)"></div>`:"")},
+{f:"Rojo, azul, rojo, azul… es uno de los *memes* más viejos de los videojuegos.", p:(lt)=>P.suelo("#5a8a3a")+[...Array(5)].map((_,i)=>P.soldado(140+i*200,1580,1,Math.floor(lt*2+i)%2?"#3a6fd8":"#d9433a")).join("")},
+{f:"La *Definitive Edition* lo trae con gráficos en *4K* y todas las civilizaciones.", p:(lt)=>P.suelo("#5a8a3a")+P.castillo(280,1500,1,"#7a7f90","#ffcf5a")+P.etiqueta("4K",640,700,sg(lt,.4,.8),"#ffcf5a","#3a5a8a")},
+
+];
+montar(); iniciar();
+</script></body></html>

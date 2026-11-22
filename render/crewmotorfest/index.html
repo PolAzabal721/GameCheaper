@@ -1,0 +1,16 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>crewmotorfest</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#ff5a7a,#ff9a6a 40%,#ffd36a 70%,#7ae0f0)",shader:["#ff5a7a","#ff9a6a","#ffd36a","#7ae0f0","#e04a8a"],acento:"#2ad4c8",suelo:"#3a3a44"};
+const JUEGO={titulo:"The Crew Motorfest",tituloCaja:"THE CREW<br>MOTORFEST",tiendaNombre:"Loaded",precio:7.19,pvp:59.99,plat:"PC",clave:"Clave Ubisoft"};
+
+const ESCENAS=[
+{f:"¿Sabías que en *The Crew Motorfest* toda una isla de *Hawái* es un festival de coches?", p:(lt)=>P.mar(lt,1250,"#2a9ad0")+P.montana(540,1260,900,500,"#2f7a4a","#3f9a5a")+P.carretera(lt*3,"#3a3a44","#fff")+P.coche(320,1600,1.2,"#ff3a6a")+P.palmera(100,380)},
+{f:"Es la isla de *O’ahu*, con sus playas, volcanes y la ciudad de *Honolulu.*", p:(lt)=>P.mar(lt,1250,"#2a9ad0")+P.montana(320,1260,560,420,"#5a3a2a","#ff8a2a")+P.edificios("#e0a0c0","#fff",9,.35).replace(/top:(\d+)px/g,(m,a)=>"top:"+(+a-260)+"px")+P.etiqueta("HONOLULU",560,640,sg(lt,1.2,1.6),"#2ad4c8","#14121c")},
+{f:"Corres en *coche*, en *lancha* y hasta en *avioneta*, cambiando en marcha.", p:(lt)=>P.mar(lt,1100,"#2a9ad0")+P.nave(200+lt*200,620,.7,"#fff",0)+`<div style="position:absolute;left:${700-lt*120}px;top:1180px;width:260px;height:60px;border-radius:0 0 60px 60px;background:#ff3a6a"></div>`+P.carretera(lt*3,"#3a3a44","#fff")+P.coche(240,1600,1,"#2ad4c8")},
+{f:"Y cada ruta es como un *capítulo* con su propia temática.", p:(lt)=>P.carretera(lt*3,"#3a3a44","#fff")+P.velocidad(lt)+P.coche(300,1600,1.2,"#ff3a6a")+["JAPÓN","CLÁSICOS","ELÉCTRICOS"].map((s,i)=>P.etiqueta(s,120+(i%2)*420,640+i*150,sg(lt,.3+i*.5,.6+i*.5),"#fff","#e04a8a")).join("")},
+
+];
+montar(); iniciar();
+</script></body></html>

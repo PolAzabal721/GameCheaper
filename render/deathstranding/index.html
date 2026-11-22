@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>deathstranding</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#1a2028,#3a4654 40%,#7a8a96 75%,#c8d0d4)",shader:["#1a2028","#3a4654","#5a6a76","#c8d0d4","#20282e"],acento:"#ffcf5a",suelo:"#4a5a4a"};
+const JUEGO={titulo:"Death Stranding Director’s Cut",tituloCaja:"DEATH STRANDING<br>DIRECTOR’S CUT",titCaja:.085,tiendaNombre:"Loaded",precio:7.19,pvp:39.99,plat:"PC"};
+
+const ESCENAS=[
+{f:"¿Sabías que hay un juego en el que el reto principal es… *repartir paquetes*?", p:(lt)=>P.colinas("#3a4a3a",1150)+P.suelo("#4a5a4a")+P.persona(540,1500,1,"feliz","#f0c39a","#3a4a5a","#2a1a0a",0)+P.mochila(540,1250,3)},
+{f:"Es *Death Stranding*, de Hideo *Kojima*, y eres un *repartidor* en un país en ruinas.", p:(lt)=>P.colinas("#3a4a3a",1150)+P.suelo("#4a5a4a")+P.persona(540,1500,1,"feliz","#f0c39a","#3a4a5a","#2a1a0a",0)+P.mochila(540,1250,5)+P.etiqueta("KOJIMA",620,640,sg(lt,.8,1.2),"#ffcf5a","#1a2028")},
+{f:"Cargas tanto que tienes que *equilibrarte* para no *caerte.*", p:(lt)=>{const o=Math.sin(lt*3)*sg(lt,0,1);return P.colinas("#3a4a3a",1150)+P.suelo("#4a5a4a")+`<div style="position:absolute;inset:0;transform:rotate(${o*6}deg);transform-origin:540px 1500px">${P.persona(540,1500,1,"sorpresa","#f0c39a","#3a4a5a","#2a1a0a",0)+P.mochila(540,1250,10,o)}</div>`}},
+{f:"Ríos, montañas, *lluvia* que envejece lo que toca… y *carreteras* que construyes tú.", p:(lt)=>P.lluvia(lt)+P.montana(300,1500,600,700,"#3a4654")+P.montana(800,1500,600,800,"#2a3644")+P.suelo("#4a5a4a")+P.carretera(lt,"#5a5a64","#ffcf5a")},
+{f:"Y lo que construyes aparece en las partidas de *otros jugadores* para ayudarles.", p:(lt)=>P.colinas("#3a4a3a",1150)+P.suelo("#4a5a4a")+[0,1,2].map(i=>P.etiqueta("👍",200+i*280,800-i*40,sg(lt,.4+i*.4,.7+i*.4),"#ffcf5a","#1a2028")).join("")+P.persona(540,1500,.9,"feliz","#f0c39a","#3a4a5a","#2a1a0a",0)+P.mochila(540,1280,4)},
+
+];
+montar(); iniciar();
+</script></body></html>

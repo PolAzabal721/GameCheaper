@@ -1,0 +1,16 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ff8</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#0a1a3a,#1a3a7a 45%,#5a8ad0 80%,#c0d8ff)",shader:["#0a1a3a","#1a3a7a","#3a5aa0","#c0d8ff","#102040"],acento:"#ffd36a",suelo:"#0d1428"};
+const JUEGO={titulo:"Final Fantasy VIII Remastered",tituloCaja:"FINAL FANTASY VIII<br>REMASTERED",titCaja:.085,tiendaNombre:"Yuplay",precio:6.75,pvp:19.99,plat:"PC",clave:"Clave Steam"};
+
+const ESCENAS=[
+{f:"¿Sabías que en *Final Fantasy VIII* la magia no se compra… se *roba* a los enemigos?", p:(lt)=>P.suelo("#0d1428")+P.persona(260,1500,.9,"feliz","#f0c39a","#2a2a3a","#3a2a1a",0)+P.dragon(780,1000,.8,"#4a2a6a")+[...Array(10)].map((_,i)=>{const k=cl((lt-.6-i*.12)/1.2);return k>0&&k<1?`<div style="position:absolute;left:${780-520*k}px;top:${1000+300*k+Math.sin(i+k*6)*40}px;width:24px;height:24px;border-radius:50%;background:#9fd3ff;box-shadow:0 0 20px #9fd3ff"></div>`:""}).join("")},
+{f:"Y tiene un *minijuego de cartas* que ha enganchado a más gente que la historia.", p:(lt)=>P.suelo("#0d1428")+P.cartas(240,820,sg(lt,.3,1.2))},
+{f:"Se llama *Triple Triad*: pones cartas en un tablero y *giras* las del rival.", p:(lt)=>P.suelo("#0d1428")+`<div style="position:absolute;left:240px;top:700px;width:600px;height:600px;background:#1a2a4a;border-radius:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:20px">${[...Array(9)].map((_,i)=>`<div style="border-radius:12px;background:${i<5?(lt>1.6&&i%2?"#3a7bd5":"#e94a63"):"#24345a"}"></div>`).join("")}</div>`},
+{f:"La versión *Remastered* trae los personajes rehechos y hasta un modo para ir a *triple* velocidad.", p:(lt)=>P.suelo("#0d1428")+P.etiqueta("×3",400,780,sg(lt,1.6,2),"#ffd36a","#0a1a3a")+P.velocidad(lt,"rgba(159,211,255,.6)")},
+
+];
+montar(); iniciar();
+</script></body></html>

@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>reddead1</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#2a1020,#7a2a2a 40%,#e0782c 75%,#ffc46a)",shader:["#2a1020","#7a2a2a","#c4561f","#ffc46a","#3a1420"],acento:"#ffb347",suelo:"#d9a95e"};
+const JUEGO={titulo:"Red Dead Redemption",tituloCaja:"RED DEAD<br>REDEMPTION",tiendaNombre:"CJS CD Keys",precio:14.95,pvp:34.99,plat:"Switch",clave:"Clave eShop"};
+
+const ESCENAS=[
+{f:"¿Sabías que antes de *Red Dead Redemption 2* hubo un *primero*?", p:(lt)=>P.sol(540,1150,150,"#ffc46a")+P.arena()+P.cactus(160,300)+P.cactus(900,240)+P.etiqueta("1",470,700,sg(lt,.4,.8),"#ffb347","#2a1020")},
+{f:"Salió en *2010* y es la historia de un *ex-forajido* que intenta dejar atrás su pasado.", p:(lt)=>P.sol(540,1150,150,"#ffc46a")+P.arena()+P.caballo(500+Math.sin(lt)*10,1500,1.1,"#7a4a2a",lt*6)+P.texto("2010",640,640,sg(lt,.2,.6),150,"rgba(255,255,255,.45)")},
+{f:"Durante *trece años* solo se pudo jugar en consolas de la época.", p:(lt)=>P.arena()+P.cactus(540,320)+P.etiqueta("13 AÑOS",300,760,sg(lt,.4,.8),"#ffb347","#2a1020")},
+{f:"Hasta que en *2023* llegó a *Switch*: el oeste entero, en tu *bolsillo.*", p:(lt)=>P.arena()+`<div style="position:absolute;left:190px;top:${880+ (1-eo(sg(lt,.2,1)))*300}px;width:700px;height:400px;border-radius:40px;background:#222;box-shadow:inset 0 0 0 16px #333"><div style="position:absolute;left:90px;right:90px;top:40px;bottom:40px;background:linear-gradient(180deg,#e0782c,#ffc46a);border-radius:8px;overflow:hidden"><div style="position:absolute;left:180px;top:120px;width:160px;height:160px;border-radius:50%;background:#fff1b8"></div></div><div style="position:absolute;left:0;top:0;bottom:0;width:80px;background:#e60012;border-radius:40px 0 0 40px"></div><div style="position:absolute;right:0;top:0;bottom:0;width:80px;background:#00b4e6;border-radius:0 40px 40px 0"></div></div>`},
+{f:"Duelos, caballos, atardeceres… y uno de los *finales* más recordados de los videojuegos.", p:(lt)=>P.sol(540,1300,170,"#ffc46a")+P.arena()+P.caballo(260,1500,.9,"#7a4a2a",lt*6)+P.sombrero(760,1440,1.2)},
+
+];
+montar(); iniciar();
+</script></body></html>

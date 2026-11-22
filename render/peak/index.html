@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>peak</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#3a8ad0,#7ac0f0 45%,#d0ecff 85%,#ffffff)",shader:["#3a8ad0","#7ac0f0","#a0d8ff","#d0ecff","#5aa0e0"],acento:"#ff7a3a",suelo:"#3f8a4a"};
+const JUEGO={titulo:"PEAK",tituloCaja:"PEAK",titCaja:.22,tiendaNombre:"K4G",precio:2.69,pvp:7.49,plat:"PC",clave:"Clave Steam"};
+
+const ESCENAS=[
+{f:"¿Sabías que uno de los juegos más vendidos de *2025* trata solo de… *subir una montaña*?", p:(lt)=>P.mar(lt,1350,"#2a8ac0")+P.montana(540,1500,900,1100,"#5a6a7a")+P.nube(100,500,1)+P.nube(700,640,.8)},
+{f:"En *PEAK* tu avión se estrella en una isla, y la única salida está en la *cima.*", p:(lt)=>P.mar(lt,1350,"#2a8ac0")+P.montana(700,1500,800,1000,"#5a6a7a")+`<div style="position:absolute;left:${-200+eo(sg(lt,0,1.4))*360}px;top:${560+eo(sg(lt,0,1.4))*700}px;width:240px;height:60px;border-radius:30px;background:#ddd;transform:rotate(30deg)"></div>`+P.particulas(cl(lt-1.4),24,200,1280,"#ff7a3a",400)},
+{f:"Escalas con *amigos*, con la energía justa… y si te sueltas, *caes.*", p:(lt)=>P.montana(540,1500,1100,1400,"#5a6a7a")+[0,1,2].map(i=>P.persona(380+i*160,1100-i*180+(i==2?sg(lt,1.8,2.4)*500:0),.4,i==2&&lt>1.8?"sorpresa":"feliz","#f0c39a",["#ff7a3a","#3a7bd5","#3fae6e"][i],"#3a2a1a",i)).join("")},
+{f:"Tienes que *compartir* la comida y ayudaros a subir unos a otros.", p:(lt)=>P.montana(540,1500,1100,1400,"#5a6a7a")+P.persona(420,1150,.55,"feliz","#f0c39a","#ff7a3a","#3a2a1a",0)+P.persona(640,1150,.55,"feliz","#e8b08a","#3a7bd5","#2a1a0a",2)+`<div style="position:absolute;left:510px;top:${900-Math.abs(Math.sin(lt*3))*60}px;font-size:90px">🍌</div>`},
+{f:"Es corto, divertido y está pensado para jugar en *grupo* con risas aseguradas.", p:(lt)=>P.montana(540,1500,1100,1400,"#5a6a7a")+P.etiqueta("¡CIMA!",380,560,sg(lt,.4,.8),"#ff7a3a","#fff")+P.particulas(cl(lt-.5),40,540,700,"#ffd36a",600)},
+
+];
+montar(); iniciar();
+</script></body></html>

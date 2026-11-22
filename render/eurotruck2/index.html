@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>eurotruck2</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#0d1030,#2a2560 45%,#e2774a 85%,#ffb36a)",shader:["#0d1030","#2a2560","#6a3a7a","#e2774a","#1a1840"],acento:"#ffb347",suelo:"#1a1424"};
+const JUEGO={titulo:"Euro Truck Simulator 2",tituloCaja:"EURO TRUCK<br>SIMULATOR 2",tiendaNombre:"Steam",precio:4.99,pvp:15.34,plat:"PC"};
+
+const ESCENAS=[
+{f:"¿Sabías que hay gente que conduce camiones *de noche*… para *relajarse*?", p:(lt)=>P.estrellas()+P.luna(800,300)+P.colinas("#1d1838",1180,lt*120)+P.carretera(lt)+P.camion(60,1600,1.1,"#d9433a","#e9e4da",true,"PILLAO")},
+{f:"Se llama *Euro Truck Simulator 2*, y es uno de los juegos más jugados de *Steam*.", p:(lt)=>P.estrellas()+P.colinas("#1d1838",1180,lt*120)+P.carretera(lt)+P.camion(60,1600,1.1,"#d9433a","#e9e4da",true,"PILLAO")+P.etiqueta("ETS 2",600,640,sg(lt,.3,.7),"#ffb347","#14121c")},
+{f:"Cargas en *Madrid*, cruzas los *Pirineos* y entregas en *Berlín.*", p:(lt)=>P.sol(540,1100,130,"#ffb36a")+P.montana(250,1500,560,420,"#3a2a5a")+P.montana(800,1500,640,520,"#2d2350")+P.carretera(lt*2)+P.camion(-300+lt*260,1600,1,"#2a7de1","#f4efe6")+P.cartel("Madrid → Berlín",560,700,"#1f6e3a")},
+{f:"Con *radio*, *peajes*, lluvia y hasta multas si te pasas de *velocidad.*", p:(lt)=>P.lluvia(lt)+P.colinas("#1d1838",1180,lt*200)+P.carretera(lt*2)+P.camion(120,1600,1,"#2a7de1","#f4efe6",true)+P.etiqueta("80 km/h",620,700,sg(lt,.4,.8),"#ff5a4f","#fff")+P.etiqueta("MULTA",650,840,sg(lt,2,2.4),"#fff","#d9433a")},
+{f:"Y en el *multijugador*, miles de camioneros hacen *convoyes* juntos por la misma autopista.", p:(lt)=>P.estrellas()+P.carretera(lt*2)+[0,1,2].map(i=>P.camion(-200+i*420-((lt*60)%420),1600,.62,["#d9433a","#2a7de1","#3fb36e"][i],"#e9e4da",true)).join("")},
+
+];
+montar(); iniciar();
+</script></body></html>

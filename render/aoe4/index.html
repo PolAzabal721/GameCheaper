@@ -1,0 +1,16 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>aoe4</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#2a3a5a,#5a7aa0 45%,#c0d0e0 80%,#e8e0c0)",shader:["#2a3a5a","#5a7aa0","#8aa0c0","#c0d0e0","#3a4a6a"],acento:"#ffcf5a",suelo:"#5a8a3a"};
+const JUEGO={titulo:"Age of Empires IV",tituloCaja:"AGE OF<br>EMPIRES IV",tiendaNombre:"G2A",precio:10.85,pvp:39.99,plat:"PC",clave:"Clave Microsoft Store"};
+
+const ESCENAS=[
+{f:"¿Sabías que en *Age of Empires IV* las batallas son de *verdad*… de la historia?", p:(lt)=>P.suelo("#5a8a3a")+P.castillo(280,1500,1)+[...Array(6)].map((_,i)=>P.soldado(120+i*160,1700,.9,"#3a6fd8")).join("")},
+{f:"Puedes jugar la conquista de *Inglaterra* de 1066, o la batalla de *Orleans* con Juana de Arco.", p:(lt)=>P.suelo("#5a8a3a")+P.texto("1066",120,640,sg(lt,.2,.6),160,"#fff")+P.texto("1429",560,820,sg(lt,1.8,2.2),160,"#ffcf5a")+P.castillo(560,1500,.8)},
+{f:"Y entre misión y misión, ves *documentales* rodados en los sitios reales.", p:(lt)=>P.suelo("#5a8a3a")+`<div style="position:absolute;left:140px;top:640px;width:800px;height:480px;background:#111;border-radius:20px;border:14px solid #333"><div style="position:absolute;inset:0;background:linear-gradient(180deg,#8ab0d0,#5a8a3a)"></div>`+`</div>`+P.etiqueta("▶ DOCUMENTAL",260,1180,sg(lt,.5,.9),"#ffcf5a","#2a3a5a")},
+{f:"Construyes tu *ciudad*, juntas recursos y levantas un ejército para el *asedio.*", p:(lt)=>{window.SACUDIDAS=[];return P.suelo("#5a8a3a")+P.castillo(560,1500,.9,"#6b6f80","#3a6fd8")+[...Array(5)].map((_,i)=>P.soldado(80+i*90+lt*60,1580,.8,"#d9433a")).join("")+P.particulas(cl(lt-1.5),20,700,1200,"#aaa",500)}},
+
+];
+montar(); iniciar();
+</script></body></html>

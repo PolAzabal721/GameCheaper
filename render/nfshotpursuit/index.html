@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>nfshotpursuit</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#05051a,#14143a 45%,#3a1a5a 80%,#ff3a4a)",shader:["#05051a","#14143a","#3a1a5a","#ff3a4a","#3a7bff"],acento:"#3a9bff",suelo:"#0a0a16"};
+const JUEGO={titulo:"Need for Speed Hot Pursuit Remastered",tituloCaja:"NEED FOR SPEED<br>HOT PURSUIT",titCaja:.09,tiendaNombre:"Steam",precio:4.49,pvp:29.99,plat:"PC"};
+
+const ESCENAS=[
+{f:"¿Sabías que en *Need for Speed Hot Pursuit* puedes ser el *policía*?", p:(lt)=>`<div style="position:absolute;inset:0;background:${Math.sin(lt*14)>0?"rgba(58,123,255,.18)":"rgba(255,58,74,.18)"}"></div>`+P.carretera(lt*4,"#1a1a24","#fff")+P.velocidad(lt)+P.coche(300,1600,1.2,"#f4f4f8","policia",Math.sin(lt*14)>0)},
+{f:"De un lado, corredores ilegales con *superdeportivos.*", p:(lt)=>P.carretera(lt*4,"#1a1a24","#fff")+P.velocidad(lt)+P.coche(260,1600,1.25,"#ff3a4a")+P.etiqueta("320 km/h",520,700,sg(lt,.3,.7),"#ff3a4a","#fff")},
+{f:"Del otro, la policía con *pinchos*, *bloqueos* y hasta *helicóptero.*", p:(lt)=>P.carretera(lt*4,"#1a1a24","#fff")+P.velocidad(lt)+P.coche(120,1600,1,"#ff3a4a")+P.coche(560,1600,1,"#f4f4f8","policia",Math.sin(lt*14)>0)+`<div style="position:absolute;left:${-200+lt*260}px;top:560px;width:260px;height:80px;border-radius:40px;background:#2a2a3a"><div style="position:absolute;left:-60px;right:-60px;top:-20px;height:8px;background:#888;transform:scaleX(${Math.sin(lt*40)})"></div></div>`},
+{f:"Cada persecución es un *duelo*: o escapas… o te *pillan.*", p:(lt)=>{const k=sg(lt,.5,2);return P.carretera(lt*4,"#1a1a24","#fff")+P.velocidad(lt)+P.coche(380,1600,1.1,"#ff3a4a")+P.coche(-80+k*360,1600,1.1,"#f4f4f8","policia",Math.sin(lt*14)>0)+(lt>2?P.etiqueta("¡PILLADO!",320,760,sg(lt,2,2.3),"#3a9bff","#fff"):"")}},
+{f:"El *Remastered* trae todo el juego con gráficos mejorados y *multijugador* entre plataformas.", p:(lt)=>P.carretera(lt*4,"#1a1a24","#fff")+P.velocidad(lt)+P.coche(100,1600,.85,"#ff3a4a")+P.coche(560,1600,.85,"#f4f4f8","policia",Math.sin(lt*14)>0)+P.etiqueta("REMASTERED",300,760,sg(lt,.4,.8),"#3a9bff","#fff")},
+
+];
+montar(); iniciar();
+</script></body></html>

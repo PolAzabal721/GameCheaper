@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>gearsreloaded</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#14141a,#2a2a34 45%,#5a4a40 80%,#8a6a4a)",shader:["#14141a","#2a2a34","#4a3a34","#8a6a4a","#1a1a22"],acento:"#e03a2a",suelo:"#2a2622"};
+const JUEGO={titulo:"Gears of War: Reloaded",tituloCaja:"GEARS OF WAR<br>RELOADED",titCaja:.1,tiendaNombre:"Steam",precio:9.99,pvp:39.99,plat:"PC"};
+
+const ESCENAS=[
+{f:"¿Sabías que casi todos los juegos de disparos en los que te *cubres* tras un muro le deben algo a este?", p:(lt)=>P.edificios("#24242c","#e03a2a",2,.8)+P.suelo("#2a2622")+P.muro(260,1500,520,200,"#5a5a64")+P.soldado(520,1480-Math.max(0,Math.sin(lt*2))*60,1.2,"#4a5a4a","rifle")},
+{f:"Es *Gears of War*, de *2006*, y popularizó el sistema de *coberturas.*", p:(lt)=>P.edificios("#24242c","#e03a2a",2,.8)+P.suelo("#2a2622")+P.muro(260,1500,520,200,"#5a5a64")+P.texto("2006",620,640,sg(lt,.2,.6),150,"rgba(255,255,255,.4)")+P.etiqueta("¡A CUBIERTO!",160,880,sg(lt,1.6,2),"#e03a2a","#fff")},
+{f:"Corres, te pegas a la pared, *asomas* y disparas.", p:(lt)=>{const x=200+cl(lt/1.2)*260;return P.edificios("#24242c","#e03a2a",2,.8)+P.suelo("#2a2622")+P.muro(420,1500,320,180,"#5a5a64")+P.soldado(x,1480-(lt>2?Math.abs(Math.sin(lt*5))*80:0),1.2,"#4a5a4a","rifle")}},
+{f:"*Reloaded* es la versión remasterizada, ahora también en *PlayStation*, con gráficos en *4K.*", p:(lt)=>P.edificios("#24242c","#e03a2a",2,.8)+P.suelo("#2a2622")+P.etiqueta("4K",320,720,sg(lt,.4,.8),"#e03a2a","#fff")+P.etiqueta("RELOADED",400,880,sg(lt,1.2,1.6),"#fff","#14141a")},
+{f:"Y se puede jugar la campaña entera en *cooperativo* con un amigo.", p:(lt)=>P.edificios("#24242c","#e03a2a",2,.8)+P.suelo("#2a2622")+P.muro(160,1500,760,180,"#5a5a64")+P.soldado(360,1480,1.2,"#4a5a4a","rifle")+P.soldado(700,1480,1.2,"#5a4a3a","rifle")},
+
+];
+montar(); iniciar();
+</script></body></html>

@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>americantruck</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#1a4a8a,#4a8ad0 45%,#f2b36a 85%,#ffd38a)",shader:["#1a4a8a","#4a8ad0","#8ac0f0","#f2b36a","#2a5a9a"],acento:"#ffd36a",suelo:"#d9a95e"};
+const JUEGO={titulo:"American Truck Simulator",tituloCaja:"AMERICAN TRUCK<br>SIMULATOR",titCaja:.095,tiendaNombre:"Steam",precio:4.99,pvp:19.79,plat:"PC"};
+
+const ESCENAS=[
+{f:"¿Sabías que puedes cruzar *Estados Unidos* de costa a costa… en un *camión*?", p:(lt)=>P.sol(820,600,110)+P.arena(1300)+P.carretera(lt*2,"#3a3a40","#fff")+P.camion(80,1600,1.1,"#2a7de1","#f4efe6")},
+{f:"En *American Truck Simulator* vas por desiertos, montañas y *ciudades* enormes.", p:(lt)=>P.montana(240,1400,560,500,"#a85a3a","#e0a080")+P.montana(780,1400,620,560,"#8a4a2a","#e0a080")+P.arena(1380)+P.carretera(lt*2,"#3a3a40","#fff")+P.cactus(960,200)+P.camion(-300+lt*230,1600,1,"#d9433a","#f4efe6")},
+{f:"Carreteras inspiradas en las *de verdad*, estado a estado.", p:(lt)=>P.arena(1300)+P.carretera(lt*2,"#3a3a40","#fff")+["CALIFORNIA","NEVADA","ARIZONA","TEXAS"].map((s,i)=>P.etiqueta(s,90+(i%2)*450,620+i*150,sg(lt,.2+i*.4,.5+i*.4),"#fff","#1a4a8a")).join("")},
+{f:"Entregas cargas raras: desde *maíz*… hasta casas *prefabricadas.*", p:(lt)=>P.arena(1300)+P.carretera(lt*2,"#3a3a40","#fff")+P.camion(60,1600,1,"#3fb36e","#3fb36e")+P.casita(150,1290,.65)+P.etiqueta("CARGA ESPECIAL",500,700,sg(lt,1.4,1.8),"#ffd36a","#14121c")},
+{f:"Y es el *primo* americano de Euro Truck Simulator 2, del mismo estudio.", p:(lt)=>P.sol(540,560,120)+P.arena(1300)+P.carretera(lt*2,"#3a3a40","#fff")+P.camion(-60,1600,.75,"#2a7de1","#f4efe6")+P.camion(460,1600,.75,"#d9433a","#e9e4da")},
+
+];
+montar(); iniciar();
+</script></body></html>

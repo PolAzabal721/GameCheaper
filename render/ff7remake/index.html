@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ff7remake</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#05120e,#0d2a22 45%,#1d5a46 80%,#3aa07a)",shader:["#05120e","#0d2a22","#1d5a46","#3aa07a","#0a1f2a"],acento:"#5affb0",suelo:"#0a1410"};
+const JUEGO={titulo:"Final Fantasy VII Remake Intergrade",tituloCaja:"FINAL FANTASY VII<br>REMAKE",titCaja:.085,tiendaNombre:"Steam",precio:7.19,pvp:39.99,plat:"PC"};
+
+const ESCENAS=[
+{f:"¿Sabías que hay una ciudad construida *encima* de otra ciudad?", p:(lt)=>P.edificios("#0f2a22","#5affb0",3,.7)+`<div style="position:absolute;left:-40px;right:-40px;top:${980-eo(sg(lt,.3,1.5))*80}px;height:70px;background:#3a4a46;border-top:8px solid #6a8a80"></div>`+[0,1,2,3].map(i=>`<div style="position:absolute;left:${120+i*260}px;top:${1050-eo(sg(lt,.3,1.5))*80}px;width:40px;height:460px;background:#2a3a36"></div>`).join("")},
+{f:"En *Final Fantasy VII Remake*, los ricos viven *arriba*, en placas gigantes…", p:(lt)=>`<div style="position:absolute;left:-40px;right:-40px;top:900px;height:70px;background:#3a4a46;border-top:8px solid #6a8a80"></div>`+`<div style="position:absolute;left:0;top:520px;width:1080px;height:380px">`+P.edificios("#2a4a42","#fff4c0",7,.45).replace(/top:(\d+)px/g,(m,a)=>"top:"+(a-1120)+"px")+`</div>`+P.etiqueta("ARRIBA",600,420,sg(lt,.4,.8),"#5affb0","#05120e")},
+{f:"…y abajo, los barrios bajos viven *sin ver el sol.*", p:(lt)=>`<div style="position:absolute;left:-40px;right:-40px;top:700px;height:120px;background:#2a3a36"></div>`+P.edificios("#14201c","#ffb347",11,.55)+P.suelo("#0a1410")+P.etiqueta("ABAJO",90,960,sg(lt,.4,.8),"#ffb347","#05120e")},
+{f:"Es la versión moderna del clásico de *1997*, contada como una aventura *de acción.*", p:(lt)=>P.edificios("#0f2a22","#5affb0",5,.8)+P.texto("1997",140,640,sg(lt,.2,.6),180,"rgba(255,255,255,.35)")+P.texto("→ HOY",560,820,sg(lt,1,1.4),120,"#5affb0")},
+{f:"Y la edición *Intergrade* trae además un *episodio extra* entero.", p:(lt)=>P.edificios("#0f2a22","#5affb0",5,.8)+P.etiqueta("+ EPISODIO EXTRA",130,820,sg(lt,.5,.9),"#5affb0","#05120e")},
+
+];
+montar(); iniciar();
+</script></body></html>

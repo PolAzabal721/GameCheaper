@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>clairobscur</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#1a1020,#3a2440 40%,#8a5a6a 75%,#e8c8a0)",shader:["#1a1020","#3a2440","#6a3a5a","#e8c8a0","#2a1a30"],acento:"#e8d6b0",suelo:"#2a2030"};
+const JUEGO={titulo:"Clair Obscur: Expedition 33",tituloCaja:"CLAIR OBSCUR<br>EXPEDITION 33",titCaja:.095,tiendaNombre:"CJS CD Keys",precio:17.95,pvp:59.99,plat:"PC",clave:"Clave Steam"};
+
+const ESCENAS=[
+{f:"¿Sabías que en *Clair Obscur* una pintora gigante escribe un *número* cada año?", p:(lt)=>P.suelo("#2a2030")+P.monolito(390,620,"34",sg(lt,.8,2))},
+{f:"Y todas las personas que tienen *esa edad*… *desaparecen.*", p:(lt)=>P.suelo("#2a2030")+P.monolito(390,620,"34",1)+[0,1,2,3].map(i=>`<div style="opacity:${1-sg(lt,.6+i*.3,1.4+i*.3)}">${P.persona(150+i*260,1500,.6,"sorpresa","#f0c39a",["#6a3a5a","#3a5a7a","#5a6a3a","#7a4a2a"][i],"#2a1a0a",i%4)}</div>`).join("")+P.particulas(cl(lt-.8),30,540,1300,"#e8d6b0",400)},
+{f:"Este año ha pintado el *33*… y tu grupo parte en una *expedición* para pararla.", p:(lt)=>P.suelo("#2a2030")+P.monolito(390,620,lt<1.4?"34":"33",1)+(lt>1.3&&lt<1.5?`<div style="position:absolute;inset:0;background:#fff;opacity:.5"></div>`:"")},
+{f:"Los combates son por turnos, pero tienes que *esquivar* y *bloquear* en el momento justo.", p:(lt)=>P.suelo("#2a2030")+P.persona(280,1500,1,"feliz","#f0c39a","#3a2a4a","#1a1a1a",3)+P.dragon(800,1060,.8,"#4a3a5a",Math.max(0,Math.sin(lt*2)))+P.etiqueta("¡ESQUIVA!",320,760,sg(lt,1.4,1.7),"#e8d6b0","#1a1020")},
+{f:"Y ganó el premio a *juego del año* en The Game Awards 2025.", p:(lt)=>P.suelo("#2a2030")+P.monolito(390,620,"33",1)+P.etiqueta("🏆 GOTY 2025",200,520,sg(lt,.5,.9),"#e8d6b0","#1a1020")},
+
+];
+montar(); iniciar();
+</script></body></html>

@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>borderlands4</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#2a1a3a,#6a3a6a 40%,#e07a3a 80%,#ffd36a)",shader:["#2a1a3a","#6a3a6a","#e07a3a","#ffd36a","#3a2a4a"],acento:"#ffd23a",suelo:"#3a2a2a"};
+const JUEGO={titulo:"Borderlands 4",tituloCaja:"BORDERLANDS<br>4",tiendaNombre:"CJS CD Keys",precio:26.91,pvp:69.99,plat:"Xbox Series",clave:"Clave Xbox"};
+
+const ESCENAS=[
+{f:"¿Sabías que en *Borderlands* hay tantas armas que casi *nunca* verás dos iguales?", p:(lt)=>P.suelo("#3a2a2a")+P.maquina(350,700,1,"#ff5a4f")+(lt>.6?P.pistola(420,800,.9,"#ffd23a",Math.sin(lt*8)*6):"")},
+{f:"Se crean *combinando* piezas: cañón, cargador, mira, *elemento*…", p:(lt)=>P.suelo("#3a2a2a")+["CAÑÓN","CARGADOR","MIRA","FUEGO 🔥"].map((w,i)=>P.etiqueta(w,100+(i%2)*460,660+i*150,sg(lt,.2+i*.4,.5+i*.4),["#ffd23a","#3a7bd5","#3fae6e","#ff5a4f"][i],"#14121c")).join("")},
+{f:"Hay pistolas que disparan *fuego*, rifles con *patas*… y otras que explotan cuando *recargas.*", p:(lt)=>{let h=P.suelo("#3a2a2a");for(let i=0;i<5;i++){const k=cl(lt-.3-i*.4);if(k>0)h+=P.pistola(80+i*180,1500-k*900+k*k*600,.6,["#ffd23a","#ff5a4f","#3a7bd5","#3fae6e","#a05aff"][i],k*200)}return h+P.particulas(cl(lt-2),24,540,1000,"#ff8a2a",500)}},
+{f:"En el *4* el mundo es abierto, con *gancho* para moverte rapidísimo.", p:(lt)=>P.suelo("#3a2a2a")+P.montana(300,1500,600,700,"#5a3a4a","#e07a3a")+P.montana(820,1500,600,800,"#4a2a3a","#e07a3a")+P.persona(200+lt*120,1300-Math.sin(sg(lt,0,3)*Math.PI)*400,.5,"feliz","#f0c39a","#ffd23a","#2a1a0a",0)},
+{f:"Disparos, *loot* sin fin y para jugar con *amigos* en cooperativo.", p:(lt)=>P.suelo("#3a2a2a")+P.maquina(350,700,1,"#ff5a4f")+P.particulas(cl(lt-.3),30,540,900,"#ffd23a",600)+P.etiqueta("LOOT",620,640,sg(lt,.3,.7),"#ffd23a","#14121c")},
+
+];
+montar(); iniciar();
+</script></body></html>

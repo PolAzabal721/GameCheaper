@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>sifu</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+const PALETA={cielo:"linear-gradient(180deg,#1a0a0a,#4a1414 45%,#a02a1a 80%,#e8a05a)",shader:["#1a0a0a","#4a1414","#a02a1a","#e8a05a","#2a0a10"],acento:"#ffcf5a",suelo:"#2a1410"};
+const JUEGO={titulo:"Sifu",tituloCaja:"SIFU",titCaja:.22,tiendaNombre:"Loaded",precio:6.19,pvp:39.99,plat:"PC",clave:"Clave Steam"};
+
+const ESCENAS=[
+{f:"¿Sabías que en *Sifu*, cada vez que *mueres*… te haces más *viejo*?", p:(lt)=>P.suelo("#2a1410")+P.persona(540,1500,1.2,"feliz","#f0c39a","#e8e0d0","#1a1a1a",0)+P.etiqueta("20 AÑOS",620,640,sg(lt,.4,.8),"#ffcf5a","#1a0a0a")},
+{f:"Es un juego de *kung-fu* en el que buscas venganza, piso a piso.", p:(lt)=>P.suelo("#2a1410")+P.persona(300,1500,1,"feliz","#f0c39a","#e8e0d0","#1a1a1a",0)+P.persona(780,1500,1,"sorpresa","#d8a080","#2a2a2a","#5a3a1a",1)+(Math.sin(lt*6)>.5?P.particulas(.3,10,560,1200,"#fff",300):"")},
+{f:"Si caes, te levantas… pero con *unos años más.*", p:(lt)=>{const edad=20+Math.floor(sg(lt,.3,2.5)*20);return P.suelo("#2a1410")+P.persona(540,1500,1.2,"sorpresa","#f0c39a","#e8e0d0",edad>30?"#8a8a8a":"#1a1a1a",0)+P.etiqueta(edad+" AÑOS",620,640,1,"#ffcf5a","#1a0a0a")}},
+{f:"Más viejo pegas más *fuerte*, pero aguantas *menos* golpes.", p:(lt)=>P.suelo("#2a1410")+P.persona(540,1500,1.2,"feliz","#f0c39a","#e8e0d0","#d0d0d0",0)+P.etiqueta("+ FUERZA",140,700,sg(lt,.3,.7),"#3fae6e","#fff")+P.etiqueta("− VIDA",620,860,sg(lt,1.4,1.8),"#e03a2a","#fff")},
+{f:"Y si pasas de los *setenta*… se acabó la partida.", p:(lt)=>P.suelo("#2a1410")+P.persona(540,1500,1.2,"sorpresa","#f0c39a","#e8e0d0","#f4f4f4",0)+P.etiqueta(Math.min(70,50+Math.floor(lt*12))+" AÑOS",620,640,1,"#ffcf5a","#1a0a0a")+(lt>2?`<div style="position:absolute;inset:0;background:#000;opacity:${sg(lt,2,3)*.6}"></div>`:"")},
+
+];
+montar(); iniciar();
+</script></body></html>
