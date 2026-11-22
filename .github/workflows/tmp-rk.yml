@@ -11,4 +11,6 @@ jobs:
           U=$(printf '%s' "$U" | tr -d '[:space:]'); P=$(printf '%s' "$P" | tr -d '[:space:]')
           echo "usuario: ${#U} letras, clave: ${#P} letras"
           mkdir -p ~/.ssh && ssh-keyscan -T 20 aftp.linksynergy.com >> ~/.ssh/known_hosts 2>/dev/null; ssh-keygen -lf ~/.ssh/known_hosts | head -3
-          for d in "" GLOBAL/ ADDITIONAL/; do echo "== sftp $d"; curl -sS --max-time 90 -u "$U:$P" "sftp://aftp.linksynergy.com/$d" | head -40; done
+          echo "== ADDITIONAL"; curl -sS --max-time 90 -u "$U:$P" "sftp://aftp.linksynergy.com/ADDITIONAL/" | head -40
+          curl -sS -u "$U:$P" "sftp://aftp.linksynergy.com/GLOBAL/" | awk '$1 ~ /^d/ && $NF != "." {print $NF}' > dirs.txt; wc -l dirs.txt
+          for d in $(grep -E '^(PT|EN-US|ES)' dirs.txt); do echo "== GLOBAL/$d"; curl -sS --max-time 60 -u "$U:$P" "sftp://aftp.linksynergy.com/GLOBAL/$d/" | grep -v ' \.$' | head -20; done
