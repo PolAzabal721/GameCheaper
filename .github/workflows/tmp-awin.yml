@@ -13,11 +13,10 @@ jobs:
           file f.bin
           (unzip -o -q f.bin -d x 2>/dev/null || (gunzip -c f.bin > x.csv 2>/dev/null && mkdir -p x && mv x.csv x/)) ; ls -la x 2>/dev/null
           C=$(ls x/* 2>/dev/null | head -1); [ -n "$C" ] || C=f.bin
-          wc -l "$C"; head -c 1500 "$C"; echo
           python3 - "$C" <<'P'
           import csv,sys,collections
-          r=list(csv.DictReader(open(sys.argv[1],encoding='utf-8',errors='replace')))
-          print('filas',len(r)); print('columnas',list(r[0].keys()) if r else None)
-          c=collections.Counter(x.get('merchant_category') or x.get('category_name') or '' for x in r); print(c.most_common(25))
-          for x in r[:3]: print({k:x[k] for k in list(x)[:14]})
+          r=[x for x in csv.DictReader(open(sys.argv[1],encoding='utf-8',errors='replace')) if x['merchant_category']=='Videojuego']
+          K=['product_name','search_price','store_price','rrp_price','delivery_cost','condition','product_type','merchant_product_category_path','merchant_product_second_category','in_stock','stock_status','pre_order','ean','brand_name','custom_1','custom_2','custom_3','keywords']
+          for x in r[:12]: print({k:x[k][:80] for k in K})
+          for k in ['condition','merchant_product_category_path','merchant_product_second_category','product_type','stock_status','in_stock','custom_1','custom_2']: print(k,collections.Counter(x[k] for x in r).most_common(15))
           P
