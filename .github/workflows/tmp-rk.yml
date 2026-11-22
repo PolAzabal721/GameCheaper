@@ -13,4 +13,4 @@ jobs:
           mkdir -p ~/.ssh && ssh-keyscan -T 20 aftp.linksynergy.com >> ~/.ssh/known_hosts 2>/dev/null; ssh-keygen -lf ~/.ssh/known_hosts | head -3
           echo "== ADDITIONAL"; curl -sS --max-time 90 -u "$U:$P" "sftp://aftp.linksynergy.com/ADDITIONAL/" | head -40
           curl -sS -u "$U:$P" "sftp://aftp.linksynergy.com/GLOBAL/" | awk '$1 ~ /^d/ && $NF != "." {print $NF}' > dirs.txt; wc -l dirs.txt
-          for d in $(grep -E '^(PT|EN-US|ES)' dirs.txt); do echo "== GLOBAL/$d"; curl -sS --max-time 60 -u "$U:$P" "sftp://aftp.linksynergy.com/GLOBAL/$d/" | grep -v ' \.$' | head -20; done
+          for d in $(cat dirs.txt); do curl -sS --max-time 60 -u "$U:$P" "sftp://aftp.linksynergy.com/GLOBAL/$d/" | grep -v ' \.$' | sed "s|^|$d: |" | head -20; done; echo FIN
