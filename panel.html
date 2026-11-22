@@ -101,6 +101,7 @@ button, input, select { font: inherit; color: inherit; }
       <button type="button" data-r="365" aria-pressed="false">Año</button>
       <button type="button" data-r="0" aria-pressed="false">Todo</button>
     </div>
+    <button type="button" class="btn" id="volver-dia" hidden></button>
     <div style="display:flex;gap:8px">
       <button class="btn" type="button" id="recargar">Actualizar</button>
       <button class="btn" type="button" id="salir">Salir</button>
@@ -172,7 +173,7 @@ button, input, select { font: inherit; color: inherit; }
   const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
   const fechaCorta = (f) => +f.slice(8) + " " + MESES[+f.slice(5, 7) - 1];
 
-  let datos = null, rango = +(guardado("pillao-panel-rango") || 7), tienda = "", pais = "";
+  let datos = null, rango = +(guardado("pillao-panel-rango") || 7), tienda = "", pais = "", dia = "", rangoAntesDia = 7;
   let nomPaisI; try { nomPaisI = new Intl.DisplayNames(["es"], { type: "region" }); } catch { nomPaisI = null; }
   const nomPais = (c) => { try { return (nomPaisI && nomPaisI.of(c)) || c; } catch { return c; } };
   // Con país elegido: visitas, clics y juegos salen del desglose por país
@@ -214,6 +215,8 @@ button, input, select { font: inherit; color: inherit; }
   // Días del periodo elegido y del anterior (para comparar)
   function periodo() {
     const hoy = hoyMadrid();
+    // Un día elegido en la gráfica: se ve como «Hoy», pero de ese día
+    if (dia) { const a = sumaDias(dia, -1); return { dias: [dia], antes: a >= INICIO ? [a] : [], hoy }; }
     let desde = rango === 0 ? INICIO : sumaDias(hoy, -(rango - 1));
     if (desde < INICIO) desde = INICIO;
     const dias = []; for (let f = desde; f <= hoy; f = sumaDias(f, 1)) dias.push(f);
@@ -228,7 +231,7 @@ button, input, select { font: inherit; color: inherit; }
     if (!antes) { el.textContent = texto ? "Sin periodo anterior con datos" : " "; return; }
     const p = Math.round((ahora - antes) / antes * 100);
     const s = document.createElement("span"); s.className = p >= 0 ? "up" : "down"; s.textContent = (p >= 0 ? "+" : "−") + Math.abs(p) + " %";
-    el.append(s, " frente a " + texto + " (" + fmt.format(antes) + ")");
+    el.append(s, (" frente a " + texto).replace(" a el ", " al ") + " (" + fmt.format(antes) + ")");
   };
 
   function pintar() {
@@ -239,7 +242,7 @@ button, input, select { font: inherit; color: inherit; }
     const fT = tienda ? (k) => k === tienda : null;
     const visitas = suma(visDia, dias), visitasAntes = suma(visDia, antes);
     const clics = suma(clicsDia, dias, fT), clicsAntes = suma(clicsDia, antes, fT);
-    const textoAntes = rango === 1 ? "ayer" : rango === 0 ? "" : "el periodo anterior";
+    const textoAntes = dia ? "el día anterior" : rango === 1 ? "ayer" : rango === 0 ? "" : "el periodo anterior";
     $("t-visitas").textContent = fmt.format(visitas);
     $("t-clics").textContent = fmt.format(clics);
     $("t-ratio").textContent = visitas ? (clics / visitas * 100).toLocaleString("es-ES", { maximumFractionDigits: 1 }) : "—";
@@ -247,10 +250,10 @@ button, input, select { font: inherit; color: inherit; }
     const media = completos.length ? suma(visDia, completos) / completos.length : null;
     $("t-media").textContent = media == null ? "—" : fmt.format(Math.round(media));
     $("c-media").textContent = completos.length ? "Días completos: " + completos.length + " (sin contar hoy)" : "Aún no hay ningún día completo";
-    if (rango === 0) { $("c-visitas").textContent = "Desde el " + fechaCorta(INICIO); $("c-clics").textContent = tienda ? "Solo " + nomTienda(tienda) : "Todas las tiendas"; }
+    if (rango === 0 && !dia) { $("c-visitas").textContent = "Desde el " + fechaCorta(INICIO); $("c-clics").textContent = tienda ? "Solo " + nomTienda(tienda) : "Todas las tiendas"; }
     else { cambio(visitas, visitasAntes, $("c-visitas"), textoAntes); cambio(clics, clicsAntes, $("c-clics"), textoAntes); }
-    const nombreRango = { 1: "hoy", 7: "los últimos 7 días", 30: "los últimos 30 días", 365: "los últimos 12 meses", 0: "todo el tiempo" }[rango];
-    $("resumen").replaceChildren("En ", nombreRango, " ha habido ", Object.assign(document.createElement("b"), { textContent: fmt.format(visitas) + " visitas" }),
+    const nombreRango = dia ? (dia === hoy ? "hoy" : "el " + fechaCorta(dia)) : { 1: "hoy", 7: "los últimos 7 días", 30: "los últimos 30 días", 365: "los últimos 12 meses", 0: "todo el tiempo" }[rango];
+    $("resumen").replaceChildren(...(dia && dia !== hoy ? ["El " + fechaCorta(dia) + " hubo "] : ["En ", nombreRango, " ha habido "]), Object.assign(document.createElement("b"), { textContent: fmt.format(visitas) + " visitas" }),
       " y ", Object.assign(document.createElement("b"), { textContent: fmt.format(clics) + " clics" }), tienda ? " a " + nomTienda(tienda) : " a tiendas", pais ? " desde " + nomPais(pais) : "", ". Datos del contador de la web, en hora de Madrid.");
     $("ley-tienda").textContent = tienda ? " (" + nomTienda(tienda) + ")" : "";
     grafica(dias, hoy, fT, visDia, clicsDia);
@@ -333,6 +336,8 @@ button, input, select { font: inherit; color: inherit; }
         tip.style.left = Math.max(0, Math.min(ev.clientX - b.left + 12, b.width - tip.offsetWidth - 4)) + "px"; tip.style.top = Math.max(0, ev.clientY - b.top - 40) + "px";
       });
       zona.addEventListener("pointerleave", () => { tip.hidden = true; });
+      // Al pulsar una barra (vista por días) se ve ese día entero, como si fuera hoy
+      if (!semanal && dias.length > 1) { zona.style.cursor = "pointer"; zona.addEventListener("click", () => verDia(p.f)); }
       svg.appendChild(zona);
     });
     // línea de clics, de punto a punto
@@ -343,10 +348,21 @@ button, input, select { font: inherit; color: inherit; }
   }
 
   function fijarTienda(id) { tienda = id; pintar(); }
+  function verDia(f) {
+    dia = f;
+    document.querySelectorAll("#rangos button").forEach((x) => x.setAttribute("aria-pressed", "false"));
+    const v = $("volver-dia"); v.hidden = false; v.textContent = "← Volver a " + ({ 7: "la semana", 30: "el mes", 365: "el año", 0: "todo" }[rango] || "atrás");
+    pintar(); window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  $("volver-dia").addEventListener("click", () => {
+    dia = ""; $("volver-dia").hidden = true;
+    document.querySelectorAll("#rangos button").forEach((x) => x.setAttribute("aria-pressed", String(+x.dataset.r === rango)));
+    pintar();
+  });
 
   $("rangos").addEventListener("click", (e) => {
     const b = e.target.closest("button[data-r]"); if (!b) return;
-    rango = +b.dataset.r; guardado("pillao-panel-rango", String(rango));
+    rango = +b.dataset.r; guardado("pillao-panel-rango", String(rango)); dia = ""; $("volver-dia").hidden = true;
     document.querySelectorAll("#rangos button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
     if (datos) pintar();
   });
