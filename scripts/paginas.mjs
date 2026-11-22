@@ -71,11 +71,11 @@ const SITIO = (process.env.SITIO_URL || "https://pillaojuegos.com/").replace(/\/
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // Moneda de las páginas que se están generando: euros (España) o dólares (Latinoamérica, en /latam/)
-let MONEDA = "EUR", PRE = "", RUTAS_OK = null;   // PRE: "" o "latam/" (páginas de Latinoamérica)
+let MONEDA = "EUR", PRE = "", RUTAS_OK = null, NREG = "Latinoamérica";   // NREG: nombre de la región en dólares que se está generando   // PRE: "" o "latam/" (páginas de Latinoamérica)
 // Textos de las páginas de chollos en Latinoamérica: sin España y con los precios en dólares
-const LAT_TXT = (t) => MONEDA !== "USD" ? t : String(t).replace(/>5€</g, ">5$<").replace(/(\d+) €/g, "US$ $1").replace(/ válidas en España/g, "").replace(/ que se (pueden )?activan? en España/g, " que valen en Latinoamérica")
-  .replace(/ (y otras )?tiendas españolas/g, " y otras tiendas").replace(/la eShop española/g, "la eShop").replace(/ de España o de Europa/g, " de tu región").replace(/ para España, Europa o de cualquier región/g, " para Latinoamérica o de cualquier región")
-  .replace(/ de España, Europa o de cualquier región/g, " de Latinoamérica o de cualquier región").replace(/ en España/g, " en Latinoamérica").replace(/ en euros/g, " en dólares");
+const LAT_TXT = (t) => MONEDA !== "USD" ? t : String(t).replace(/>5€</g, ">5$<").replace(/(\d+) €/g, "US$ $1").replace(/ válidas en España/g, "").replace(/ que se (pueden )?activan? en España/g, " que valen en " + NREG)
+  .replace(/ (y otras )?tiendas españolas/g, " y otras tiendas").replace(/la eShop española/g, "la eShop").replace(/ de España o de Europa/g, " de tu región").replace(/ para España, Europa o de cualquier región/g, " para " + NREG + " o de cualquier región")
+  .replace(/ de España, Europa o de cualquier región/g, " de " + NREG + " o de cualquier región").replace(/ en España/g, " en " + NREG).replace(/ en euros/g, " en dólares");
 const eur = (n) => MONEDA === "USD" ? "US$ " + new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) : new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n);
 const total = (o) => o.precio + (o.envio || 0);
 const AFILIADAS = { instantgaming: 1, yuplay: 1, g2a: 1, gamivo: 1 };
@@ -578,10 +578,13 @@ async function main() {
   datos.juegos = datos.juegos.filter((j) => j.tipo !== "skins" || MERC_SKINS.test(j.titulo || ""));
   BUSCADOR = datos.buscador || "";
   const tiendaPorId = Object.fromEntries(datos.tiendas.map((t) => [t.id, t]));
-  // Latinoamérica: misma web en /latam/, con su propio archivo de precios (precios-latam.json, en dólares)
-  let latam = null; try { latam = JSON.parse(await readFile(join(RAIZ, "precios-latam.json"), "utf8")); } catch {}
-  const hayLatam = !!(latam && latam.juegos && latam.juegos.length);
-  const fichasLatam = [], chollosLatam = [];
+  // Regiones en dólares: misma web en /latam/ (Latinoamérica) y en /us/ (Estados Unidos), cada una con su archivo de precios
+  const REGIONES = [
+    { id: "latam", archivo: "precios-latam.json", nombre: "Latinoamérica", lang: "es-419", marca: "PILLAO_LATAM", fichas: +(process.env.LATAM_FICHAS || 4000) },
+    { id: "us", archivo: "precios-us.json", nombre: "Estados Unidos", lang: "es-US", marca: "PILLAO_US", fichas: +(process.env.US_FICHAS || 3000) },
+  ];
+  for (const r of REGIONES) { try { r.datos = JSON.parse(await readFile(join(RAIZ, r.archivo), "utf8")); } catch {} r.hay = !!(r.datos && r.datos.juegos && r.datos.juegos.length); r.fichasL = []; r.chollosL = []; }
+  const marcas = "<script>" + REGIONES.filter((r) => r.hay).map((r) => `window.${r.marca}=true;`).join("") + "</script>\n</head>";
   await rm(SALIDA, { recursive: true, force: true });
   await mkdir(SALIDA, { recursive: true });
 
@@ -589,7 +592,7 @@ async function main() {
   for (const f of await readdir(RAIZ)) {
     if (/^(index|legal)\.html$/.test(f)) {
       let html = await readFile(join(RAIZ, f), "utf8");
-      if (f === "index.html" && hayLatam) html = html.replace("</head>", "<script>window.PILLAO_LATAM=true</script>\n</head>");
+      if (f === "index.html" && REGIONES.some((r) => r.hay)) html = html.replace("</head>", marcas);
       await writeFile(join(SALIDA, f), proteger(html, datos.buscador));
     }
     else if (/\.(html|txt|svg|png|ico)$/.test(f) || f === "minimos.json" || f === "idiomas.js") await cp(join(RAIZ, f), join(SALIDA, f));
@@ -605,10 +608,12 @@ async function main() {
   await writeFile(join(SALIDA, "precios.json"), JSON.stringify({ ...todo, totales, juegos: todo.juegos.filter((j) => primeros.has(j.id)), resto: "precios-resto.json" }) + "\n");
   await writeFile(join(SALIDA, "precios-resto.json"), JSON.stringify({ prefijos: todo.prefijos, juegos: todo.juegos.filter((j) => !primeros.has(j.id)) }) + "\n");
   await writeFile(join(SALIDA, ".nojekyll"), "");
-  if (hayLatam) {
-    await mkdir(join(SALIDA, "latam"), { recursive: true });
+  for (const reg of REGIONES) if (reg.hay) {
+    const latam = reg.datos, fichasLatam = reg.fichasL, chollosLatam = reg.chollosL, D = reg.id;
+    NREG = reg.nombre;
+    await mkdir(join(SALIDA, D), { recursive: true });
     // Fichas de Latinoamérica: los juegos más populares (no todos, para no pasar del tamaño máximo de la web)
-    const LATAM_FICHAS = +(process.env.LATAM_FICHAS || 4000);
+    const LATAM_FICHAS = reg.fichas;
     const conFicha = [...latam.juegos].filter((j) => /^[a-z0-9-]{1,80}$/.test(j.id) && j.ofertas.length).sort((a, b) => (a.pop || 99999) - (b.pop || 99999)).slice(0, LATAM_FICHAS);
     const tiendaL = Object.fromEntries((latam.tiendas || []).map((t) => [t.id, t]));
     MONEDA = "USD";
@@ -616,39 +621,39 @@ async function main() {
       const j = conFicha[i];
       for (const o of j.ofertas) { if (o.stock === undefined) o.stock = true; }
       const rel = conFicha.slice(Math.max(0, i - 4), i).concat(conFicha.slice(i + 1, i + 9)).slice(0, 10);
-      const html = paginaJuego(j, tiendaL, rel, latam.actualizado || datos.actualizado, "latam/");
+      const html = paginaJuego(j, tiendaL, rel, latam.actualizado || datos.actualizado, D + "/");
       if (!html) continue;
-      await mkdir(join(SALIDA, "latam", "juego", j.id), { recursive: true });
-      await writeFile(join(SALIDA, "latam", "juego", j.id, "index.html"), html);
+      await mkdir(join(SALIDA, D, "juego", j.id), { recursive: true });
+      await writeFile(join(SALIDA, D, "juego", j.id, "index.html"), html);
       j.fp = 1; fichasLatam.push(j.id);
     }
     // Chollos de Latinoamérica: mismas páginas que en España (las de plataformas, precio y mínimo; las de tiendas que hay allí), en dólares
-    PRE = "latam/";
+    PRE = D + "/";
     const dl = { ...latam, juegos: conFicha.filter((j) => j.fp) };
     for (const o of OFERTAS) if ((!o.tienda || tiendaL[o.tienda]) && chollosDe(dl, o).secciones.length) chollosLatam.push(o.ruta);
     RUTAS_OK = new Set(chollosLatam);
     for (const o of OFERTAS) {
       if (!RUTAS_OK.has(o.ruta)) continue;
-      await mkdir(join(SALIDA, "latam", o.ruta), { recursive: true });
-      await writeFile(join(SALIDA, "latam", o.ruta, "index.html"), paginaOfertas(dl, tiendaL, o));
+      await mkdir(join(SALIDA, D, o.ruta), { recursive: true });
+      await writeFile(join(SALIDA, D, o.ruta, "index.html"), paginaOfertas(dl, tiendaL, o));
     }
-    await mkdir(join(SALIDA, "latam", "chollos"), { recursive: true });
-    await writeFile(join(SALIDA, "latam", "chollos", "index.html"), paginaChollos(dl));
+    await mkdir(join(SALIDA, D, "chollos"), { recursive: true });
+    await writeFile(join(SALIDA, D, "chollos", "index.html"), paginaChollos(dl));
     PRE = ""; MONEDA = "EUR"; RUTAS_OK = null;
     const tl = comprimir({ ...latam, buscador: undefined });
     const primL = new Set([...tl.juegos].sort((a, b) => (a.pop || 99999) - (b.pop || 99999)).slice(0, PRIMEROS).map((j) => j.id));
     const totL = { juegos: tl.juegos.length, ofertas: tl.juegos.reduce((n, j) => n + j.ofertas.length, 0) };
-    await writeFile(join(SALIDA, "latam", "precios.json"), JSON.stringify({ ...tl, totales: totL, juegos: tl.juegos.filter((j) => primL.has(j.id)), resto: "latam/precios-resto.json" }) + "\n");
-    await writeFile(join(SALIDA, "latam", "precios-resto.json"), JSON.stringify({ prefijos: tl.prefijos, juegos: tl.juegos.filter((j) => !primL.has(j.id)) }) + "\n");
+    await writeFile(join(SALIDA, D, "precios.json"), JSON.stringify({ ...tl, totales: totL, juegos: tl.juegos.filter((j) => primL.has(j.id)), resto: D + "/precios-resto.json" }) + "\n");
+    await writeFile(join(SALIDA, D, "precios-resto.json"), JSON.stringify({ prefijos: tl.prefijos, juegos: tl.juegos.filter((j) => !primL.has(j.id)) }) + "\n");
     // La página es la misma que la de Europa: base en la raíz (logos, fuentes, legal…), región LATAM y su dirección propia
     const html = (await readFile(join(RAIZ, "index.html"), "utf8"))
       .replace("<head>", '<head>\n<base href="/">')
-      .replace("</head>", '<script>window.PILLAO_REGION="latam";window.PILLAO_LATAM=true</script>\n</head>')
-      .replace('<link rel="canonical" href="https://pillaojuegos.com/">', '<link rel="canonical" href="https://pillaojuegos.com/latam/">')
-      .replace('<meta property="og:url" content="https://pillaojuegos.com/">', '<meta property="og:url" content="https://pillaojuegos.com/latam/">')
-      .replace('<html lang="es">', '<html lang="es-419">');
-    await writeFile(join(SALIDA, "latam", "index.html"), proteger(html, datos.buscador));
-    console.log(`Latinoamérica: ${totL.juegos} productos, ${totL.ofertas} ofertas en /latam/, ${fichasLatam.length} fichas de juego`);
+      .replace("</head>", `<script>window.PILLAO_REGION="${D}"</script>\n` + marcas)
+      .replace('<link rel="canonical" href="https://pillaojuegos.com/">', `<link rel="canonical" href="https://pillaojuegos.com/${D}/">`)
+      .replace('<meta property="og:url" content="https://pillaojuegos.com/">', `<meta property="og:url" content="https://pillaojuegos.com/${D}/">`)
+      .replace('<html lang="es">', `<html lang="${reg.lang}">`);
+    await writeFile(join(SALIDA, D, "index.html"), proteger(html, datos.buscador));
+    console.log(`${reg.nombre}: ${totL.juegos} productos, ${totL.ofertas} ofertas en /${D}/, ${fichasLatam.length} fichas de juego`);
   }
   // Con dominio propio la web está en la raíz: aquí sí vale un robots.txt que indique el sitemap
   await writeFile(join(SALIDA, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /panel.html\n\nSitemap: ${SITIO}sitemap.xml\n`);
@@ -677,7 +682,7 @@ async function main() {
   await mkdir(join(SALIDA, "juegos"), { recursive: true });
   await writeFile(join(SALIDA, "juegos", "index.html"), paginaLista(hechas));
   const dia = datos.actualizado.slice(0, 10);
-  const urls = [SITIO, ...(hayLatam ? [SITIO + "latam/"] : []), SITIO + "juegos/", `${SITIO}chollos/`, ...OFERTAS.map((o) => `${SITIO}${o.ruta}/`), ...hechas.map((j) => `${SITIO}juego/${j.id}/`), ...fichasLatam.map((id) => `${SITIO}latam/juego/${id}/`), ...(chollosLatam.length ? [`${SITIO}latam/chollos/`] : []), ...chollosLatam.map((r) => `${SITIO}latam/${r}/`)];
+  const urls = [SITIO, ...REGIONES.filter((r) => r.hay).map((r) => SITIO + r.id + "/"), SITIO + "juegos/", `${SITIO}chollos/`, ...OFERTAS.map((o) => `${SITIO}${o.ruta}/`), ...hechas.map((j) => `${SITIO}juego/${j.id}/`), ...REGIONES.flatMap((r) => [...r.fichasL.map((id) => `${SITIO}${r.id}/juego/${id}/`), ...(r.chollosL.length ? [`${SITIO}${r.id}/chollos/`] : []), ...r.chollosL.map((x) => `${SITIO}${r.id}/${x}/`)])];
   // Google admite como mucho 50.000 direcciones por mapa: se parte en trozos y sitemap.xml es el índice de todos
   const TROZO = 40000, trozos = [];
   for (let k = 0; k < urls.length; k += TROZO) {

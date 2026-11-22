@@ -31,7 +31,8 @@ jobs:
           path: |
             feeds/kinguin.json
             feeds/kinguin-latam.json
-          key: kinguin4-${{ steps.hoy.outputs.d }}
+            feeds/kinguin-us.json
+          key: kinguin5-${{ steps.hoy.outputs.d }}
       - name: Descargar el catálogo de Kinguin (Admitad)
         if: steps.cache-kinguin.outputs.cache-hit != 'true'
         continue-on-error: true
@@ -41,7 +42,7 @@ jobs:
           mkdir -p feeds
           U=$(printf '%s' "$F" | sed -E 's#/(en|es)/webmaster#/es/webmaster#; s/feed_id=[0-9]+/feed_id=25659/; s/&fcid=[0-9]+//')
           curl -sL --max-time 900 -o feeds/kinguin.csv "$U"
-          python3 scripts/kinguin_feed.py feeds/kinguin.csv feeds/kinguin.json feeds/kinguin-latam.json
+          python3 scripts/kinguin_feed.py feeds/kinguin.csv feeds/kinguin.json feeds/kinguin-latam.json feeds/kinguin-us.json
           rm feeds/kinguin.csv
       - name: Catálogo de G2A (como mucho una descarga al día)
         id: cache-g2a
@@ -82,7 +83,8 @@ jobs:
           path: |
             feeds/cjs.json
             feeds/cjs-latam.json
-          key: cjs-${{ steps.hoy.outputs.d }}
+            feeds/cjs-us.json
+          key: cjs2-${{ steps.hoy.outputs.d }}
       - name: Descargar el catálogo de CJS CD Keys (feed público con nuestro enlace de afiliado)
         if: steps.cache-cjs.outputs.cache-hit != 'true'
         continue-on-error: true
@@ -93,7 +95,7 @@ jobs:
           for i in 1 2 3; do
             curl -sSL --retry 2 --max-time 400 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/cjs.xml "https://www.cjs-cdkeys.com/autokey/productFeed/gocdkeysFeedRead.php?utm_source=pillao&utm_campaign=feed" || true
             ls -la feeds/cjs.xml || true
-            python3 scripts/cjs_feed.py feeds/cjs.xml feeds/cjs.json feeds/cjs-latam.json && break
+            python3 scripts/cjs_feed.py feeds/cjs.xml feeds/cjs.json feeds/cjs-latam.json feeds/cjs-us.json && break
             sleep 30
           done
           rm -f feeds/cjs.xml
@@ -124,7 +126,8 @@ jobs:
           path: |
             feeds/loaded.json
             feeds/loaded-latam.json
-          key: loaded2-${{ steps.hoy.outputs.d }}
+            feeds/loaded-us.json
+          key: loaded3-${{ steps.hoy.outputs.d }}
       - name: Descargar el catálogo de Loaded (FTP de Impact, en euros y en español)
         if: steps.cache-loaded.outputs.cache-hit != 'true'
         continue-on-error: true
@@ -136,7 +139,7 @@ jobs:
           curl -sS --max-time 300 -u "$U:$P" -o feeds/loaded.xml.gz "ftp://products.impact.com/Loaded/Loaded-ProductFeedEURSpanish_CUSTOM.xml.gz"
           python3 scripts/loaded_feed.py feeds/loaded.xml.gz feeds/loaded.json
           rm feeds/loaded.xml.gz
-          curl -sS --max-time 300 -u "$U:$P" -o feeds/loaded-usd.xml.gz "ftp://products.impact.com/Loaded/Loaded-ProductFeedUSDEnglish_CUSTOM.xml.gz" && python3 scripts/loaded_feed.py feeds/loaded-usd.xml.gz feeds/loaded-latam.json latam || true
+          curl -sS --max-time 300 -u "$U:$P" -o feeds/loaded-usd.xml.gz "ftp://products.impact.com/Loaded/Loaded-ProductFeedUSDEnglish_CUSTOM.xml.gz" && python3 scripts/loaded_feed.py feeds/loaded-usd.xml.gz feeds/loaded-latam.json latam && python3 scripts/loaded_feed.py feeds/loaded-usd.xml.gz feeds/loaded-us.json us || true
           rm -f feeds/loaded-usd.xml.gz
       - name: Catálogo de K4G por CJ (con enlace de afiliado cuando CJ nos acepte)
         continue-on-error: true
@@ -199,6 +202,27 @@ jobs:
           git add $(ls precios-latam.json data/latam-cache.json 2>/dev/null)
           git diff --cached --quiet && exit 0
           git commit -m "Precios de Latinoamérica actualizados"
+          for i in 1 2 3; do
+            git pull --rebase -X theirs origin main && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep 10
+          done
+          exit 1
+      # Estados Unidos, después de Latinoamérica: si se alarga o falla, lo demás ya está guardado
+      - name: Catálogo de Estados Unidos (precios-us.json, en dólares)
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 50
+        run: node scripts/eeuu.mjs
+        env:
+          ITAD_KEY: ${{ secrets.ITAD_KEY }}
+      - name: Guardar Estados Unidos
+        if: always()
+        continue-on-error: true
+        run: |
+          git add $(ls precios-us.json data/eeuu-cache.json 2>/dev/null)
+          git diff --cached --quiet && exit 0
+          git commit -m "Precios de Estados Unidos actualizados"
           for i in 1 2 3; do
             git pull --rebase -X theirs origin main && git push && exit 0
             git rebase --abort 2>/dev/null || true

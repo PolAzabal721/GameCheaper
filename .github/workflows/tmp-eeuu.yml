@@ -1,0 +1,150 @@
+name: tmp-eeuu
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  eeuu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+      - name: Fecha de hoy
+        id: hoy
+        run: echo "d=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+      - name: Catálogo de Kinguin (como mucho una descarga al día)
+        id: cache-kinguin
+        uses: actions/cache@v4
+        with:
+          path: |
+            feeds/kinguin.json
+            feeds/kinguin-latam.json
+            feeds/kinguin-us.json
+          key: kinguin5-${{ steps.hoy.outputs.d }}
+      - name: Descargar el catálogo de Kinguin (Admitad)
+        if: steps.cache-kinguin.outputs.cache-hit != 'true'
+        continue-on-error: true
+        env:
+          F: ${{ secrets.ALIEXPRESS_FEED }}
+        run: |
+          mkdir -p feeds
+          U=$(printf '%s' "$F" | sed -E 's#/(en|es)/webmaster#/es/webmaster#; s/feed_id=[0-9]+/feed_id=25659/; s/&fcid=[0-9]+//')
+          curl -sL --max-time 900 -o feeds/kinguin.csv "$U"
+          python3 scripts/kinguin_feed.py feeds/kinguin.csv feeds/kinguin.json feeds/kinguin-latam.json feeds/kinguin-us.json
+          rm feeds/kinguin.csv
+      - name: Catálogo de G2A (como mucho una descarga al día)
+        id: cache-g2a
+        uses: actions/cache@v4
+        with:
+          path: |
+            feeds/g2a.json
+            feeds/g2a-latam.json
+          key: g2a-${{ steps.hoy.outputs.d }}
+      - name: Descargar el catálogo de G2A (Admitad; Alemania en euros para España y México en pesos para Latinoamérica)
+        if: steps.cache-g2a.outputs.cache-hit != 'true'
+        continue-on-error: true
+        env:
+          F: ${{ secrets.ALIEXPRESS_FEED }}
+        run: |
+          mkdir -p feeds
+          for par in "15446 feeds/g2a.json" "15444 feeds/g2a-latam.json latam"; do
+            set -- $par
+            U=$(printf '%s' "$F" | sed -E 's#/(en|es)/webmaster#/es/webmaster#; s/feed_id=[0-9]+/feed_id='$1'/; s/&fcid=[0-9]+//')
+            curl -sL --max-time 900 -o feeds/g2a.csv "$U" && python3 scripts/g2a_feed.py feeds/g2a.csv $2 $3 || true
+            rm -f feeds/g2a.csv
+          done
+      - name: Catálogo de GGPick (lo leemos de su web; como mucho una vez al día)
+        id: cache-ggpick
+        uses: actions/cache@v4
+        with:
+          path: feeds/ggpick.json
+          key: ggpick-${{ steps.hoy.outputs.d }}
+      - name: Leer GGPick
+        if: steps.cache-ggpick.outputs.cache-hit != 'true'
+        continue-on-error: true
+        timeout-minutes: 15
+        run: node scripts/ggpick_feed.mjs
+      - name: Catálogo de CJS CD Keys (como mucho una descarga al día)
+        id: cache-cjs
+        uses: actions/cache@v4
+        with:
+          path: |
+            feeds/cjs.json
+            feeds/cjs-latam.json
+            feeds/cjs-us.json
+          key: cjs2-${{ steps.hoy.outputs.d }}
+      - name: Descargar el catálogo de CJS CD Keys (feed público con nuestro enlace de afiliado)
+        if: steps.cache-cjs.outputs.cache-hit != 'true'
+        continue-on-error: true
+        timeout-minutes: 10
+        run: |
+          mkdir -p feeds
+          # hasta 3 intentos: a veces corta la descarga a la primera
+          for i in 1 2 3; do
+            curl -sSL --retry 2 --max-time 400 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/cjs.xml "https://www.cjs-cdkeys.com/autokey/productFeed/gocdkeysFeedRead.php?utm_source=pillao&utm_campaign=feed" || true
+            ls -la feeds/cjs.xml || true
+            python3 scripts/cjs_feed.py feeds/cjs.xml feeds/cjs.json feeds/cjs-latam.json feeds/cjs-us.json && break
+            sleep 30
+          done
+          rm -f feeds/cjs.xml
+      - name: Descargar el catálogo de GamersGate para España (feed público con el enlace de afiliado)
+        continue-on-error: true
+        run: |
+          mkdir -p feeds
+          curl -sSL --max-time 300 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/gamersgate.xml "https://feeds.gamersgate.com/feeds/products?country=ESP&aff=15600f04623a9a73fa267b81bfec59911a3e5263"
+          python3 scripts/gamersgate_feed.py feeds/gamersgate.xml feeds/gamersgate.json
+          rm feeds/gamersgate.xml
+          curl -sSL --max-time 300 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/gamersgate-usa.xml "https://feeds.gamersgate.com/feeds/products?country=USA&aff=15600f04623a9a73fa267b81bfec59911a3e5263" && python3 scripts/gamersgate_feed.py feeds/gamersgate-usa.xml feeds/gamersgate-usa.json || true
+          rm -f feeds/gamersgate-usa.xml
+      - name: Catálogo de Loaded (como mucho una descarga al día)
+        id: cache-loaded
+        uses: actions/cache@v4
+        with:
+          path: |
+            feeds/loaded.json
+            feeds/loaded-latam.json
+            feeds/loaded-us.json
+          key: loaded3-${{ steps.hoy.outputs.d }}
+      - name: Descargar el catálogo de Loaded (FTP de Impact, en euros y en español)
+        if: steps.cache-loaded.outputs.cache-hit != 'true'
+        continue-on-error: true
+        env:
+          U: ${{ secrets.LOADED_FTP_USER }}
+          P: ${{ secrets.LOADED_FTP_PASS }}
+        run: |
+          mkdir -p feeds
+          curl -sS --max-time 300 -u "$U:$P" -o feeds/loaded.xml.gz "ftp://products.impact.com/Loaded/Loaded-ProductFeedEURSpanish_CUSTOM.xml.gz"
+          python3 scripts/loaded_feed.py feeds/loaded.xml.gz feeds/loaded.json
+          rm feeds/loaded.xml.gz
+          curl -sS --max-time 300 -u "$U:$P" -o feeds/loaded-usd.xml.gz "ftp://products.impact.com/Loaded/Loaded-ProductFeedUSDEnglish_CUSTOM.xml.gz" && python3 scripts/loaded_feed.py feeds/loaded-usd.xml.gz feeds/loaded-latam.json latam && python3 scripts/loaded_feed.py feeds/loaded-usd.xml.gz feeds/loaded-us.json us || true
+          rm -f feeds/loaded-usd.xml.gz
+      - name: Catálogo de K4G por CJ (con enlace de afiliado cuando CJ nos acepte)
+        continue-on-error: true
+        env:
+          CJ_TOKEN: ${{ secrets.CJ_TOKEN }}
+        run: |
+          mkdir -p feeds
+          python3 scripts/cj_catalogo.py 5923171 feeds/k4g.json
+          python3 scripts/cj_catalogo.py 5923171 feeds/k4g-latam.json USD
+      - name: Catálogo de Estados Unidos (precios-us.json, en dólares)
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 50
+        run: node scripts/eeuu.mjs
+        env:
+          ITAD_KEY: ${{ secrets.ITAD_KEY }}
+      - name: Guardar Estados Unidos
+        if: always()
+        continue-on-error: true
+        run: |
+          git add $(ls precios-us.json data/eeuu-cache.json 2>/dev/null)
+          git diff --cached --quiet && exit 0
+          git commit -m "Precios de Estados Unidos actualizados"
+          for i in 1 2 3; do
+            git pull --rebase -X theirs origin main && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep 10
+          done
+          exit 1

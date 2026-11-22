@@ -6,8 +6,10 @@ import gzip, html, json, re, sys
 import xml.etree.ElementTree as ET
 
 origen, destino = sys.argv[1], sys.argv[2]
-LATAM = len(sys.argv) > 3 and sys.argv[3] == "latam"   # catálogo en dólares para pillaojuegos.com/latam/
-REGION_OK = re.compile(r"(worldwide|global|latin|latam|south america|americas|argentina|mexico|brazil|chile|colombia|peru)", re.I) if LATAM else \
+MODO = sys.argv[3] if len(sys.argv) > 3 else ""
+LATAM = MODO in ("latam", "us")   # catálogo en dólares para pillaojuegos.com/latam/ y /us/
+REGION_OK = re.compile(r"(worldwide|global|north america|united states|usa|\bus\b|americas)", re.I) if MODO == "us" else \
+    re.compile(r"(worldwide|global|latin|latam|south america|americas|argentina|mexico|brazil|chile|colombia|peru)", re.I) if LATAM else \
     re.compile(r"^(worldwide|europe & uk|europe|europe middle east and africa|europe & north america|spain|)$", re.I)
 PLAT_FIN = re.compile(r"\s+(PC|Mac|Xbox One & Xbox Series X\|S|Xbox One / Xbox Series X\|S|Xbox Series X\|S|Xbox Series X/S|Xbox One|Xbox|Switch 2|Nintendo Switch 2|Switch|Nintendo Switch|PS5|PS4|PlayStation 5|PlayStation 4)$", re.I)
 
@@ -49,4 +51,4 @@ with gzip.open(origen) if origen.endswith(".gz") else open(origen, "rb") as f:
         filas.append({"n": nombre, "t": tipo or "", "pl": plat, "p": pr, "r": rrp, "u": x["link"], "d": x.get("platform", ""),
                       "reg": x.get("region", ""), "img": x.get("image_link", "")})
 json.dump(filas, open(destino, "w"), ensure_ascii=False, separators=(",", ":"))
-print(f"Loaded: {len(filas)} productos válidos en España guardados")
+print(f"Loaded: {len(filas)} productos válidos ({MODO or 'España'}) guardados")
