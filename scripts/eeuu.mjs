@@ -388,7 +388,8 @@ async function main() {
     }
     const conId = cand.filter((c) => ns[c.slug]);
     console.log(`EE. UU. eShop: ${urls.length} fichas en su mapa, ${cand.length} de juegos que tenemos, ${conId.length} con número de producto`);
-    for (let i = 0; i < conId.length; i += 50) { if (!queda()) break;
+    // Los precios van de 50 en 50 y son rápidos: se piden aunque se haya acabado el tiempo de leer fichas
+    for (let i = 0; i < conId.length; i += 50) {
       try {
         const lote = conId.slice(i, i + 50);
         const d = await (await fetch(`https://api.ec.nintendo.com/v1/price?country=US&lang=en&ids=${lote.map((c) => ns[c.slug]).join(",")}`)).json();
