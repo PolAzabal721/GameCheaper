@@ -6,7 +6,9 @@
 //                                        (hasta 400 días) para que pillaojuegos.com/panel.html filtre por fechas
 //
 // Se guarda solo el recuento por día: ni IP, ni identificadores, ni nada de la persona.
-// Los contadores viven en el mismo KV (PILLAO) con prefijo «n:».
+// Los contadores viven en una base D1 (DB, tabla n: clave → recuento): el plan gratis de D1 aguanta 100.000 escrituras
+// al día, y el de KV solo 1.000 (lo superábamos y Cloudflare bloqueaba el KV, avisos de precio incluidos).
+// Lo que se contó antes en el KV (claves «n:…») se pasa solo a D1 la primera vez que se abre el panel.
 
 const hoy = () => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Madrid" }).format(new Date());
 const corto = (s, n) => String(s || "").slice(0, n).replace(/[^\w\-./:áéíóúñ ]/gi, "");
@@ -16,9 +18,29 @@ const PIXEL = Uint8Array.from([71,73,70,56,57,97,1,0,1,0,128,0,0,0,0,0,255,255,2
 const paisDe = (req) => { const c = String(req.cf?.country || "").toUpperCase(); return /^[A-Z]{2}$/.test(c) && c !== "XX" && c !== "T1" ? c : ""; };
 
 // El recuento va también en los metadatos de la clave: así el panel lo lee al listar, sin una lectura por clave
-async function sumar(env, clave, cuanto = 1) {
-  const v = +(await env.PILLAO.get(clave)) || 0;
-  await env.PILLAO.put(clave, String(v + cuanto), { expirationTtl: 400 * 86400, metadata: { v: v + cuanto } });
+// Pasa una sola vez los recuentos antiguos del KV («n:…») a D1; solo lee el KV (sin escribir en él)
+async function migrar(env) {
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS hecho (que TEXT PRIMARY KEY)").run();
+  if (await env.DB.prepare("SELECT que FROM hecho WHERE que = 'kv'").first()) return;
+  const datos = []; let cursor;
+  do {
+    const l = await env.PILLAO.list({ prefix: "n:", cursor, limit: 1000 });
+    for (const k of l.keys) { const n = k.metadata && k.metadata.v != null ? +k.metadata.v : 0; if (n) datos.push([k.name, n]); }
+    cursor = l.list_complete ? null : l.cursor;
+  } while (cursor);
+  const st = env.DB.prepare("INSERT INTO n (k, v) VALUES (?1, ?2) ON CONFLICT(k) DO UPDATE SET v = v + ?2");
+  for (let i = 0; i < datos.length; i += 80) await env.DB.batch(datos.slice(i, i + 80).map(([k, n]) => st.bind(k, n)));
+  await env.DB.prepare("INSERT INTO hecho (que) VALUES ('kv')").run();
+}
+let tablaLista = false;
+async function tabla(env) { if (tablaLista) return; await env.DB.prepare("CREATE TABLE IF NOT EXISTS n (k TEXT PRIMARY KEY, v INTEGER NOT NULL)").run(); tablaLista = true; }
+// Suma 1 a varias claves de una vez (una sola llamada a D1)
+async function sumarVarias(env, claves) {
+  claves = claves.filter(Boolean); if (!claves.length) return;
+  if (!env.DB) return; // sin base no se cuenta (nunca se escribe en el KV: tiene un límite diario muy bajo)
+  await tabla(env);
+  const st = env.DB.prepare("INSERT INTO n (k, v) VALUES (?1, 1) ON CONFLICT(k) DO UPDATE SET v = v + 1");
+  await env.DB.batch(claves.map((k) => st.bind(k)));
 }
 
 export async function rutasContador(req, env, ctx, url) {
@@ -27,24 +49,14 @@ export async function rutasContador(req, env, ctx, url) {
     const ruta = corto(url.searchParams.get("p") || "/", 60);
     const de = corto(url.searchParams.get("r") || "", 40).toLowerCase();
     const pais = paisDe(req);
-    ctx.waitUntil((async () => {
-      await sumar(env, `n:v:${dia}`);
-      await sumar(env, `n:p:${dia}:${ruta}`);
-      if (de) await sumar(env, `n:d:${dia}:${de}`);
-      if (pais) await sumar(env, `n:vp:${dia}:${pais}`);
-    })());
+    ctx.waitUntil(sumarVarias(env, [`n:v:${dia}`, `n:p:${dia}:${ruta}`, de && `n:d:${dia}:${de}`, pais && `n:vp:${dia}:${pais}`]).catch(() => {}));
     // Devuelve una imagen de 1 píxel: así funciona hasta sin JavaScript
     return new Response(PIXEL, { headers: { "Content-Type": "image/gif", "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" } });
   }
   if (url.pathname === "/c") {
     const tienda = corto(url.searchParams.get("t"), 30), juego = corto(url.searchParams.get("j"), 80), pais = paisDe(req);
-    if (tienda) ctx.waitUntil((async () => {
-      await sumar(env, `n:c:${dia}:${tienda}`);
-      if (juego) await sumar(env, `n:cj:${dia}:${juego}`);
-      if (juego) await sumar(env, `n:ctj:${dia}:${tienda}|${juego}`);
-      if (pais) await sumar(env, `n:cp:${dia}:${pais}|${tienda}`);
-      if (pais && juego) await sumar(env, `n:cpj:${dia}:${pais}|${juego}`);
-    })());
+    if (tienda) ctx.waitUntil(sumarVarias(env, [`n:c:${dia}:${tienda}`, juego && `n:cj:${dia}:${juego}`, juego && `n:ctj:${dia}:${tienda}|${juego}`,
+      pais && `n:cp:${dia}:${pais}|${tienda}`, pais && juego && `n:cpj:${dia}:${pais}|${juego}`]).catch(() => {}));
     return new Response(PIXEL, { headers: { "Content-Type": "image/gif", "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" } });
   }
   if (url.pathname === "/panel") {
@@ -58,19 +70,19 @@ export async function rutasContador(req, env, ctx, url) {
     const desde = fechas[0];
     const visitas = {};
     // Visitas de cada día (con metadatos, una sola lista)
+    // Todo de una sola consulta a D1
+    if (!env.DB) return new Response("Falta la base D1 del contador.", { status: 503, headers: { "Access-Control-Allow-Origin": "*" } });
+    await tabla(env);
+    await migrar(env);
+    const filas = (await env.DB.prepare("SELECT k, v FROM n WHERE k LIKE 'n:%'").all()).results || [];
     const leer = async (prefijo, conQue) => {
       const out = {};
-      let cursor;
-      do {
-        const l = await env.PILLAO.list({ prefix: prefijo, cursor, limit: 1000 });
-        for (const k of l.keys) {
-          const resto = k.name.slice(prefijo.length), f = resto.slice(0, 10);
-          if (f < desde) continue;
-          const n = k.metadata && k.metadata.v != null ? +k.metadata.v : +(await env.PILLAO.get(k.name)) || 0;
-          if (conQue) { const que = resto.slice(11); (out[f] || (out[f] = {}))[que] = n; } else out[f] = n;
-        }
-        cursor = l.list_complete ? null : l.cursor;
-      } while (cursor);
+      for (const { k, v: n } of filas) {
+        if (!k.startsWith(prefijo)) continue;
+        const resto = k.slice(prefijo.length), f = resto.slice(0, 10);
+        if (f < desde) continue;
+        if (conQue) { const que = resto.slice(11); (out[f] || (out[f] = {}))[que] = n; } else out[f] = n;
+      }
       return out;
     };
     const v = await leer("n:v:", false);

@@ -49,6 +49,15 @@ jobs:
           fi
           [ -n "$ID" ] && [ "$ID" != "null" ] || { echo "::error::No pude crear el espacio KV"; exit 1; }
           sed -i "s/__KV_ID__/$ID/" buscador/wrangler.toml
+          # Base D1 para el contador de visitas y clics (el KV gratis solo admite 1.000 escrituras al día)
+          D1=$(curl -s -H "$H" "$API/d1/database?per_page=100" | jq -r '.result[]? | select(.name=="pillao-contador") | .uuid')
+          if [ -z "$D1" ]; then
+            CREAR=$(curl -s -X POST -H "$H" -H "Content-Type: application/json" -d '{"name":"pillao-contador"}' "$API/d1/database")
+            echo "Crear D1:"; echo "$CREAR" | jq -c '{success, errors}'
+            D1=$(echo "$CREAR" | jq -r '.result.uuid // empty')
+          fi
+          if [ -n "$D1" ]; then sed -i "s/__D1_ID__/$D1/" buscador/wrangler.toml
+          else echo "::warning::No pude crear la base D1 (¿el token tiene permiso de D1?). El contador no contará hasta tenerla."; sed -i '/\[\[d1_databases\]\]/,/__D1_ID__/d' buscador/wrangler.toml; fi
           SUB=$(curl -s -H "$H" "$API/workers/subdomain" | jq -r '.result.subdomain // empty')
           if [ -z "$SUB" ]; then
             SUB="pillao-$(echo $CLOUDFLARE_ACCOUNT_ID | cut -c1-6)"

@@ -184,8 +184,11 @@ async function buscar(q, env, ctx) {
   ]);
   const juegos = res.lista();
   // Guardamos el mejor resultado para que el actualizador lo siga a partir de ahora
-  if (env.PILLAO) ctx.waitUntil(Promise.all(juegos.slice(0, 1).map((j) =>
-    env.PILLAO.put("a:" + j.id, "", { metadata: { titulo: j.titulo, plataformas: j.plataformas }, expirationTtl: 90 * 86400 }))));
+  // (solo si no estaba ya: las escrituras del KV gratis están limitadas a 1.000 al día)
+  if (env.PILLAO) ctx.waitUntil(Promise.all(juegos.slice(0, 1).map(async (j) => {
+    if (await env.PILLAO.get("a:" + j.id) !== null) return;
+    await env.PILLAO.put("a:" + j.id, "", { metadata: { titulo: j.titulo, plataformas: j.plataformas }, expirationTtl: 90 * 86400 });
+  })).catch(() => {}));
   return { q, actualizado: new Date().toISOString(), juegos, tiendas: Object.values(res.tiendas), avisos };
 }
 
