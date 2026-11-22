@@ -5,7 +5,7 @@ name: Publicar web
 on:
   push:
     branches: [main]
-    paths-ignore: ["buscador/**", ".github/workflows/buscador.yml"]
+    paths-ignore: ["buscador/**", ".github/workflows/buscador.yml", "data/visitas.json", ".github/workflows/visitas.yml", "scripts/visitas.mjs"]
   workflow_run:
     workflows: ["Actualizar precios"]
     types: [completed]

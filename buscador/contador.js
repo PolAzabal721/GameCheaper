@@ -34,10 +34,26 @@ async function migrar(env) {
 }
 let tablaLista = false;
 async function tabla(env) { if (tablaLista) return; await env.DB.prepare("CREATE TABLE IF NOT EXISTS n (k TEXT PRIMARY KEY, v INTEGER NOT NULL)").run(); tablaLista = true; }
+// Sin D1 (de momento): los recuentos se juntan en memoria y cada 20 segundos se guardan de golpe en una sola clave del KV
+// («b:fecha:azar», caduca a los 4 días). Una acción de GitHub los recoge cada hora y los suma en data/visitas.json del repositorio.
+// Así se hacen como mucho 3 escrituras por minuto en vez de 4 por visita (el KV gratis admite 1.000 al día).
+const pend = new Map(); let programado = false;
+async function volcar(env) {
+  programado = false;
+  if (!pend.size) return;
+  const obj = Object.fromEntries(pend); pend.clear();
+  try { await env.PILLAO.put(`b:${new Date().toISOString()}:${Math.random().toString(36).slice(2, 8)}`, JSON.stringify(obj), { expirationTtl: 4 * 86400 }); }
+  catch (e) { for (const [k, n] of Object.entries(obj)) pend.set(k, (pend.get(k) || 0) + n); }   // si falla, se reintenta en el siguiente volcado
+}
 // Suma 1 a varias claves de una vez (una sola llamada a D1)
-async function sumarVarias(env, claves) {
+async function sumarVarias(env, claves, ctx) {
   claves = claves.filter(Boolean); if (!claves.length) return;
-  if (!env.DB) return; // sin base no se cuenta (nunca se escribe en el KV: tiene un límite diario muy bajo)
+  if (!env.DB) {
+    for (const k of claves) pend.set(k, (pend.get(k) || 0) + 1);
+    // waitUntil mantiene vivo el Worker hasta 30 s después de responder: el volcado se hace dentro de ese margen
+    if (!programado && ctx) { programado = true; ctx.waitUntil(new Promise((r) => setTimeout(r, 20000)).then(() => volcar(env))); }
+    return;
+  }
   await tabla(env);
   const st = env.DB.prepare("INSERT INTO n (k, v) VALUES (?1, 1) ON CONFLICT(k) DO UPDATE SET v = v + 1");
   await env.DB.batch(claves.map((k) => st.bind(k)));
@@ -49,14 +65,14 @@ export async function rutasContador(req, env, ctx, url) {
     const ruta = corto(url.searchParams.get("p") || "/", 60);
     const de = corto(url.searchParams.get("r") || "", 40).toLowerCase();
     const pais = paisDe(req);
-    ctx.waitUntil(sumarVarias(env, [`n:v:${dia}`, `n:p:${dia}:${ruta}`, de && `n:d:${dia}:${de}`, pais && `n:vp:${dia}:${pais}`]).catch(() => {}));
+    ctx.waitUntil(sumarVarias(env, [`n:v:${dia}`, `n:p:${dia}:${ruta}`, de && `n:d:${dia}:${de}`, pais && `n:vp:${dia}:${pais}`], ctx).catch(() => {}));
     // Devuelve una imagen de 1 píxel: así funciona hasta sin JavaScript
     return new Response(PIXEL, { headers: { "Content-Type": "image/gif", "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" } });
   }
   if (url.pathname === "/c") {
     const tienda = corto(url.searchParams.get("t"), 30), juego = corto(url.searchParams.get("j"), 80), pais = paisDe(req);
     if (tienda) ctx.waitUntil(sumarVarias(env, [`n:c:${dia}:${tienda}`, juego && `n:cj:${dia}:${juego}`, juego && `n:ctj:${dia}:${tienda}|${juego}`,
-      pais && `n:cp:${dia}:${pais}|${tienda}`, pais && juego && `n:cpj:${dia}:${pais}|${juego}`]).catch(() => {}));
+      pais && `n:cp:${dia}:${pais}|${tienda}`, pais && juego && `n:cpj:${dia}:${pais}|${juego}`], ctx).catch(() => {}));
     return new Response(PIXEL, { headers: { "Content-Type": "image/gif", "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" } });
   }
   if (url.pathname === "/panel") {
@@ -74,7 +90,17 @@ export async function rutasContador(req, env, ctx, url) {
     // Sin D1 todavía: se leen los recuentos antiguos del KV (leer no gasta el límite de escrituras)
     let filas = [];
     if (env.DB) { await tabla(env); await migrar(env); filas = (await env.DB.prepare("SELECT k, v FROM n WHERE k LIKE 'n:%'").all()).results || []; }
-    else { let cursor; do { const l = await env.PILLAO.list({ prefix: "n:", cursor, limit: 1000 }); for (const k of l.keys) filas.push({ k: k.name, v: k.metadata && k.metadata.v != null ? +k.metadata.v : 0 }); cursor = l.list_complete ? null : l.cursor; } while (cursor); }
+    else {
+      // Sin D1: lo ya recogido en el repositorio (data/visitas.json) más los volcados del KV que la acción aún no ha sumado
+      const suma = {};
+      let git = {}; try { git = await (await fetch("https://raw.githubusercontent.com/PolAzabal721/GameCheaper/main/data/visitas.json?t=" + Date.now(), { cf: { cacheTtl: 0 } })).json(); } catch {}
+      for (const [k, n] of Object.entries(git.n || {})) suma[k] = n;
+      const leidas = new Set(git.leidas || []);
+      let cursor; const nuevas = [];
+      do { const l = await env.PILLAO.list({ prefix: "b:", cursor, limit: 1000 }); for (const k of l.keys) if (!leidas.has(k.name)) nuevas.push(k.name); cursor = l.list_complete ? null : l.cursor; } while (cursor);
+      for (const nombre of nuevas.slice(0, 500)) { const b = await env.PILLAO.get(nombre, "json"); if (b) for (const [k, n] of Object.entries(b)) suma[k] = (suma[k] || 0) + n; }
+      filas = Object.entries(suma).map(([k, v]) => ({ k, v }));
+    }
     const leer = async (prefijo, conQue) => {
       const out = {};
       for (const { k, v: n } of filas) {
