@@ -97,6 +97,17 @@ jobs:
             sleep 30
           done
           rm -f feeds/cjs.xml
+      - name: Descargar el catálogo de Todo Consolas (Awin)
+        continue-on-error: true
+        timeout-minutes: 8
+        env:
+          F: ${{ secrets.AWIN_TODOCONSOLAS_FEED }}
+        run: |
+          [ -n "$F" ] || exit 0
+          mkdir -p feeds
+          U=$(printf '%s' "$F" | tr -d '[:space:]')
+          curl -sSL --retry 2 --max-time 300 -o feeds/todoconsolas.zip "$U" && python3 scripts/todoconsolas_feed.py feeds/todoconsolas.zip feeds/todoconsolas.json
+          rm -f feeds/todoconsolas.zip
       - name: Descargar el catálogo de GamersGate para España (feed público con el enlace de afiliado)
         continue-on-error: true
         run: |

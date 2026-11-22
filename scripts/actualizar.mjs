@@ -1513,6 +1513,28 @@ async function feedsTD(juegos, avisos) {
   }
 }
 
+// ---------- Todo Consolas (Awin; lo pasa a JSON scripts/todoconsolas_feed.py) ----------
+// Juegos en disco nuevos y de segunda mano; el envío va aparte (gratis en algunos)
+async function todoConsolas(juegos) {
+  let filas; try { filas = JSON.parse(await readFile(join(RAIZ, "feeds", "todoconsolas.json"), "utf8")); } catch { return 0; }
+  const porLlave = new Map();
+  for (const j of juegos.values()) if (j.tipo !== "tarjeta") { const k = llave(j.titulo); if (!porLlave.has(k)) porLlave.set(k, j); }
+  let n = 0, nuevos = 0;
+  for (const f of filas) {
+    const nombre = nombreTD(f.n);
+    if (!nombre || NO_PRODUCTO.test(limpiar(nombre))) continue;
+    let j = porLlave.get(llave(nombre));
+    if (!j) { j = juego(nombre, { pop: 99999 }); if (!j) continue; porLlave.set(llave(nombre), j); nuevos++; }
+    if (f.img) ponerImagen(j, "todoconsolas", f.img);
+    ofertar(j, { tienda: "todoconsolas", plataforma: f.pl, formato: "fisico", estado: f.usado ? "usado" : "nuevo", precio: f.p, regular: !f.usado && f.r > f.p ? f.r : undefined,
+      envio: f.env || undefined, stock: f.stock, url: f.u, fuente: "todoconsolas",
+      ...(f.imp ? { imp: 1, condicion: "Importación" } : f.one ? { condicion: "Edición Xbox One" } : f.usado ? { condicion: "Segunda mano" } : {}) });
+    j.revisado.add("todoconsolas"); visitar("todoconsolas", j); n++;
+  }
+  console.log(`Todo Consolas: ${n} precios de juegos en disco (${nuevos} juegos nuevos en el catálogo)`);
+  return n;
+}
+
 // ---------- Alcampo (juegos en disco) ----------
 // Su tienda online tiene un buscador con los datos de cada producto (nombre, precio, disponibilidad y sección).
 // Su robots.txt permite consultarlo. Solo cogemos productos de la sección «Videojuegos» que no sean consolas ni accesorios,
@@ -1968,6 +1990,7 @@ async function main() {
   try { cuenta.g2a = await g2aFeed(juegos); } catch (e) { avisos.push("g2a: " + e.message); caidas.add("g2a"); }
   try { cuenta.ggpick = await ggpickFeed(juegos); } catch (e) { avisos.push("ggpick: " + e.message); caidas.add("ggpick"); }
   try { cuenta.cjs = await cjsFeed(juegos); } catch (e) { avisos.push("cjs: " + e.message); caidas.add("cjs"); }
+  try { cuenta.todoconsolas = await todoConsolas(juegos); } catch (e) { avisos.push("todoconsolas: " + e.message); caidas.add("todoconsolas"); }
   try { cuenta.gamersgate = await gamersgateFeed(juegos); } catch (e) { avisos.push("gamersgate: " + e.message); caidas.add("gamersgate"); }
   if (!(await intentar("tarjetas regalo", () => tarjetasRegalo((j) => visitar("tarjetas", j))))) caidas.add("tarjetas");
   if (ENV.EBAY_CLIENT_ID && ENV.EBAY_CLIENT_SECRET) {
