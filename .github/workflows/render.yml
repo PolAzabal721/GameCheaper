@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: render
+  group: render-${{ inputs.proyecto }}
   cancel-in-progress: false
 
 jobs:
