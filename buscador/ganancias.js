@@ -93,8 +93,27 @@ async function tradedoubler(env, desde, hasta) {
   return { red: "Tradedoubler", estado: "ok", filas };
 }
 
-const REDES = [cj, awin, admitad, impact,
-  async () => ({ red: "Rakuten", estado: "falta" }),
+// Rakuten (Nuuvem): OAuth 2.0 (ID y secreto de cliente, con el SID de la web como alcance) y la API de eventos
+async function rakuten(env, desde, hasta) {
+  if (!env.RAKUTEN_CLIENT_ID || !env.RAKUTEN_CLIENT_SECRET) return { red: "Rakuten", estado: "falta" };
+  const t = await (await fetch("https://api.linksynergy.com/token", { method: "POST", headers: { Authorization: "Bearer " + btoa(env.RAKUTEN_CLIENT_ID.trim() + ":" + env.RAKUTEN_CLIENT_SECRET.trim()), "Content-Type": "application/x-www-form-urlencoded" }, body: "grant_type=client_credentials&scope=4779010" })).json();
+  if (!t.access_token) throw new Error(t.error_description || t.error || "sin token");
+  const filas = [];
+  for (let pag = 1; pag <= 10; pag++) {
+    const r = await fetch(`https://api.linksynergy.com/events/1.0/transactions?process_date_start=${desde}%2000:00:00&process_date_end=${hasta}%2023:59:59&limit=1000&page=${pag}`, { headers: { Authorization: "Bearer " + t.access_token } });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const d = await r.json(); const lista = Array.isArray(d) ? d : d.transactions || [];
+    for (const x of lista) {
+      const c = num(x.commissions ?? x.commission_amount ?? x.commission), f = String(x.transaction_date || x.process_date || "").slice(0, 10);
+      if (!f || !c) continue;
+      filas.push({ f, tienda: tiendaDe(x.advertiser_name || x.offer_name || "nuuvem"), eur: Math.round((await aEur(c, x.currency)) * 100) / 100, conf: false });
+    }
+    if (lista.length < 1000) break;
+  }
+  return { red: "Rakuten", estado: "ok", filas };
+}
+
+const REDES = [cj, awin, admitad, impact, rakuten,
   tradedoubler];
 
 export async function rutasGanancias(req, env, ctx, url) {
