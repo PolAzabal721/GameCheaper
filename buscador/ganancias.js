@@ -138,6 +138,9 @@ export async function rutasGanancias(req, env, ctx, url) {
     ctx.waitUntil(cache.put(ck, new Response(JSON.stringify(redes), { headers: { "Cache-Control": "max-age=1800" } })));
   }
   const mano = []; let cursor;
-  do { const l = await env.PILLAO.list({ prefix: "g:", cursor, limit: 1000 }); for (const k of l.keys) if (k.metadata) mano.push(k.metadata); cursor = l.list_complete ? null : l.cursor; } while (cursor);
+  do { const l = await env.PILLAO.list({ prefix: "g:", cursor, limit: 1000 });
+    // Los datos van en los metadatos (apuntado desde el panel) o en el valor (apuntado con la acción de GitHub)
+    for (const k of l.keys) { const m = k.metadata && k.metadata.tienda ? k.metadata : await env.PILLAO.get(k.name, "json").catch(() => null); if (m && m.tienda) mano.push(m); }
+    cursor = l.list_complete ? null : l.cursor; } while (cursor);
   return json({ desde, hasta, redes, mano, hecho: new Date().toISOString() });
 }

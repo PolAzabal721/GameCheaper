@@ -33,6 +33,6 @@ jobs:
             [[ "$F" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || continue
             if [ -z "$V" ] || [ "$V" = "-" ]; then curl -s -X DELETE -H "$H" "$API/$ID/values/g:$TI:$F" | jq -c .success; echo "$TI $F borrado"; continue; fi
             V=${V/,/.}; E=$(python3 -c "print(round(float('$V')*$R,2))")
-            curl -s -X PUT -H "$H" -F 'value=' -F "metadata={\"tienda\":\"$TI\",\"f\":\"$F\",\"eur\":$E,\"orig\":$V,\"moneda\":\"$M\",\"conf\":$CONF}" "$API/$ID/values/g:$TI:$F" | jq -c .success
+            curl -s -X PUT -H "$H" -H "Content-Type: application/json" --data "{\"tienda\":\"$TI\",\"f\":\"$F\",\"eur\":$E,\"orig\":$V,\"moneda\":\"$M\",\"conf\":$CONF}" "$API/$ID/values/g:$TI:$F" | jq -c .success
             echo "$TI $F: $V $M = $E €"
           done
