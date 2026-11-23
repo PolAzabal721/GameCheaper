@@ -445,7 +445,7 @@ button, input, select { font: inherit; color: inherit; }
     const { dias, antes } = periodo(), en = new Set(dias), enA = new Set(antes);
     const filas = [];
     for (const r of gan.redes) for (const x of r.filas || []) filas.push({ ...x, red: r.red });
-    for (const m of gan.mano) filas.push({ f: m.f, tienda: m.tienda, eur: m.eur, conf: true, mano: true });
+    for (const m of gan.mano) filas.push({ f: m.f, tienda: m.tienda, eur: m.eur, conf: m.conf !== false, mano: true });
     const sel = filas.filter((x) => en.has(x.f) && (!tiendaG || x.tienda === tiendaG)), prev = filas.filter((x) => enA.has(x.f) && (!tiendaG || x.tienda === tiendaG));
     const sum = (a) => a.reduce((n, x) => n + x.eur, 0);
     const total = sum(sel), conf = sum(sel.filter((x) => x.conf));
