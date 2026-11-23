@@ -246,7 +246,7 @@ button, input, select { font: inherit; color: inherit; }
     (d.tiendas || []).forEach((t) => { if (!nombresTienda[t.id]) nombresTienda[t.id] = t.nombre + " (Latam)"; if (!todasTiendas.includes(t.id)) todasTiendas.push(t.id); });
     if (datos) pintar();
   }).catch(() => {});
-  const nomTienda = (id) => nombresTienda[id] || { nuuvem: "Nuuvem", instantgaming: "Instant Gaming", cjs: "CJS CD Keys", yuplay: "Yuplay", ggpick: "GGPick", gamersgate: "GamersGate", k4g: "K4G" }[id] || id;
+  const nomTienda = (id) => nombresTienda[id] || { nuuvem: "Nuuvem", instantgaming: "Instant Gaming", gamebillet: "GameBillet", indiegala: "IndieGala", aliexpress: "AliExpress", cjs: "CJS CD Keys", yuplay: "Yuplay", ggpick: "GGPick", gamersgate: "GamersGate", k4g: "K4G" }[id] || id;
   const nomJuego = (id) => titulos[id] || id.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
 
   async function cargar() {
@@ -430,8 +430,9 @@ button, input, select { font: inherit; color: inherit; }
   // ---------- Ganancias ----------
   const API_G = API.replace(/\/panel$/, "/ganancias");
   const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
-  const RED_DE = { kinguin: "Admitad", g2a: "Admitad", ggpick: "Admitad", gamersgate: "CJ", loaded: "Impact", todoconsolas: "Awin", k4g: "CJ", nuuvem: "Rakuten", mediamarkt: "Tradedoubler", xtralife: "Tradedoubler", pcbox: "Tradedoubler" };
-  const A_MANO = ["instantgaming", "cjs", "yuplay", "gamivo", "driffle"];
+  const RED_DE = { kinguin: "Admitad", g2a: "Admitad", ggpick: "Admitad", gamersgate: "CJ", aliexpress: "Admitad", loaded: "Impact", todoconsolas: "Awin", nuuvem: "Rakuten", mediamarkt: "Tradedoubler", xtralife: "Tradedoubler", pcbox: "Tradedoubler" };
+  // Solo tiendas con las que hay afiliación: por red (arriba) o con programa propio (a mano)
+  const A_MANO = ["instantgaming", "yuplay", "gamivo", "cjs", "gamebillet", "indiegala"];
   let gan = null, vista = "trafico", tiendaG = "";
   async function cargarG(fresco) {
     const k = guardado("pillao-panel-token"); if (!k) return;
@@ -466,7 +467,7 @@ button, input, select { font: inherit; color: inherit; }
     document.querySelectorAll("#g-tiendas [data-t], #g-mano [data-t]").forEach((b) => b.onclick = () => { tiendaG = tiendaG === b.dataset.t ? "" : b.dataset.t; pintarG(); });
     // tabla
     const estRed = Object.fromEntries(gan.redes.map((r) => [r.red, r.estado]));
-    const todas = [...new Set([...Object.keys(RED_DE), ...A_MANO, ...Object.keys(porT), ...Object.keys(clic)])].filter((t) => porT[t] || clic[t] || RED_DE[t]);
+    const todas = [...new Set([...Object.keys(RED_DE), ...A_MANO, ...Object.keys(porT), ...Object.keys(clic)])].filter((t) => RED_DE[t] || A_MANO.includes(t) || porT[t]);
     todas.sort((a, b) => (porT[b] || 0) - (porT[a] || 0) || (clic[b] || 0) - (clic[a] || 0));
     const E = { ok: "<span class='est ok'>Conectada</span>", falta: "<span class='est falta'>Falta la clave</span>", error: "<span class='est falta'>No responde</span>", mano: "<span class='est mano'>A mano</span>" };
     $("g-tabla").innerHTML = todas.map((t) => { const red = RED_DE[t], g = porT[t] || 0, c = clic[t] || 0;
@@ -491,7 +492,7 @@ button, input, select { font: inherit; color: inherit; }
   $("p-gan").addEventListener("click", () => verVista("gan"));
   $("g-abrir").addEventListener("click", () => {
     const f = $("g-form"); f.hidden = !f.hidden; if (f.hidden) return;
-    const op = [...new Set([...A_MANO, ...todasTiendas.map((t) => t.id || t)])].filter(Boolean);
+    const op = A_MANO.slice();
     $("g-t").innerHTML = op.map((t) => "<option value='" + t + "'>" + nomTienda(t) + "</option>").join(""); $("g-f").value = hoyMadrid();
   });
   $("g-form").addEventListener("submit", async (e) => {
