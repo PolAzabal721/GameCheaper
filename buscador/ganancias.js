@@ -8,7 +8,7 @@ const json = (d, s = 200) => new Response(JSON.stringify(d), { status: s, header
 const dia = (d) => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Madrid" }).format(d);
 
 // Tienda de Pillao según el anunciante que da la red
-const TIENDA = [[/k4g/i, "k4g"], [/kinguin/i, "kinguin"], [/g2a/i, "g2a"], [/loaded|cdkeys/i, "loaded"], [/todo ?consolas/i, "todoconsolas"], [/nuuvem/i, "nuuvem"], [/gamivo/i, "gamivo"], [/mediamarkt/i, "mediamarkt"]];
+const TIENDA = [[/k4g/i, "k4g"], [/kinguin/i, "kinguin"], [/g2a/i, "g2a"], [/loaded|cdkeys/i, "loaded"], [/todo ?consolas/i, "todoconsolas"], [/nuuvem/i, "nuuvem"], [/gamivo/i, "gamivo"], [/mediamarkt/i, "mediamarkt"], [/xtralife/i, "xtralife"], [/pc ?box/i, "pcbox"]];
 const tiendaDe = (n) => (TIENDA.find(([r]) => r.test(n || "")) || [0, String(n || "otra").toLowerCase().replace(/[^a-z0-9]+/g, "")])[1];
 
 async function eurPorUsd() { try { const d = await (await fetch("https://open.er-api.com/v6/latest/USD", { cf: { cacheTtl: 21600 } })).json(); return d.rates?.EUR || 0.92; } catch { return 0.92; } }
@@ -41,7 +41,8 @@ async function awin(env, desde, hasta) {
 const REDES = [cj, awin,
   async () => ({ red: "Admitad", estado: "falta" }),
   async () => ({ red: "Impact", estado: "falta" }),
-  async () => ({ red: "Rakuten", estado: "falta" })];
+  async () => ({ red: "Rakuten", estado: "falta" }),
+  async () => ({ red: "Tradedoubler", estado: "falta" })];
 
 export async function rutasGanancias(req, env, ctx, url) {
   if (!url.pathname.startsWith("/ganancias")) return null;
