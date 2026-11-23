@@ -1,0 +1,16 @@
+name: tmp-g
+on: workflow_dispatch
+jobs:
+  ver:
+    runs-on: ubuntu-latest
+    env:
+      T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      A: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - run: |
+          API="https://api.cloudflare.com/client/v4/accounts/$A/storage/kv/namespaces"; H="Authorization: Bearer $T"
+          ID=$(curl -s -H "$H" "$API?per_page=100" | jq -r '.result[] | select(.title=="pillao-anadidos") | .id')
+          curl -s -H "$H" "$API/$ID/keys?prefix=g:" | jq -c '.result'
+          echo "== ruta"; curl -s -w ' [%{http_code}]' "https://pillao-buscador.pillao-bb5842.workers.dev/ganancias?k=x"; echo
+          curl -s -o /dev/null -w 'OPTIONS %{http_code}\n' -X OPTIONS "https://pillao-buscador.pillao-bb5842.workers.dev/ganancias"
+          curl -s https://pillaojuegos.com/panel.html | grep -c 'p-gan'
