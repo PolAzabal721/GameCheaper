@@ -1,37 +1,37 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 323,
+   "pendientes": 101,
    "ejemplos": [
-    "KORRIDOR",
-    "Hypernet Explorer",
-    "Littlelands",
-    "Regions of Ruin",
-    "Clone Drone in the Danger Zone"
+    "KONOSUBA - God's Blessing on this Wonderful World! Love For These Clothes Of Desire!",
+    "Divine Frequency",
+    "PAYDAY: Aces High",
+    "Los Sims 4 Patio de Ensueño Pack de Accesorios",
+    "Los Sims 4 Fitness Pack de Accesorios."
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 65850,
+   "pendientes": 65517,
    "ejemplos": [
+    "SAINTS ROW: THE THIRD - THE FULL PACKAGE",
     "Lost in Harmony",
     "Demon's Crystals",
     "Soulblight",
-    "Six Sides of the World",
-    "Splash Blast Panic"
+    "Six Sides of the World"
    ]
   },
   "game (consola)": {
-   "pendientes": 30466,
+   "pendientes": 32468,
    "ejemplos": [
-    "Kirby's Return to Dream Land Deluxe",
-    "Xenoblade Chronicles 3",
-    "LIVE A LIVE",
-    "Nintendo Switch Sports Resort",
-    "Fire Emblem Engage"
+    "RIVE: Ultimate Edition",
+    "ACA NEOGEO SAMURAI SHODOWN IV",
+    "EA Sports FC 27 Ultimate Edition",
+    "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo",
+    "1-2-Switch"
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 3957,
+   "pendientes": 4759,
    "ejemplos": [
     "Football Manager 27",
     "FINAL FANTASY VII REBIRTH",
@@ -41,73 +41,73 @@
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 20418,
+   "pendientes": 20871,
    "ejemplos": [
     "Tesla vs Lovecraft",
     "Gal*Gun 2",
     "ACA NEOGEO WORLD HEROES 2 JET",
-    "Kirby y la tierra olvidada – Nintendo Switch 2 Edition + El mundo astral",
-    "Slayaway Camp: Butcher's Cut"
+    "Slayaway Camp: Butcher's Cut",
+    "Metro 2033 Redux"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 3957,
-  "sinFicha": 3497,
-  "fichasEncontradas": 1475
+  "sinPrecio": 4759,
+  "sinFicha": 4207,
+  "fichasEncontradas": 1590
  },
  "fotos": {
   "juego": {
-   "total": 69690,
-   "con": 67729,
+   "total": 71017,
+   "con": 69099,
    "porcentaje": 97
   },
   "edicion": {
-   "total": 9118,
-   "con": 8803,
+   "total": 9367,
+   "con": 9057,
    "porcentaje": 97
   },
   "dlc": {
-   "total": 16532,
-   "con": 16373,
+   "total": 16644,
+   "con": 16483,
    "porcentaje": 99
   },
   "tarjeta": {
-   "total": 8765,
+   "total": 8758,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 3716,
+   "total": 3736,
    "probadas": 12,
-   "fallan": 5,
+   "fallan": 3,
    "ejemplos": [
-    "Trails in the Sky 2nd Chapter - What-If Costume Set → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4975700/header.jpg",
-    "Booster Pack Heroes - Supporter Pack → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5316330/header.jpg",
-    "Borderlands4 - Pack Historia 2: FL4K y las Últimas Vacaciones → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3802460/header.jpg"
+    "Oaken Tower: Supporter Pack → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4596710/header.jpg",
+    "MX vs ATV Legends - Triple Clash SX Finals 2026 → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4499370/header.jpg",
+    "PLEASE CONFIRM THE DECEASED → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5036870/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 1749,
+   "total": 1714,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "nintendo": {
-   "total": 9627,
+   "total": 9649,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 12110,
+   "total": 12070,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "otras": {
-   "total": 70193,
+   "total": 71957,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
@@ -115,84 +115,84 @@
  },
  "enlaces": {
   "steam": {
-   "ofertas": 7897,
+   "ofertas": 7993,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "eshop": {
-   "ofertas": 17783,
+   "ofertas": 18040,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "psstore": {
-   "ofertas": 1062,
+   "ofertas": 1104,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "game": {
-   "ofertas": 1658,
+   "ofertas": 1664,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xbox": {
-   "ofertas": 15760,
+   "ofertas": 15777,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "instantgaming": {
-   "ofertas": 8056,
+   "ofertas": 8934,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "driffle": {
-   "ofertas": 2506,
+   "ofertas": 2857,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "yuplay": {
-   "ofertas": 8077,
+   "ofertas": 8528,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "alcampo": {
-   "ofertas": 18,
+   "ofertas": 20,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "mediamarkt": {
-   "ofertas": 1045,
+   "ofertas": 1049,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xtralife": {
-   "ofertas": 5953,
+   "ofertas": 5944,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "kinguin": {
-   "ofertas": 62240,
+   "ofertas": 61855,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -206,46 +206,53 @@
    "ejemplos": []
   },
   "g2a": {
-   "ofertas": 22376,
+   "ofertas": 22348,
    "probadas": 6,
    "fallan": 6,
    "bloqueados": 0,
    "ejemplos": [
-    "Legendary Fishing → 0",
-    "Alpha Nomos → 0",
-    "Abiotic Factor → 0"
+    "Yu-Gi-Oh! Legacy of the Duelist Arc-V - ARC League Championship → 0",
+    "Old World - Wonders and Dynasties → 0",
+    "Warhammer 40.000: Inquisitor - Martyr Complete Collection → 0"
    ]
   },
   "cjs": {
-   "ofertas": 41895,
+   "ofertas": 42889,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "ebay": {
-   "ofertas": 1014,
+   "ofertas": 1220,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "k4g": {
-   "ofertas": 3359,
+   "ofertas": 3202,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
+  "todoconsolas": {
+   "ofertas": 4620,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
   "gamersgate": {
-   "ofertas": 10055,
+   "ofertas": 10090,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "gameseminuevos": {
-   "ofertas": 439,
+   "ofertas": 446,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -276,8 +283,8 @@
   ]
  },
  "actualizado": {
-  "precios": "2026-11-22T08:50:25.926Z",
-  "diasDesdeLaUltima": 0.2
+  "precios": "2026-11-23T09:38:22.412Z",
+  "diasDesdeLaUltima": 0.28
  },
  "historial": {
   "series": 90977,
@@ -286,25 +293,25 @@
   "ultimoDia": "2026-11-17"
  },
  "red": {
-  "comprobadas": 185,
+  "comprobadas": 191,
   "sinRespuesta": 6,
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 108546,
-  "ofertas": 268461,
-  "tiendas": 50,
+  "juegos": 110224,
+  "ofertas": 275954,
+  "tiendas": 51,
   "conFoto": "90 %"
  },
- "fecha": "2026-11-22T13:39:15.867Z",
+ "fecha": "2026-11-23T16:24:21.965Z",
  "graves": [
-  "g2a: fallan todos los enlaces probados (Legendary Fishing → 0)",
+  "g2a: fallan todos los enlaces probados (Yu-Gi-Oh! Legacy of the Duelist Arc-V - ARC League Championship → 0)",
   "el historial no se escribe desde el 2026-11-17"
  ],
  "avisos": [
-  "xbox (PC o Xbox): 282 juegos populares aún sin consultar (p. ej. Lost in Harmony, Demon's Crystals, Soulblight)",
-  "game (consola): 1355 juegos populares aún sin consultar (p. ej. Kirby's Return to Dream Land Deluxe, Xenoblade Chronicles 3, LIVE A LIVE)",
-  "psstore (PS4 o PS5): 187 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
-  "ebay (consola, 2ª mano): 814 juegos populares aún sin consultar (p. ej. Tesla vs Lovecraft, Gal*Gun 2, ACA NEOGEO WORLD HEROES 2 JET)"
+  "xbox (PC o Xbox): 285 juegos populares aún sin consultar (p. ej. SAINTS ROW: THE THIRD - THE FULL PACKAGE, Lost in Harmony, Demon's Crystals)",
+  "game (consola): 1745 juegos populares aún sin consultar (p. ej. RIVE: Ultimate Edition, ACA NEOGEO SAMURAI SHODOWN IV, EA Sports FC 27 Ultimate Edition)",
+  "psstore (PS4 o PS5): 217 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
+  "ebay (consola, 2ª mano): 820 juegos populares aún sin consultar (p. ej. Tesla vs Lovecraft, Gal*Gun 2, ACA NEOGEO WORLD HEROES 2 JET)"
  ]
 }
