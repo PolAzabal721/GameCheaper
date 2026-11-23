@@ -349,7 +349,7 @@ function ofertaEshop(doc, precios, opciones) {
   if (/switch 2 edition/i.test(doc.title || "") && p.regular < 25) return false;
   if (EXTRAS.test(limpiar(doc.title))) return false;
   const j = juego(doc.title, opciones);
-  ofertar(j, { tienda: "eshop", plataforma: esSwitch2(doc) ? "Switch 2" : "Switch", precio: p.precio, regular: p.regular, url: doc.url ? "https://www.nintendo.com" + doc.url : "https://www.nintendo.com/es-es/", fuente: "eshop" });
+  ofertar(j, { tienda: "eshop", plataforma: esSwitch2(doc) ? "Switch 2" : "Switch", precio: p.precio, regular: p.regular, ns: String(doc.nsuid_txt?.[0] || "") || undefined, url: doc.url ? "https://www.nintendo.com" + doc.url : "https://www.nintendo.com/es-es/", fuente: "eshop" });
   fechar(j, String(doc.dates_released_dts?.[0] || "").slice(0, 10));
   const imgN = (u) => (u ? (u.startsWith("//") ? "https:" + u : u) : null);
   // Algunas fichas no traen la imagen apaisada ni la cuadrada: entonces, la general

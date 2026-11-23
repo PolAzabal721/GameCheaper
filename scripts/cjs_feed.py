@@ -6,6 +6,7 @@
 import xml.etree.ElementTree as ET, json, re, sys
 origen, es_dest, la_dest = sys.argv[1:4]
 us_dest = sys.argv[4] if len(sys.argv) > 4 else None   # opcional: Estados Unidos (Global, USA, North America)
+de_dest = sys.argv[5] if len(sys.argv) > 5 else None   # opcional: Alemania (Global, Europe, Germany)
 REG_US = re.compile(r"^(global|usa?|united states( of america)?|north america|americas|us ?& ?canada)$", re.I)
 PAISES_LA = {"Argentina": "AR", "Mexico": "MX", "Brazil": "BR", "Chile": "CL", "Colombia": "CO", "Peru": "PE", "Paraguay": "PY", "Venezuela": "VE"}
 CAT_FUERA = {"Movie Digital Downloads", "Meta Quest Keys", "Xbox Accounts", "Steam Accounts", "Counter Strike Global Offensive Skins", "Boxed PC Games", "Nintendo 3DS Games"}
@@ -22,7 +23,7 @@ def limpia(n):
     n = re.sub(r"\b(?:EU|EUROPE|GLOBAL|UNITED KINGDOM|XBOX One / Xbox Series X\|S|Xbox One / Series X\|S|Xbox Series X\|S|PS4 & PS5|PS5|PS4)\b", " ", n)
     n = re.sub(r"\(\s*(?:without\s*)?\)|\s-\s*$|\s*-\s*(?=\s|$)", " ", n)
     return re.sub(r"\s+", " ", n).strip(" -:")
-es, la, us = [], [], []
+es, la, us, de = [], [], [], []
 for ev, el in ET.iterparse(origen):
     if el.tag != "product": continue
     g = lambda k: (el.findtext(k) or "").strip()
@@ -52,9 +53,13 @@ for ev, el in ET.iterparse(origen):
     if reg in ("Global", "Europe", "Spain"): es.append({**fila, "reg": reg})
     if reg in ("Global", "Latin America") or reg in PAISES_LA: la.append({**fila, "reg": PAISES_LA.get(reg, reg)})
     if REG_US.match(reg): us.append({**fila, "reg": reg})
+    if reg in ("Global", "Europe", "Germany", "DACH"): de.append({**fila, "reg": reg})
 json.dump(es, open(es_dest, "w"), ensure_ascii=False, separators=(",", ":"))
 json.dump(la, open(la_dest, "w"), ensure_ascii=False, separators=(",", ":"))
 print(f"CJS: {len(es)} productos válidos en España y {len(la)} en Latinoamérica")
 if us_dest:
     json.dump(us, open(us_dest, "w"), ensure_ascii=False, separators=(",", ":"))
     print(f"CJS: {len(us)} productos válidos en Estados Unidos")
+if de_dest:
+    json.dump(de, open(de_dest, "w"), ensure_ascii=False, separators=(",", ":"))
+    print(f"CJS: {len(de)} productos válidos en Alemania")

@@ -71,11 +71,11 @@ const SITIO = (process.env.SITIO_URL || "https://pillaojuegos.com/").replace(/\/
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // Moneda de las páginas que se están generando: euros (España) o dólares (Latinoamérica, en /latam/)
-let MONEDA = "EUR", PRE = "", RUTAS_OK = null, NREG = "Latinoamérica";   // NREG: nombre de la región en dólares que se está generando   // PRE: "" o "latam/" (páginas de Latinoamérica)
+let MONEDA = "EUR", PRE = "", RUTAS_OK = null, NREG = "Latinoamérica", EN_REGION = false;   // NREG: nombre de la región en dólares que se está generando   // PRE: "" o "latam/" (páginas de Latinoamérica)
 // Textos de las páginas de chollos en Latinoamérica: sin España y con los precios en dólares
-const LAT_TXT = (t) => MONEDA !== "USD" ? t : String(t).replace(/>5€</g, ">5$<").replace(/(\d+) €/g, "US$ $1").replace(/ válidas en España/g, "").replace(/ que se (pueden )?activan? en España/g, " que valen en " + NREG)
+const LAT_TXT = (t) => !EN_REGION ? t : String(t).replace(/>5€</g, MONEDA === "USD" ? ">5$<" : ">5€<").replace(/(\d+) €/g, MONEDA === "USD" ? "US$ $1" : "$1 €").replace(/ válidas en España/g, "").replace(/ que se (pueden )?activan? en España/g, " que valen en " + NREG)
   .replace(/ (y otras )?tiendas españolas/g, " y otras tiendas").replace(/la eShop española/g, "la eShop").replace(/ de España o de Europa/g, " de tu región").replace(/ para España, Europa o de cualquier región/g, " para " + NREG + " o de cualquier región")
-  .replace(/ de España, Europa o de cualquier región/g, " de " + NREG + " o de cualquier región").replace(/ en España/g, " en " + NREG).replace(/ en euros/g, " en dólares");
+  .replace(/ de España, Europa o de cualquier región/g, " de " + NREG + " o de cualquier región").replace(/ en España/g, " en " + NREG).replace(/ en euros/g, MONEDA === "USD" ? " en dólares" : " en euros");
 const eur = (n) => MONEDA === "USD" ? "US$ " + new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) : new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n);
 const total = (o) => o.precio + (o.envio || 0);
 const AFILIADAS = { instantgaming: 1, yuplay: 1, g2a: 1, gamivo: 1 };
@@ -245,7 +245,7 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado, pre = "") {
   // En Latinoamérica y EE. UU. el título dice la región: así Google la enseña a quien busca desde allí
   const titulo = `${j.titulo}: precio más barato${pre ? " en " + NREG : ""}${platTxt} | Pillao`;
   const descripcion = `Compara el precio de ${j.titulo} en ${nTiendas} tienda${nTiendas === 1 ? "" : "s"}. Ahora desde ${eur(total(mejor))} en ${tm}` +
-    (minimo ? `; mínimo histórico ${eur(minimo)}` : "") + (pre ? `. Claves digitales que valen en ${NREG}, en dólares y actualizadas cada pocas horas.` : ". Precios digitales, en disco y de segunda mano actualizados cada pocas horas.");
+    (minimo ? `; mínimo histórico ${eur(minimo)}` : "") + (pre ? `. Claves digitales que valen en ${NREG}, ${MONEDA === "USD" ? "en dólares" : "en euros"} y actualizadas cada pocas horas.` : ". Precios digitales, en disco y de segunda mano actualizados cada pocas horas.");
   const canonica = `${SITIO}${pre}juego/${j.id}/`;
   const nuevos = conStock.filter((o) => o.estado !== "usado").map(total);
   // Caducidad del precio: Google pide hasta cuándo vale; se actualiza varias veces al día, damos dos días de margen
@@ -568,7 +568,7 @@ function paginaChollos(datos) {
 <section class="hero"><h1>Chollos de hoy</h1><p class="resumen">Las mejores ofertas de videojuegos de hoy, por plataforma y por tienda. Se actualizan solas varias veces al día.</p></section>
 <div class="banners">${banners}</div>`;
   return plantilla({ titulo: PRE ? `Ofertas de videojuegos hoy en ${NREG}: PC, PlayStation, Xbox y Switch | Pillao` : "Chollos de videojuegos hoy: PC, PlayStation, Xbox, Switch e Instant Gaming | Pillao",
-    descripcion: PRE ? `Las mejores ofertas de videojuegos de hoy en ${NREG} para PC, PS5, PS4, Xbox y Nintendo Switch, en dólares y comparando más de 30 tiendas.` : "Los mejores chollos de videojuegos de hoy para PC, PS5, PS4, Xbox y Nintendo Switch, y las ofertas de Instant Gaming, comparando más de 30 tiendas.",
+    descripcion: PRE ? `Las mejores ofertas de videojuegos de hoy en ${NREG} para PC, PS5, PS4, Xbox y Nintendo Switch, ${MONEDA === "USD" ? "en dólares" : "en euros"} y comparando más de 30 tiendas.` : "Los mejores chollos de videojuegos de hoy para PC, PS5, PS4, Xbox y Nintendo Switch, y las ofertas de Instant Gaming, comparando más de 30 tiendas.",
     canonica: `${SITIO}${PRE}chollos/`, raiz: PRE ? "/" : "../", inicio: PRE ? "/" + PRE : undefined, cuerpo: LAT_TXT(cuerpo) });
 }
 
@@ -583,6 +583,7 @@ async function main() {
   const REGIONES = [
     { id: "latam", archivo: "precios-latam.json", nombre: "Latinoamérica", lang: "es-419", marca: "PILLAO_LATAM", fichas: +(process.env.LATAM_FICHAS || 4000) },
     { id: "us", archivo: "precios-us.json", nombre: "Estados Unidos", lang: "es-US", marca: "PILLAO_US", fichas: +(process.env.US_FICHAS || 3000) },
+    { id: "de", archivo: "precios-de.json", nombre: "Alemania", lang: "es-DE", marca: "PILLAO_DE", fichas: +(process.env.DE_FICHAS || 2500), moneda: "EUR" },
   ];
   for (const r of REGIONES) { try { r.datos = JSON.parse(await readFile(join(RAIZ, r.archivo), "utf8")); } catch {} r.hay = !!(r.datos && r.datos.juegos && r.datos.juegos.length); r.fichasL = []; r.chollosL = []; }
   const marcas = "<script>" + REGIONES.filter((r) => r.hay).map((r) => `window.${r.marca}=true;`).join("") + "</script>\n</head>";
@@ -617,7 +618,7 @@ async function main() {
     const LATAM_FICHAS = reg.fichas;
     const conFicha = [...latam.juegos].filter((j) => /^[a-z0-9-]{1,80}$/.test(j.id) && j.ofertas.length).sort((a, b) => (a.pop || 99999) - (b.pop || 99999)).slice(0, LATAM_FICHAS);
     const tiendaL = Object.fromEntries((latam.tiendas || []).map((t) => [t.id, t]));
-    MONEDA = "USD";
+    MONEDA = reg.moneda || "USD"; EN_REGION = true;
     for (let i = 0; i < conFicha.length; i++) {
       const j = conFicha[i];
       for (const o of j.ofertas) { if (o.stock === undefined) o.stock = true; }
@@ -640,7 +641,7 @@ async function main() {
     }
     await mkdir(join(SALIDA, D, "chollos"), { recursive: true });
     await writeFile(join(SALIDA, D, "chollos", "index.html"), paginaChollos(dl));
-    PRE = ""; MONEDA = "EUR"; RUTAS_OK = null;
+    PRE = ""; MONEDA = "EUR"; RUTAS_OK = null; EN_REGION = false;
     const tl = comprimir({ ...latam, buscador: undefined });
     const primL = new Set([...tl.juegos].sort((a, b) => (a.pop || 99999) - (b.pop || 99999)).slice(0, PRIMEROS).map((j) => j.id));
     const totL = { juegos: tl.juegos.length, ofertas: tl.juegos.reduce((n, j) => n + j.ofertas.length, 0) };
@@ -651,8 +652,8 @@ async function main() {
       .replace("<head>", '<head>\n<base href="/">')
       .replace("</head>", `<script>window.PILLAO_REGION="${D}"</script>\n` + marcas)
       .replace('<link rel="canonical" href="https://pillaojuegos.com/">', `<link rel="canonical" href="https://pillaojuegos.com/${D}/">`)
-      .replace('<title>Pillao: comparador de precios de videojuegos</title>', `<title>Pillao: compara precios de videojuegos en ${reg.nombre} (en dólares)</title>`)
-      .replace('content="Compara precios de videojuegos digitales y físicos en tiendas españolas."', `content="Compara precios de juegos, claves, DLC y tarjetas regalo para ${reg.nombre}: Steam, PlayStation, Xbox, Nintendo y más de 30 tiendas, en dólares y actualizados cada pocas horas."`)
+      .replace('<title>Pillao: comparador de precios de videojuegos</title>', `<title>Pillao: compara precios de videojuegos en ${reg.nombre} (${reg.moneda === "EUR" ? "en euros" : "en dólares"})</title>`)
+      .replace('content="Compara precios de videojuegos digitales y físicos en tiendas españolas."', `content="Compara precios de juegos, claves, DLC y tarjetas regalo para ${reg.nombre}: Steam, PlayStation, Xbox, Nintendo y más de 30 tiendas, ${reg.moneda === "EUR" ? "en euros" : "en dólares"} y actualizados cada pocas horas."`)
       .replace('<meta property="og:url" content="https://pillaojuegos.com/">', `<meta property="og:url" content="https://pillaojuegos.com/${D}/">`)
       .replace('<html lang="es">', `<html lang="${reg.lang}">`);
     await writeFile(join(SALIDA, D, "index.html"), proteger(html, datos.buscador));
@@ -683,8 +684,8 @@ async function main() {
 
   // 3b. Google: cada página dice cuáles son sus versiones para las otras regiones (hreflang), para que en cada país
   // salga la buena (Venezuela → /latam/, EE. UU. → /us/, España → la raíz). x-default: la de España.
-  const IDIOMA_REG = { "": "es-ES", latam: "es-419", us: "es-US" };
-  const LOCALE_REG = { "": "es_ES", latam: "es_LA", us: "es_US" };
+  const IDIOMA_REG = { "": "es-ES", latam: "es-419", us: "es-US", de: "es-DE" };
+  const LOCALE_REG = { "": "es_ES", latam: "es_LA", us: "es_US", de: "es_DE" };
   const hayRegion = { "": true }; for (const r of REGIONES) hayRegion[r.id] = r.hay;
   const conPagina = new Map();   // ruta relativa (sin región) → regiones con esa página
   const apuntar = (ruta, reg) => { if (!conPagina.has(ruta)) conPagina.set(ruta, new Set()); conPagina.get(ruta).add(reg); };

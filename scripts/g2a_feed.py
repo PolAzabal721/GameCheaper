@@ -4,8 +4,9 @@
 # Fuera: cuentas, «gifts», cajas sorpresa «Try to Get…», cripto, apuestas, monederos y tarjetas que no son de videojuegos.
 import csv, json, re, sys, html
 origen, destino = sys.argv[1], sys.argv[2]
-LATAM = len(sys.argv) > 3 and sys.argv[3] == "latam"
-REG_OK = {"GLOBAL", "LATAM", "LATIN AMERICA", "MEXICO"} if LATAM else {"GLOBAL", "EUROPE", "EU", "SPAIN"}
+MODO = sys.argv[3] if len(sys.argv) > 3 else ""
+LATAM = MODO == "latam"
+REG_OK = {"GLOBAL", "LATAM", "LATIN AMERICA", "MEXICO"} if LATAM else {"GLOBAL", "EUROPE", "EU", "GERMANY", "DACH"} if MODO == "de" else {"GLOBAL", "EUROPE", "EU", "SPAIN"}
 FUERA = re.compile(r"\b(account|gift\b(?! card)|try to get|random|mystery|casino|bet|betting|poker|skin\.?club|case|cases)\b", re.I)
 TARJETAS = re.compile(r"\b(psn|playstation|xbox|nintendo|steam|ea play|ubisoft|battle\.?net|blizzard|roblox|v-?bucks|fortnite|riot|valorant|league of legends|game pass|ps plus|playstation plus|nintendo switch online)\b", re.I)
 CAT_FUERA = set()
@@ -36,4 +37,4 @@ for x in csv.DictReader(open(origen, encoding="utf-8", errors="replace"), delimi
     t = "tarjeta" if tarjeta else ("dlc" if re.search(r"\b(dlc|add-on|season pass|expansion|soundtrack)\b", nombre, re.I) else "")
     filas.append({"n": nombre, "t": t, "pl": plat, "p": pr, "r": op, "u": x["url"], "d": drm, "reg": region, "img": x.get("picture", "")})
 json.dump(filas, open(destino, "w"), ensure_ascii=False, separators=(",", ":"))
-print(f"G2A: {len(filas)} productos válidos ({'Latinoamérica' if LATAM else 'España'})")
+print(f"G2A: {len(filas)} productos válidos ({MODO or 'España'})")
