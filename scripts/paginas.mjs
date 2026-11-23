@@ -242,9 +242,10 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado, pre = "") {
   const plats = j.plataformas.filter((p) => p !== "Tarjeta regalo");
   const platTxt = plats.length ? ` (${plats.join(", ")})` : "";
   const fecha = new Date(actualizado).toLocaleDateString(pre ? "es-MX" : "es-ES", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Madrid" });
-  const titulo = `${j.titulo}: precio más barato${platTxt} | Pillao`;
+  // En Latinoamérica y EE. UU. el título dice la región: así Google la enseña a quien busca desde allí
+  const titulo = `${j.titulo}: precio más barato${pre ? " en " + NREG : ""}${platTxt} | Pillao`;
   const descripcion = `Compara el precio de ${j.titulo} en ${nTiendas} tienda${nTiendas === 1 ? "" : "s"}. Ahora desde ${eur(total(mejor))} en ${tm}` +
-    (minimo ? `; mínimo histórico ${eur(minimo)}` : "") + ". Precios digitales, en disco y de segunda mano actualizados cada pocas horas.";
+    (minimo ? `; mínimo histórico ${eur(minimo)}` : "") + (pre ? `. Claves digitales que valen en ${NREG}, en dólares y actualizadas cada pocas horas.` : ". Precios digitales, en disco y de segunda mano actualizados cada pocas horas.");
   const canonica = `${SITIO}${pre}juego/${j.id}/`;
   const nuevos = conStock.filter((o) => o.estado !== "usado").map(total);
   // Caducidad del precio: Google pide hasta cuándo vale; se actualiza varias veces al día, damos dos días de margen
@@ -402,7 +403,7 @@ ${secciones.map((s) => `<h2 id="${s.id}">${s.t}</h2><ul class="ofertas">${s.xs.m
     "@context": "https://schema.org", "@type": "FAQPage",
     mainEntity: preguntas.map(([q, r]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: r } })),
   }];
-  return plantilla({ titulo, descripcion: desc, canonica: `${SITIO}${PRE}${ruta}/`, raiz: PRE ? "/" : "../", inicio: PRE ? "/" + PRE : undefined, cuerpo: LAT_TXT(cuerpo), jsonld });
+  return plantilla({ titulo: PRE ? LAT_TXT(titulo).replace(/ \| Pillao$/, ` en ${NREG} | Pillao`) : titulo, descripcion: PRE ? LAT_TXT(desc) : desc, canonica: `${SITIO}${PRE}${ruta}/`, raiz: PRE ? "/" : "../", inicio: PRE ? "/" + PRE : undefined, cuerpo: LAT_TXT(cuerpo), jsonld });
 }
 
 const P_MINIMO = ["¿Qué significa «mínimo histórico»?", "Que el juego nunca había estado tan barato desde que lo seguimos. Si no te corre prisa, puedes poner un aviso en la ficha del juego y te escribimos cuando baje al precio que tú digas."];
@@ -566,8 +567,8 @@ function paginaChollos(datos) {
   const cuerpo = `${volver(PRE ? "/" + PRE : "../")}
 <section class="hero"><h1>Chollos de hoy</h1><p class="resumen">Las mejores ofertas de videojuegos de hoy, por plataforma y por tienda. Se actualizan solas varias veces al día.</p></section>
 <div class="banners">${banners}</div>`;
-  return plantilla({ titulo: "Chollos de videojuegos hoy: PC, PlayStation, Xbox, Switch e Instant Gaming | Pillao",
-    descripcion: "Los mejores chollos de videojuegos de hoy para PC, PS5, PS4, Xbox y Nintendo Switch, y las ofertas de Instant Gaming, comparando más de 30 tiendas.",
+  return plantilla({ titulo: PRE ? `Ofertas de videojuegos hoy en ${NREG}: PC, PlayStation, Xbox y Switch | Pillao` : "Chollos de videojuegos hoy: PC, PlayStation, Xbox, Switch e Instant Gaming | Pillao",
+    descripcion: PRE ? `Las mejores ofertas de videojuegos de hoy en ${NREG} para PC, PS5, PS4, Xbox y Nintendo Switch, en dólares y comparando más de 30 tiendas.` : "Los mejores chollos de videojuegos de hoy para PC, PS5, PS4, Xbox y Nintendo Switch, y las ofertas de Instant Gaming, comparando más de 30 tiendas.",
     canonica: `${SITIO}${PRE}chollos/`, raiz: PRE ? "/" : "../", inicio: PRE ? "/" + PRE : undefined, cuerpo: LAT_TXT(cuerpo) });
 }
 
@@ -650,6 +651,8 @@ async function main() {
       .replace("<head>", '<head>\n<base href="/">')
       .replace("</head>", `<script>window.PILLAO_REGION="${D}"</script>\n` + marcas)
       .replace('<link rel="canonical" href="https://pillaojuegos.com/">', `<link rel="canonical" href="https://pillaojuegos.com/${D}/">`)
+      .replace('<title>Pillao: comparador de precios de videojuegos</title>', `<title>Pillao: compara precios de videojuegos en ${reg.nombre} (en dólares)</title>`)
+      .replace('content="Compara precios de videojuegos digitales y físicos en tiendas españolas."', `content="Compara precios de juegos, claves, DLC y tarjetas regalo para ${reg.nombre}: Steam, PlayStation, Xbox, Nintendo y más de 30 tiendas, en dólares y actualizados cada pocas horas."`)
       .replace('<meta property="og:url" content="https://pillaojuegos.com/">', `<meta property="og:url" content="https://pillaojuegos.com/${D}/">`)
       .replace('<html lang="es">', `<html lang="${reg.lang}">`);
     await writeFile(join(SALIDA, D, "index.html"), proteger(html, datos.buscador));
@@ -677,6 +680,33 @@ async function main() {
   // 3. Páginas de ofertas por búsqueda
   for (const o of OFERTAS) { await mkdir(join(SALIDA, o.ruta), { recursive: true }); await writeFile(join(SALIDA, o.ruta, "index.html"), paginaOfertas(datos, tiendaPorId, o)); }
   await mkdir(join(SALIDA, "chollos"), { recursive: true }); await writeFile(join(SALIDA, "chollos", "index.html"), paginaChollos(datos));
+
+  // 3b. Google: cada página dice cuáles son sus versiones para las otras regiones (hreflang), para que en cada país
+  // salga la buena (Venezuela → /latam/, EE. UU. → /us/, España → la raíz). x-default: la de España.
+  const IDIOMA_REG = { "": "es-ES", latam: "es-419", us: "es-US" };
+  const LOCALE_REG = { "": "es_ES", latam: "es_LA", us: "es_US" };
+  const hayRegion = { "": true }; for (const r of REGIONES) hayRegion[r.id] = r.hay;
+  const conPagina = new Map();   // ruta relativa (sin región) → regiones con esa página
+  const apuntar = (ruta, reg) => { if (!conPagina.has(ruta)) conPagina.set(ruta, new Set()); conPagina.get(ruta).add(reg); };
+  apuntar("", ""); apuntar("chollos/", ""); for (const o of OFERTAS) apuntar(o.ruta + "/", "");
+  for (const j of hechas) apuntar(`juego/${j.id}/`, "");
+  for (const r of REGIONES) if (r.hay) { apuntar("", r.id); for (const id of r.fichasL) apuntar(`juego/${id}/`, r.id); if (r.chollosL.length) apuntar("chollos/", r.id); for (const x of r.chollosL) apuntar(x + "/", r.id); }
+  let nAlt = 0;
+  for (const [ruta, regs] of conPagina) {
+    if (regs.size < 2) continue;   // sin otra versión, no hace falta
+    const enlaces = [...regs].map((g) => `<link rel="alternate" hreflang="${IDIOMA_REG[g]}" href="${SITIO}${g ? g + "/" : ""}${ruta}">`).join("")
+      + (regs.has("") ? `<link rel="alternate" hreflang="x-default" href="${SITIO}${ruta}">` : "");
+    for (const g of regs) {
+      const archivo = join(SALIDA, g, ruta, "index.html");
+      if (!existsSync(archivo)) continue;
+      let html = await readFile(archivo, "utf8");
+      if (html.includes('hreflang="')) continue;
+      html = html.replace(/<link rel="canonical"/, enlaces + '<link rel="canonical"');
+      if (g) html = html.replace('<html lang="es">', `<html lang="${IDIOMA_REG[g]}">`).replace('content="es_ES"', `content="${LOCALE_REG[g]}"`);
+      await writeFile(archivo, html); nAlt++;
+    }
+  }
+  console.log(`Google: ${nAlt} páginas con sus versiones de cada región (hreflang)`);
 
   // 4. Lista de todos los juegos y mapa del sitio
   await mkdir(join(SALIDA, "juegos"), { recursive: true });
