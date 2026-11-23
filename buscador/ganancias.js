@@ -8,7 +8,7 @@ const json = (d, s = 200) => new Response(JSON.stringify(d), { status: s, header
 const dia = (d) => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Madrid" }).format(d);
 
 // Tienda de Pillao según el anunciante que da la red
-const TIENDA = [[/k4g/i, "k4g"], [/kinguin/i, "kinguin"], [/g2a/i, "g2a"], [/loaded|cdkeys/i, "loaded"], [/todo ?consolas/i, "todoconsolas"], [/nuuvem/i, "nuuvem"], [/gamivo/i, "gamivo"], [/mediamarkt/i, "mediamarkt"], [/xtralife/i, "xtralife"], [/pc ?box/i, "pcbox"]];
+const TIENDA = [[/k4g/i, "k4g"], [/kinguin/i, "kinguin"], [/g2a/i, "g2a"], [/loaded|cdkeys/i, "loaded"], [/todo ?consolas/i, "todoconsolas"], [/nuuvem/i, "nuuvem"], [/gamivo/i, "gamivo"], [/ggpick/i, "ggpick"], [/gamersgate/i, "gamersgate"], [/aliexpress/i, "aliexpress"], [/gamesporium/i, "gamesporium"], [/mediamarkt/i, "mediamarkt"], [/xtralife/i, "xtralife"], [/pc ?box/i, "pcbox"]];
 const tiendaDe = (n) => (TIENDA.find(([r]) => r.test(n || "")) || [0, String(n || "otra").toLowerCase().replace(/[^a-z0-9]+/g, "")])[1];
 
 async function eurPorUsd() { try { const d = await (await fetch("https://open.er-api.com/v6/latest/USD", { cf: { cacheTtl: 21600 } })).json(); return d.rates?.EUR || 0.92; } catch { return 0.92; } }
@@ -38,11 +38,64 @@ async function awin(env, desde, hasta) {
   return { red: "Awin", estado: "ok", filas };
 }
 
-const REDES = [cj, awin,
-  async () => ({ red: "Admitad", estado: "falta" }),
-  async () => ({ red: "Impact", estado: "falta" }),
+const fechaDMY = (f) => f.slice(8, 10) + "." + f.slice(5, 7) + "." + f.slice(0, 4);
+const num = (x) => +String(x ?? 0).replace(",", ".") || 0;
+async function aEur(cantidad, moneda) { if (!moneda || moneda === "EUR") return cantidad;
+  try { const d = await (await fetch("https://open.er-api.com/v6/latest/EUR", { cf: { cacheTtl: 21600 } })).json(); return d.rates?.[moneda] ? cantidad / d.rates[moneda] : cantidad; } catch { return cantidad; } }
+
+// Admitad (Kinguin, G2A, GGPick…): token de cliente y estadísticas de acciones (ventas)
+async function admitad(env, desde, hasta) {
+  if (!env.ADMITAD_CLIENT_ID || !env.ADMITAD_CLIENT_SECRET) return { red: "Admitad", estado: "falta" };
+  const id = env.ADMITAD_CLIENT_ID.trim(), sec = env.ADMITAD_CLIENT_SECRET.trim();
+  const t = await (await fetch("https://api.admitad.com/token/", { method: "POST", headers: { Authorization: "Basic " + btoa(id + ":" + sec), "Content-Type": "application/x-www-form-urlencoded" },
+    body: `grant_type=client_credentials&client_id=${encodeURIComponent(id)}&scope=statistics` })).json();
+  if (!t.access_token) throw new Error(t.error_description || t.error || "sin token");
+  const filas = [];
+  for (let off = 0; off < 5000; off += 500) {
+    const d = await (await fetch(`https://api.admitad.com/statistics/actions/?date_start=${fechaDMY(desde)}&date_end=${fechaDMY(hasta)}&limit=500&offset=${off}`, { headers: { Authorization: "Bearer " + t.access_token } })).json();
+    for (const x of d.results || []) if (x.status !== "declined") filas.push({ f: String(x.action_date).slice(0, 10), tienda: tiendaDe(x.advcampaign_name), eur: Math.round((await aEur(num(x.payment), x.currency)) * 100) / 100, conf: x.status === "approved" });
+    if ((d.results || []).length < 500) break;
+  }
+  return { red: "Admitad", estado: "ok", filas };
+}
+
+// Impact (Loaded): acciones de la cuenta de partner
+async function impact(env, desde, hasta) {
+  if (!env.IMPACT_ACCOUNT_SID || !env.IMPACT_AUTH_TOKEN) return { red: "Impact", estado: "falta" };
+  const sid = env.IMPACT_ACCOUNT_SID.trim(), filas = [];
+  for (let pag = 1; pag <= 10; pag++) {
+    const r = await fetch(`https://api.impact.com/Mediapartners/${sid}/Actions?ActionDateStart=${desde}T00:00:00Z&ActionDateEnd=${hasta}T23:59:59Z&PageSize=1000&Page=${pag}`, { headers: { Authorization: "Basic " + btoa(sid + ":" + env.IMPACT_AUTH_TOKEN.trim()), Accept: "application/json" } });
+    if (!r.ok) throw new Error(r.status === 403 ? "acceso denegado (permisos del token)" : "HTTP " + r.status);
+    const d = await r.json();
+    for (const x of d.Actions || []) if (!/REVERSED/i.test(x.State)) filas.push({ f: String(x.EventDate || x.CreationDate).slice(0, 10), tienda: tiendaDe(x.CampaignName), eur: Math.round((await aEur(num(x.Payout), x.Currency)) * 100) / 100, conf: /APPROVED|LOCKED|CLEARED/i.test(x.State) });
+    if (!d["@nextpageuri"]) break;
+  }
+  return { red: "Impact", estado: "ok", filas };
+}
+
+// Tradedoubler (MediaMarkt, xtralife, PCbox): token con usuario de la API y transacciones
+async function tradedoubler(env, desde, hasta) {
+  if (!env.TRADEDOUBLER_CLIENT_ID || !env.TRADEDOUBLER_SECRET || !env.TRADEDOUBLER_USER || !env.TRADEDOUBLER_PASS) return { red: "Tradedoubler", estado: "falta" };
+  const t = await (await fetch("https://connect.tradedoubler.com/uaa/oauth/token", { method: "POST", headers: { Authorization: "Basic " + btoa(env.TRADEDOUBLER_CLIENT_ID.trim() + ":" + env.TRADEDOUBLER_SECRET.trim()), "Content-Type": "application/x-www-form-urlencoded" },
+    body: "grant_type=password&username=" + encodeURIComponent(env.TRADEDOUBLER_USER.trim()) + "&password=" + encodeURIComponent(env.TRADEDOUBLER_PASS.trim()) })).json();
+  if (!t.access_token) throw new Error(t.error_description || t.error || "sin token");
+  const filas = [], ymd = (f) => f.replace(/-/g, "");
+  for (let off = 0; off < 5000; off += 100) {
+    const d = await (await fetch(`https://connect.tradedoubler.com/publisher/report/transactions?fromDate=${ymd(desde)}&toDate=${ymd(hasta)}&limit=100&offset=${off}`, { headers: { Authorization: "Bearer " + t.access_token } })).json();
+    for (const x of d.items || []) {
+      const est = String(x.status || x.transactionStatus || "").toUpperCase();
+      if (/^(D|DENIED|DECLINED)$/.test(est)) continue;
+      const f = String(x.timeOfTransaction || x.transactionDate || x.eventDate || x.date || "").slice(0, 10);
+      filas.push({ f, tienda: tiendaDe(x.programName || x.program || ""), eur: Math.round((await aEur(num(x.commission ?? x.publisherCommission), d.reportCurrencyCode || "EUR")) * 100) / 100, conf: /^(A|APPROVED)$/.test(est) });
+    }
+    if ((d.items || []).length < 100) break;
+  }
+  return { red: "Tradedoubler", estado: "ok", filas };
+}
+
+const REDES = [cj, awin, admitad, impact,
   async () => ({ red: "Rakuten", estado: "falta" }),
-  async () => ({ red: "Tradedoubler", estado: "falta" })];
+  tradedoubler];
 
 export async function rutasGanancias(req, env, ctx, url) {
   if (!url.pathname.startsWith("/ganancias")) return null;

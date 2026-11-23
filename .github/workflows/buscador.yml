@@ -107,8 +107,16 @@ jobs:
         env:
           CJ_TOKEN: ${{ secrets.CJ_TOKEN }}
           AWIN_API_TOKEN: ${{ secrets.AWIN_API_TOKEN }}
+          ADMITAD_CLIENT_ID: ${{ secrets.ADMITAD_CLIENT_ID }}
+          ADMITAD_CLIENT_SECRET: ${{ secrets.ADMITAD_CLIENT_SECRET }}
+          IMPACT_ACCOUNT_SID: ${{ secrets.IMPACT_ACCOUNT_SID }}
+          IMPACT_AUTH_TOKEN: ${{ secrets.IMPACT_AUTH_TOKEN }}
+          TRADEDOUBLER_CLIENT_ID: ${{ secrets.TRADEDOUBLER_CLIENT_ID }}
+          TRADEDOUBLER_SECRET: ${{ secrets.TRADEDOUBLER_SECRET }}
+          TRADEDOUBLER_USER: ${{ secrets.TRADEDOUBLER_USER }}
+          TRADEDOUBLER_PASS: ${{ secrets.TRADEDOUBLER_PASS }}
         run: |
-          for v in CJ_TOKEN AWIN_API_TOKEN; do
+          for v in CJ_TOKEN AWIN_API_TOKEN ADMITAD_CLIENT_ID ADMITAD_CLIENT_SECRET IMPACT_ACCOUNT_SID IMPACT_AUTH_TOKEN TRADEDOUBLER_CLIENT_ID TRADEDOUBLER_SECRET TRADEDOUBLER_USER TRADEDOUBLER_PASS; do
             x=$(printenv $v | tr -d '[:space:]'); [ -n "$x" ] && printf '%s' "$x" | npx --yes wrangler@4.86.0 secret put $v || echo "Sin $v"
           done
 
