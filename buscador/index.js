@@ -10,6 +10,7 @@
 
 import { rutasAvisos, revisarAvisos } from "./avisos.js";
 import { rutasContador } from "./contador.js";
+import { rutasGanancias } from "./ganancias.js";
 
 const CACHE_SEG = 3 * 3600;      // una misma búsqueda se reutiliza 3 horas
 const MAX_JUEGOS = 8;
@@ -201,6 +202,8 @@ export default {
       if (av) return av;
       const cn = await rutasContador(req, env, ctx, url);
       if (cn) return cn;
+      const gn = await rutasGanancias(req, env, ctx, url);
+      if (gn) return gn;
       if (url.pathname === "/buscar") {
         const q = (url.searchParams.get("q") || "").replace(/\s+/g, " ").trim().slice(0, 80);
         if (limpiar(q).length < 3) return json({ error: "Escribe al menos 3 letras." }, 400);

@@ -102,6 +102,16 @@ jobs:
             echo "Sin BREVO_API_KEY / AVISOS_REMITENTE: la web enseñará la gráfica, pero los avisos por email quedan desactivados."
           fi
 
+      - name: Claves de las redes de afiliados para las ganancias del panel (las que existan)
+        working-directory: buscador
+        env:
+          CJ_TOKEN: ${{ secrets.CJ_TOKEN }}
+          AWIN_API_TOKEN: ${{ secrets.AWIN_API_TOKEN }}
+        run: |
+          for v in CJ_TOKEN AWIN_API_TOKEN; do
+            x=$(printenv $v | tr -d '[:space:]'); [ -n "$x" ] && printf '%s' "$x" | npx --yes wrangler@4.86.0 secret put $v || echo "Sin $v"
+          done
+
       - name: Probar y guardar la dirección del buscador
         run: |
           URL="https://pillao-buscador.$SUB.workers.dev"

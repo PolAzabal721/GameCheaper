@@ -8,6 +8,24 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="fonts/fuentes.css">
 <style>
+.pest{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.pest button{border:0;background:none;padding:10px 14px;font-weight:700;font-size:15px;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px;cursor:pointer}
+.pest button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.vista{display:flex;flex-direction:column;gap:20px}
+.tabla{width:100%;border-collapse:collapse;font-size:14px}
+.tabla th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line)}
+.tabla td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tabla td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.tabla th.m{text-align:right}
+.est{font-size:12px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.est.ok{background:#dff5e8;color:#0b6b3c}.est.falta{background:#fde7ea;color:#9c1d31}.est.mano{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.red{color:var(--muted);font-size:12px;display:block}
+.scroll{overflow-x:auto}
+.mini{font-size:12px;padding:4px 8px}
+.apuntar{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+.apuntar label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.apuntar input,.apuntar select{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:6px 8px;font-size:14px;color:var(--ink)}
+@media (max-width:560px){.tabla .oc{display:none}}
 /* Panel privado: cabecera con el rango de fechas, cifras clave, gráfica por día y tablas de desglose que filtran por tienda */
 :root {
   --bg: #eef0f5; --surface: #ffffff; --surface-2: #f6f7fb; --ink: #141a2e; --muted: #5a6280; --line: #d9dce8;
@@ -108,6 +126,11 @@ button, input, select { font: inherit; color: inherit; }
     </div>
   </header>
 
+  <nav class="pest" role="tablist" aria-label="Secciones del panel">
+    <button type="button" role="tab" id="p-trafico" aria-selected="true">Visitas y clics</button>
+    <button type="button" role="tab" id="p-gan" aria-selected="false">Ganancias</button>
+  </nav>
+  <div class="vista" id="v-trafico">
   <p class="resumen" id="resumen">Cargando…</p>
 
   <div class="tiles">
@@ -159,6 +182,37 @@ button, input, select { font: inherit; color: inherit; }
       <ul class="barras" id="l-paginas"></ul>
     </section>
   </div>
+  </div>
+
+  <div class="vista" id="v-gan" hidden>
+    <p class="resumen" id="g-resumen">Cargando…</p>
+    <div class="tiles">
+      <div class="tile"><span>Ganado en el periodo</span><strong id="g-total">—</strong><small id="g-c-total">&nbsp;</small></div>
+      <div class="tile"><span>Pendiente de confirmar</span><strong id="g-pend">—</strong><small>Las tiendas lo validan en 30–60 días</small></div>
+      <div class="tile"><span>Confirmado</span><strong id="g-conf">—</strong><small>Listo para cobrar</small></div>
+      <div class="tile"><span>Por cada 100 clics</span><strong id="g-ratio">—</strong><small id="g-c-clics">&nbsp;</small></div>
+    </div>
+    <section class="caja">
+      <div class="caja-cab"><h2>Ganancias por día</h2><div class="leyenda"><span><i style="background:var(--accent)"></i>Confirmado</span><span><i style="background:repeating-linear-gradient(45deg,var(--accent) 0 3px,var(--accent-soft) 3px 6px)"></i>Pendiente</span></div></div>
+      <div class="graf" id="g-graf"></div>
+    </section>
+    <div class="dos">
+      <section class="caja"><h2>Por tienda</h2><p class="sub">Lo que dan las redes conectadas. Pulsa una tienda para ver solo sus ganancias.</p><ul class="barras" id="g-tiendas"></ul></section>
+      <section class="caja">
+        <div class="caja-cab"><h2>Apuntado a mano</h2><button class="btn mini prim" type="button" id="g-abrir">+ Apuntar</button></div>
+        <p class="sub">Para las tiendas sin conexión automática: copia lo que ves en su web. Para borrar una cifra, apúntala vacía.</p>
+        <form class="apuntar" id="g-form" hidden>
+          <label>Tienda<select id="g-t"></select></label>
+          <label>Fecha<input type="date" id="g-f" required></label>
+          <label>Ganado (€)<input type="text" inputmode="decimal" id="g-e" placeholder="0,00" size="7"></label>
+          <button class="btn prim" type="submit">Guardar</button>
+          <span class="error" id="g-err" hidden></span>
+        </form>
+        <ul class="barras" id="g-mano"></ul>
+      </section>
+    </div>
+    <section class="caja"><h2>Detalle por tienda</h2><div class="scroll"><table class="tabla"><thead><tr><th>Tienda</th><th class="m">Clics</th><th class="m oc">Ventas</th><th class="m">Ganado</th><th class="m oc">Por clic</th><th>Conexión</th></tr></thead><tbody id="g-tabla"></tbody></table></div></section>
+  </div>
 </main>
 
 <script>
@@ -192,7 +246,7 @@ button, input, select { font: inherit; color: inherit; }
     (d.tiendas || []).forEach((t) => { if (!nombresTienda[t.id]) nombresTienda[t.id] = t.nombre + " (Latam)"; if (!todasTiendas.includes(t.id)) todasTiendas.push(t.id); });
     if (datos) pintar();
   }).catch(() => {});
-  const nomTienda = (id) => nombresTienda[id] || id;
+  const nomTienda = (id) => nombresTienda[id] || { nuuvem: "Nuuvem", instantgaming: "Instant Gaming", cjs: "CJS CD Keys", yuplay: "Yuplay", ggpick: "GGPick", gamersgate: "GamersGate", k4g: "K4G" }[id] || id;
   const nomJuego = (id) => titulos[id] || id.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
 
   async function cargar() {
@@ -373,7 +427,85 @@ button, input, select { font: inherit; color: inherit; }
   $("salir").addEventListener("click", () => { guardado("pillao-panel-token", null); datos = null; $("panel").hidden = true; $("entrar").hidden = false; $("token").value = ""; });
   $("entrar").addEventListener("submit", (e) => { e.preventDefault(); const v = $("token").value.trim(); if (!v) return; guardado("pillao-panel-token", v); $("error-entrar").hidden = true; cargar(); });
   let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(() => { if (datos) pintar(); }, 150); });
+  // ---------- Ganancias ----------
+  const API_G = API.replace(/\/panel$/, "/ganancias");
+  const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+  const RED_DE = { kinguin: "Admitad", g2a: "Admitad", loaded: "Impact", todoconsolas: "Awin", k4g: "CJ", nuuvem: "Rakuten" };
+  const A_MANO = ["instantgaming", "cjs", "yuplay", "ggpick", "gamersgate", "driffle", "eneba", "gamivo"];
+  let gan = null, vista = "trafico", tiendaG = "";
+  async function cargarG(fresco) {
+    const k = guardado("pillao-panel-token"); if (!k) return;
+    $("g-resumen").textContent = "Consultando a las redes de afiliados…";
+    try { const r = await fetch(API_G + "?desde=" + INICIO + "&k=" + encodeURIComponent(k) + (fresco ? "&fresco=1" : ""), { cache: "no-store" }); if (!r.ok) throw new Error("HTTP " + r.status); gan = await r.json(); pintarG(); }
+    catch (e) { $("g-resumen").textContent = "No se han podido cargar las ganancias (" + e.message + ")."; }
+  }
+  function pintarG() {
+    if (!gan) return;
+    const { dias, antes } = periodo(), en = new Set(dias), enA = new Set(antes);
+    const filas = [];
+    for (const r of gan.redes) for (const x of r.filas || []) filas.push({ ...x, red: r.red });
+    for (const m of gan.mano) filas.push({ f: m.f, tienda: m.tienda, eur: m.eur, conf: true, mano: true });
+    const sel = filas.filter((x) => en.has(x.f) && (!tiendaG || x.tienda === tiendaG)), prev = filas.filter((x) => enA.has(x.f) && (!tiendaG || x.tienda === tiendaG));
+    const sum = (a) => a.reduce((n, x) => n + x.eur, 0);
+    const total = sum(sel), conf = sum(sel.filter((x) => x.conf));
+    $("g-total").textContent = eur(total); $("g-conf").textContent = eur(conf); $("g-pend").textContent = eur(total - conf);
+    const pa = sum(prev); $("g-c-total").replaceChildren(); if (pa) { const s = document.createElement("span"); const p = Math.round((total - pa) / pa * 100); s.className = p >= 0 ? "up" : "down"; s.textContent = (p >= 0 ? "+" : "−") + Math.abs(p) + " %"; $("g-c-total").append(s, " frente al periodo anterior"); } else $("g-c-total").textContent = "Sin periodo anterior con ganancias";
+    const clicsT = agrupa((datos && datos.dias && datos.dias.clics) || {}, dias), clic = Object.fromEntries(clicsT), nClics = tiendaG ? (clic[tiendaG] || 0) : clicsT.reduce((n, x) => n + x[1], 0);
+    $("g-ratio").textContent = nClics ? eur(total / nClics * 100) : "—"; $("g-c-clics").textContent = fmt.format(nClics) + " clics a tiendas";
+    const conectadas = gan.redes.filter((r) => r.estado === "ok").length, errores = gan.redes.filter((r) => r.estado === "error");
+    $("g-resumen").innerHTML = "Del <b>" + fechaCorta(dias[0]) + "</b> al <b>" + fechaCorta(dias[dias.length - 1]) + "</b> · " + conectadas + " de " + gan.redes.length + " redes conectadas" + (tiendaG ? " · solo <b>" + nomTienda(tiendaG) + "</b> <button class='btn mini' type='button' id='g-quitar'>Ver todas</button>" : "") + (errores.length ? " · <span class='error'>" + errores.map((r) => r.red + " no responde").join(", ") + "</span>" : "");
+    if ($("g-quitar")) $("g-quitar").onclick = () => { tiendaG = ""; pintarG(); };
+    // por tienda
+    const porT = {}, ventas = {}; for (const x of filas.filter((x) => en.has(x.f))) { porT[x.tienda] = (porT[x.tienda] || 0) + x.eur; ventas[x.tienda] = (ventas[x.tienda] || 0) + (x.mano ? 0 : 1); }
+    const auto = Object.entries(porT).filter(([t]) => !A_MANO.includes(t)).sort((a, b) => b[1] - a[1]), mx = Math.max(0.01, ...Object.values(porT));
+    const li = (t, v, extra) => "<li" + (t === tiendaG ? " class='activa'" : "") + "><button type='button' data-t='" + t + "'><span class='n'>" + nomTienda(t) + (extra || "") + "</span><span class='v'>" + eur(v) + "</span><span class='b'><i style='width:" + (v / mx * 100) + "%'></i></span></button></li>";
+    $("g-tiendas").innerHTML = auto.length ? auto.map(([t, v]) => li(t, v)).join("") : "<li class='vacio'>Todavía no hay comisiones de las redes conectadas en estas fechas.</li>";
+    const manoP = {}, ultima = {}; for (const m of gan.mano) if (en.has(m.f)) { manoP[m.tienda] = (manoP[m.tienda] || 0) + m.eur; if (!ultima[m.tienda] || m.f > ultima[m.tienda]) ultima[m.tienda] = m.f; }
+    const lm = Object.entries(manoP).sort((a, b) => b[1] - a[1]);
+    $("g-mano").innerHTML = lm.length ? lm.map(([t, v]) => li(t, v, " <small style='color:var(--muted)'>· apuntado el " + fechaCorta(ultima[t]) + "</small>")).join("") : "<li class='vacio'>Nada apuntado en estas fechas.</li>";
+    document.querySelectorAll("#g-tiendas [data-t], #g-mano [data-t]").forEach((b) => b.onclick = () => { tiendaG = tiendaG === b.dataset.t ? "" : b.dataset.t; pintarG(); });
+    // tabla
+    const estRed = Object.fromEntries(gan.redes.map((r) => [r.red, r.estado]));
+    const todas = [...new Set([...Object.keys(RED_DE), ...A_MANO, ...Object.keys(porT), ...Object.keys(clic)])].filter((t) => porT[t] || clic[t] || RED_DE[t]);
+    todas.sort((a, b) => (porT[b] || 0) - (porT[a] || 0) || (clic[b] || 0) - (clic[a] || 0));
+    const E = { ok: "<span class='est ok'>Conectada</span>", falta: "<span class='est falta'>Falta la clave</span>", error: "<span class='est falta'>No responde</span>", mano: "<span class='est mano'>A mano</span>" };
+    $("g-tabla").innerHTML = todas.map((t) => { const red = RED_DE[t], g = porT[t] || 0, c = clic[t] || 0;
+      return "<tr><td>" + nomTienda(t) + "<span class='red'>" + (red || "Programa propio") + "</span></td><td class='m'>" + fmt.format(c) + "</td><td class='m oc'>" + (red ? fmt.format(ventas[t] || 0) : "—") + "</td><td class='m'>" + eur(g) + "</td><td class='m oc'>" + (c ? (g / c).toFixed(3).replace(".", ",") + " €" : "—") + "</td><td>" + (red ? E[estRed[red] || "falta"] : E.mano) + "</td></tr>"; }).join("");
+    // gráfica: confirmado (lleno) y pendiente (rayado)
+    const g = $("g-graf"), W = Math.max(280, g.clientWidth || 700), H = 220, n = dias.length, pad = 4, bw = (W - pad) / n;
+    const c = dias.map((f) => sum(sel.filter((x) => x.f === f && x.conf))), pn = dias.map((f) => sum(sel.filter((x) => x.f === f && !x.conf))), m = Math.max(0.01, ...c.map((v, i) => v + pn[i]));
+    let s = "<svg viewBox='0 0 " + W + " " + H + "' role='img' aria-label='Ganancias por día'><defs><pattern id='ry' width='6' height='6' patternUnits='userSpaceOnUse' patternTransform='rotate(45)'><rect width='6' height='6' fill='var(--accent-soft)'/><rect width='3' height='6' fill='var(--accent)'/></pattern></defs>";
+    const paso = Math.ceil(n / 6);
+    dias.forEach((f, i) => { const h1 = c[i] / m * (H - 44), h2 = pn[i] / m * (H - 44), x = pad + i * bw + Math.min(2, bw * .15), w = Math.max(1, bw - Math.min(4, bw * .3));
+      s += "<rect x='" + x + "' y='" + (H - 20 - h1) + "' width='" + w + "' height='" + h1 + "' rx='2' fill='var(--accent)'><title>" + fechaCorta(f) + ": " + eur(c[i] + pn[i]) + "</title></rect><rect x='" + x + "' y='" + (H - 20 - h1 - h2) + "' width='" + w + "' height='" + h2 + "' rx='2' fill='url(#ry)'/>";
+      if (i % paso === 0) s += "<text x='" + x + "' y='" + (H - 4) + "'>" + fechaCorta(f) + "</text>"; });
+    g.innerHTML = s + "<text x='0' y='14'>" + (m > 0.01 ? eur(m) : "") + "</text></svg>";
+  }
+  function verVista(v) {
+    vista = v; $("p-trafico").setAttribute("aria-selected", v === "trafico"); $("p-gan").setAttribute("aria-selected", v === "gan");
+    $("v-trafico").hidden = v !== "trafico"; $("v-gan").hidden = v !== "gan";
+    if (v === "gan") { if (!gan) cargarG(); else pintarG(); }
+    guardado("pillao-panel-vista", v);
+  }
+  $("p-trafico").addEventListener("click", () => verVista("trafico"));
+  $("p-gan").addEventListener("click", () => verVista("gan"));
+  $("g-abrir").addEventListener("click", () => {
+    const f = $("g-form"); f.hidden = !f.hidden; if (f.hidden) return;
+    const op = [...new Set([...A_MANO, ...todasTiendas.map((t) => t.id || t)])].filter(Boolean);
+    $("g-t").innerHTML = op.map((t) => "<option value='" + t + "'>" + nomTienda(t) + "</option>").join(""); $("g-f").value = hoyMadrid();
+  });
+  $("g-form").addEventListener("submit", async (e) => {
+    e.preventDefault(); $("g-err").hidden = true;
+    try { const r = await fetch(API_G + "/apuntar?k=" + encodeURIComponent(guardado("pillao-panel-token")), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tienda: $("g-t").value, fecha: $("g-f").value, eur: $("g-e").value.trim() }) });
+      const d = await r.json(); if (!r.ok) throw new Error(d.error || "HTTP " + r.status); $("g-e").value = ""; $("g-form").hidden = true; await cargarG(); }
+    catch (x) { $("g-err").textContent = "No se ha guardado: " + x.message; $("g-err").hidden = false; }
+  });
+  // Los botones de periodo y «Actualizar» valen también para las ganancias
+  document.querySelectorAll("#rangos button").forEach((b) => b.addEventListener("click", () => setTimeout(() => vista === "gan" && pintarG(), 0)));
+  $("recargar").addEventListener("click", () => { if (vista === "gan") cargarG(true); });
+  addEventListener("resize", () => { if (vista === "gan") setTimeout(pintarG, 160); });
   cargar();
+  if (guardado("pillao-panel-vista") === "gan") verVista("gan");
 })();
 </script>
 </body>
