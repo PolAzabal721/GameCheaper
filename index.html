@@ -476,12 +476,14 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
   .pie-in { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 14px 12px; text-align: center; }
   .pie-izq { display: contents; }
   .pie-in p { order: 1; flex-basis: 100%; }
+  .pie-in .pie-redes { display: contents; }
   .pie-tiendas, .pie-tg { order: 2; width: 52px; height: 52px; padding: 0; justify-content: center; align-self: center; border-radius: 14px; gap: 0; }
   .pie-tiendas svg, .pie-tg .pie-tg-ico { width: 26px; height: 26px; }
   .pie-tiendas .txt, .pie-tg > span { display: none; }
   .pie-in nav { order: 3; flex-basis: 100%; justify-content: center; }
 }
 .pie-in p { margin: 0; max-width: 80ch; }
+.pie-redes { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; max-width: 420px; }
 .pie-tg { display: flex; align-items: center; gap: 12px; max-width: 420px; flex-shrink: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); color: var(--muted); text-decoration: none; }
 .pie-tg:hover { border-color: var(--accent); }
 .pie-tg b { display: block; color: var(--ink); font-size: 14.5px; }
@@ -911,11 +913,18 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
         <button type="button" id="pie-cookies">Configurar cookies</button>
       </nav>
     </div>
+    <div class="pie-redes">
     <a class="pie-tg" href="https://t.me/pillaoChollos" target="_blank" rel="noopener" aria-label="Telegram de ofertas: Pillao Chollos" title="Telegram de ofertas: Pillao Chollos">
       <svg class="pie-tg-ico" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
       <span><b>Telegram de ofertas: Pillao Chollos</b>Te avisamos de las bajadas de precio más fuertes en cuanto aparecen. Gratis y sin spam.</span>
       <span class="pie-tg-btn">Unirme →</span>
     </a>
+    <a class="pie-tg" href="https://www.tiktok.com/@pillao_juegos" target="_blank" rel="noopener" aria-label="TikTok: @pillao_juegos" title="TikTok: @pillao_juegos">
+      <svg class="pie-tg-ico" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      <span><b>TikTok: @pillao_juegos</b>Vídeos de los mejores chollos y curiosidades de videojuegos, cada día.</span>
+      <span class="pie-tg-btn">Seguir →</span>
+    </a>
+    </div>
   </div>
 </footer>
 
