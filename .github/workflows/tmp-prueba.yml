@@ -1,0 +1,31 @@
+name: tmp-prueba
+on: workflow_dispatch
+jobs:
+  ver:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Nuuvem en el SFTP de Rakuten
+        env:
+          U: ${{ secrets.RAKUTEN_FTP_USER }}
+          P: ${{ secrets.RAKUTEN_FTP_PASS }}
+        run: |
+          U=$(printf '%s' "$U" | tr -d '[:space:]'); P=$(printf '%s' "$P" | tr -d '[:space:]')
+          mkdir -p ~/.ssh && ssh-keyscan -T 20 aftp.linksynergy.com >> ~/.ssh/known_hosts 2>/dev/null
+          curl -sS -u "$U:$P" "sftp://aftp.linksynergy.com/GLOBAL/" | awk '$1 ~ /^d/ && $NF != "." {print $NF}' > dirs.txt
+          for d in $(cat dirs.txt); do curl -sS --max-time 60 -u "$U:$P" "sftp://aftp.linksynergy.com/GLOBAL/$d/" | grep -v ' \.$' | sed "s|^|$d: |"; done
+          curl -sS -u "$U:$P" "sftp://aftp.linksynergy.com/ADDITIONAL/" | grep -v ' \.$' | sed "s|^|ADDITIONAL: |"; echo FIN-SFTP
+      - name: Comisiones de CJ
+        env:
+          T: ${{ secrets.CJ_TOKEN }}
+        run: |
+          T=$(printf '%s' "$T" | tr -d '[:space:]')
+          Q='{ publisherCommissions(forPublishers: ["8127571"], sincePostingDate: "2026-10-25T00:00:00Z", beforePostingDate: "2026-11-23T00:00:00Z") { count records { advertiserName postingDate pubCommissionAmountUsd actionStatus } } }'
+          curl -sS --max-time 60 -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d "$(jq -n --arg q "$Q" '{query:$q}')" https://commissions.api.cj.com/query | head -c 1500; echo
+      - name: Qué secretos hay para las redes
+        env:
+          A: ${{ secrets.AWIN_API_TOKEN }}
+          B: ${{ secrets.ADMITAD_CLIENT_ID }}
+          C: ${{ secrets.IMPACT_ACCOUNT_SID }}
+          D: ${{ secrets.RAKUTEN_API_TOKEN }}
+        run: |
+          for v in A B C D; do eval x=\$$v; echo "$v: ${#x} letras"; done
