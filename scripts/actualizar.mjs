@@ -1729,7 +1729,7 @@ async function itad(lista, tiendas) {
         if (x.price?.currency !== "EUR") continue;
         const nombre = x.shop?.name || x.shop?.title || String(x.shop?.id);
         const id = "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
-        if (id === "itad-steam") continue;
+        if (id === "itad-steam" || id === "itad-gamersgate") continue;   // GamersGate ya viene de su feed (con nuestro enlace de CJ)
         // Microsoft Store ya tiene su propia fuente: se guarda con el mismo nombre de tienda para no duplicarla
         if (id === "itad-microsoftstore") { ofertar(j, { tienda: "xbox", plataforma: "PC", precio: x.price.amount, regular: x.regular?.amount, url: x.url || undefined, fuente: "itad" }); n++; continue; }
         if (!tiendas.some((t) => t.id === id)) tiendas.push({ id, nombre, tipo: OFICIALES_PC.test(nombre) ? "oficial" : "revendedor", formatos: ["digital"], busqueda: BUSQUEDA_PC[id] });

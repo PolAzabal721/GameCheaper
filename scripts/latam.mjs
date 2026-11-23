@@ -442,7 +442,8 @@ async function main() {
     const conId = cand.filter((c) => ns[c.slug]);
     let n = 0;
     for (const pais of PAISES.filter((x) => x.eshop)) {
-      for (let i = 0; i < conId.length; i += 50) { if (!queda()) break;
+      // Los precios van de 50 en 50 y son rápidos: se piden aunque se haya acabado el tiempo de leer fichas
+      for (let i = 0; i < conId.length; i += 50) {
         try {
           const lote = conId.slice(i, i + 50);
           const d = await (await fetch(`https://api.ec.nintendo.com/v1/price?country=${pais.c}&lang=es&ids=${lote.map((c) => ns[c.slug]).join(",")}`)).json();
