@@ -1,0 +1,14 @@
+name: tmp-g
+on: workflow_dispatch
+jobs:
+  ver:
+    runs-on: ubuntu-latest
+    env:
+      T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      A: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - run: |
+          API="https://api.cloudflare.com/client/v4/accounts/$A/storage/kv/namespaces"; H="Authorization: Bearer $T"
+          ID=$(curl -s -H "$H" "$API?per_page=100" | jq -r '.result[] | select(.title=="pillao-anadidos") | .id')
+          for k in g:cjs:2026-11-21 g:yuplay:2026-11-21; do echo "$k => $(curl -s -H "$H" "$API/$ID/values/$k")"; echo "meta => $(curl -s -H "$H" "$API/$ID/metadata/$k")"; done
+          curl -s -H "$H" "https://api.cloudflare.com/client/v4/accounts/$A/workers/scripts/pillao-buscador/content/v2" -o w.js -w 'script %{http_code}\n'; grep -c "apuntado con la acción" w.js || true
