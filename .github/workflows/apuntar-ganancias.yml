@@ -1,0 +1,38 @@
+name: Apuntar ganancias
+
+# Apunta en el panel (pestaña «Ganancias») lo que sale en el tablón de una tienda con programa propio.
+# «lineas»: una por día, «fecha importe» (p. ej. «2026-11-21 2.79»); importe vacío o «-» borra ese día.
+on:
+  workflow_dispatch:
+    inputs:
+      tienda: { description: "Tienda (id de Pillao: cjs, instantgaming, yuplay…)", required: true }
+      moneda: { description: "Moneda del tablón (EUR, GBP, USD…)", required: true, default: "EUR" }
+      pendiente: { description: "¿Aún pendiente de confirmar?", type: boolean, default: true }
+      lineas: { description: "Líneas «AAAA-MM-DD importe» separadas por «;»", required: true }
+
+jobs:
+  apuntar:
+    runs-on: ubuntu-latest
+    env:
+      T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      A: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      TIENDA: ${{ inputs.tienda }}
+      MONEDA: ${{ inputs.moneda }}
+      PEND: ${{ inputs.pendiente }}
+      LINEAS: ${{ inputs.lineas }}
+    steps:
+      - run: |
+          API="https://api.cloudflare.com/client/v4/accounts/$A/storage/kv/namespaces"; H="Authorization: Bearer $T"
+          ID=$(curl -s -H "$H" "$API?per_page=100" | jq -r '.result[] | select(.title=="pillao-anadidos") | .id')
+          TI=$(printf '%s' "$TIENDA" | tr 'A-Z' 'a-z' | tr -cd 'a-z0-9')
+          M=$(printf '%s' "$MONEDA" | tr 'a-z' 'A-Z' | tr -cd 'A-Z')
+          R=1; [ "$M" != "EUR" ] && R=$(curl -s "https://open.er-api.com/v6/latest/$M" | jq -r .rates.EUR)
+          echo "1 $M = $R EUR"
+          CONF=true; [ "$PEND" = "true" ] && CONF=false
+          printf '%s' "$LINEAS" | tr ';' '\n' | while read -r F V; do
+            [[ "$F" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || continue
+            if [ -z "$V" ] || [ "$V" = "-" ]; then curl -s -X DELETE -H "$H" "$API/$ID/values/g:$TI:$F" | jq -c .success; echo "$TI $F borrado"; continue; fi
+            V=${V/,/.}; E=$(python3 -c "print(round(float('$V')*$R,2))")
+            curl -s -X PUT -H "$H" -F 'value=' -F "metadata={\"tienda\":\"$TI\",\"f\":\"$F\",\"eur\":$E,\"orig\":$V,\"moneda\":\"$M\",\"conf\":$CONF}" "$API/$ID/values/g:$TI:$F" | jq -c .success
+            echo "$TI $F: $V $M = $E €"
+          done
