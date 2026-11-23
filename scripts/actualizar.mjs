@@ -1048,6 +1048,8 @@ async function buscarImagenes(juegos, imgAnterior) {
 // (/api/products/?search=…), buscando los juegos del catálogo por turnos. Entra todo lo que se active en España: juegos,
 // ediciones y DLC, aunque no estuvieran antes en el catálogo (fuera bandas sonoras y sus «Gift», que son lotes sorpresa).
 const YUPLAY = "https://www.yuplay.com", YUPLAY_PARTNER = "3473557";
+// Desde el 23 nov los enlaces van por CJ (Yuplay nos aceptó allí: paga en euros, no en saldo de Yuplay)
+const enlaceYuplay = (link) => "https://www.dpbolvw.net/click-101929112-15863526?url=" + encodeURIComponent(YUPLAY + link.split("?")[0] + "?partner=cj");
 const CACHE_YUPLAY = join(RAIZ, "data", "yuplay.json");
 const YU_FICHAS = +(ENV.YUPLAY_FICHAS || 700), YU_BUSQUEDAS = +(ENV.YUPLAY_BUSQUEDAS || 400), YU_ESPERA = 350, YU_DIAS = 30, YU_DIAS_BUSQUEDA = 7;
 // Quita la plataforma y la región del nombre: «Avowed (Xbox Series X|S & PC)», «Civilization VI (Xbox One & Xbox Series X|S) Europe»
@@ -1108,6 +1110,17 @@ async function yuplay(juegos, cuenta, avisos) {
     } catch (e) { if (++fallosBusq === 1) avisos.push("yuplay búsqueda: " + e.message); if (fallosBusq >= 10) break; await esperar(3000); }
     await esperar(YU_ESPERA);
   }
+  // 2b. El catálogo de Yuplay en CJ (en euros): lo que no ha salido en el listado ni en las búsquedas
+  try {
+    let n = 0;
+    for (const f of JSON.parse(await readFile(join(RAIZ, "feeds", "yuplay-cj.json"), "utf8"))) {
+      const link = (String(f.l || "").match(/yuplay\.com(\/product\/[^?#]+)/) || [])[1];
+      if (!link || vistos.has(link) || !(f.p > 0)) continue;
+      vistos.add(link); n++;
+      productos.push({ nombre: nombreYuplay(html2txt(f.n)), bruto: html2txt(f.n), link, precio: f.p, normal: f.r > f.p ? f.r : f.p, reserva: false });
+    }
+    if (n) console.log(`Yuplay: ${n} productos más de su catálogo en CJ`);
+  } catch {}
   // 3. Qué es cada producto: los del catálogo se juntan con su ficha; el resto (ediciones, DLC…) entra como ficha nueva
   const valido = (p) => p.precio > 0 && !(/\bgift\b/i.test(p.nombre) && !/gift card/i.test(p.nombre)) && !NO_PRODUCTO.test(limpiar(p.nombre));
   const candidatos = productos.filter(valido);
@@ -1141,7 +1154,7 @@ async function yuplay(juegos, cuenta, avisos) {
     const bruto = p.bruto || p.nombre, drm = c.drm || "";
     const xbox = /xbox/i.test(drm + " " + bruto) && /xbox|microsoft/i.test(drm);
     const plats = xbox ? (/\bpc\b/i.test(bruto) ? ["Xbox Series", "PC"] : ["Xbox Series"]) : /nintendo/i.test(drm) ? ["Switch"] : /playstation|psn/i.test(drm) ? [] : ["PC"];
-    const url = `${YUPLAY}${p.link}?partner=${YUPLAY_PARTNER}`, regular = p.normal > p.precio ? p.normal : undefined;
+    const url = enlaceYuplay(p.link), regular = p.normal > p.precio ? p.normal : undefined;
     if (TJ_YU.test(bruto)) {
       // Tarjeta de saldo en euros (p. ej. «PlayStation Network Card €10 - PSN Spain»): una ficha por marca y valor
       const m = marcaDe(bruto), valor = valorEuros(bruto.replace(/€\s*(\d+)/, "$1 €"));
