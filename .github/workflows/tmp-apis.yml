@@ -1,0 +1,31 @@
+name: tmp-apis
+on: workflow_dispatch
+jobs:
+  ver:
+    runs-on: ubuntu-latest
+    env:
+      AWIN: ${{ secrets.AWIN_API_TOKEN }}
+      ADC: ${{ secrets.ADMITAD_CLIENT_ID }}
+      ADS: ${{ secrets.ADMITAD_CLIENT_SECRET }}
+      ISID: ${{ secrets.IMPACT_ACCOUNT_SID }}
+      ITOK: ${{ secrets.IMPACT_AUTH_TOKEN }}
+      RK: ${{ secrets.RAKUTEN_API_TOKEN }}
+      TDC: ${{ secrets.TRADEDOUBLER_CLIENT_ID }}
+      TDS: ${{ secrets.TRADEDOUBLER_SECRET }}
+      TDU: ${{ secrets.TRADEDOUBLER_USER }}
+      TDP: ${{ secrets.TRADEDOUBLER_PASS }}
+    steps:
+      - run: |
+          for v in AWIN ADC ADS ISID ITOK RK TDC TDS TDU TDP; do x=$(printenv $v | tr -d '[:space:]'); echo "$v: ${#x} letras"; done
+          t() { printenv $1 | tr -d '[:space:]'; }
+          echo "== AWIN cuentas"; curl -s -H "Authorization: Bearer $(t AWIN)" https://api.awin.com/accounts | head -c 600; echo
+          echo "== AWIN transacciones"; curl -s -w ' [%{http_code}]' -H "Authorization: Bearer $(t AWIN)" "https://api.awin.com/publishers/3149016/transactions/?startDate=2026-10-25T00:00:00&endDate=2026-11-23T00:00:00&timezone=UTC" | head -c 600; echo
+          echo "== ADMITAD"; B=$(printf '%s:%s' "$(t ADC)" "$(t ADS)" | base64 -w0)
+          R=$(curl -s -H "Authorization: Basic $B" -d "grant_type=client_credentials&client_id=$(t ADC)&scope=statistics" https://api.admitad.com/token/); echo "$R" | jq -c 'del(.access_token,.refresh_token)'
+          A=$(echo "$R" | jq -r .access_token)
+          curl -s -w ' [%{http_code}]' -H "Authorization: Bearer $A" "https://api.admitad.com/statistics/actions/?date_start=01.10.2026&date_end=23.11.2026&limit=5" | head -c 1200; echo
+          echo "== IMPACT"; curl -s -w ' [%{http_code}]' -u "$(t ISID):$(t ITOK)" -H "Accept: application/json" "https://api.impact.com/Mediapartners/$(t ISID)/Actions?ActionDateStart=2026-10-25T00:00:00Z&ActionDateEnd=2026-11-23T00:00:00Z&PageSize=5" | head -c 1200; echo
+          echo "== RAKUTEN firmas (legado)"; curl -s -w ' [%{http_code}]' "https://reportws.linksynergy.com/downloadreport.php?bdate=20261001&edate=20261123&token=$(t RK)&reportid=12" | head -c 800; echo
+          echo "== TRADEDOUBLER"; R=$(curl -s -u "$(t TDC):$(t TDS)" -d "grant_type=password&username=$(t TDU)" --data-urlencode "password=$(t TDP)" https://connect.tradedoubler.com/uaa/oauth/token); echo "$R" | jq -c 'del(.access_token,.refresh_token)' 2>/dev/null || echo "$R" | head -c 300
+          A=$(echo "$R" | jq -r .access_token 2>/dev/null)
+          curl -s -w ' [%{http_code}]' -H "Authorization: Bearer $A" "https://connect.tradedoubler.com/publisher/report/transactions?fromDate=20261001&toDate=20261123&limit=5" | head -c 1200; echo
