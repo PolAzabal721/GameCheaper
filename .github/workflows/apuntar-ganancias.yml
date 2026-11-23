@@ -29,7 +29,7 @@ jobs:
           R=1; [ "$M" != "EUR" ] && R=$(curl -s "https://open.er-api.com/v6/latest/$M" | jq -r .rates.EUR)
           echo "1 $M = $R EUR"
           CONF=true; [ "$PEND" = "true" ] && CONF=false
-          printf '%s' "$LINEAS" | tr ';' '\n' | while read -r F V; do
+          printf '%s\n' "$LINEAS" | tr ';' '\n' | while read -r F V; do
             [[ "$F" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || continue
             if [ -z "$V" ] || [ "$V" = "-" ]; then curl -s -X DELETE -H "$H" "$API/$ID/values/g:$TI:$F" | jq -c .success; echo "$TI $F borrado"; continue; fi
             V=${V/,/.}; E=$(python3 -c "print(round(float('$V')*$R,2))")
