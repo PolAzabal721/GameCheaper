@@ -1,0 +1,13 @@
+name: tmp-imp
+on: workflow_dispatch
+jobs:
+  ver:
+    runs-on: ubuntu-latest
+    env:
+      ISID: ${{ secrets.IMPACT_ACCOUNT_SID }}
+      ITOK: ${{ secrets.IMPACT_AUTH_TOKEN }}
+    steps:
+      - run: |
+          S=$(printf '%s' "$ISID" | tr -d '[:space:]'); T=$(printf '%s' "$ITOK" | tr -d '[:space:]')
+          curl -s -w ' [%{http_code}]' -u "$S:$T" -H "Accept: application/json" "https://api.impact.com/Mediapartners/$S/Actions?ActionDateStart=2026-10-25T00:00:00Z&ActionDateEnd=2026-11-23T23:59:59Z&PageSize=5" | jq -c '{n: (.Actions|length), total: ."@total", primero: (.Actions[0] | {CampaignName, EventDate, Payout, Currency, State})}' 2>/dev/null || true
+          curl -s -o /dev/null -w 'Actions %{http_code}\n' -u "$S:$T" -H "Accept: application/json" "https://api.impact.com/Mediapartners/$S/Actions?ActionDateStart=2026-10-25T00:00:00Z&ActionDateEnd=2026-11-23T23:59:59Z&PageSize=5"
