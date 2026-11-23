@@ -34,6 +34,6 @@ jobs:
             if [ -z "$V" ] || [ "$V" = "-" ]; then curl -s -X DELETE -H "$H" "$API/$ID/values/g:$TI:$F" | jq -c .success; echo "$TI $F borrado"; continue; fi
             V=${V/,/.}; E=$(python3 -c "print(round(float('$V')*$R,2))")
             J="{\"tienda\":\"$TI\",\"f\":\"$F\",\"eur\":$E,\"orig\":$V,\"moneda\":\"$M\",\"conf\":$CONF}"
-            jq -n --arg k "g:$TI:$F" --argjson m "$J" '[{key:$k, value:($m|tojson), metadata:$m}]' | curl -s -X PUT -H "$H" -H "Content-Type: application/json" --data @- "$API/$ID/bulk" | jq -c .success
+            jq -n --arg k "g:$TI:$F" --argjson m "$J" '[{key:$k, value:($m|tojson), metadata:$m}]' | curl -s -X PUT -H "$H" -H "Content-Type: application/json" --data @- "$API/$ID/bulk" | jq -c "{success, errors}"
             echo "$TI $F: $V $M = $E €"
           done
