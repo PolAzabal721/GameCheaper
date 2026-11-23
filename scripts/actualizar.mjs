@@ -2186,6 +2186,11 @@ async function main() {
   if (total === 0) { console.error("No se ha conseguido ningún precio. No toco precios.json."); process.exit(1); }
   // Ofertas que se conservan de vueltas anteriores con una tienda de ITAD que esta vez no ha salido: la tienda se da de alta
   // igual (como revendedor de claves digitales), para que la web no la tome por una tienda física sin nombre
+  // Ofertas conservadas de vueltas anteriores: Yuplay con el enlace de CJ (antes iba con su código propio) y fuera la GamersGate de ITAD (duplicada)
+  for (const j of lista) {
+    j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-gamersgate");
+    for (const o of j.ofertas) if (o.tienda === "yuplay" && /^https:\/\/www\.yuplay\.com\//.test(o.url || "")) o.url = enlaceYuplay(o.url.replace(YUPLAY, ""));
+  }
   const NOMBRES_ITAD = { "itad-dlgamer": "DLGamer" };
   for (const j of lista) for (const o of j.ofertas) if (!tiendas.some((t) => t.id === o.tienda) && o.tienda.startsWith("itad-"))
     tiendas.push({ id: o.tienda, nombre: NOMBRES_ITAD[o.tienda] || o.tienda.slice(5).replace(/^./, (c) => c.toUpperCase()), tipo: "revendedor", formatos: ["digital"] });
