@@ -753,6 +753,11 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 body.latam #formato, body.latam #estado-f { display: none !important; }
 /* En LATAM no hay packs, ni particulares, ni juegos en disco de importación */
 body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam label.switch:has(#imp) { display: none !important; }
+/* Tarjetas regalo: monedas de juegos, saldo o suscripciones */
+.tj-sub{display:flex;gap:8px;overflow-x:auto;padding:0 0 12px;scrollbar-width:none}.tj-sub::-webkit-scrollbar{display:none}
+.tj-sub button{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;cursor:pointer}
+.tj-sub button small{color:var(--muted);font-weight:600;margin-left:4px}
+.tj-sub button[aria-pressed=true]{background:var(--ink);color:var(--surface);border-color:var(--ink)}.tj-sub button[aria-pressed=true] small{color:inherit;opacity:.7}
 </style>
 
 </head>
@@ -881,6 +886,12 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
           </select>
         </label>
         <button type="button" class="btn-vista" id="vista" aria-pressed="false" aria-label="Ver en cuadrícula" title="Ver en cuadrícula"></button>
+      </div>
+      <div class="tj-sub" id="tj-sub" role="group" aria-label="Tipo de tarjeta" hidden>
+        <button type="button" data-k="" aria-pressed="true">Todas</button>
+        <button type="button" data-k="mon" aria-pressed="false">Monedas de juegos<small></small></button>
+        <button type="button" data-k="saldo" aria-pressed="false">Saldo<small></small></button>
+        <button type="button" data-k="sus" aria-pressed="false">Suscripciones<small></small></button>
       </div>
       <div class="lista" id="lista"></div>
     </section>
@@ -2521,7 +2532,16 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     }
   })();
 
-  function pintar() {
+  // Tarjetas regalo: monedas de juegos (V-Bucks, Robux, FC Points…), saldo de tiendas o suscripciones
+  var TJ_SUB = "";
+  function claseTj(j) { var t = (j.titulo || "") + " " + (j.marca || "");
+    if (/plus\b|game ?pass|ea play|ubisoft\+|netflix|spotify|disney|microsoft 365|switch online|indie pass|\bmes(es)?\b|\bd[ií]as\b|\bdays\b|month|suscrip|subscription/i.test(t)) return "sus";
+    if (/v-?bucks|robux|points|puntos|monedas|coins|minecoins|riot|\bnc\b|plex|tarjeta tibur|fichas|lingotes|credits|cr[eé]ditos|\bvc\b|\bcp\b|gemas|gems|diamantes|\buc\b/i.test(t)) return "mon";
+    return "saldo"; }
+  function pintarTjSub() { var b = $("tj-sub"); if (!b) return; b.hidden = f.tipo !== "tarjeta"; if (b.hidden || !datos) return;
+    var n = { mon: 0, saldo: 0, sus: 0 }; datos.juegos.forEach(function (j) { if (j && j.tipo === "tarjeta") n[claseTj(j)]++; });
+    [].forEach.call(b.children, function (x) { x.setAttribute("aria-pressed", x.dataset.k === TJ_SUB); if (x.dataset.k) x.querySelector("small").textContent = n[x.dataset.k]; }); }
+  function pintar() { pintarTjSub();
     ajustarOrden();
     var lista = $("lista");
     var n = nActivos(); var nb = $("nfiltros"); nb.hidden = !n; nb.textContent = n;
@@ -2535,6 +2555,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     var esDelTipo = function (j) {
       var tipoJ = (j.tipo === "edicion" ? "juego" : j.tipo) || "juego"; // las ediciones especiales son juegos
       if (f.orden === "skins") return j.tipo === "skins"; // la vista de skins manda sobre el tipo
+      if (f.tipo === "tarjeta" && TJ_SUB && tipoJ === "tarjeta" && claseTj(j) !== TJ_SUB) return false;
       return !f.tipo || f.tipo === "todos" || f.tipo === "edicion" || tipoJ === f.tipo;
     };
     if (vivo.q === qTxt) vivo.juegos.forEach(function (j) {
@@ -2781,6 +2802,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     pintarControles(); cambio();
   });
   $("part").addEventListener("change", function (e) { f.part = e.target.checked; pintarControles(); cambio(); });
+  $("tj-sub").addEventListener("click", function (e) { var b = e.target.closest("[data-k]"); if (!b) return; TJ_SUB = b.dataset.k; pintar(); });
   $("tipo-f").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     f.tipo = f.tipo === b.dataset.v ? "todos" : b.dataset.v; pintarControles(); cambio();
