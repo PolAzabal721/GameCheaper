@@ -430,8 +430,8 @@ button, input, select { font: inherit; color: inherit; }
   // ---------- Ganancias ----------
   const API_G = API.replace(/\/panel$/, "/ganancias");
   const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
-  const RED_DE = { kinguin: "Admitad", g2a: "Admitad", loaded: "Impact", todoconsolas: "Awin", k4g: "CJ", nuuvem: "Rakuten", mediamarkt: "Tradedoubler", xtralife: "Tradedoubler", pcbox: "Tradedoubler" };
-  const A_MANO = ["instantgaming", "cjs", "yuplay", "ggpick", "gamersgate", "driffle", "eneba", "gamivo"];
+  const RED_DE = { kinguin: "Admitad", g2a: "Admitad", ggpick: "Admitad", gamersgate: "CJ", loaded: "Impact", todoconsolas: "Awin", k4g: "CJ", nuuvem: "Rakuten", mediamarkt: "Tradedoubler", xtralife: "Tradedoubler", pcbox: "Tradedoubler" };
+  const A_MANO = ["instantgaming", "cjs", "yuplay", "gamivo", "driffle"];
   let gan = null, vista = "trafico", tiendaG = "";
   async function cargarG(fresco) {
     const k = guardado("pillao-panel-token"); if (!k) return;
