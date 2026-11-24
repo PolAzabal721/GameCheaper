@@ -246,7 +246,7 @@ button, input, select { font: inherit; color: inherit; }
     (d.tiendas || []).forEach((t) => { if (!nombresTienda[t.id]) nombresTienda[t.id] = t.nombre + " (Latam)"; if (!todasTiendas.includes(t.id)) todasTiendas.push(t.id); });
     if (datos) pintar();
   }).catch(() => {});
-  const nomTienda = (id) => nombresTienda[id] || { nuuvem: "Nuuvem", instantgaming: "Instant Gaming", gamebillet: "GameBillet", indiegala: "IndieGala", aliexpress: "AliExpress", cjs: "CJS CD Keys", yuplay: "Yuplay", ggpick: "GGPick", gamersgate: "GamersGate", k4g: "K4G" }[id] || id;
+  const nomTienda = (id) => nombresTienda[id] || { nuuvem: "Nuuvem", instantgaming: "Instant Gaming", gamebillet: "GameBillet", indiegala: "IndieGala", aliexpress: "AliExpress", cjs: "CJS CD Keys", yuplay: "Yuplay", ggpick: "GGPick", gamersgate: "GamersGate", k4g: "K4G", playsum: "Playsum" }[id] || id;
   const nomJuego = (id) => titulos[id] || id.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
 
   async function cargar() {
@@ -432,7 +432,7 @@ button, input, select { font: inherit; color: inherit; }
   const eur = (n) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
   const RED_DE = { kinguin: "Admitad", g2a: "Admitad", ggpick: "Admitad", gamersgate: "CJ", yuplay: "CJ", aliexpress: "Admitad", loaded: "Impact", todoconsolas: "Awin", nuuvem: "Rakuten", mediamarkt: "Tradedoubler", xtralife: "Tradedoubler", pcbox: "Tradedoubler" };
   // Solo tiendas con las que hay afiliación: por red (arriba) o con programa propio (a mano)
-  const A_MANO = ["instantgaming", "gamivo", "cjs", "gamebillet", "indiegala"];
+  const A_MANO = ["instantgaming", "gamivo", "cjs", "gamebillet", "indiegala", "playsum"];
   let gan = null, vista = "trafico", tiendaG = "";
   async function cargarG(fresco) {
     const k = guardado("pillao-panel-token"); if (!k) return;

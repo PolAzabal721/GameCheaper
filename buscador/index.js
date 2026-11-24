@@ -204,6 +204,20 @@ export default {
       if (cn) return cn;
       const gn = await rutasGanancias(req, env, ctx, url);
       if (gn) return gn;
+      // Playsum: los enlaces de IsThereAnyDeal (itad.link) se siguen hasta la tienda y se les pone nuestro código de partner
+      if (url.pathname === "/ir/playsum") {
+        let u = url.searchParams.get("u") || "", final = "https://store.playsum.live/";
+        try {
+          const PS = /^https:\/\/(store\.|www\.)?playsum\.live\//;
+          if (/^https:\/\/itad\.link\//.test(u)) for (let i = 0; i < 4 && !PS.test(u); i++) {
+            const r = await fetch(u, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)" } });
+            const loc = r.headers.get("location"); if (!loc) break; u = new URL(loc, u).href;
+          }
+          if (PS.test(u)) final = u;
+        } catch {}
+        const d = new URL(final); d.searchParams.set("plysm_ref_id", "O6L0gWtFqJ4lCUmnFvQH8K9CY0HXE0N2");
+        return new Response(null, { status: 302, headers: { Location: d.href, "Cache-Control": "no-store" } });
+      }
       if (url.pathname === "/buscar") {
         const q = (url.searchParams.get("q") || "").replace(/\s+/g, " ").trim().slice(0, 80);
         if (limpiar(q).length < 3) return json({ error: "Escribe al menos 3 letras." }, 400);
