@@ -13,6 +13,31 @@
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}#titulo-res span::before { content: "· "; }
 @media (max-width: 700px) { #titulo-res span { display: block; font-size: .6em; margin-top: 2px; } #titulo-res span::before { content: none; } }
 .j-tags-fila { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.tiendas { gap: 8px !important; }
+.ac { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.ac-cab { width: 100%; min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 14px; border: 0; background: none; text-align: left; cursor: pointer; color: var(--ink); }
+.ac-cab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 14px; }
+.ac-tit { font-weight: 700; font-size: 15px; flex: 1; min-width: 0; }
+.ac-logos { display: flex; }
+.ac-logos .ac-logo { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--surface); margin-left: -6px; background: var(--surface); }
+.ac.abierto .ac-logos { display: none; }
+@media (min-width: 701px) { .ac-logos { display: none; } .ac-tit { line-height: 1.25; } }
+.ac-n { font-size: 12.5px; font-weight: 700; color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; font-variant-numeric: tabular-nums; }
+.ac-fl { color: var(--muted); transition: transform .2s cubic-bezier(.23,1,.32,1); flex: none; }
+.ac.abierto .ac-fl { transform: rotate(180deg); }
+.ac-cuerpo { padding: 2px 14px 14px; }
+
+@media (min-width: 701px) {
+  .tiendas { gap: 0 !important; }
+  .ac { background: none; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; overflow: visible; }
+  .ac-cab { padding: 12px 0; min-height: 48px; }
+  .ac-cab:focus-visible { border-radius: 6px; outline-offset: 2px; }
+  .ac-n { background: none; border: 0; padding: 0; font-size: 14px; font-weight: 600; }
+  .ac-fl { display: none; }
+  .ac-cuerpo { padding: 0 0 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .ac-fl { transition: none; } }
 </style>
 <title>Pillao: comparador de precios de videojuegos</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -1339,6 +1364,18 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     return (f.formato !== "todos") + (f.estado !== "todos") + (f.plats.length > 0) + (f.fuera.length > 0) + (f.revOff.length > 0) + ((f.tipo || "todos") !== "todos") + (!f.mkt) + (!f.part) + (!f.imp) + f.stock + (f.pmax != null);
   }
 
+  // Grupos de tiendas plegables
+  var GRUPOS_AB = {};
+  function cabAc(bl, ts, activa) {
+    var on = ts.filter(function (t) { return activa(t) && f.revOff.indexOf(t.id) < 0; }).length, ab = !!GRUPOS_AB[bl.id];
+    var logos = ts.slice(0, 5).map(function (t) { return logoT(t.id, "ac-logo"); }).join("");
+    return '<div class="ac' + (ab ? " abierto" : "") + '"><button type="button" class="ac-cab" data-ac="' + bl.id + '" aria-expanded="' + ab + '">' +
+      '<span class="ac-tit">' + bl.titulo + '</span><span class="ac-logos" aria-hidden="true">' + logos + '</span>' +
+      '<span class="ac-n">' + (on === ts.length ? ts.length : on + "/" + ts.length) + '</span>' +
+      '<svg class="ac-fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="ac-cuerpo"' + (ab ? "" : " hidden") + '>';
+  }
+  document.addEventListener("click", function (e) { var b = e.target.closest("[data-ac]"); if (!b) return; var id = b.dataset.ac; GRUPOS_AB[id] = !GRUPOS_AB[id];
+    var ac = b.parentNode; ac.classList.toggle("abierto", GRUPOS_AB[id]); b.setAttribute("aria-expanded", GRUPOS_AB[id]); ac.querySelector(".ac-cuerpo").hidden = !GRUPOS_AB[id]; $("tiendas")._h = null; });
   function pintarControles() {
     // plataformas
     var plats = [];
@@ -1362,7 +1399,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
       { id: "segundamano", titulo: "Tiendas de segunda mano", tipos: ["segundamano"] },
       { id: "particulares", titulo: "Entre particulares", tipos: ["particulares"] },
     ];
-    poner($("tiendas"), BLOQUES.map(function (bl) {
+    poner($("tiendas"), BLOQUES.map(function (bl) { var _h = (function () {
       // eBay va con las tiendas de segunda mano (con su desplegable de estados), tenga ya precios o no
       var ebay = tiendaPorId.ebay;
       var ts = datos.tiendas.filter(function (t) { return t.id !== "ebay" && bl.tipos.indexOf(t.tipo) >= 0 && (conOfertas[t.id] || t.id === "instantgaming"); });
@@ -1378,7 +1415,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
       var eb = bl.id === "segundamano" && ts.filter(function (t) { return t.id === "ebay"; })[0];
       if (eb) {
         var abiertoEb = !!bloquesAbiertos.ebay, quitados = CALIDADES.filter(function (c) { return f.calOff.indexOf(c) >= 0; }).length;
-        return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + ts.filter(function (t) { return t.id !== "ebay"; }).map(chip).join("") +
+        return cabAc(bl, ts, activa) + '<div class="chips">' + ts.filter(function (t) { return t.id !== "ebay"; }).map(chip).join("") +
           '<span class="chip-grupo' + (abiertoEb ? " abierto" : "") + '">' + chip(eb) +
           '<button type="button" class="chip-caret" data-sub-abrir="ebay" aria-expanded="' + abiertoEb + '" aria-label="Estado de los juegos de eBay">' +
           (quitados ? (CALIDADES.length - quitados) + "/" + CALIDADES.length + " estados" : "Estado") + " " + (abiertoEb ? "▴" : "▾") + "</button></span></div>" +
@@ -1387,17 +1424,17 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
             '<div class="chips">' + CALIDADES.map(function (c) { return '<button type="button" class="chip" data-cal="' + c + '" aria-pressed="' + (activa(eb) && f.calOff.indexOf(c) < 0) + '">' + c + "</button>"; }).join("") + "</div></div>" : "") + "</div>";
       }
       if (bl.id !== "claves" || !fijos.length || !otros.length)
-        return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + ts.map(chip).join("") + "</div></div>";
+        return cabAc(bl, ts, activa) + '<div class="chips">' + ts.map(chip).join("") + "</div></div>";
       var abierto = !!bloquesAbiertos.claves;
       var marcados = otros.filter(function (t) { return f.revOff.indexOf(t.id) < 0; }).length;
       // Instant Gaming y Kinguin sueltos, y un botón aparte para desplegar el resto
-      return '<div><div class="tipo-t">' + bl.titulo + '</div><div class="chips">' + fijos.map(chip).join("") +
+      return cabAc(bl, ts, activa) + '<div class="chips">' + fijos.map(chip).join("") +
         '<button type="button" class="chip mini" data-sub-abrir="claves" aria-expanded="' + abierto + '" aria-label="Más revendedores">' +
         "+" + (marcados === otros.length ? otros.length : marcados + "/" + otros.length) + " más " + (abierto ? "▴" : "▾") + "</button></div>" +
         (abierto ? '<div class="sub-panel"><div class="sub-cab"><span class="sub-tit">Más revendedores</span>' +
           '<button type="button" class="chip mini" data-todos="claves-otros">' + (marcados === otros.length ? "Quitar todos" : "Marcar todos") + "</button></div>" +
           '<div class="chips">' + otros.map(chipRev).join("") + "</div></div>" : "") + "</div>";
-    }).join(""));
+    })(); return _h ? _h + "</div>" : ""; }).join(""));
     tiendasDeBloque = function (id) {
       var bl = BLOQUES.filter(function (x) { return x.id === id; })[0];
       return datos.tiendas.filter(function (t) { return bl && (t.id === "ebay" ? id === "segundamano" : bl.tipos.indexOf(t.tipo) >= 0 && conOfertas[t.id]); }).map(function (t) { return t.id; });
