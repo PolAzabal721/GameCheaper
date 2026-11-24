@@ -186,6 +186,7 @@
   MESES.de = { ene: "Jan.", feb: "Feb.", mar: "März", abr: "Apr.", may: "Mai", jun: "Juni", jul: "Juli", ago: "Aug.", sept: "Sept.", sep: "Sept.", oct: "Okt.", nov: "Nov.", dic: "Dez.", enero: "Januar", febrero: "Februar", marzo: "März", abril: "April", mayo: "Mai", junio: "Juni", julio: "Juli", agosto: "August", septiembre: "September", octubre: "Oktober", noviembre: "November", diciembre: "Dezember" };
   var NO = ".j-tit, .dest-lista b, .gta-ofs .t, .cuadro-tit, .pk-d b, .ti-nom, .t-nom, .of-t strong, .reg-idiomas b, [data-no-trad], script, style, svg, code, kbd";
 
+  var PROPIOS = /^\s*Servidor de \S/;
   function trozo(t, l) {
     var dic = l === "en" ? EN : l === "de" ? DE : PT;
     if (dic[t]) return dic[t];
@@ -211,7 +212,8 @@
   }
   var LANG = "es-ES", hechos = new WeakMap(), ATTR = ["placeholder", "aria-label", "title"];
   function nodoTexto(n) {
-    var p = n.parentElement; if (!p || p.closest(NO)) return;
+    // Los nombres de juegos y tiendas no se traducen, salvo los productos que nombramos nosotros («Servidor de Rust»)
+    var p = n.parentElement; if (!p || (p.closest(NO) && !PROPIOS.test(n.nodeValue))) return;
     var v = n.nodeValue, h = hechos.get(n);
     if (h && h.out === v) return;            // ya traducido por nosotros
     var nuevo = traducir(v, LANG);
