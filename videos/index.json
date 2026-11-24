@@ -1,70 +1,70 @@
 {
- "fecha": "2026-11-23T20:37:13.066Z",
+ "fecha": "2026-11-24T19:45:51.730Z",
  "videos": [
   {
-   "archivo": "videos/2026-11-23-assetto-corsa-competizione.mp4",
-   "juego": "Assetto Corsa Competizione",
-   "precio": 6.79,
-   "antes": 39.99,
+   "archivo": "videos/2026-11-24-doom.mp4",
+   "juego": "DOOM",
+   "precio": 3.47,
+   "antes": 19.99,
    "dto": 83,
-   "tienda": "WinGameStore",
+   "tienda": "AllYouPlay",
    "plataforma": "PC",
    "minimo": false,
-   "guion": "Chollo de hoy en Pillao. Assetto Corsa Competizione, para PC. Costaba 39 euros con 99 y ahora está en 6 euros con 79. Un 83 por ciento menos en WinGameStore. Compara todas las tiendas en pillaojuegos punto com.",
+   "guion": "Chollo de hoy en Pillao. DOOM, para PC. Costaba 19 euros con 99 y ahora está en 3 euros con 47. Un 83 por ciento menos en AllYouPlay. Compara todas las tiendas en pillaojuegos punto com.",
    "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=Assetto%20Corsa%20Competizione"
+   "url": "https://pillaojuegos.com/?q=DOOM"
   },
   {
-   "archivo": "videos/2026-11-23-dead-cells.mp4",
-   "juego": "Dead Cells",
-   "precio": 4.19,
-   "antes": 24.99,
+   "archivo": "videos/2026-11-24-train-simulator-classic.mp4",
+   "juego": "Train Simulator Classic",
+   "precio": 5.19,
+   "antes": 29.99,
    "dto": 83,
-   "tienda": "Loaded",
+   "tienda": "GamesPlanet UK",
+   "plataforma": "PC",
+   "minimo": false,
+   "guion": "Chollo de hoy en Pillao. Train Simulator Classic, para PC. Costaba 29 euros con 99 y ahora está en 5 euros con 19. Un 83 por ciento menos en GamesPlanet UK. Compara todas las tiendas en pillaojuegos punto com.",
+   "segundos": 13,
+   "url": "https://pillaojuegos.com/?q=Train%20Simulator%20Classic"
+  },
+  {
+   "archivo": "videos/2026-11-24-crysis-2-remastered.mp4",
+   "juego": "Crysis 2 Remastered",
+   "precio": 5.39,
+   "antes": 29.99,
+   "dto": 82,
+   "tienda": "G2A",
    "plataforma": "PC",
    "minimo": true,
-   "guion": "Chollo de hoy en Pillao. Dead Cells, para PC. Costaba 24 euros con 99 y ahora está en 4 euros con 19. Un 83 por ciento menos en Loaded. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
+   "guion": "Chollo de hoy en Pillao. Crysis 2 Remastered, para PC. Costaba 29 euros con 99 y ahora está en 5 euros con 39. Un 82 por ciento menos en G2A. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
    "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=Dead%20Cells"
+   "url": "https://pillaojuegos.com/?q=Crysis%202%20Remastered"
   },
   {
-   "archivo": "videos/2026-11-23-astroneer.mp4",
-   "juego": "ASTRONEER",
-   "precio": 4.99,
-   "antes": 28.79,
-   "dto": 83,
-   "tienda": "Loaded",
+   "archivo": "videos/2026-11-24-crysis-remastered.mp4",
+   "juego": "Crysis Remastered",
+   "precio": 5.52,
+   "antes": 29.99,
+   "dto": 82,
+   "tienda": "G2A",
    "plataforma": "PC",
    "minimo": true,
-   "guion": "Chollo de hoy en Pillao. ASTRONEER, para PC. Costaba 28 euros con 79 y ahora está en 4 euros con 99. Un 83 por ciento menos en Loaded. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
+   "guion": "Chollo de hoy en Pillao. Crysis Remastered, para PC. Costaba 29 euros con 99 y ahora está en 5 euros con 52. Un 82 por ciento menos en G2A. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
    "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=ASTRONEER"
+   "url": "https://pillaojuegos.com/?q=Crysis%20Remastered"
   },
   {
-   "archivo": "videos/2026-11-23-lego-jurassic-world.mp4",
-   "juego": "LEGO Jurassic World",
+   "archivo": "videos/2026-11-24-metal-eden.mp4",
+   "juego": "METAL EDEN",
    "precio": 3.66,
    "antes": 19.99,
    "dto": 82,
-   "tienda": "WinGameStore",
+   "tienda": "Yuplay",
    "plataforma": "PC",
-   "minimo": false,
-   "guion": "Chollo de hoy en Pillao. LEGO Jurassic World, para PC. Costaba 19 euros con 99 y ahora está en 3 euros con 66. Un 82 por ciento menos en WinGameStore. Compara todas las tiendas en pillaojuegos punto com.",
+   "minimo": true,
+   "guion": "Chollo de hoy en Pillao. METAL EDEN, para PC. Costaba 19 euros con 99 y ahora está en 3 euros con 66. Un 82 por ciento menos en Yuplay. Es su precio más bajo hasta ahora. Compara todas las tiendas en pillaojuegos punto com.",
    "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=LEGO%20Jurassic%20World"
-  },
-  {
-   "archivo": "videos/2026-11-23-hotshot-racing.mp4",
-   "juego": "Hotshot Racing",
-   "precio": 3.66,
-   "antes": 19.99,
-   "dto": 82,
-   "tienda": "WinGameStore",
-   "plataforma": "PC",
-   "minimo": false,
-   "guion": "Chollo de hoy en Pillao. Hotshot Racing, para PC. Costaba 19 euros con 99 y ahora está en 3 euros con 66. Un 82 por ciento menos en WinGameStore. Compara todas las tiendas en pillaojuegos punto com.",
-   "segundos": 13,
-   "url": "https://pillaojuegos.com/?q=Hotshot%20Racing"
+   "url": "https://pillaojuegos.com/?q=METAL%20EDEN"
   }
  ]
 }
