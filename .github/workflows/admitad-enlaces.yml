@@ -1,0 +1,39 @@
+name: Enlaces de Admitad
+# Apunta en config/admitad-enlaces.json el enlace de afiliado (gotolink) de cada programa de Admitad al que estamos unidos.
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  enlaces:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pedir los programas unidos
+        env:
+          ID: ${{ secrets.ADMITAD_CLIENT_ID }}
+          SEC: ${{ secrets.ADMITAD_CLIENT_SECRET }}
+        run: |
+          node - <<'JS'
+          const fs = require("fs");
+          (async () => {
+            const id = process.env.ID.trim(), sec = process.env.SEC.trim();
+            const t = await (await fetch("https://api.admitad.com/token/", { method: "POST", headers: { Authorization: "Basic " + Buffer.from(id + ":" + sec).toString("base64"), "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({ grant_type: "client_credentials", client_id: id, scope: "advcampaigns_for_website websites" }) })).json();
+            if (!t.access_token) { console.log("Sin token:", JSON.stringify(t).slice(0, 200)); process.exit(1); }
+            const H = { Authorization: "Bearer " + t.access_token };
+            const webs = await (await fetch("https://api.admitad.com/websites/?limit=50", { headers: H })).json();
+            const out = {};
+            for (const w of webs.results || []) {
+              const d = await (await fetch(`https://api.admitad.com/advcampaigns/website/${w.id}/?limit=500`, { headers: H })).json();
+              for (const c of d.results || []) if (c.gotolink) { out[c.name] = { id: c.id, web: w.name, estado: c.connection_status, url: c.gotolink }; }
+            }
+            fs.writeFileSync("config/admitad-enlaces.json", JSON.stringify(out, null, 1) + "\n");
+            console.log(Object.entries(out).map(([n, x]) => n + " (" + x.estado + ")").join("\n"));
+          })();
+          JS
+      - name: Guardar
+        run: |
+          git config user.name "pillao-bot"; git config user.email "bot@pillaojuegos.com"
+          git add config/admitad-enlaces.json
+          git diff --cached --quiet || (git commit -m "Enlaces de Admitad" && git pull --rebase -q && git push)
