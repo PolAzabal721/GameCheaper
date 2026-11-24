@@ -69,6 +69,14 @@
   ]
  },
  {
+  "id": "voidu",
+  "nombre": "Voidu",
+  "tipo": "oficial",
+  "formatos": [
+   "digital"
+  ]
+ },
+ {
   "id": "yuplay",
   "nombre": "Yuplay",
   "tipo": "revendedor",

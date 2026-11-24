@@ -1346,6 +1346,33 @@ async function gamersgateFeed(juegos) {
   return n;
 }
 
+// ---------- Voidu, catálogo de Daisycon (JSON, en euros y con el enlace de afiliado) ----------
+let VOIDU_DIRECTO = false;
+const VOIDU_ES = /^(|eu|europe|global|ww|worldwide|world|es|spain)$/i;
+async function voiduFeed(juegos) {
+  let filas; try { filas = JSON.parse(await readFile(join(RAIZ, "feeds", "voidu.json"), "utf8")); } catch { return 0; }
+  if (!filas.length) return 0;
+  const porLlave = new Map();
+  for (const j of juegos.values()) { const k = llave(j.titulo); if (!porLlave.has(k)) porLlave.set(k, j); }
+  let n = 0, nuevos = 0;
+  for (const f of filas) {
+    if (!VOIDU_ES.test(f.reg || "")) continue;
+    const nombre = html2txt(f.n).replace(/[™®©]/g, "").replace(/\s+/g, " ").trim();
+    if (!nombre || NO_PRODUCTO.test(limpiar(nombre))) continue;
+    const tipo = f.t || (DLC_RE.test(limpiar(nombre)) ? "dlc" : null);
+    let j = porLlave.get(llave(nombre));
+    if (!j) { j = juego(nombre, { pop: 99999, tipo: tipo || tipoDe(nombre) }); if (!j) continue; porLlave.set(llave(nombre), j); nuevos++; }
+    if (f.img) ponerImagen(j, "voidu", f.img);
+    const region = /^(es|spain)$/i.test(f.reg) ? "España" : /^(eu|europe)$/i.test(f.reg) ? "Europa" : "Global";
+    ofertar(j, { tienda: "voidu", plataforma: f.pl, precio: f.p, regular: f.r > f.p ? f.r : undefined, stock: true, drm: f.pl === "PC" ? f.d || undefined : undefined,
+      condicion: `Clave ${f.d || f.pl} · ${region}`, url: f.u, fuente: "voidu" });
+    j.revisado.add("voidu"); visitar("voidu", j); n++;
+  }
+  VOIDU_DIRECTO = n > 0; // con el feed propio sobra Voidu a través de ITAD (sin afiliación)
+  console.log(`Voidu: ${n} precios de su catálogo (${nuevos} productos nuevos en el catálogo)`);
+  return n;
+}
+
 // ---------- Loaded (antes CDKeys), catálogo de Impact por FTP ----------
 // El flujo de GitHub lo baja como mucho una vez al día (feeds/loaded.json). Ya viene con el enlace de afiliado.
 async function loadedFeed(juegos) {
@@ -2000,6 +2027,7 @@ async function main() {
   if (ENV.TRADEDOUBLER_TOKEN) { try { await feedsTD(juegos, avisos); } catch (e) { avisos.push("tradedoubler: " + e.message); } }
   try { cuenta.kinguin = await kinguinFeed(juegos, avisos); } catch (e) { avisos.push("kinguin: " + e.message); caidas.add("kinguin"); }
   try { cuenta.loaded = await loadedFeed(juegos); } catch (e) { avisos.push("loaded: " + e.message); caidas.add("loaded"); }
+  try { cuenta.voidu = await voiduFeed(juegos); } catch (e) { avisos.push("voidu: " + e.message); caidas.add("voidu"); }
   try { cuenta.g2a = await g2aFeed(juegos); } catch (e) { avisos.push("g2a: " + e.message); caidas.add("g2a"); }
   try { cuenta.ggpick = await ggpickFeed(juegos); } catch (e) { avisos.push("ggpick: " + e.message); caidas.add("ggpick"); }
   try { cuenta.cjs = await cjsFeed(juegos); } catch (e) { avisos.push("cjs: " + e.message); caidas.add("cjs"); }
@@ -2148,6 +2176,7 @@ async function main() {
   }
   // «otros» era un tipo provisional de Kinguin (skins, servidores, claves sorpresa, «Other»): ya no se usa
   if (GG_DIRECTO) for (const j of juegos.values()) j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-gamersgate");
+  if (VOIDU_DIRECTO) for (const j of juegos.values()) j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-voidu");
   // Repaso final:
   // 1. «Tarjetas» que en realidad son juegos («Card Cultivation», «GTA V Enhanced & Great White Shark Card»): pasan a juegos
   //    y se quitan sus ofertas marcadas como «Tarjeta regalo» (la próxima vez entran con su plataforma).
@@ -2188,7 +2217,7 @@ async function main() {
   // igual (como revendedor de claves digitales), para que la web no la tome por una tienda física sin nombre
   // Ofertas conservadas de vueltas anteriores: Yuplay con el enlace de CJ (antes iba con su código propio) y fuera la GamersGate de ITAD (duplicada)
   for (const j of lista) {
-    j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-gamersgate");
+    j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-gamersgate" && !(VOIDU_DIRECTO && o.tienda === "itad-voidu"));
     for (const o of j.ofertas) if (o.tienda === "yuplay" && /^https:\/\/www\.yuplay\.com\//.test(o.url || "")) o.url = enlaceYuplay(o.url.replace(YUPLAY, ""));
   }
   const NOMBRES_ITAD = { "itad-dlgamer": "DLGamer" };

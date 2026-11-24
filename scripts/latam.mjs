@@ -187,6 +187,17 @@ async function main() {
     cuenta.loaded = (cuenta.loaded || 0) + 1;
   }
 
+  // Voidu (Daisycon): tienda oficial de claves, en euros y con nuestro enlace
+  let voiduN = 0;
+  for (const f of await leer("feeds/voidu.json", [])) {
+    if (!/^(global|ww|worldwide|world|latam)$/i.test(f.reg || "")) continue;
+    const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
+    if (!j.img && f.img) j.img = f.img;
+    tienda("voidu", "Voidu", "oficial");
+    ofertar(j, { tienda: "voidu", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: usd(f.p), regular: f.r > f.p ? usd(f.r) : undefined,
+      condicion: `Clave ${f.d || f.pl} · ${/^latam$/i.test(f.reg) ? "Latam" : "Global"}`, url: f.u });
+    cuenta.voidu = (cuenta.voidu || 0) + 1; voiduN++;
+  }
   // Nuuvem (Rakuten): tienda de Brasil, precios en reales → dólares; sus claves son para Brasil («Solo Brasil»)
   for (const f of await leer("feeds/nuuvem.json", [])) {
     if (!(f.p > 0) || !tasas.BRL) continue;
@@ -225,7 +236,8 @@ async function main() {
               if (!(x.price?.amount > 0)) continue;
               const nombre = x.shop?.name || String(x.shop?.id), id0 = /^steam$/i.test(nombre) ? "steam" : "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
               // Microsoft Store y GamersGate ya tienen tienda propia: van con ella, no repetidas
-              const id = { "itad-microsoftstore": "xbox", "itad-gamersgate": "gamersgate" }[id0] || id0;
+              if (id0 === "itad-voidu" && voiduN) continue;
+            const id = { "itad-microsoftstore": "xbox", "itad-gamersgate": "gamersgate" }[id0] || id0;
               const oficial = OFICIALES_PC.test(nombre);
               if (!general && !oficial) continue;
               let precio, regular, condicion;

@@ -150,6 +150,23 @@ jobs:
           rm feeds/loaded.xml.gz
           curl -sS --max-time 300 -u "$U:$P" -o feeds/loaded-usd.xml.gz "ftp://products.impact.com/Loaded/Loaded-ProductFeedUSDEnglish_CUSTOM.xml.gz" && python3 scripts/loaded_feed.py feeds/loaded-usd.xml.gz feeds/loaded-latam.json latam && python3 scripts/loaded_feed.py feeds/loaded-usd.xml.gz feeds/loaded-us.json us || true
           rm -f feeds/loaded-usd.xml.gz
+      - name: Catálogo de Voidu (Daisycon, como mucho una descarga al día)
+        id: cache-voidu
+        uses: actions/cache@v4
+        with:
+          path: feeds/voidu.json
+          key: voidu1-${{ steps.hoy.outputs.d }}
+      - name: Descargar el catálogo de Voidu (feed JSON de Daisycon, en euros)
+        if: steps.cache-voidu.outputs.cache-hit != 'true'
+        continue-on-error: true
+        env:
+          FEED: ${{ secrets.VOIDU_FEED }}
+        run: |
+          mkdir -p feeds
+          F="$(printf '%s' "$FEED" | tr -d '[:space:]')"
+          curl -sSL --max-time 300 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/voidu-raw.json "$F"
+          python3 scripts/voidu_feed.py feeds/voidu-raw.json feeds/voidu.json
+          rm -f feeds/voidu-raw.json
       - name: Catálogo de Nuuvem (Rakuten, como mucho una descarga al día)
         id: cache-nuuvem
         uses: actions/cache@v4

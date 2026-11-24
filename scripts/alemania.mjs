@@ -153,6 +153,17 @@ async function main() {
       condicion: (f.t === "tarjeta" ? "Código digital" : `Clave ${f.d || f.pl}`) + " · " + (/worldwide|global/i.test(f.reg) || !f.reg ? "Global" : zonaDE(f.reg)), url: f.u });
     suma("loaded");
   }
+  // Voidu (Daisycon): tienda oficial de claves, en euros y con nuestro enlace
+  let voiduN = 0;
+  for (const f of await leer("feeds/voidu.json", [])) {
+    if (!/^(|eu|europe|global|ww|worldwide|world|de|germany|dach)$/i.test(f.reg || "")) continue;
+    const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
+    if (!j.img && f.img) j.img = f.img;
+    tienda("voidu", "Voidu", "oficial");
+    ofertar(j, { tienda: "voidu", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: f.p, regular: f.r > f.p ? f.r : undefined,
+      condicion: `Clave ${f.d || f.pl} · ${/^(de|germany|dach)$/i.test(f.reg) ? "Alemania" : /^(eu|europe)$/i.test(f.reg) ? "Europa" : "Global"}`, url: f.u });
+    suma("voidu"); voiduN++;
+  }
   // GamersGate: su feed de Alemania (en euros, con nuestro enlace de CJ)
   for (const f of await leer("feeds/gamersgate-de.json", [])) {
     const j = juego(html2txt(f.n), f.t === "dlc" ? "dlc" : undefined); if (!j) continue;
@@ -192,7 +203,7 @@ async function main() {
           for (const x of g.deals || []) {
             if (!(x.price?.amount > 0) || x.price.currency !== "EUR") continue;
             const nombre = x.shop?.name || String(x.shop?.id), id0 = /^steam$/i.test(nombre) ? "steam" : "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
-            if (id0 === "itad-gamersgate") continue;   // ya viene de su feed, con nuestro enlace
+            if (id0 === "itad-gamersgate" || (id0 === "itad-voidu" && voiduN)) continue;   // ya viene de su feed, con nuestro enlace
             const id = { "itad-microsoftstore": "xbox" }[id0] || id0;
             const oficial = OFICIALES_PC.test(nombre);
             const j = juego(e.titulo, e.tipo); if (!j) continue;
