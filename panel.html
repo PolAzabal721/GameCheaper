@@ -463,7 +463,7 @@ button, input, select { font: inherit; color: inherit; }
     $("g-tiendas").innerHTML = auto.length ? auto.map(([t, v]) => li(t, v)).join("") : "<li class='vacio'>Todavía no hay comisiones de las redes conectadas en estas fechas.</li>";
     const manoP = {}, ultima = {}; for (const m of gan.mano) if (en.has(m.f)) { manoP[m.tienda] = (manoP[m.tienda] || 0) + m.eur; if (!ultima[m.tienda] || m.f > ultima[m.tienda]) ultima[m.tienda] = m.f; }
     const lm = Object.entries(manoP).sort((a, b) => b[1] - a[1]);
-    $("g-mano").innerHTML = lm.length ? lm.map(([t, v]) => li(t, v, " <small style='color:var(--muted)'>· apuntado el " + fechaCorta(ultima[t]) + "</small>")).join("") : "<li class='vacio'>Nada apuntado en estas fechas.</li>";
+    $("g-mano").innerHTML = lm.length ? lm.map(([t, v]) => li(t, v, " <small style='color:var(--muted)'>· apuntado el " + fechaCorta(ultima[t]) + (RED_DE[t] ? " (de antes de conectarla a " + RED_DE[t] + "; lo nuevo entra solo)" : "") + "</small>")).join("") : "<li class='vacio'>Nada apuntado en estas fechas.</li>";
     document.querySelectorAll("#g-tiendas [data-t], #g-mano [data-t]").forEach((b) => b.onclick = () => { tiendaG = tiendaG === b.dataset.t ? "" : b.dataset.t; pintarG(); });
     // tabla
     const estRed = Object.fromEntries(gan.redes.map((r) => [r.red, r.estado]));
