@@ -1,37 +1,37 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 101,
+   "pendientes": 103,
    "ejemplos": [
+    "Arken Age",
+    "ENTITY: THE BLACK DAY",
+    "Beyond the Map",
     "KONOSUBA - God's Blessing on this Wonderful World! Love For These Clothes Of Desire!",
-    "Divine Frequency",
-    "PAYDAY: Aces High",
-    "Los Sims 4 Patio de Ensueño Pack de Accesorios",
-    "Los Sims 4 Fitness Pack de Accesorios."
+    "Immersion Pack - Europa Universalis IV: Origins"
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 65517,
+   "pendientes": 65164,
    "ejemplos": [
-    "SAINTS ROW: THE THIRD - THE FULL PACKAGE",
+    "Death Mark",
+    "The Elder Scrolls V: Skyrim VR",
     "Lost in Harmony",
     "Demon's Crystals",
-    "Soulblight",
-    "Six Sides of the World"
+    "The MISSING: J.J. Macfield and the Island of Memories"
    ]
   },
   "game (consola)": {
-   "pendientes": 32468,
+   "pendientes": 32273,
    "ejemplos": [
-    "RIVE: Ultimate Edition",
     "ACA NEOGEO SAMURAI SHODOWN IV",
-    "EA Sports FC 27 Ultimate Edition",
-    "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo",
-    "1-2-Switch"
+    "Travis Strikes Again: No More Heroes",
+    "The End Is Nigh",
+    "RIVE: Ultimate Edition",
+    "EA Sports FC 27 Ultimate Edition"
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 4759,
+   "pendientes": 4764,
    "ejemplos": [
     "Football Manager 27",
     "FINAL FANTASY VII REBIRTH",
@@ -41,73 +41,73 @@
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 20871,
+   "pendientes": 20515,
    "ejemplos": [
+    "Transistor",
+    "Desert Child",
     "Tesla vs Lovecraft",
     "Gal*Gun 2",
-    "ACA NEOGEO WORLD HEROES 2 JET",
-    "Slayaway Camp: Butcher's Cut",
-    "Metro 2033 Redux"
+    "ACA NEOGEO WORLD HEROES 2 JET"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 4759,
-  "sinFicha": 4207,
+  "sinPrecio": 4764,
+  "sinFicha": 4222,
   "fichasEncontradas": 1590
  },
  "fotos": {
   "juego": {
-   "total": 71017,
-   "con": 69099,
+   "total": 71389,
+   "con": 69520,
    "porcentaje": 97
   },
   "edicion": {
-   "total": 9367,
-   "con": 9057,
+   "total": 9392,
+   "con": 9088,
    "porcentaje": 97
   },
   "dlc": {
-   "total": 16644,
-   "con": 16483,
+   "total": 16672,
+   "con": 16525,
    "porcentaje": 99
   },
   "tarjeta": {
-   "total": 8758,
+   "total": 8769,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 3736,
+   "total": 4137,
    "probadas": 12,
-   "fallan": 3,
+   "fallan": 4,
    "ejemplos": [
-    "Oaken Tower: Supporter Pack → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4596710/header.jpg",
-    "MX vs ATV Legends - Triple Clash SX Finals 2026 → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4499370/header.jpg",
-    "PLEASE CONFIRM THE DECEASED → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5036870/header.jpg"
+    "The Unseen Fears: Last Dance Collector's Edition → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3881890/header.jpg",
+    "YOU ARE THE MONSTER → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3986670/header.jpg",
+    "Digimon Story Time Stranger - Paquete de episodio y Digimon adicionales 2: GAKU−RAN → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3524270/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 1714,
+   "total": 1757,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "nintendo": {
-   "total": 9649,
+   "total": 9572,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 12070,
+   "total": 11975,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "otras": {
-   "total": 71957,
+   "total": 72174,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
@@ -115,144 +115,151 @@
  },
  "enlaces": {
   "steam": {
-   "ofertas": 7993,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "eshop": {
-   "ofertas": 18040,
+   "ofertas": 8680,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "psstore": {
-   "ofertas": 1104,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "game": {
-   "ofertas": 1664,
+   "ofertas": 1112,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xbox": {
-   "ofertas": 15777,
+   "ofertas": 15793,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
-  "instantgaming": {
-   "ofertas": 8934,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "driffle": {
-   "ofertas": 2857,
+  "k4g": {
+   "ofertas": 2875,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "yuplay": {
-   "ofertas": 8528,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "alcampo": {
-   "ofertas": 20,
+   "ofertas": 10470,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "mediamarkt": {
-   "ofertas": 1049,
+   "ofertas": 1060,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xtralife": {
-   "ofertas": 5944,
+   "ofertas": 5935,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "kinguin": {
-   "ofertas": 61855,
+   "ofertas": 61431,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
-  "loaded": {
-   "ofertas": 10757,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 6,
-   "ejemplos": []
-  },
   "g2a": {
-   "ofertas": 22348,
+   "ofertas": 22380,
    "probadas": 6,
    "fallan": 6,
    "bloqueados": 0,
    "ejemplos": [
-    "Yu-Gi-Oh! Legacy of the Duelist Arc-V - ARC League Championship → 0",
-    "Old World - Wonders and Dynasties → 0",
-    "Warhammer 40.000: Inquisitor - Martyr Complete Collection → 0"
+    "Rebel Galaxy → 0",
+    "Forza Horizon 4 VIP → 0",
+    "Sid Meier's Civilization V: Brave New World → 0"
    ]
   },
-  "cjs": {
-   "ofertas": 42889,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 6,
-   "ejemplos": []
-  },
-  "ebay": {
-   "ofertas": 1220,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 6,
-   "ejemplos": []
-  },
-  "k4g": {
-   "ofertas": 3202,
+  "ggpick": {
+   "ofertas": 1268,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
+  "cjs": {
+   "ofertas": 43181,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
   "todoconsolas": {
-   "ofertas": 4620,
+   "ofertas": 4637,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "gamersgate": {
-   "ofertas": 10090,
+   "ofertas": 10104,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
+  "ebay": {
+   "ofertas": 1114,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
+  "eshop": {
+   "ofertas": 17937,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "game": {
+   "ofertas": 1666,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "instantgaming": {
+   "ofertas": 9424,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "driffle": {
+   "ofertas": 2669,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "alcampo": {
+   "ofertas": 19,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "loaded": {
+   "ofertas": 10769,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
   "gameseminuevos": {
-   "ofertas": 446,
+   "ofertas": 453,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -261,13 +268,6 @@
   "pcbox": {
    "ofertas": 5,
    "probadas": 5,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "ggpick": {
-   "ofertas": 1268,
-   "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
@@ -283,8 +283,8 @@
   ]
  },
  "actualizado": {
-  "precios": "2026-11-23T09:38:22.412Z",
-  "diasDesdeLaUltima": 0.28
+  "precios": "2026-11-24T11:59:17.667Z",
+  "diasDesdeLaUltima": 0.18
  },
  "historial": {
   "series": 90977,
@@ -298,20 +298,20 @@
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 110224,
-  "ofertas": 275954,
+  "juegos": 110655,
+  "ofertas": 280307,
   "tiendas": 51,
   "conFoto": "90 %"
  },
- "fecha": "2026-11-23T16:24:21.965Z",
+ "fecha": "2026-11-24T16:11:34.588Z",
  "graves": [
-  "g2a: fallan todos los enlaces probados (Yu-Gi-Oh! Legacy of the Duelist Arc-V - ARC League Championship → 0)",
+  "g2a: fallan todos los enlaces probados (Rebel Galaxy → 0)",
   "el historial no se escribe desde el 2026-11-17"
  ],
  "avisos": [
-  "xbox (PC o Xbox): 285 juegos populares aún sin consultar (p. ej. SAINTS ROW: THE THIRD - THE FULL PACKAGE, Lost in Harmony, Demon's Crystals)",
-  "game (consola): 1745 juegos populares aún sin consultar (p. ej. RIVE: Ultimate Edition, ACA NEOGEO SAMURAI SHODOWN IV, EA Sports FC 27 Ultimate Edition)",
-  "psstore (PS4 o PS5): 217 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
-  "ebay (consola, 2ª mano): 820 juegos populares aún sin consultar (p. ej. Tesla vs Lovecraft, Gal*Gun 2, ACA NEOGEO WORLD HEROES 2 JET)"
+  "xbox (PC o Xbox): 314 juegos populares aún sin consultar (p. ej. Death Mark, The Elder Scrolls V: Skyrim VR, Lost in Harmony)",
+  "game (consola): 1858 juegos populares aún sin consultar (p. ej. ACA NEOGEO SAMURAI SHODOWN IV, Travis Strikes Again: No More Heroes, The End Is Nigh)",
+  "psstore (PS4 o PS5): 230 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
+  "ebay (consola, 2ª mano): 933 juegos populares aún sin consultar (p. ej. Transistor, Desert Child, Tesla vs Lovecraft)"
  ]
 }
