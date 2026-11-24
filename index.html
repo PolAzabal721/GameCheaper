@@ -10,7 +10,10 @@
 <meta name="mitgo-verification" content="849d1783-3cc4-446c-a930-706303e4bb0d" />
 <meta name="theme-color" content="#161a2c" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}#titulo-res span::before { content: "· "; }
+@media (max-width: 700px) { #titulo-res span { display: block; font-size: .6em; margin-top: 2px; } #titulo-res span::before { content: none; } }
+.j-tags-fila { display: flex; flex-wrap: wrap; gap: 5px; }
+</style>
 <title>Pillao: comparador de precios de videojuegos</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Compara precios de videojuegos digitales y físicos en tiendas españolas.">
@@ -1761,8 +1764,10 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     return '<article class="juego' + (enGrid ? " expandida" : "") + '" id="j-' + esc(j.id) + '">' +
       (enGrid ? '<div class="exp-barra"><button type="button" class="btn-menos" data-cerrar="' + esc(j.id) + '" aria-label="Ver en pequeño" title="Ver en pequeño"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"/></svg></button></div>' : "") +
       '<div class="j-cab"><div class="j-izq">' + (fichaDe(j) ? '<a class="j-cov-a" href="' + fichaDe(j) + '" tabindex="-1" aria-hidden="true">' + imagenJuego(j, true, "j-cov") + "</a>" : imagenJuego(j, true, "j-cov")) + '<div class="j-info">' + (j._vivo ? '<span class="vivo-tag">Encontrado ahora</span>' : "") + etiquetaFecha(j) +
-      (enMinimo ? '<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>' : "") +
-      etiquetaPremio(j) +
+      // Etiquetas (mínimo histórico y premios): en el móvil, como mucho dos y un «+N» con las que faltan
+      (function () { var t = (enMinimo ? ['<span class="minimo-tag" title="Nunca ha estado más barato">Mínimo histórico</span>'] : []).concat((etiquetaPremio(j).match(/<span class="premio-tag[^>]*>[^<]*<\/span>/g) || []));
+        var max = window.matchMedia("(max-width: 560px)").matches ? 2 : 4; if (!t.length) return "";
+        return '<div class="j-tags-fila">' + t.slice(0, max).join("") + (t.length > max ? '<span class="premio-tag mas" title="' + (t.length - max) + ' premios más">+' + (t.length - max) + "</span>" : "") + "</div>"; })() +
       (j.sorpresa ? '<span class="tipo-tag t-sorpresa">Clave sorpresa</span>' : j.tipo && j.tipo !== "juego" ? '<span class="tipo-tag t-' + j.tipo + '">' + ({ dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regalo", software: "Software", skins: "Skin", otros: "Otros" }[j.tipo] || "") + "</span>" : "") + campanaTitulo(j) + '<div class="plats">' +
       j.plataformas.filter(function (p) { return p !== "Tarjeta regalo"; }).map(function (p) { return '<span class="plat">' + esc(p) + "</span>"; }).join("") + "</div>" +
       (r.nuevo != null || r.usado != null || j.pvp ? '<div class="resumen">' +
@@ -2691,7 +2696,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     var nOf = filas.reduce(function (s, r) { return s + r.ofs.length; }, 0);
     // Mientras llega el resto del catálogo, sin búsqueda ni filtros se enseñan ya los totales (así el número no salta)
     if (restoPendiente && datos.totales && !qTxt && !nActivos() && f.orden === "populares") { nf = datos.totales.juegos.toLocaleString("es-ES"); nOf = datos.totales.ofertas; }
-    $("titulo-res").innerHTML = nf + " " + nombreTipo[filas.length === 1 ? 0 : 1] + ' <span>· ' + nOf.toLocaleString("es-ES") + " ofertas</span>";
+    $("titulo-res").innerHTML = nf + " " + nombreTipo[filas.length === 1 ? 0 : 1] + ' <span>' + nOf.toLocaleString("es-ES") + " ofertas</span>";
     var estadoVivo = "";
     if (datos.buscador && q.length >= 3) {
       estadoVivo = vivo.cargando ? '<div class="busca-vivo">Buscando «' + esc(qTxt) + '» en las tiendas…</div>'
