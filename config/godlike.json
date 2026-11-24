@@ -1,0 +1,14 @@
+{
+ "_nota": "Servidores de juegos de Godlike (Admitad). Precio normal más barato en dólares al mes, sin el descuento del primer mes, mirado en su web el 24/11/2026. Revisar de vez en cuando.",
+ "enlace": "https://yjfca.com/g/n4h0en61qnd007a92f8d52f0388f55/",
+ "servidores": [
+  { "titulo": "Servidor de Minecraft (Java)", "juego": "Minecraft", "usd": 7.99, "url": "https://godlike.host/minecraft-java-servers-hosting/" },
+  { "titulo": "Servidor de Minecraft (Bedrock)", "juego": "Minecraft", "usd": 3.99, "url": "https://godlike.host/minecraft-bedrock-servers-hosting/" },
+  { "titulo": "Servidor de Rust", "juego": "Rust", "usd": 31.99, "url": "https://godlike.host/rust-server-hosting/" },
+  { "titulo": "Servidor de Valheim", "juego": "Valheim", "usd": 23.99, "url": "https://godlike.host/valheim-server-hosting/" },
+  { "titulo": "Servidor de Terraria", "juego": "Terraria", "usd": 7.99, "url": "https://godlike.host/terraria-server-hosting/" },
+  { "titulo": "Servidor de Enshrouded", "juego": "Enshrouded", "usd": 7.99, "url": "https://godlike.host/enshrouded-server-hosting/" },
+  { "titulo": "Servidor de ARK: Survival Evolved", "juego": "ARK: Survival Evolved", "usd": 22.39, "url": "https://godlike.host/ark-survival-evolved-server-hosting/" },
+  { "titulo": "Servidor de Palworld", "juego": "Palworld", "usd": 15.99, "url": "https://godlike.host/palworld-server-hosting/" }
+ ]
+}

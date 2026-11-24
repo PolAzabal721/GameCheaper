@@ -1446,6 +1446,23 @@ async function cjsFeed(juegos) {
   return n;
 }
 
+// ---------- Godlike (Admitad): servidores de juegos en alquiler mensual (config/godlike.json, en dólares) ----------
+async function godlikeServidores(juegos) {
+  let c; try { c = JSON.parse(await readFile(join(RAIZ, "config", "godlike.json"), "utf8")); } catch { return 0; }
+  let usd = 0.86;
+  try { const xml = await (await pedir("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml")).text(); const m = xml.match(/currency='USD' rate='([0-9.]+)'/); if (m) usd = 1 / +m[1]; } catch {}
+  let n = 0;
+  for (const x of c.servidores || []) {
+    const j = juego(x.titulo, { pop: 99999, tipo: "software" }); if (!j) continue;
+    j.tipo = "software";
+    ofertar(j, { tienda: "godlike", plataforma: "PC", precio: Math.round(x.usd * usd * 100) / 100, stock: true, condicion: "Alquiler mensual",
+      url: c.enlace + "?ulp=" + encodeURIComponent(x.url), fuente: "godlike" });
+    j.revisado.add("godlike"); n++;
+  }
+  console.log(`Godlike: ${n} servidores de juegos`);
+  return n;
+}
+
 // ---------- GGPick (Admitad; sin feed: lo lee scripts/ggpick_feed.mjs de su web, en dólares) ----------
 // España: claves globales de juegos, tarjetas regalo en euros o globales y recargas de juegos; precio pasado a euros
 async function ggpickFeed(juegos) {
@@ -2027,6 +2044,7 @@ async function main() {
   if (ENV.TRADEDOUBLER_TOKEN) { try { await feedsTD(juegos, avisos); } catch (e) { avisos.push("tradedoubler: " + e.message); } }
   try { cuenta.kinguin = await kinguinFeed(juegos, avisos); } catch (e) { avisos.push("kinguin: " + e.message); caidas.add("kinguin"); }
   try { cuenta.loaded = await loadedFeed(juegos); } catch (e) { avisos.push("loaded: " + e.message); caidas.add("loaded"); }
+  try { cuenta.godlike = await godlikeServidores(juegos); } catch (e) { avisos.push("godlike: " + e.message); }
   try { cuenta.voidu = await voiduFeed(juegos); } catch (e) { avisos.push("voidu: " + e.message); caidas.add("voidu"); }
   try { cuenta.g2a = await g2aFeed(juegos); } catch (e) { avisos.push("g2a: " + e.message); caidas.add("g2a"); }
   try { cuenta.ggpick = await ggpickFeed(juegos); } catch (e) { avisos.push("ggpick: " + e.message); caidas.add("ggpick"); }

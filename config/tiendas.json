@@ -288,5 +288,13 @@
    "fisico"
   ],
   "busqueda": "https://www.awin1.com/cread.php?awinmid=106903&awinaffid=3149016"
+ },
+ {
+  "id": "godlike",
+  "nombre": "Godlike",
+  "tipo": "oficial",
+  "formatos": [
+   "digital"
+  ]
  }
 ]

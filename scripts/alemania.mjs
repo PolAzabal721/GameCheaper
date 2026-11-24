@@ -153,6 +153,16 @@ async function main() {
       condicion: (f.t === "tarjeta" ? "Código digital" : `Clave ${f.d || f.pl}`) + " · " + (/worldwide|global/i.test(f.reg) || !f.reg ? "Global" : zonaDE(f.reg)), url: f.u });
     suma("loaded");
   }
+  // Godlike (Admitad): servidores de juegos en alquiler mensual, precios en dólares
+  try {
+    const gl = JSON.parse(await readFile(new URL("../config/godlike.json", import.meta.url), "utf8"));
+    for (const x of gl.servidores || []) {
+      const j = juego(x.titulo, "software"); if (!j) continue;
+      j.tipo = "software"; tienda("godlike", "Godlike", "oficial");
+      ofertar(j, { tienda: "godlike", plataforma: "PC", formato: "digital", estado: "nuevo", stock: true, precio: Math.round(x.usd / tasas.EUR * 100) / 100, condicion: "Alquiler mensual", url: gl.enlace + "?ulp=" + encodeURIComponent(x.url) });
+      suma("godlike");
+    }
+  } catch (e) { console.warn("Godlike: " + e.message); }
   // Voidu (Daisycon): tienda oficial de claves, en euros y con nuestro enlace
   let voiduN = 0;
   for (const f of await leer("feeds/voidu.json", [])) {
