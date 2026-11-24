@@ -1141,6 +1141,8 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     if (!prefsOk()) return base;
     try { var g = JSON.parse(localStorage.getItem("pillao-filtros") || "null"); if (g) for (var k in base) if (k in g && k !== "q") base[k] = g[k]; } catch (e) {}  // la búsqueda no se recuerda: al volver, la portada sale limpia
     if (base.orden === "az") base.orden = "populares";
+    // Limpia tiendas vacías que se colaron al abrir un grupo de tiendas (contaban como filtro puesto)
+    ["fuera", "revOff", "fueraSub"].forEach(function (k) { if (Array.isArray(base[k])) base[k] = base[k].filter(function (x) { return typeof x === "string" && x; }); });
     if (DIGITAL) { base.formato = "todos"; base.estado = "todos"; base.part = true; base.imp = true; if (base.orden === "packs") base.orden = "populares"; } // en LATAM esos filtros no existen
     return base;
   }
@@ -2949,7 +2951,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     b.setAttribute("aria-pressed", i < 0); cambio();
   });
   $("tiendas").addEventListener("click", function (e) {
-    var b = e.target.closest("button"); if (!b) return;
+    var b = e.target.closest("button"); if (!b || b.dataset.ac) return;  // abrir o cerrar un grupo no es un filtro
     if (b.dataset.subAbrir) { bloquesAbiertos[b.dataset.subAbrir] = !bloquesAbiertos[b.dataset.subAbrir]; pintarControles(); return; }
     if (b.dataset.cal) {
       if (!f.part || f.fuera.indexOf("ebay") >= 0) { f.part = true; f.fuera = f.fuera.filter(function (x) { return x !== "ebay"; }); f.calOff = CALIDADES.filter(function (c) { return c !== b.dataset.cal; }); pintarControles(); cambio(); return; }
