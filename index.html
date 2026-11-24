@@ -1476,6 +1476,28 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     });
   }
 
+  // La fila de cada juego solo depende de los filtros, no de lo escrito: se guarda y se reutiliza mientras no cambien
+  // (así escribir en el buscador no recalcula los precios de todo el catálogo en cada letra)
+  var FIRMA_F = "", FIRMA_VER = 0;
+  function firmaFiltros() { var g = {}; for (var k in f) if (k !== "q") g[k] = f[k]; return JSON.stringify(g) + "|" + (datos ? datos.juegos.length : 0) + "|" + (typeof TJ_SUB !== "undefined" ? TJ_SUB : ""); }
+  function filaC(j) {
+    if (j._fv === FIRMA_VER) return j._fila;
+    j._fv = FIRMA_VER; return (j._fila = fila(j));
+  }
+  // Con la web parada, se van preparando por trozos las filas y el índice de búsqueda de todo el catálogo:
+  // así la primera letra que se escribe no tiene que calcularlo todo de golpe (antes la web se quedaba pillada)
+  var calentando = null;
+  function calentar() {
+    if (!datos || calentando === FIRMA_VER) return;
+    var ver = calentando = FIRMA_VER, js = datos.juegos, i = 0;
+    var pedir = window.requestIdleCallback || function (fn) { return setTimeout(function () { fn({ timeRemaining: function () { return 8; } }); }, 30); };
+    (function paso(d) {
+      if (ver !== FIRMA_VER || js !== datos.juegos) { calentando = null; return; }
+      var hasta = Date.now() + Math.max(4, Math.min(12, d.timeRemaining()));
+      while (i < js.length && Date.now() < hasta) { var j = js[i++]; if (!j._idx) j._idx = indiceBusq(j.titulo); filaC(j); }
+      if (i < js.length) pedir(paso);
+    })({ timeRemaining: function () { return 0; } });
+  }
   function fila(j) {
     var ofs = ofertasFiltradas(j);
     if (!ofs.length) return null;
@@ -2186,8 +2208,10 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     return mejor;
   }
   // Nota del título para la búsqueda (0 = no sale)
+  var QS_TXT = null, QS = [];   // lo escrito ya normalizado (se calcula una vez por búsqueda, no una vez por juego)
   function notaBusq(q, j) {
-    var qs = normBusq(q).split(" ").filter(Boolean); if (!qs.length) return 1;
+    if (q !== QS_TXT) { QS_TXT = q; QS = normBusq(q).split(" ").filter(Boolean); }
+    var qs = QS; if (!qs.length) return 1;
     var idx = j._idx || (j._idx = indiceBusq(j.titulo)), total = 0;
     for (var i = 0; i < qs.length; i++) { var n = notaPalabra(qs[i], idx); if (!n) return 0; total += n; }
     // El nombre exacto primero («elden ring» antes que «Elden Ring Nightreign»)
@@ -2573,6 +2597,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     var n = nActivos(); var nb = $("nfiltros"); nb.hidden = !n; nb.textContent = n;
     if (!datos) { lista.innerHTML = '<div class="vacio"><b>No hay precios cargados</b>Vuelve a probar en unos minutos.</div>'; return; }
     var qTxt = f.q.trim(), q = norm(qTxt);
+    var firma = firmaFiltros(); if (firma !== FIRMA_F) { FIRMA_F = firma; FIRMA_VER++; }
     if (f.orden === "packs") { pintarPacks(qTxt); return; }
     var palabras = q.split(/\s+/).filter(Boolean);
     var filas = [], vistos = {};
@@ -2594,7 +2619,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
       if (!nota) return;
       if (porFecha && !porFecha(j)) return;
       if (vistos[j._norm || (j._norm = norm(j.titulo))]) return;
-      var r = fila(j); if (r) { r.nota = nota; filas.push(r); }
+      var r = filaC(j); if (r) { r.nota = nota; filas.push(r); }
     });
     var TIPO_ORDEN = { juego: 0, edicion: 1, dlc: 2, tarjeta: 3 };
     // Nada con ese nombre: enseñamos lo que más se parece
@@ -2649,6 +2674,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     if (hayParecidos) estadoVivo += '<div class="busca-vivo">No encontramos «' + esc(qTxt) + '» tal cual. Esto es lo que más se parece:</div>';
     var resto = filas.length - mostrar;
     lista.classList.toggle("cuadricula", f.vista === "cuadricula");
+    setTimeout(calentar, 300);
     poner(lista, estadoVivo + filas.slice(0, mostrar).map(function (r) { return f.vista === "cuadricula" && !abiertosGrid[r.j.id] ? mini(r) : tarjeta(r); }).join("") +
       (resto > 0 ? '<button type="button" class="btn mas-juegos" data-mas-juegos>Ver más juegos <span>(quedan ' + resto.toLocaleString("es-ES") + ")</span></button>" : ""));
   }
@@ -2751,6 +2777,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     c.ofertas = c.ofertas.filter(function (o) { return !nuevos[grupo(o)]; }).concat(j.ofertas);
     j.ofertas.forEach(function (o) { if (o.plataforma && c.plataformas.indexOf(o.plataforma) < 0) c.plataformas.push(o.plataforma); });
     if (!c.img && j.img) c.img = j.img;
+    c._fv = -1;
   }
 
   // Búsqueda en vivo: si hay buscador configurado, pregunta a las tiendas por lo que escribes
@@ -2794,12 +2821,14 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   })();
 
   // ---------- Eventos ----------
-  var temporizadorReciente = null;
+  var temporizadorReciente = null, temporizadorPintar = null;
   $("q").addEventListener("input", function (e) {
     // Solo cuenta lo que escribe la persona (con el buscador seleccionado). Si el navegador rellena el campo solo
     // al entrar (restaura lo último que había), se ignora y se vuelve a dejar como estaba.
     if (document.activeElement !== e.target) { e.target.value = f.q; return; }
-    f.q = e.target.value; cambio(); buscarEnVivo();
+    f.q = e.target.value; guardarFiltros(); mostrar = PAGINA;
+    clearTimeout(temporizadorPintar);
+    temporizadorPintar = setTimeout(function () { pintar(); buscarEnVivo(); }, 220);
     clearTimeout(temporizadorReciente);
     temporizadorReciente = setTimeout(function () { anadirReciente(f.q); }, 2000);
   });
