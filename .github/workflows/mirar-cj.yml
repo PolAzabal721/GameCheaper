@@ -1,0 +1,29 @@
+name: Mirar anunciante de CJ
+# Enseña cuántos productos tiene un anunciante de CJ y sus enlaces con código de cupón
+on:
+  workflow_dispatch:
+    inputs:
+      anunciante: { description: "Id del anunciante en CJ", required: true }
+permissions:
+  contents: read
+jobs:
+  mirar:
+    runs-on: ubuntu-latest
+    env:
+      CJ_TOKEN: ${{ secrets.CJ_TOKEN }}
+      A: ${{ inputs.anunciante }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          A=$(printf '%s' "$A" | tr -cd 0-9); T=$(printf '%s' "$CJ_TOKEN" | tr -d '[:space:]')
+          python3 scripts/cj_catalogo.py "$A" cat.json || true
+          python3 -c "import json;d=json.load(open('cat.json'));print('PRODUCTOS',len(d));[print(x) for x in d[:3]]" || true
+          curl -s -H "Authorization: Bearer $T" "https://link-search.api.cj.com/v2/link-search?website-id=101929112&advertiser-ids=$A&records-per-page=100" > l.xml
+          python3 - <<'PY'
+          import re
+          x=open('l.xml',encoding='utf-8',errors='replace').read()
+          print('LINKS', x.count('<link>'))
+          for l in re.findall(r'<link>(.*?)</link>', x, re.S):
+            g=lambda t: (re.search('<%s>(.*?)</%s>'%(t,t), l, re.S) or [None,''])[1].strip()
+            print('ENLACE', g('link-id'), '|', g('link-name')[:80], '|', g('coupon-code'), '|', g('promotion-end-date'), '|', g('destination')[:60])
+          PY
