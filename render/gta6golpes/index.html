@@ -1,0 +1,91 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>gta6golpes</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+// GTA 6: los 7 golpes de lucha escondidos. Luchadores genéricos dibujados aquí (nada de personajes ni logos del juego ni de consolas).
+const PALETA={cielo:"linear-gradient(180deg,#12082a,#3b1460 40%,#a0307e 78%,#ff7a5c)",shader:["#12082a","#3b1460","#a0307e","#ff7a5c","#0d3b4f"],acento:"#ff4fa3",suelo:"#140f28"};
+const JUEGO={titulo:"Grand Theft Auto VI",tituloCaja:"GRAND THEFT<br>AUTO VI",titCaja:.1,tiendaNombre:"CJS CD Keys",precio:64.82,pvp:76.84,plat:"PS5",clave:"Clave PSN"};
+
+// ---------- luchador articulado ----------
+const POSES={
+ guardia:{t:6,a1:35,e1:115,a2:20,e2:125,l1:18,k1:-12,l2:-16,k2:-8},
+ agarre:{t:18,a1:82,e1:12,a2:76,e2:18,l1:22,k1:-14,l2:-24,k2:-10},
+ patadaL:{t:-32,a1:150,e1:-30,a2:-30,e2:40,l1:98,k1:0,l2:-8,k2:-4},
+ patadaF:{t:-14,a1:60,e1:90,a2:-20,e2:60,l1:84,k1:-6,l2:-6,k2:-4},
+ carrera:{t:24,a1:-40,e1:90,a2:60,e2:80,l1:55,k1:-85,l2:-38,k2:-55},
+ golpeado:{t:-28,a1:160,e1:20,a2:130,e2:30,l1:30,k1:-20,l2:-10,k2:-30},
+ tambalea:{t:-16,a1:110,e1:40,a2:-40,e2:30,l1:14,k1:-18,l2:-22,k2:-14},
+ voladora:{t:-8,a1:150,e1:20,a2:130,e2:20,l1:92,k1:0,l2:84,k2:0},
+ tendedero:{t:8,a1:92,e1:0,a2:-10,e2:30,l1:24,k1:-10,l2:-26,k2:-6},
+ piernasArriba:{t:-10,a1:60,e1:40,a2:40,e2:40,l1:120,k1:60,l2:100,k2:70},
+ placaje:{t:62,a1:80,e1:20,a2:70,e2:30,l1:40,k1:-60,l2:-50,k2:-40},
+ suelo:{t:0,a1:20,e1:20,a2:-20,e2:20,l1:10,k1:-6,l2:-10,k2:-6},
+ pegar:{t:30,a1:120,e1:-10,a2:40,e2:100,l1:50,k1:-110,l2:-40,k2:-90},
+};
+const mezcla=(p,q,k)=>{k=eo(cl(k));const r={};for(const n in p)r[n]=p[n]+(q[n]-p[n])*k;return r};
+const sec=(lt,claves)=>{let p=POSES[claves[0][1]];for(let i=1;i<claves.length;i++){const [t0,a]=claves[i-1],[t1,b]=claves[i];if(lt>=t0)p=mezcla(POSES[a],POSES[b],(lt-t0)/(t1-t0))}return p};
+const rad=a=>a*Math.PI/180;
+function luchador(x,y,s0,pose,{ropa="#2ad4c8",pant="#1b1838",piel="#e0ac7e",pelo="#2b1a12",mira=1,rot=0,cara="duro"}={}){
+ const s=s0*1.25, P0=pose, L=(o,a,l)=>[o[0]+Math.sin(rad(a))*l,o[1]+Math.cos(rad(a))*l];
+ const cad=[0,0], hom=[Math.sin(rad(P0.t))*120,-Math.cos(rad(P0.t))*120];
+ const cab=[hom[0]+Math.sin(rad(P0.t))*58,hom[1]-Math.cos(rad(P0.t))*58];
+ const brazo=(a,e)=>{const c=L(hom,a+P0.t,62),m=L(c,a+e+P0.t,60);return [c,m]};
+ const pierna=(a,k)=>{const r=L(cad,a,82),p=L(r,a+k,82);return [r,p]};
+ const seg=(pts,col,w)=>`<polyline points="${pts.map(p=>p.join(",")).join(" ")}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+ const [b2c,b2m]=brazo(P0.a2,P0.e2),[b1c,b1m]=brazo(P0.a1,P0.e1),[p2r,p2p]=pierna(P0.l2,P0.k2),[p1r,p1p]=pierna(P0.l1,P0.k1);
+ const ang=P0.t, ojo=cara=="ko"?`<path d="M-14 -8 l10 10 M-4 -8 l-10 10 M8 -8 l10 10 M18 -8 l-10 10" stroke="#2b1a12" stroke-width="5"/>`:`<path d="M-16 -12 l12 4 M6 -8 l12 -4" stroke="#2b1a12" stroke-width="6" stroke-linecap="round"/><circle cx="-8" cy="0" r="5" fill="#2b1a12"/><circle cx="12" cy="0" r="5" fill="#2b1a12"/>`;
+ return `<svg style="position:absolute;left:${x-300*s}px;top:${y-420*s}px;overflow:visible;transform:scaleX(${mira}) rotate(${rot}deg);transform-origin:${300*s}px ${420*s}px" width="${600*s}" height="${600*s}" viewBox="-300 -420 600 600">
+ <ellipse cx="0" cy="${170+(rot?0:0)}" rx="110" ry="16" fill="rgba(0,0,0,.3)" transform="rotate(${-rot})"/>
+ ${seg([hom,b2c,b2m],"#0d0b18",36)}${seg([hom,b2c,b2m],ropa,26)}${seg([b2m,b2m],piel,30)}
+ ${seg([cad,p2r,p2p],"#0d0b18",44)}${seg([cad,p2r,p2p],pant,34)}${seg([p2p,p2p],"#111",38)}
+ ${seg([cad,hom],"#0d0b18",86)}${seg([cad,hom],ropa,74)}
+ ${seg([cad,p1r,p1p],"#0d0b18",46)}${seg([cad,p1r,p1p],pant,36)}${seg([p1p,p1p],"#111",40)}
+ <g transform="translate(${cab[0]} ${cab[1]}) rotate(${ang})"><circle r="46" fill="#0d0b18"/><circle r="40" fill="${piel}"/><path d="M-40 -6 q0 -42 40 -44 q42 2 40 40 q-20 -18 -80 4z" fill="${pelo}"/><g transform="translate(14 2)">${ojo}<path d="M-2 22 q10 4 20 0" stroke="#7a3a2a" stroke-width="5" fill="none" stroke-linecap="round"/></g></g>
+ ${seg([hom,b1c,b1m],"#0d0b18",38)}${seg([hom,b1c,b1m],ropa,28)}${seg([b1m,b1m],piel,32)}
+ </svg>`}
+const YO=(x,y,s,p,o={})=>luchador(x,y,s,p,{ropa:"#2ad4c8",pant:"#1b1838",piel:"#e0ac7e",pelo:"#2b1a12",...o});
+const YA=(x,y,s,p,o={})=>luchador(x,y,s,p,{ropa:"#ff4fa3",pant:"#2a1838",piel:"#c98a5e",pelo:"#3a1a10",...o});
+const MALO=(x,y,s,p,o={})=>luchador(x,y,s,p,{ropa:"#ff8a3a",pant:"#3a3a48",piel:"#f0c49a",pelo:"#6b4a2a",mira:-1,...o});
+
+// ---------- mando genérico y efectos ----------
+function mando2(x,y,k,{gat="",stick=null,ataque=false,lt=0}={}){
+ const s=eb(cl(k)), on=Math.sin(lt*10)>0;
+ const flecha=stick==null?"":`<g transform="translate(250 205) rotate(${stick})"><path d="M0 0 L0 -86" stroke="#d8ff1f" stroke-width="14" stroke-linecap="round"/><path d="M-26 -66 L0 -100 L26 -66" fill="none" stroke="#d8ff1f" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+ const desp=stick==null?[0,0]:[Math.sin(rad(stick))*16,-Math.cos(rad(stick))*16];
+ return `<svg style="position:absolute;left:${x}px;top:${y}px;transform:scale(${s});transform-origin:50% 50%;opacity:${cl(k*3)};overflow:visible" width="720" height="380" viewBox="0 0 720 380">
+ <path d="M150 90 h420 q90 0 120 130 q24 120 -50 140 q-60 14 -110 -70 h-280 q-50 84 -110 70 q-74 -20 -50 -140 q30 -130 110 -130z" fill="#1e1a33" stroke="#3a3458" stroke-width="8"/>
+ ${gat?`<rect x="470" y="${on?18:30}" width="170" height="70" rx="24" fill="${on?"#ff4fa3":"#3a3458"}" style="filter:drop-shadow(0 0 ${on?18:0}px #ff4fa3)"/><text x="555" y="${on?66:78}" text-anchor="middle" font-family="Inter Display" font-weight="900" font-size="40" fill="#fff">${gat}</text>`:""}
+ <circle cx="250" cy="205" r="62" fill="#120f22"/><circle cx="${250+desp[0]}" cy="${205+desp[1]}" r="44" fill="#4a4470"/>${flecha}
+ ${[[540,160],[590,205],[540,250],[490,205]].map(([cx,cy],i)=>`<circle cx="${cx}" cy="${cy}" r="26" fill="${ataque&&i==1&&on?"#d8ff1f":"#3a3458"}" style="filter:drop-shadow(0 0 ${ataque&&i==1&&on?16:0}px #d8ff1f)"/>`).join("")}
+ ${ataque?`<text x="590" y="${on?140:150}" text-anchor="middle" font-family="Inter" font-weight="800" font-size="30" fill="#d8ff1f">ATAQUE</text>`:""}
+ </svg>`}
+const pum=(lt,t0,x,y,txt="¡PUM!",col="#d8ff1f")=>{const d=lt-t0;if(d<0||d>.8)return "";const k=eb(cl(d*5));return P.flash(lt,t0,"#fff")+P.particulas(lt-t0+.01>0?(lt-t0):0,18,x,y,col,900)+
+ `<svg style="position:absolute;left:${x-170}px;top:${y-170}px;transform:scale(${k}) rotate(${d*30}deg);opacity:${1-cl((d-.5)*3)}" width="340" height="340" viewBox="-170 -170 340 340"><polygon points="${[...Array(24)].map((_,i)=>{const r=i%2?80:165,a=i/24*Math.PI*2;return (Math.cos(a)*r).toFixed(0)+","+(Math.sin(a)*r).toFixed(0)}).join(" ")}" fill="${col}"/><text y="18" text-anchor="middle" font-family="Inter Display" font-weight="900" font-size="58" fill="#140f28">${txt}</text></svg>`};
+const num=(n,k)=>`<div style="position:absolute;left:60px;top:${430-(1-eb(cl(k)))*80}px;width:190px;height:190px;border-radius:50%;background:#d8ff1f;color:#140f28;display:grid;place-items:center;font:900 130px 'Inter Display';letter-spacing:-.06em;opacity:${cl(k*3)};box-shadow:0 0 50px #d8ff1f88">${n}</div>`;
+const titulo=(txt,k,y=470,x=280,tam=88)=>P.texto(txt,x,y,k,tam,"#fff");
+const barrio=(lt,off=0)=>P.edificios("#1d1533","#ffd36a",5,1)+P.palmera(110,420,Math.sin(lt*2)*4)+P.palmera(980,380,Math.sin(lt*2+1)*4)+P.suelo("#140f28")+`<div style="position:absolute;left:0;right:0;top:1500px;height:8px;background:#ff4fa3;box-shadow:0 0 30px #ff4fa3"></div>`;
+const zoom=(lt,html,z=.06)=>`<div style="position:absolute;inset:0;transform:scale(${1+z*eo(cl(lt/3))});transform-origin:50% 75%">${html}</div>`;
+const vel=(lt)=>P.velocidad(lt);
+
+const ESCENAS=[
+{f:"Olvídate del *puñetazo*: *GTA 6* esconde *7 golpes* de lucha.", golpes:[.9], p:(lt)=>zoom(lt,barrio(lt)+YO(380,1500,1.05,sec(lt,[[0,"guardia"],[.5,"guardia"],[.9,"patadaL"],[1.8,"patadaL"],[2.3,"guardia"]]))+MALO(720,1500,1.05,sec(lt,[[0,"guardia"],[.9,"guardia"],[1.2,"golpeado"],[2.4,"tambalea"]])))+pum(lt,.9,690,1180)+sello("7 GOLPES",300,520,sg(lt,1.3,1.7),"#d8ff1f")},
+{f:"Y uno es un *triángulo volador*. Vamos con todos.", golpes:[1.1], p:(lt)=>{const j=eo(sg(lt,.3,1.1));return barrio(lt)+MALO(650,1500,1.05,sec(lt,[[0,"agarre"],[1.1,"agarre"],[1.6,"golpeado"]]))+YA(420+j*190,1500-Math.sin(j*Math.PI)*380-j*170,1,sec(lt,[[0,"agarre"],[.4,"carrera"],[1.1,"piernasArriba"]]),{rot:-j*20})+pum(lt,1.1,640,1120,"¡ZAS!")+titulo("TRIÁNGULO VOLADOR",sg(lt,1.4,1.8),500,90,90)}},
+{f:"*Uno*, con *Lucía*: mantén *R2*, o *RT* en Xbox, y *agárralo* de frente.", p:(lt)=>barrio(lt)+num(1,sg(lt,0,.4))+YA(400,1500,.95,sec(lt,[[0,"guardia"],[1.4,"guardia"],[1.9,"agarre"]]))+MALO(640,1500,.95,sec(lt,[[0,"guardia"],[1.9,"guardia"],[2.2,"tambalea"]]))+mando2(180,620,sg(lt,.4,.9),{gat:"R2 · RT",lt})},
+{f:"Sin soltar, pulsa *ataque* y mueve el stick *abajo a la derecha*.", p:(lt)=>barrio(lt)+num(1,1)+YA(420,1500,.95,POSES.agarre)+MALO(620,1500,.95,POSES.tambalea)+mando2(180,620,1,{gat:"R2 · RT",stick:135,ataque:true,lt})},
+{f:"Ella *salta a su cuello* y lo termina en el *suelo*.", golpes:[.8,2.1], p:(lt)=>{const j=eo(sg(lt,.2,.8)),c=eo(sg(lt,1.6,2.1));return barrio(lt)+MALO(640,1500,1.05,sec(lt,[[0,"tambalea"],[.8,"golpeado"],[1.6,"golpeado"],[2.1,"suelo"]]),{rot:-c*80,cara:c>.5?"ko":"duro"})+YA(430+j*170-c*40,1500-Math.sin(j*Math.PI/2)*560+c*360,1,sec(lt,[[0,"agarre"],[.8,"piernasArriba"],[2.1,"piernasArriba"]]),{rot:-j*15-c*60})+pum(lt,.8,620,1000,"¡ZAS!")+pum(lt,2.1,560,1420,"¡PLAF!","#ff4fa3")}},
+{f:"Si lo agarras *por detrás*, te sale un *mataleón*. Más soso, la verdad.", p:(lt)=>barrio(lt)+MALO(600,1500,1,sec(lt,[[0,"guardia"],[.8,"golpeado"]]),{mira:1})+YA(430,1480,1,sec(lt,[[0,"guardia"],[.8,"agarre"]]))+titulo("MATALEÓN",sg(lt,1,1.4),500,300,100)+P.etiqueta("POR DETRÁS",340,660,sg(lt,.4,.8),"#ff4fa3","#fff")},
+{f:"Ahora, *Jason*. *Dos*: patada lateral. A unos *dos metros*, mantén ataque y stick a la *derecha*.", golpes:[2.6], p:(lt)=>barrio(lt)+num(2,sg(lt,0,.4))+YO(330,1500,.95,sec(lt,[[0,"guardia"],[2.2,"guardia"],[2.6,"patadaL"],[3.4,"patadaL"],[3.9,"guardia"]]))+MALO(760-(lt>2.6?eo(sg(lt,2.6,3.1))*-120:0),1500,.95,sec(lt,[[0,"guardia"],[2.6,"guardia"],[2.9,"golpeado"]]))+mando2(180,620,sg(lt,.5,1),{stick:90,ataque:true,lt})+pum(lt,2.6,740,1200)+`<div style="position:absolute;left:400px;top:1560px;width:300px;border-top:6px dashed #d8ff1f;opacity:${1-sg(lt,2.2,2.5)}"></div><div style="position:absolute;left:470px;top:1580px;font:900 44px 'Inter Display';color:#d8ff1f;opacity:${1-sg(lt,2.2,2.5)}">2 m</div>`},
+{f:"*Tres*: patada frontal. Ataque y stick a la *derecha* o *abajo*: lo dejas *tambaleándose*.", golpes:[1.6], p:(lt)=>barrio(lt)+num(3,sg(lt,0,.4))+YO(400,1500,.95,sec(lt,[[0,"guardia"],[1.2,"guardia"],[1.6,"patadaF"],[2.4,"guardia"],[3,"agarre"]]))+MALO(680,1500,.95,sec(lt,[[0,"guardia"],[1.6,"guardia"],[1.9,"golpeado"],[2.5,"tambalea"]]),{rot:Math.sin(lt*6)*(lt>1.9?5:0)})+mando2(180,620,sg(lt,.4,.9),{stick:lt%1.6<.8?90:180,ataque:true,lt})+pum(lt,1.6,660,1240)},
+{f:"*Cuatro*: *suplex*. Agarra, ataque, stick *abajo a la izquierda* y ataque *otra vez*.", golpes:[3.3], p:(lt)=>{const v=eo(sg(lt,2.4,3.3));return barrio(lt)+num(4,sg(lt,0,.4))+YO(450,1500,.95,sec(lt,[[0,"agarre"],[2.4,"agarre"],[3.3,"golpeado"]]))+MALO(560-v*300,1500-Math.sin(v*Math.PI)*420,.95,sec(lt,[[0,"tambalea"],[2.4,"golpeado"],[3.3,"suelo"]]),{rot:-v*190,cara:v>.8?"ko":"duro"})+mando2(180,620,sg(lt,.3,.8),{gat:lt>.3&&lt<1?"AGARRA":"",stick:225,ataque:lt>1,lt})+pum(lt,3.3,300,1420,"¡CRACK!","#ff4fa3")}},
+{f:"Consejo: no se lo hagas a tu *primo* en *Navidad*, que no te vuelven a invitar.", p:(lt)=>P.suelo("#2a1438")+`<div style="position:absolute;left:120px;top:1120px;width:840px;height:60px;border-radius:14px;background:#7a4a2a"></div>`+[200,420,640,860].map((x,i)=>`<div style="position:absolute;left:${x-30}px;top:${1060-Math.abs(Math.sin(lt*4+i))*16}px;width:60px;height:60px;border-radius:50%;background:${["#d9433a","#f2c94c","#2ad48a","#3a7bd5"][i]}"></div>`).join("")+`<svg style="position:absolute;left:430px;top:420px" width="220" height="380" viewBox="0 0 220 380"><polygon points="110,0 200,160 150,160 220,300 0,300 70,160 20,160" fill="#2f7a4a"/><rect x="90" y="300" width="40" height="70" fill="#6b4423"/><circle cx="110" cy="0" r="18" fill="#f2c94c"/></svg>`+P.etiqueta("🎄 NAVIDAD",330,860,sg(lt,.3,.7),"#d9433a","#fff")+P.texto("✕ NO",420,1300,sg(lt,1.2,1.6),140,"#ff4f6d")},
+{f:"*Cinco*: *spear*. Corre de frente, ataca pegado a él y remata con *puñetazos en el suelo*.", golpes:[1.5,2.6,3.0,3.4], p:(lt)=>{const c=eo(sg(lt,.3,1.5));return barrio(lt)+(lt<1.5?vel(lt):"")+num(5,sg(lt,0,.4))+MALO(700,1500,.95,sec(lt,[[0,"guardia"],[1.5,"guardia"],[1.9,"suelo"]]),{rot:-eo(sg(lt,1.5,1.9))*90,cara:lt>1.9?"ko":"duro"})+YO(120+c*440+eo(sg(lt,1.5,1.9))*60,1500+eo(sg(lt,1.5,1.9))*-20,.95,lt<1.9?sec(lt,[[0,"carrera"],[1.2,"carrera"],[1.5,"placaje"]]):sec(lt-1.9,[[0,"pegar"],[.35,"placaje"],[.7,"pegar"],[1.05,"placaje"],[1.4,"pegar"]]))+pum(lt,1.5,700,1260)+[2.6,3.0,3.4].map(t=>pum(lt,t,760,1430,"¡POW!","#ff4fa3")).join("")}},
+{f:"*Seis*: patada voladora. Mantén *correr* sin soltar y ataca cuando estés *cerca*.", golpes:[1.9], p:(lt)=>{const j=eo(sg(lt,1.1,1.9));return barrio(lt)+vel(lt)+num(6,sg(lt,0,.4))+MALO(760,1500,.95,sec(lt,[[0,"guardia"],[1.9,"guardia"],[2.2,"golpeado"],[2.6,"suelo"]]),{rot:-eo(sg(lt,2.1,2.6))*85})+YO(140+eo(sg(lt,0,1.1))*300+j*240,1500-Math.sin(j*Math.PI*.8)*300,.95,sec(lt,[[0,"carrera"],[1.1,"carrera"],[1.5,"voladora"],[2.4,"voladora"],[2.9,"guardia"]]),{rot:-j*55+eo(sg(lt,2.3,2.9))*55})+mando2(180,620,sg(lt,.3,.8),{gat:"CORRER",ataque:lt>1.1,lt})+pum(lt,1.9,760,1200)}},
+{f:"*Siete*: *tendedero*. El mismo comando, y mejor si el otro viene *corriendo* hacia ti.", golpes:[1.9], p:(lt)=>{const v=eo(sg(lt,1.9,2.5));return barrio(lt)+vel(lt)+num(7,sg(lt,0,.4))+YO(300+eo(sg(lt,0,1.6))*120,1500,.95,sec(lt,[[0,"carrera"],[1.4,"carrera"],[1.8,"tendedero"]]))+MALO(1000-eo(sg(lt,0,1.9))*440,1500-Math.sin(v*Math.PI)*180,.95,lt<1.9?POSES.carrera:POSES.golpeado,{rot:-v*100,cara:v>.6?"ko":"duro"})+pum(lt,1.9,540,1040,"¡ZAS!")+titulo("TENDEDERO",sg(lt,2.4,2.8),500,300,100)}},
+{f:"Mándaselo a ese amigo que solo sabe dar *puñetazos*.", p:(lt)=>barrio(lt)+YO(540,1500,1.1,sec(lt,[[0,"guardia"],[.6,"tendedero"],[1,"guardia"]]),{})+P.bocadillo("¿Solo puñetazos? 😅",230,640,sg(lt,.5,.9))},
+];
+ESCENAS.forEach(e=>e.d=Math.max(3,durFrase(e.f)*.8));
+montar();
+// sacudidas de cámara en cada golpe
+window.SACUDIDAS=TRAMOS.flatMap(e=>(e.golpes||[]).map(g=>e.t0+g));
+iniciar();
+</script></body></html>
