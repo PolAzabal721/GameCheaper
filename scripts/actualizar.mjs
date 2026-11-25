@@ -447,6 +447,8 @@ function estadoEbay(it) {
   const desde = pais && pais !== "ES" ? " · envío desde " + (PAISES_EBAY[pais] || pais) : "";
   return estado + desde;
 }
+export const ACCESORIO = /\b(auriculares?|headset|disco duro|ssd|sdd|nvme|funda|fundas|grips|cable|cargador|bater[ií]a|soporte|pedales|gamepad|mando y volante|base de carga|estaci[oó]n de carga|tarjeta de memoria|micro ?sd)\b/i;
+const TIENDAS_FISICAS = new Set(["game", "gameseminuevos", "mediamarkt", "xtralife", "todoconsolas", "alcampo", "ebay"]);
 const NO_JUEGO = /\b(solo caja|caja vacia|caja|portada|caratula|manual|sin juego|sin cartucho|sin disco|steelbook|funda|protector|codigo|code|key|clave|dlc|figura|amiibo|poster|lote|pack|consola|mando|moneda|coin|guia|guide|artbook|precinto|download|descarga|digital|voucher|bundle|card|tarjeta)\b/;
 // Un anuncio de segunda mano por menos de una cuarta parte del juego nuevo más barato no suele ser el juego (caja, portada…)
 function precioCreible(j, total) {
@@ -2289,6 +2291,9 @@ async function main() {
     j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-gamersgate" && !(VOIDU_DIRECTO && o.tienda === "itad-voidu") && !(GSP_DIRECTO && o.tienda === "itad-gamesporium"));
     for (const o of j.ofertas) if (o.tienda === "yuplay" && /^https:\/\/www\.yuplay\.com\//.test(o.url || "")) o.url = enlaceYuplay(o.url.replace(YUPLAY, ""));
   }
+  // Accesorios que se cuelan en las tiendas físicas (GAME, MediaMarkt…): auriculares, discos SSD, fundas, cables… Fuera: aquí solo hay juegos
+  for (const j of lista) if (ACCESORIO.test(j.titulo || "")) j.ofertas = j.ofertas.filter((o) => !TIENDAS_FISICAS.has(o.tienda));
+  for (let i = lista.length - 1; i >= 0; i--) if (!lista[i].ofertas.length && ACCESORIO.test(lista[i].titulo || "")) lista.splice(i, 1);
   const NOMBRES_ITAD = { "itad-dlgamer": "DLGamer" };
   for (const j of lista) for (const o of j.ofertas) if (!tiendas.some((t) => t.id === o.tienda) && o.tienda.startsWith("itad-"))
     tiendas.push({ id: o.tienda, nombre: NOMBRES_ITAD[o.tienda] || o.tienda.slice(5).replace(/^./, (c) => c.toUpperCase()), tipo: "revendedor", formatos: ["digital"] });
