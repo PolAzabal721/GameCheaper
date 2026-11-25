@@ -296,5 +296,13 @@
   "formatos": [
    "digital"
   ]
+ },
+ {
+  "id": "gamesporium",
+  "nombre": "Gamesporium",
+  "tipo": "revendedor",
+  "formatos": [
+   "digital"
+  ]
  }
 ]

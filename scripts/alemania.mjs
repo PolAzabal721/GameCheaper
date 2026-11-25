@@ -163,6 +163,15 @@ async function main() {
       suma("godlike");
     }
   } catch (e) { console.warn("Godlike: " + e.message); }
+  // Gamesporium (Admitad): claves en euros con nuestro enlace
+  let gspN = 0;
+  for (const f of await leer("feeds/gamesporium.json", [])) {
+    const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
+    if (!j.img && f.img) j.img = f.img;
+    tienda("gamesporium", "Gamesporium", "revendedor");
+    ofertar(j, { tienda: "gamesporium", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: f.p, regular: f.r > f.p ? f.r : undefined, condicion: `Clave ${f.d || f.pl}`, url: f.u });
+    suma("gamesporium"); gspN++;
+  }
   // Voidu (Daisycon): tienda oficial de claves, en euros y con nuestro enlace
   let voiduN = 0;
   for (const f of await leer("feeds/voidu.json", [])) {
@@ -213,7 +222,7 @@ async function main() {
           for (const x of g.deals || []) {
             if (!(x.price?.amount > 0) || x.price.currency !== "EUR") continue;
             const nombre = x.shop?.name || String(x.shop?.id), id0 = /^steam$/i.test(nombre) ? "steam" : "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
-            if (id0 === "itad-gamersgate" || (id0 === "itad-voidu" && voiduN)) continue;   // ya viene de su feed, con nuestro enlace
+            if (id0 === "itad-gamersgate" || (id0 === "itad-voidu" && voiduN) || (id0 === "itad-gamesporium" && gspN)) continue;   // ya viene de su feed, con nuestro enlace
             const id = { "itad-microsoftstore": "xbox" }[id0] || id0;
             const oficial = OFICIALES_PC.test(nombre);
             const j = juego(e.titulo, e.tipo); if (!j) continue;
