@@ -1,0 +1,14 @@
+name: Prueba IP fija
+# Comprueba que el servidor propio (VPS de OVH) responde y sale a internet con su IP fija
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ip:
+    runs-on: [self-hosted, ip-fija]
+    timeout-minutes: 5
+    steps:
+      - run: |
+          echo "IP de salida: $(curl -s https://api.ipify.org)"
+          echo "Máquina: $(hostname) · $(nproc) núcleos · $(free -h | awk '/Mem/{print $2}') de RAM"
