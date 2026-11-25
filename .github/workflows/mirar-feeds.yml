@@ -1,0 +1,29 @@
+name: Mirar catálogos nuevos
+# Descarga un catálogo de Admitad y enseña sus columnas y unas filas de ejemplo (para preparar su lector)
+on:
+  workflow_dispatch:
+    inputs:
+      feed_id: { description: "feed_id de Admitad", required: true }
+permissions:
+  contents: read
+jobs:
+  mirar:
+    runs-on: ubuntu-latest
+    env:
+      F: ${{ secrets.ALIEXPRESS_FEED }}
+      ID: ${{ inputs.feed_id }}
+    steps:
+      - run: |
+          U=$(printf '%s' "$F" | sed -E 's#/(en|es)/webmaster#/es/webmaster#; s/&fcid=[0-9]+//; s/feed_id=[0-9]+/feed_id='"$(printf '%s' "$ID" | tr -cd 0-9)"'/')
+          curl -sL --max-time 600 -o f.csv "$U"
+          ls -la f.csv; wc -l f.csv
+          python3 - <<'PY'
+          import csv, collections, re
+          csv.field_size_limit(10**9)
+          rows=list(csv.DictReader(open('f.csv',encoding='utf-8',errors='replace'),delimiter=';'))
+          print('FILAS',len(rows)); print('COLUMNAS',list(rows[0].keys()) if rows else None)
+          for r in rows[:4]: print({k:(v[:90] if isinstance(v,str) else v) for k,v in r.items()})
+          for col in ('categoryId','platform','region','currencyId','country_limitations','vendor','type'):
+            if rows and col in rows[0]: print(col, collections.Counter(r[col][:40] for r in rows).most_common(15))
+          print('CUENTAS', sum(1 for r in rows if re.search(r'\baccount|аккаунт',r.get('name',''),re.I)))
+          PY
