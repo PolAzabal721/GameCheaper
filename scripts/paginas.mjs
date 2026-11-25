@@ -584,6 +584,7 @@ async function main() {
     { id: "latam", archivo: "precios-latam.json", nombre: "Latinoamérica", lang: "es-419", marca: "PILLAO_LATAM", fichas: +(process.env.LATAM_FICHAS || 4000) },
     { id: "us", archivo: "precios-us.json", nombre: "Estados Unidos", lang: "es-US", marca: "PILLAO_US", fichas: +(process.env.US_FICHAS || 3000) },
     { id: "de", archivo: "precios-de.json", nombre: "Alemania", lang: "es-DE", marca: "PILLAO_DE", fichas: +(process.env.DE_FICHAS || 2500), moneda: "EUR" },
+    { id: "fr", archivo: "precios-fr.json", nombre: "Francia", lang: "es-FR", marca: "PILLAO_FR", fichas: +(process.env.FR_FICHAS || 2500), moneda: "EUR" },
   ];
   for (const r of REGIONES) { try { r.datos = JSON.parse(await readFile(join(RAIZ, r.archivo), "utf8")); } catch {} r.hay = !!(r.datos && r.datos.juegos && r.datos.juegos.length); r.fichasL = []; r.chollosL = []; }
   const marcas = "<script>" + REGIONES.filter((r) => r.hay).map((r) => `window.${r.marca}=true;`).join("") + "</script>\n</head>";
@@ -684,8 +685,8 @@ async function main() {
 
   // 3b. Google: cada página dice cuáles son sus versiones para las otras regiones (hreflang), para que en cada país
   // salga la buena (Venezuela → /latam/, EE. UU. → /us/, España → la raíz). x-default: la de España.
-  const IDIOMA_REG = { "": "es-ES", latam: "es-419", us: "es-US", de: "es-DE" };
-  const LOCALE_REG = { "": "es_ES", latam: "es_LA", us: "es_US", de: "es_DE" };
+  const IDIOMA_REG = { "": "es-ES", latam: "es-419", us: "es-US", de: "es-DE", fr: "es-FR" };
+  const LOCALE_REG = { "": "es_ES", latam: "es_LA", us: "es_US", de: "es_DE", fr: "es_FR" };
   const hayRegion = { "": true }; for (const r of REGIONES) hayRegion[r.id] = r.hay;
   const conPagina = new Map();   // ruta relativa (sin región) → regiones con esa página
   const apuntar = (ruta, reg) => { if (!conPagina.has(ruta)) conPagina.set(ruta, new Set()); conPagina.get(ruta).add(reg); };

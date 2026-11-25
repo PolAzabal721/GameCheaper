@@ -812,6 +812,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
           <div class="ri-sel" id="sel-pais-eu"><button type="button" class="ri-cab" aria-expanded="false" aria-label="Elegir país"></button><div class="ri-lista" role="radiogroup" aria-label="País" hidden>
             <button type="button" role="radio" data-paiseu="es" aria-checked="false"><span class="reg-flag ri-band"><svg viewBox="0 0 30 20" width="28" height="19" aria-hidden="true"><rect width="30" height="20" fill="#aa151b"/><rect y="5" width="30" height="10" fill="#f1bf00"/></svg></span><span><b>España</b><small>Claves de España, Europa y globales · tiendas físicas</small></span><i aria-hidden="true">✓</i></button>
             <button type="button" role="radio" data-paiseu="de" aria-checked="false"><span class="reg-flag ri-band"><svg viewBox="0 0 30 20" width="28" height="19" aria-hidden="true"><rect width="30" height="6.67" fill="#000"/><rect y="6.67" width="30" height="6.67" fill="#dd0000"/><rect y="13.33" width="30" height="6.67" fill="#ffce00"/></svg></span><span><b>Alemania</b><small>Claves de Alemania, Europa y globales · solo digital</small></span><i aria-hidden="true">✓</i></button>
+            <button type="button" role="radio" data-paiseu="fr" aria-checked="false"><span class="reg-flag ri-band"><svg viewBox="0 0 30 20" width="28" height="19" aria-hidden="true"><rect width="10" height="20" fill="#002654"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ce1126"/></svg></span><span><b>Francia</b><small>Claves de Francia, Europa y globales · solo digital</small></span><i aria-hidden="true">✓</i></button>
           </div></div>
           </div>
           <div id="bloque-pais" hidden>
@@ -1021,7 +1022,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   }
   // Región: Europa (raíz, euros) o Latinoamérica (/latam/, dólares). Misma web; cada una carga su archivo de precios.
   // Estados Unidos (/us/, dólares) funciona igual que Latinoamérica, sin elegir país
-  var REGION = /^(latam|us|de)$/.test(window.PILLAO_REGION || "") ? window.PILLAO_REGION : "es";
+  var REGION = /^(latam|us|de|fr)$/.test(window.PILLAO_REGION || "") ? window.PILLAO_REGION : "es";
   var DOLAR = REGION === "latam" || REGION === "us";   // regiones en dólares
   var DIGITAL = REGION !== "es";   // todas menos España: solo claves digitales, sin disco ni segunda mano (Alemania, en euros)
   var DATOS_REGION = DIGITAL ? REGION + "/" : "";
@@ -1060,7 +1061,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   TIENDAS_INFO.godlike = { of: 1, d: "Proveedor de servidores para jugar online con tus amigos (Minecraft, Rust, ARK…).", v: ["Servidores para muchos juegos, además de VPS", "Códigos de descuento para el primer pedido"], x: ["Es un alquiler mensual: se paga cada mes"], l: "godlike.host" };
   // En Latinoamérica, lo que dicen las fichas de las tiendas sobre España vale para el país de cada uno
   if (DIGITAL) Object.keys(TIENDAS_INFO).forEach(function (k) {
-    var i = TIENDAS_INFO[k], cambia = function (t) { return String(t).replace(/que valga en España/g, "que valga en tu país").replace(/se activan en España/g, REGION === "us" ? "se activan en Estados Unidos" : REGION === "de" ? "se activan en Alemania" : "se activan en Latinoamérica").replace(/ en España/g, " en tu país"); };
+    var i = TIENDAS_INFO[k], cambia = function (t) { return String(t).replace(/que valga en España/g, "que valga en tu país").replace(/se activan en España/g, REGION === "us" ? "se activan en Estados Unidos" : REGION === "de" ? "se activan en Alemania" : REGION === "fr" ? "se activan en Francia" : "se activan en Latinoamérica").replace(/ en España/g, " en tu país"); };
     if (i.d) i.d = cambia(i.d); if (i.v) i.v = i.v.map(cambia); if (i.x) i.x = i.x.map(cambia);
   });
   var TP_FECHA = "11 de noviembre de 2026";
@@ -2574,21 +2575,23 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   // ---------- Selector de región y aviso de región según la zona horaria del dispositivo ----------
   (function () {
     var btn = $("reg-btn"), menu = $("reg-menu");
-    var regionP = REGION, NOMBRE_REG = { es: "Europa", latam: "Latinoamérica", us: "Estados Unidos", de: "Alemania" };
-    var regMenu = REGION === "de" ? "es" : REGION;   // Alemania es un país de la región Europa
+    var regionP = REGION, NOMBRE_REG = { es: "Europa", latam: "Latinoamérica", us: "Estados Unidos", de: "Alemania", fr: "Francia" };
+    var regMenu = REGION === "de" || REGION === "fr" ? "es" : REGION;   // Alemania es un país de la región Europa
     // La bandera de la UE en dibujo: Windows no pinta las banderas emoji (salía «EU»)
     var BANDERA_EU = '<svg class="flag-eu" viewBox="0 0 30 20" width="22" height="15" aria-hidden="true" focusable="false"><rect width="30" height="20" rx="2" fill="#003399"/><polygon points="15.00,2.45 15.32,3.36 16.28,3.38 15.52,3.97 15.79,4.89 15.00,4.35 14.21,4.89 14.48,3.97 13.72,3.38 14.68,3.36" fill="#FFCC00"/><polygon points="18.10,3.28 18.42,4.19 19.38,4.21 18.62,4.80 18.89,5.72 18.10,5.18 17.31,5.72 17.58,4.80 16.82,4.21 17.78,4.19" fill="#FFCC00"/><polygon points="20.37,5.55 20.69,6.46 21.65,6.48 20.89,7.07 21.16,7.99 20.37,7.45 19.58,7.99 19.85,7.07 19.09,6.48 20.05,6.46" fill="#FFCC00"/><polygon points="21.20,8.65 21.52,9.56 22.48,9.58 21.72,10.17 21.99,11.09 21.20,10.55 20.41,11.09 20.68,10.17 19.92,9.58 20.88,9.56" fill="#FFCC00"/><polygon points="20.37,11.75 20.69,12.66 21.65,12.68 20.89,13.27 21.16,14.19 20.37,13.65 19.58,14.19 19.85,13.27 19.09,12.68 20.05,12.66" fill="#FFCC00"/><polygon points="18.10,14.02 18.42,14.92 19.38,14.95 18.62,15.54 18.89,16.46 18.10,15.92 17.31,16.46 17.58,15.54 16.82,14.95 17.78,14.92" fill="#FFCC00"/><polygon points="15.00,14.85 15.32,15.76 16.28,15.78 15.52,16.37 15.79,17.29 15.00,16.75 14.21,17.29 14.48,16.37 13.72,15.78 14.68,15.76" fill="#FFCC00"/><polygon points="11.90,14.02 12.22,14.92 13.18,14.95 12.42,15.54 12.69,16.46 11.90,15.92 11.11,16.46 11.38,15.54 10.62,14.95 11.58,14.92" fill="#FFCC00"/><polygon points="9.63,11.75 9.95,12.66 10.91,12.68 10.15,13.27 10.42,14.19 9.63,13.65 8.84,14.19 9.11,13.27 8.35,12.68 9.31,12.66" fill="#FFCC00"/><polygon points="8.80,8.65 9.12,9.56 10.08,9.58 9.32,10.17 9.59,11.09 8.80,10.55 8.01,11.09 8.28,10.17 7.52,9.58 8.48,9.56" fill="#FFCC00"/><polygon points="9.63,5.55 9.95,6.46 10.91,6.48 10.15,7.07 10.42,7.99 9.63,7.45 8.84,7.99 9.11,7.07 8.35,6.48 9.31,6.46" fill="#FFCC00"/><polygon points="11.90,3.28 12.22,4.19 13.18,4.21 12.42,4.80 12.69,5.72 11.90,5.18 11.11,5.72 11.38,4.80 10.62,4.21 11.58,4.19" fill="#FFCC00"/></svg>';
     function aplicar() {
-      $("reg-flag").innerHTML = regionP === "latam" ? "🌎" : regionP === "us" ? menu.querySelector('[data-reg="us"] .reg-flag').innerHTML : regionP === "de" ? menu.querySelector('[data-paiseu="de"] .reg-flag').innerHTML : BANDERA_EU;
+      $("reg-flag").innerHTML = regionP === "latam" ? "🌎" : regionP === "us" ? menu.querySelector('[data-reg="us"] .reg-flag').innerHTML : regionP === "de" || regionP === "fr" ? menu.querySelector('[data-paiseu="' + regionP + '"] .reg-flag').innerHTML : BANDERA_EU;
       $("reg-txt").textContent = NOMBRE_REG[regionP];
       document.documentElement.lang = regionP === "latam" ? "es-419" : regionP === "us" ? "es-US" : "es-ES";
       $("logo-mon").textContent = DOLAR ? "$" : "€";
       [].forEach.call(menu.querySelectorAll("[data-reg]"), function (b) { b.setAttribute("aria-checked", b.dataset.reg === regMenu); });
       [].forEach.call(menu.querySelectorAll("[data-paiseu]"), function (b) { b.setAttribute("aria-checked", b.dataset.paiseu === regionP); });
     }
-    function irRegion(r) { location.href = (r === "latam" ? "/latam/" : r === "us" ? "/us/" : r === "de" ? "/de/" : "/") + location.search.replace(/[?&](latam|us|de)\b/, ""); }
+    function irRegion(r) { location.href = (r === "latam" ? "/latam/" : r === "us" ? "/us/" : r === "de" ? "/de/" : r === "fr" ? "/fr/" : "/") + location.search.replace(/[?&](latam|us|de|fr)\b/, ""); }
     // País dentro de Europa (España o Alemania): solo si hay precios de Alemania
-    if ((window.PILLAO_DE || REGION === "de") && regMenu === "es") $("bloque-pais-eu").hidden = false;
+    if ((window.PILLAO_DE || window.PILLAO_FR || REGION === "de" || REGION === "fr") && regMenu === "es") $("bloque-pais-eu").hidden = false;
+    if (!window.PILLAO_FR && REGION !== "fr") { var bf = menu.querySelector('[data-paiseu="fr"]'); if (bf) bf.hidden = true; }
+    if (!window.PILLAO_DE && REGION !== "de") { var bd = menu.querySelector('[data-paiseu="de"]'); if (bd) bd.hidden = true; }
     menu.addEventListener("click", function (e) { var b = e.target.closest("[data-paiseu]"); if (!b) return; e.stopPropagation(); if (b.dataset.paiseu === regionP) return; irRegion(b.dataset.paiseu); });
     if (!window.PILLAO_LATAM && REGION !== "latam") { var opL = menu.querySelector('[data-reg="latam"]'); if (opL) opL.hidden = true; }
     if (!window.PILLAO_US && REGION !== "us") { var opU = menu.querySelector('[data-reg="us"]'); if (opU) opU.hidden = true; }
@@ -2633,9 +2636,9 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     var tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
     var NORTE = /^America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Toronto|Vancouver|Edmonton|Winnipeg|Halifax|St_Johns|Regina|Detroit|Indiana|Kentucky|Boise|Juneau|Adak|Nome|Sitka|Yakutat|Metlakatla|Menominee|North_Dakota|Moncton|Glace_Bay|Goose_Bay|Iqaluit|Whitehorse|Dawson|Yellowknife|Inuvik|Cambridge_Bay|Rankin_Inlet|Resolute|Atikokan|Creston|Fort_Nelson|Swift_Current|Rainy_River|Nipigon|Thunder_Bay|Pangnirtung)/;
     var EEUU_TZ = /^(America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Detroit|Indiana|Kentucky|Boise|Juneau|Adak|Nome|Sitka|Yakutat|Metlakatla|Menominee|North_Dakota)|Pacific\/Honolulu)/;
-    var detectada = EEUU_TZ.test(tz) ? "us" : /^America\//.test(tz) && !NORTE.test(tz) ? "latam" : /^Europe\/(Berlin|Busingen)$/.test(tz) ? "de" : /^(Europe\/|Atlantic\/Canary|Africa\/Ceuta)/.test(tz) ? "es" : null;
-    var hayReg = { es: true, latam: !!window.PILLAO_LATAM || REGION === "latam", us: !!window.PILLAO_US || REGION === "us", de: !!window.PILLAO_DE || REGION === "de" };
-    if (detectada === "es" && regionP === "de") detectada = null;   // desde otro país de Europa, Alemania también vale
+    var detectada = EEUU_TZ.test(tz) ? "us" : /^America\//.test(tz) && !NORTE.test(tz) ? "latam" : /^Europe\/(Berlin|Busingen)$/.test(tz) ? "de" : /^Europe\/Paris$/.test(tz) ? "fr" : /^(Europe\/|Atlantic\/Canary|Africa\/Ceuta)/.test(tz) ? "es" : null;
+    var hayReg = { es: true, latam: !!window.PILLAO_LATAM || REGION === "latam", us: !!window.PILLAO_US || REGION === "us", de: !!window.PILLAO_DE || REGION === "de", fr: !!window.PILLAO_FR || REGION === "fr" };
+    if (detectada === "es" && (regionP === "de" || regionP === "fr")) detectada = null;   // desde otro país de Europa, Alemania también vale
     if (detectada && detectada !== regionP && hayReg[detectada]) {
       var av = document.createElement("div"); av.className = "reg-aviso"; av.setAttribute("role", "dialog"); av.setAttribute("aria-label", "Cambiar de región");
       var seguir = '<button class="no" type="button">Seguir en ' + NOMBRE_REG[regionP] + '</button>';
@@ -2643,6 +2646,8 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
         ? '<p>🌎 Parece que estás en Latinoamérica</p><small>¿Quieres ver los precios en dólares y solo claves que funcionan allí?</small><div class="acc"><button class="si" type="button" data-ir="latam">Ver Latinoamérica</button>' + seguir + '</div>'
         : detectada === "de"
         ? '<p>' + menu.querySelector('[data-paiseu="de"] .reg-flag').innerHTML + ' Parece que estás en Alemania</p><small>¿Quieres ver solo las claves que funcionan allí, en euros?</small><div class="acc"><button class="si" type="button" data-ir="de">Ver Alemania</button>' + seguir + '</div>'
+        : detectada === "fr"
+        ? '<p>' + menu.querySelector('[data-paiseu="fr"] .reg-flag').innerHTML + ' Parece que estás en Francia</p><small>¿Quieres ver solo las claves que funcionan allí, en euros?</small><div class="acc"><button class="si" type="button" data-ir="fr">Ver Francia</button>' + seguir + '</div>'
         : detectada === "us"
         ? '<p>' + menu.querySelector('[data-reg="us"] .reg-flag').innerHTML + ' Parece que estás en Estados Unidos</p><small>¿Quieres ver los precios en dólares y solo claves que funcionan allí?</small><div class="acc"><button class="si" type="button" data-ir="us">Ver Estados Unidos</button>' + seguir + '</div>'
         : '<p>' + BANDERA_EU + ' Parece que estás en España o en Europa</p><small>¿Quieres ver los precios en euros y las claves que funcionan allí?</small><div class="acc"><button class="si" type="button" data-ir="es">Ver Europa</button>' + seguir + '</div>';
