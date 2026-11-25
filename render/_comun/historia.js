@@ -14,8 +14,10 @@ function montar() {
     dto >= 10 ? { f: `Costaba *${fmtE(J.pvp)}*: es un *${dto}* por ciento menos.`, p: (lt, k) => escenaDescuento(lt, k, dto) } : null,
     { f: `Compara todas las tiendas en *pillaojuegos.com* y pilla el más barato.`, p: (lt, k) => fondoSuave() + cierre(lt, PALETA.acento) },
   ].filter(Boolean);
+  // si hay voz grabada (voz.json), cada frase dura lo que su audio
+  let VOZ = null; if (!/sinvoz/.test(location.search)) try { const x = new XMLHttpRequest(); x.open("GET", "voz.json", false); x.send(); if (x.status == 200) VOZ = JSON.parse(x.responseText).d; } catch (e) {}
   let t = 0.2; window.TRAMOS = [];
-  for (const e of [...ESCENAS, ...finales]) { const d = e.d || durFrase(e.f); TRAMOS.push({ ...e, t0: t, t1: t + d }); t += d + 0.1; }
+  for (const [i, e] of [...ESCENAS, ...finales].entries()) { const d = VOZ && VOZ[i] ? Math.max(2.2, VOZ[i] + .25) : e.d || durFrase(e.f); TRAMOS.push({ ...e, t0: t, t1: t + d }); t += d + 0.1; }
   window.DUR = Math.round((t + 0.5) * 10) / 10;
   window.FRASES = TRAMOS.map((e) => [e.t0, e.t1, e.f]);
   window.escena = (tt) => { const e = TRAMOS.find((x) => tt < x.t1 + 0.1) || TRAMOS[TRAMOS.length - 1]; const lt = Math.max(0, tt - e.t0); return `<div style="position:absolute;inset:0;transform:translate(${sacude(tt)}px,0)">${e.p(lt, cl(lt / (e.t1 - e.t0)))}</div>`; };

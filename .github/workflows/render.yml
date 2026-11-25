@@ -56,6 +56,8 @@ jobs:
       - name: Hacer el vídeo
         env:
           P: ${{ inputs.proyecto }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          VOZ_NOMBRE: "Marcos The Agent"
         run: |
           case "$P" in *..*|/*|"") echo "Proyecto no válido"; exit 1;; esac
           D="render/$P"; [ -f "$D/render.sh" ] || { echo "No existe $D/render.sh"; exit 1; }
