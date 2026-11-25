@@ -1346,6 +1346,30 @@ async function gamersgateFeed(juegos) {
   return n;
 }
 
+// ---------- Gamivo, catálogo de CJ (mercado de claves, en euros y con nuestro enlace) ----------
+async function gamivoFeed(juegos) {
+  let filas; try { filas = JSON.parse(await readFile(join(RAIZ, "feeds", "gamivo.json"), "utf8")); } catch { return 0; }
+  if (!filas.length) return 0;
+  const porLlave = new Map();
+  for (const j of juegos.values()) { const k = llave(j.titulo); if (!porLlave.has(k)) porLlave.set(k, j); }
+  let n = 0, nuevos = 0;
+  for (const f of filas) {
+    if (!["global", "eu", "es"].includes(f.reg)) continue;   // claves que valen en España
+    const nombre = html2txt(f.n).replace(/[™®©]/g, "").replace(/\s+/g, " ").trim();
+    if (!nombre || NO_PRODUCTO.test(limpiar(nombre))) continue;
+    const tipo = f.t || (DLC_RE.test(limpiar(nombre)) ? "dlc" : null);
+    let j = porLlave.get(llave(nombre));
+    if (!j) { j = juego(nombre, { pop: 99999, tipo: tipo || tipoDe(nombre) }); if (!j) continue; porLlave.set(llave(nombre), j); nuevos++; }
+    if (f.img && f.t !== "tarjeta") ponerImagen(j, "gamivo", f.img);
+    const region = f.reg === "es" ? "España" : f.reg === "eu" ? "Europa" : "Global";
+    ofertar(j, { tienda: "gamivo", plataforma: f.pl, precio: f.p, regular: f.r > f.p ? f.r : undefined, stock: true, drm: f.pl === "PC" ? f.d || undefined : undefined,
+      condicion: (f.t === "tarjeta" ? "Código digital" : `Clave ${f.d || f.pl}`) + " · " + region, url: f.u, fuente: "gamivo" });
+    j.revisado.add("gamivo"); visitar("gamivo", j); n++;
+  }
+  console.log(`Gamivo: ${n} precios de su catálogo de CJ (${nuevos} productos nuevos en el catálogo)`);
+  return n;
+}
+
 // ---------- Gamesporium, catálogo de Admitad (en euros y con el enlace de afiliado) ----------
 let GSP_DIRECTO = false;
 async function gamesporiumFeed(juegos) {
@@ -2069,6 +2093,7 @@ async function main() {
   try { cuenta.kinguin = await kinguinFeed(juegos, avisos); } catch (e) { avisos.push("kinguin: " + e.message); caidas.add("kinguin"); }
   try { cuenta.loaded = await loadedFeed(juegos); } catch (e) { avisos.push("loaded: " + e.message); caidas.add("loaded"); }
   try { cuenta.godlike = await godlikeServidores(juegos); } catch (e) { avisos.push("godlike: " + e.message); }
+  try { cuenta.gamivo = await gamivoFeed(juegos); } catch (e) { avisos.push("gamivo: " + e.message); caidas.add("gamivo"); }
   try { cuenta.gamesporium = await gamesporiumFeed(juegos); } catch (e) { avisos.push("gamesporium: " + e.message); caidas.add("gamesporium"); }
   try { cuenta.voidu = await voiduFeed(juegos); } catch (e) { avisos.push("voidu: " + e.message); caidas.add("voidu"); }
   try { cuenta.g2a = await g2aFeed(juegos); } catch (e) { avisos.push("g2a: " + e.message); caidas.add("g2a"); }

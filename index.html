@@ -2490,6 +2490,10 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     // G2A: sin código; con una compra de 10 € o más y apuntándote a su boletín, te dan un 10 % para la siguiente compra
     { t: "g2a", c: null, pct: 10, hasta: null, min: 10, para: ["juego", "edicion", "dlc", "software", "skins", "tarjeta"], url: "https://bywiola.com/g/az4cfakslmd007a92f8d9b7920dcf6/?i=3",
       txt: "10 % para tu siguiente compra", nota: "Solo a partir de la segunda compra de 10 € o más y apúntate a su boletín (no tiene código)" },
+    // Gamivo (CJ): 7 % en juegos, DLC y software; 4 % en suscripciones y tarjetas; código propio para GTA VI
+    { t: "gamivo", c: "7GamerGlee7", pct: 7, hasta: "2027-12-31", para: ["juego", "edicion", "dlc", "software"], txt: "En juegos, DLC y software" },
+    { t: "gamivo", c: "4GAMERGIFT4", pct: 4, hasta: "2027-12-31", para: ["tarjeta"], txt: "En suscripciones y tarjetas regalo" },
+    { t: "gamivo", c: "VICE12", pct: null, hasta: "2026-12-13", para: ["juego", "edicion"], juego: /grand theft auto vi\b|gta vi\b|gta 6/i, txt: "Descuento en GTA VI" },
     // Gamesporium (Admitad): Black Friday, 18 % en toda la tienda
     { t: "gamesporium", c: "BLACKFRIDAY", pct: 18, hasta: "2026-11-30", para: ["juego", "edicion", "dlc", "software", "skins", "tarjeta"], txt: "En toda la tienda" },
     // Godlike (Admitad): códigos de primer pedido (el descuento exacto lo pone su web al aplicarlo)
@@ -2501,13 +2505,14 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   function cuponVivo(c) { return !c.hasta || new Date(c.hasta + "T23:59:59") >= new Date(); }
   function cuponDe(o, j) {
     var tipo = j.tipo || "juego";
-    return CUPONES.filter(function (c) { return (c.t || "kinguin") === o.tienda && c.para.indexOf(tipo) >= 0 && cuponVivo(c) && (!c.max || total(o) <= c.max) && (!c.min || total(o) >= c.min); })[0] || null;
+    var ok = CUPONES.filter(function (c) { return (c.t || "kinguin") === o.tienda && c.para.indexOf(tipo) >= 0 && cuponVivo(c) && (!c.juego || c.juego.test(j.titulo || "")) && (!c.max || total(o) <= c.max) && (!c.min || total(o) >= c.min); });
+    return ok.filter(function (c) { return c.juego; })[0] || ok[0] || null;
   }
   function cuponHTML(o, j) {
     var c = cuponDe(o, j); if (!c) return "";
     if (!c.c) return '<li class="cupon"><span aria-hidden="true">🎟️</span><span class="cu-dto">−' + c.pct + '&nbsp;%</span><span class="cu-meta"><span class="cu-largo">' + esc(c.txt) + " · Sin fecha de fin · " + esc(c.nota) + '</span><span class="cu-corto">' + esc(c.txt) + '</span></span>' +
       '<a class="btn" href="' + esc(c.url) + '" target="_blank" rel="sponsored noopener">Ver promoción ↗</a></li>';
-    if (c.pct == null) return CUPONES.filter(function (x) { return x.pct == null && x.t === c.t && x.para.indexOf(j.tipo || "juego") >= 0 && cuponVivo(x); }).map(function (c) { return '<li class="cupon"><span aria-hidden="true">🎟️</span><span class="cu-largo">Con el cupón</span><span class="cu-cod" translate="no">' + c.c + "</span>" +
+    if (c.pct == null) return CUPONES.filter(function (x) { return x.pct == null && x.t === c.t && x.para.indexOf(j.tipo || "juego") >= 0 && cuponVivo(x) && (!x.juego || x.juego.test(j.titulo || "")); }).map(function (c) { return '<li class="cupon"><span aria-hidden="true">🎟️</span><span class="cu-largo">Con el cupón</span><span class="cu-cod" translate="no">' + c.c + "</span>" +
       '<span class="cu-meta"><span class="cu-largo">' + esc(c.txt) + " · Sin fecha de fin</span><span class=\"cu-corto\">" + esc(c.txt) + "</span></span>" +
       '<button type="button" data-copiar="' + c.c + '" aria-label="Copiar el código ' + c.c + '">Copiar<span class="cu-largo"> código</span></button></li>'; }).join("");
     var conC = Math.round(o.precio * (100 - c.pct)) / 100 + (o.envio || 0);

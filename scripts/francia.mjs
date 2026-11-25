@@ -173,6 +173,16 @@ async function main() {
     ofertar(j, { tienda: "gamesporium", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: f.p, regular: f.r > f.p ? f.r : undefined, condicion: `Clave ${f.d || f.pl}`, url: f.u });
     suma("gamesporium"); gspN++;
   }
+  // Gamivo (CJ): mercado de claves con nuestro enlace
+  for (const f of await leer("feeds/gamivo.json", [])) {
+    if (!["global", "eu", "fr"].includes(f.reg)) continue;
+    const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
+    if (!j.img && f.img && f.t !== "tarjeta") j.img = f.img;
+    tienda("gamivo", "Gamivo", "marketplace");
+    ofertar(j, { tienda: "gamivo", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: f.p, regular: f.r > f.p ? f.r : undefined,
+      condicion: (f.t === "tarjeta" ? "Código digital" : `Clave ${f.d || f.pl}`) + " · " + (f.reg === "fr" ? "Francia" : f.reg === "eu" ? "Europa" : "Global"), url: f.u });
+    suma("gamivo");
+  }
   // Voidu (Daisycon): tienda oficial de claves, en euros y con nuestro enlace
   let voiduN = 0;
   for (const f of await leer("feeds/voidu.json", [])) {
@@ -317,7 +327,9 @@ async function main() {
   for (const t of es.tiendas || []) if (tiendasD.has(t.id)) tiendasD.set(t.id, { ...t, busqueda: undefined });
   const tiendas = [...tiendasD.values()];
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
-    .map((j) => ({ ...j, plataformas: [...j.plataformas], minimo: Math.min(...j.ofertas.map((o) => o.precio)) }));
+    .map((j) => ({ ...j, plataformas: [...j.plataformas], minimo: Math.min(...j.ofertas.map((o) => o.precio)),
+      // Lo que la web ya supone por defecto no se guarda (digital, nuevo y en stock): el archivo no puede pasar de 100 MB
+      ofertas: j.ofertas.map(({ formato, estado, stock, ...o }) => ({ ...o, ...(formato && formato !== "digital" ? { formato } : {}), ...(estado && estado !== "nuevo" ? { estado } : {}), ...(stock === false ? { stock } : {}) })) }));
   const salida = { region: "fr", moneda: "EUR", actualizado: new Date().toISOString(), tiendas, juegos: lista };
   await writeFile(join(RAIZ, "precios-fr.json"), JSON.stringify(salida) + "\n");
   console.log(`Francia: ${lista.length} productos, ${lista.reduce((n, j) => n + j.ofertas.length, 0)} ofertas · ${JSON.stringify(cuenta)}`);

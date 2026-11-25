@@ -81,6 +81,11 @@ jobs:
           mkdir -p feeds; ls -la feeds
           curl -sSL --max-time 300 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/gamersgate-fr.xml "https://feeds.gamersgate.com/feeds/products?country=FRA&aff=15600f04623a9a73fa267b81bfec59911a3e5263" && python3 scripts/gamersgate_feed.py feeds/gamersgate-fr.xml feeds/gamersgate-fr.json || true
           rm -f feeds/gamersgate-fr.xml
+      - name: Catálogo de Gamivo por CJ
+        continue-on-error: true
+        env:
+          CJ_TOKEN: ${{ secrets.CJ_TOKEN }}
+        run: python3 scripts/cj_catalogo.py 6086371 feeds/gamivo-cj.json && python3 scripts/gamivo_feed.py feeds/gamivo-cj.json feeds/gamivo.json
       - name: Catálogo de Francia (precios-fr.json)
         timeout-minutes: 45
         run: node scripts/francia.mjs

@@ -220,6 +220,8 @@ jobs:
           python3 scripts/cj_catalogo.py 5923171 feeds/k4g.json
           python3 scripts/cj_catalogo.py 5923171 feeds/k4g-latam.json USD
           python3 scripts/cj_catalogo.py 7145521 feeds/yuplay-cj.json || true   # Yuplay (unidos en CJ desde el 23 nov)
+          python3 scripts/cj_catalogo.py 6086371 feeds/gamivo-cj.json && python3 scripts/gamivo_feed.py feeds/gamivo-cj.json feeds/gamivo.json || true   # Gamivo (unidos en CJ desde el 25 nov)
+          python3 scripts/cj_catalogo.py 6086371 feeds/gamivo-cj-usd.json USD && python3 scripts/gamivo_feed.py feeds/gamivo-cj-usd.json feeds/gamivo-usd.json || true
       - run: |
           # quita espacios o saltos de línea que se cuelan al pegar claves
           export ITAD_KEY=$(printf '%s' "$ITAD_KEY" | tr -d '[:space:]') EBAY_CLIENT_ID=$(printf '%s' "$EBAY_CLIENT_ID" | tr -d '[:space:]') EBAY_CLIENT_SECRET=$(printf '%s' "$EBAY_CLIENT_SECRET" | tr -d '[:space:]')

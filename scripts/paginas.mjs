@@ -586,7 +586,7 @@ async function main() {
     { id: "de", archivo: "precios-de.json", nombre: "Alemania", lang: "es-DE", marca: "PILLAO_DE", fichas: +(process.env.DE_FICHAS || 2500), moneda: "EUR" },
     { id: "fr", archivo: "precios-fr.json", nombre: "Francia", lang: "es-FR", marca: "PILLAO_FR", fichas: +(process.env.FR_FICHAS || 2500), moneda: "EUR" },
   ];
-  for (const r of REGIONES) { try { r.datos = JSON.parse(await readFile(join(RAIZ, r.archivo), "utf8")); } catch {} r.hay = !!(r.datos && r.datos.juegos && r.datos.juegos.length); r.fichasL = []; r.chollosL = []; }
+  for (const r of REGIONES) { try { r.datos = completar(JSON.parse(await readFile(join(RAIZ, r.archivo), "utf8"))); } catch {} r.hay = !!(r.datos && r.datos.juegos && r.datos.juegos.length); r.fichasL = []; r.chollosL = []; }
   const marcas = "<script>" + REGIONES.filter((r) => r.hay).map((r) => `window.${r.marca}=true;`).join("") + "</script>\n</head>";
   await rm(SALIDA, { recursive: true, force: true });
   await mkdir(SALIDA, { recursive: true });

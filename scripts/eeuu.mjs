@@ -172,6 +172,16 @@ async function main() {
       suma("godlike");
     }
   } catch (e) { console.warn("Godlike: " + e.message); }
+  // Gamivo (CJ): mercado de claves con nuestro enlace
+  for (const f of await leer("feeds/gamivo-usd.json", [])) {
+    if (!["global", "us"].includes(f.reg)) continue;
+    const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
+    if (!j.img && f.img && f.t !== "tarjeta") j.img = f.img;
+    tienda("gamivo", "Gamivo", "marketplace");
+    ofertar(j, { tienda: "gamivo", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: f.p, regular: f.r > f.p ? f.r : undefined,
+      condicion: (f.t === "tarjeta" ? "Código digital" : `Clave ${f.d || f.pl}`) + " · " + (f.reg === "us" ? "EE. UU." : "Global"), url: f.u });
+    suma("gamivo");
+  }
   // Voidu (Daisycon): tienda oficial de claves, en euros y con nuestro enlace
   let voiduN = 0;
   for (const f of await leer("feeds/voidu.json", [])) {
