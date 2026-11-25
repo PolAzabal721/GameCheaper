@@ -23,8 +23,9 @@ const ahora = completar(await leer("precios.json", { juegos: [], tiendas: [] }))
 // La versión anterior de los precios es la del último commit (este paso va antes de guardar los nuevos)
 let antes = { juegos: [] };
 try { antes = ENV.TG_ANTES ? JSON.parse(await readFile(ENV.TG_ANTES, "utf8")) : JSON.parse(execFileSync("git", ["show", "HEAD:precios.json"], { maxBuffer: 1 << 30 }).toString());
-  let p2 = { juegos: [] }; try { if (antes.parte2) p2 = JSON.parse(execFileSync("git", ["show", "HEAD:" + antes.parte2], { maxBuffer: 1 << 30 }).toString()); } catch {}
-  completar(antes, p2); } catch { console.log("Telegram: no hay versión anterior; no comparo."); process.exit(0); }
+  let p2 = { juegos: [] };
+  for (const nombre of antes.partes || (antes.parte2 ? [antes.parte2] : [])) { try { p2.juegos = p2.juegos.concat(JSON.parse(execFileSync("git", ["show", "HEAD:" + nombre], { maxBuffer: 1 << 30 }).toString()).juegos || []); } catch {} }
+  delete antes.partes; antes.parte2 = antes.parte2 || "x"; completar(antes, p2); } catch { console.log("Telegram: no hay versión anterior; no comparo."); process.exit(0); }
 const estado = await leer("data/telegram.json", { publicados: {} });
 
 const tienda = Object.fromEntries((ahora.tiendas || []).map((t) => [t.id, t]));

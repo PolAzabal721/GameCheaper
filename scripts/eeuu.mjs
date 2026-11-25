@@ -10,7 +10,7 @@
 //   - Microsoft Store, PlayStation Store y Nintendo eShop de EE. UU.
 //   - Instant Gaming (claves Worldwide en dólares), Yuplay (las que se activan en EE. UU.), Driffle y GamersGate (feed de EE. UU.)
 // Las fotos, los nombres y la popularidad se toman del catálogo de España (precios.json) cuando es el mismo juego.
-import { completar } from "./completar.mjs";
+import { completar, guardarPartes } from "./completar.mjs";
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -182,6 +182,15 @@ async function main() {
       condicion: (f.t === "tarjeta" ? "Código digital" : `Clave ${f.d || f.pl}`) + " · " + (f.reg === "us" ? "EE. UU." : "Global"), url: f.u });
     suma("gamivo");
   }
+  // Gamesporium (Admitad): su catálogo en dólares; sin región en el catálogo, sus claves se marcan como globales
+  const gspUSD = await leer("feeds/gamesporium-usd.json", []);
+  for (const f of gspUSD) {
+    const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
+    if (!j.img && f.img) j.img = f.img;
+    tienda("gamesporium", "Gamesporium", "revendedor");
+    ofertar(j, { tienda: "gamesporium", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: f.p, regular: f.r > f.p ? f.r : undefined, condicion: `Clave ${f.d || f.pl} · Global`, url: f.u });
+    suma("gamesporium");
+  }
   // Voidu (Daisycon): tienda oficial de claves, en euros y con nuestro enlace
   let voiduN = 0;
   for (const f of await leer("feeds/voidu.json", [])) {
@@ -224,7 +233,7 @@ async function main() {
           for (const x of g.deals || []) {
             if (!(x.price?.amount > 0) || x.price.currency !== "USD") continue;
             const nombre = x.shop?.name || String(x.shop?.id), id0 = /^steam$/i.test(nombre) ? "steam" : "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
-            if (id0 === "itad-voidu" && voiduN) continue;
+            if ((id0 === "itad-voidu" && voiduN) || (id0 === "itad-gamesporium" && gspUSD.length)) continue;
             const id = { "itad-microsoftstore": "xbox", "itad-gamersgate": "gamersgate" }[id0] || id0;
             const oficial = OFICIALES_PC.test(nombre);
             const j = juego(e.titulo, e.tipo); if (!j) continue;
@@ -446,7 +455,7 @@ async function main() {
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
     .map((j) => ({ ...j, plataformas: [...j.plataformas], minimo: Math.min(...j.ofertas.map((o) => o.precio)) }));
   const salida = { region: "us", moneda: "USD", cambio, actualizado: new Date().toISOString(), tiendas, juegos: lista };
-  await writeFile(join(RAIZ, "precios-us.json"), JSON.stringify(salida) + "\n");
+  guardarPartes("precios-us.json", salida);
   console.log(`EE. UU.: ${lista.length} productos, ${lista.reduce((n, j) => n + j.ofertas.length, 0)} ofertas · ${JSON.stringify(cuenta)} · 1 € = ${cambio.toFixed(3)} US$`);
 }
 

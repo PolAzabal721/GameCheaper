@@ -33,7 +33,8 @@ jobs:
             feeds/kinguin-latam.json
             feeds/kinguin-us.json
             feeds/kinguin-de.json
-          key: kinguin6-${{ steps.hoy.outputs.d }}
+            feeds/kinguin-fr.json
+          key: kinguin7-${{ steps.hoy.outputs.d }}
       - name: Descargar el catálogo de Kinguin (Admitad)
         if: steps.cache-kinguin.outputs.cache-hit != 'true'
         continue-on-error: true
@@ -43,7 +44,7 @@ jobs:
           mkdir -p feeds
           U=$(printf '%s' "$F" | sed -E 's#/(en|es)/webmaster#/es/webmaster#; s/feed_id=[0-9]+/feed_id=25659/; s/&fcid=[0-9]+//')
           curl -sL --max-time 900 -o feeds/kinguin.csv "$U"
-          python3 scripts/kinguin_feed.py feeds/kinguin.csv feeds/kinguin.json feeds/kinguin-latam.json feeds/kinguin-us.json feeds/kinguin-de.json
+          python3 scripts/kinguin_feed.py feeds/kinguin.csv feeds/kinguin.json feeds/kinguin-latam.json feeds/kinguin-us.json feeds/kinguin-de.json feeds/kinguin-fr.json
           rm feeds/kinguin.csv
       - name: Catálogo de G2A (como mucho una descarga al día)
         id: cache-g2a
@@ -89,7 +90,8 @@ jobs:
             feeds/cjs-latam.json
             feeds/cjs-us.json
             feeds/cjs-de.json
-          key: cjs3-${{ steps.hoy.outputs.d }}
+            feeds/cjs-fr.json
+          key: cjs4-${{ steps.hoy.outputs.d }}
       - name: Descargar el catálogo de CJS CD Keys (feed público con nuestro enlace de afiliado)
         if: steps.cache-cjs.outputs.cache-hit != 'true'
         continue-on-error: true
@@ -100,7 +102,7 @@ jobs:
           for i in 1 2 3; do
             curl -sSL --retry 2 --max-time 400 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/cjs.xml "https://www.cjs-cdkeys.com/autokey/productFeed/gocdkeysFeedRead.php?utm_source=pillao&utm_campaign=feed" || true
             ls -la feeds/cjs.xml || true
-            python3 scripts/cjs_feed.py feeds/cjs.xml feeds/cjs.json feeds/cjs-latam.json feeds/cjs-us.json feeds/cjs-de.json && break
+            python3 scripts/cjs_feed.py feeds/cjs.xml feeds/cjs.json feeds/cjs-latam.json feeds/cjs-us.json feeds/cjs-de.json feeds/cjs-fr.json && break
             sleep 30
           done
           rm -f feeds/cjs.xml
@@ -135,7 +137,8 @@ jobs:
             feeds/loaded-latam.json
             feeds/loaded-us.json
             feeds/loaded-de.json
-          key: loaded4-${{ steps.hoy.outputs.d }}
+            feeds/loaded-fr.json
+          key: loaded5-${{ steps.hoy.outputs.d }}
       - name: Descargar el catálogo de Loaded (FTP de Impact, en euros y en español)
         if: steps.cache-loaded.outputs.cache-hit != 'true'
         continue-on-error: true
@@ -147,6 +150,7 @@ jobs:
           curl -sS --max-time 300 -u "$U:$P" -o feeds/loaded.xml.gz "ftp://products.impact.com/Loaded/Loaded-ProductFeedEURSpanish_CUSTOM.xml.gz"
           python3 scripts/loaded_feed.py feeds/loaded.xml.gz feeds/loaded.json
           python3 scripts/loaded_feed.py feeds/loaded.xml.gz feeds/loaded-de.json de || true
+          python3 scripts/loaded_feed.py feeds/loaded.xml.gz feeds/loaded-fr.json fr || true
           rm feeds/loaded.xml.gz
           curl -sS --max-time 300 -u "$U:$P" -o feeds/loaded-usd.xml.gz "ftp://products.impact.com/Loaded/Loaded-ProductFeedUSDEnglish_CUSTOM.xml.gz" && python3 scripts/loaded_feed.py feeds/loaded-usd.xml.gz feeds/loaded-latam.json latam && python3 scripts/loaded_feed.py feeds/loaded-usd.xml.gz feeds/loaded-us.json us || true
           rm -f feeds/loaded-usd.xml.gz
@@ -154,8 +158,10 @@ jobs:
         id: cache-gamesporium
         uses: actions/cache@v4
         with:
-          path: feeds/gamesporium.json
-          key: gamesporium1-${{ steps.hoy.outputs.d }}
+          path: |
+            feeds/gamesporium.json
+            feeds/gamesporium-usd.json
+          key: gamesporium2-${{ steps.hoy.outputs.d }}
       - name: Descargar el catálogo de Gamesporium (Admitad)
         if: steps.cache-gamesporium.outputs.cache-hit != 'true'
         continue-on-error: true
@@ -167,6 +173,9 @@ jobs:
           curl -sL --max-time 600 -o feeds/gamesporium.csv "$U"
           python3 scripts/gamesporium_feed.py feeds/gamesporium.csv feeds/gamesporium.json
           rm -f feeds/gamesporium.csv
+          U=$(printf '%s' "$U" | sed -E 's/feed_id=[0-9]+/feed_id=26884/')   # el mismo catálogo en dólares (EE. UU. y LATAM)
+          curl -sL --max-time 600 -o feeds/gamesporium-usd.csv "$U" && python3 scripts/gamesporium_feed.py feeds/gamesporium-usd.csv feeds/gamesporium-usd.json USD || true
+          rm -f feeds/gamesporium-usd.csv
       - name: Catálogo de Voidu (Daisycon, como mucho una descarga al día)
         id: cache-voidu
         uses: actions/cache@v4
@@ -250,7 +259,7 @@ jobs:
         run: |
           git config user.name "pillao-bot"
           git config user.email "pillao-bot@users.noreply.github.com"
-          git add precios.json $(ls precios-2.json precios-latam.json 2>/dev/null) minimos.json data/historial data/salud.json $(ls data/telegram.json data/mercados.json data/yuplay.json data/imagenes.json data/mediamarkt.json data/xtralife.json data/pcbox.json data/xtralife-todo.json data/pcbox-todo.json data/latam-cache.json 2>/dev/null)
+          git add -A precios.json precios-[0-9]*.json; git add precios.json $(ls precios-2.json precios-latam.json 2>/dev/null) minimos.json data/historial data/salud.json $(ls data/telegram.json data/mercados.json data/yuplay.json data/imagenes.json data/mediamarkt.json data/xtralife.json data/pcbox.json data/xtralife-todo.json data/pcbox-todo.json data/latam-cache.json 2>/dev/null)
           git diff --cached --quiet && exit 0
           git commit -m "Precios actualizados"
           # Si mientras tanto se ha subido otra versión de los precios, manda la de esta ejecución (es la más reciente)
@@ -272,7 +281,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          git add $(ls precios-latam.json data/latam-cache.json 2>/dev/null)
+          git add -A precios-latam*.json; git add $(ls precios-latam.json data/latam-cache.json 2>/dev/null)
           git diff --cached --quiet && exit 0
           git commit -m "Precios de Latinoamérica actualizados"
           for i in 1 2 3; do
@@ -293,7 +302,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          git add $(ls precios-us.json data/eeuu-cache.json 2>/dev/null)
+          git add -A precios-us*.json; git add $(ls precios-us.json data/eeuu-cache.json 2>/dev/null)
           git diff --cached --quiet && exit 0
           git commit -m "Precios de Estados Unidos actualizados"
           for i in 1 2 3; do
@@ -314,7 +323,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          git add $(ls precios-de.json 2>/dev/null)
+          git add -A precios-de*.json; git add $(ls precios-de.json 2>/dev/null)
           git diff --cached --quiet && exit 0
           git commit -m "Precios de Alemania actualizados"
           for i in 1 2 3; do

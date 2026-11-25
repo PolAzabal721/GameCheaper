@@ -3,7 +3,7 @@
 // GamersGate (feed de Alemania), tiendas de PC por IsThereAnyDeal (país DE), Microsoft Store, PlayStation Store y Nintendo eShop de Alemania,
 // y de España las ofertas de Instant Gaming y Driffle con claves globales o europeas (mismo precio en euros).
 // Las fotos, los nombres y la popularidad se toman del catálogo de España (precios.json) cuando es el mismo juego.
-import { completar } from "./completar.mjs";
+import { completar, guardarPartes } from "./completar.mjs";
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -335,7 +335,7 @@ async function main() {
       // Lo que la web ya supone por defecto no se guarda (digital, nuevo y en stock): el archivo no puede pasar de 100 MB
       ofertas: j.ofertas.map(({ formato, estado, stock, ...o }) => ({ ...o, ...(formato && formato !== "digital" ? { formato } : {}), ...(estado && estado !== "nuevo" ? { estado } : {}), ...(stock === false ? { stock } : {}) })) }));
   const salida = { region: "de", moneda: "EUR", actualizado: new Date().toISOString(), tiendas, juegos: lista };
-  await writeFile(join(RAIZ, "precios-de.json"), JSON.stringify(salida) + "\n");
+  guardarPartes("precios-de.json", salida);
   console.log(`Alemania: ${lista.length} productos, ${lista.reduce((n, j) => n + j.ofertas.length, 0)} ofertas · ${JSON.stringify(cuenta)}`);
 }
 

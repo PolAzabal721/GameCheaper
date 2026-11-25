@@ -6,6 +6,7 @@ origen, destino = sys.argv[1], sys.argv[2]
 destino_latam = sys.argv[3] if len(sys.argv) > 3 else None   # opcional: lo que vale en Latinoamérica (para pillaojuegos.com/latam/)
 destino_us = sys.argv[4] if len(sys.argv) > 4 else None      # opcional: lo que vale en Estados Unidos (para pillaojuegos.com/us/)
 destino_de = sys.argv[5] if len(sys.argv) > 5 else None      # opcional: lo que vale en Alemania (para pillaojuegos.com/de/)
+destino_fr = sys.argv[6] if len(sys.argv) > 6 else None      # opcional: lo que vale en Francia (para pillaojuegos.com/fr/)
 LATAM = ("AR", "MX", "CL", "CO", "PE")
 PAISES = {"AR": "Argentina", "MX": "Mexico", "CL": "Chile", "CO": "Colombia", "PE": "Peru", "BR": "Brazil", "UY": "Uruguay", "EC": "Ecuador", "VE": "Venezuela", "BO": "Bolivia", "PY": "Paraguay", "CR": "Costa Rica", "PA": "Panama", "GT": "Guatemala", "DO": "Dominican Republic"}                       # si la clave está bloqueada en alguno de estos, no vale para «LATAM»
 abrir = gzip.open if origen.endswith(".gz") else open
@@ -15,7 +16,7 @@ SALDO = re.compile(r"gift ?card|coins?\b|balance|wallet|voucher|gems\b|[$€£�
 # Cajas de skins (se abren con llave y dan algo al azar): fuera
 CAJAS = re.compile(r"\b(case|cases|capsule|souvenir package|package|caja|cajas)\b", re.I)
 MERCADOS_SKINS = re.compile(r"^(dmarket|skinsmonkey|skinflow\.gg|swap\.gg|cs\.trade|shadowpay(\.com)?|qqskins|skinswap|tradeit(\.gg)?|cs\.money|skinport|waxpeer|skinbaron|lis-skins|rapidskins)\b", re.I)
-filas, latam, us, de = [], [], [], []
+filas, latam, us, de, fr = [], [], [], [], []
 with abrir(origen, "rt", encoding="utf-8", errors="replace", newline="") as f:
     for x in csv.DictReader(f, delimiter=";"):
         c, n = x.get("categoryId", ""), x.get("name", "")
@@ -39,6 +40,7 @@ with abrir(origen, "rt", encoding="utf-8", errors="replace", newline="") as f:
             elif pais: latam.append({**fila, "solo": pais})
         if destino_us and "US" not in lim: us.append(fila)
         if destino_de and "DE" not in lim: de.append(fila)
+        if destino_fr and "FR" not in lim: fr.append(fila)   # incluidas las claves solo de Francia («France»)
 json.dump(filas, open(destino, "w"), ensure_ascii=False, separators=(",", ":"))
 print(f"Kinguin: {len(filas)} productos válidos en España guardados")
 if destino_latam:
@@ -50,3 +52,6 @@ if destino_us:
 if destino_de:
     json.dump(de, open(destino_de, "w"), ensure_ascii=False, separators=(",", ":"))
     print(f"Kinguin: {len(de)} productos válidos en Alemania guardados")
+if destino_fr:
+    json.dump(fr, open(destino_fr, "w"), ensure_ascii=False, separators=(",", ":"))
+    print(f"Kinguin: {len(fr)} productos válidos en Francia guardados")

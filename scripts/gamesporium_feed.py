@@ -3,9 +3,10 @@
 import csv, json, re, sys, collections
 csv.field_size_limit(10**9)
 origen, destino = sys.argv[1], sys.argv[2]
+MONEDA = sys.argv[3] if len(sys.argv) > 3 else "EUR"
 mejor, plataformas, ediciones = {}, collections.Counter(), collections.Counter()
 for x in csv.DictReader(open(origen, encoding="utf-8", errors="replace", newline=""), delimiter=";"):
-    if (x.get("available") or "true").lower() != "true" or (x.get("currencyId") or "EUR") != "EUR": continue
+    if (x.get("available") or "true").lower() != "true" or (x.get("currencyId") or MONEDA) != MONEDA: continue
     n = (x.get("name") or "").strip()
     if not n or re.search(r"\baccount\b", n, re.I): continue
     if (x.get("delivery_type") or "key").lower() not in ("key", ""): continue

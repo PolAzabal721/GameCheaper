@@ -2,7 +2,7 @@
 // Mismas fuentes que Alemania (scripts/alemania.mjs): de los catálogos de claves se usan las globales y las de Europa
 // (las solo de Alemania se descartan); GamersGate con su feed de Francia; tiendas de PC por IsThereAnyDeal (país FR),
 // Microsoft Store, PlayStation Store y Nintendo eShop de Francia.
-import { completar } from "./completar.mjs";
+import { completar, guardarPartes } from "./completar.mjs";
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -43,8 +43,11 @@ const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 const CABECERAS = { "User-Agent": "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)", "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8" };
 const OFICIALES_PC = /^(steam|gog|epic|microsoft|ea app|ea store|origin|ubisoft|battle\.net|blizzard|rockstar|bethesda|square enix|nintendo)/i;
 // Región de la clave, en palabras de la web: «Global», «EE. UU.» o «Norteamérica»
-const zonaDE = (txt) => /germany|deutschland|\bde\b|dach/i.test(txt || "") ? "Alemania" : /europe|\beu\b|emea/i.test(txt || "") ? "Europa" : "Global";
+const zonaDE = (txt) => /france|\bfr\b/i.test(txt || "") ? "Francia" : /germany|deutschland|\bde\b|dach/i.test(txt || "") ? "Alemania" : /europe|\beu\b|emea/i.test(txt || "") ? "Europa" : "Global";
 
+
+// Catálogo de Francia de cada tienda si existe; si no, el de Alemania (las claves solo de Alemania se descartan al ofertar)
+const leerFR = async (fr, de) => { const x = await leer(fr, null); return x && x.length ? x : leer(de, []); };
 
 async function main() {
   const es = completar(await leer("precios.json", { juegos: [] }));
@@ -81,7 +84,7 @@ async function main() {
   const queda = () => Date.now() < FIN_SEC;
 
   // Kinguin (en euros): lo que no está bloqueado en Alemania
-  for (const f of await leer("feeds/kinguin-de.json", [])) {
+  for (const f of await leerFR("feeds/kinguin-fr.json", "feeds/kinguin-de.json")) {
     const tipo = KIN_TIPO[f.c]; if (!tipo) continue;
     const plataforma = tipo === "tarjeta" ? "Tarjeta regalo" : tipo === "software" || tipo === "skins" ? "PC" : KIN_PLAT[f.p];
     if (!plataforma || !(f.pr > 0)) continue;
@@ -124,7 +127,7 @@ async function main() {
     suma("g2a");
   }
   // CJS CD Keys: Global, Europe y Germany (en euros)
-  for (const f of await leer("feeds/cjs-de.json", [])) {
+  for (const f of await leerFR("feeds/cjs-fr.json", "feeds/cjs-de.json")) {
     let nombre = html2txt(f.n).replace(/[™®©]/g, "");
     if (f.t !== "tarjeta" && f.t !== "software") nombre = nombre.replace(/\s*\+\s*pre-?order bonus( dlc)?\b/gi, " ").replace(/\s*[-(]?\s*\bpre-?order\b\s*\)?/gi, " ").replace(/\s*\/\s*/g, " ").replace(KIN_RUIDO, " ").replace(/\s+-\s*$/, "");
     nombre = nombre.replace(/\s+/g, " ").trim(); if (nombre.length < 2) continue;
@@ -132,7 +135,7 @@ async function main() {
     if (!j.img && f.img && f.t !== "tarjeta") j.img = f.img;
     tienda("cjs", "CJS CD Keys", "revendedor");
     ofertar(j, { tienda: "cjs", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: f.p,
-      condicion: (f.t === "tarjeta" ? "Código digital" : `Clave ${f.d || f.pl}`) + " · " + (f.reg === "Global" ? "Global" : f.reg === "Europe" ? "Europa" : "Alemania") + (/pre-?order bonus/i.test(f.n) ? " · Con DLC de reserva" : ""), url: f.u });
+      condicion: (f.t === "tarjeta" ? "Código digital" : `Clave ${f.d || f.pl}`) + " · " + (f.reg === "Global" ? "Global" : f.reg === "Europe" ? "Europa" : f.reg === "France" ? "Francia" : "Alemania") + (/pre-?order bonus/i.test(f.n) ? " · Con DLC de reserva" : ""), url: f.u });
     suma("cjs");
   }
   // GGPick: claves globales y tarjetas globales, en euros o de Alemania (sus precios van en dólares → euros)
@@ -146,7 +149,7 @@ async function main() {
     suma("ggpick");
   }
   // Loaded (catálogo en euros)
-  for (const f of await leer("feeds/loaded-de.json", [])) {
+  for (const f of await leerFR("feeds/loaded-fr.json", "feeds/loaded-de.json")) {
     const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
     if (!j.img && f.img && f.t !== "tarjeta") j.img = f.img;
     tienda("loaded", "Loaded", "revendedor");
@@ -336,7 +339,7 @@ async function main() {
       // Lo que la web ya supone por defecto no se guarda (digital, nuevo y en stock): el archivo no puede pasar de 100 MB
       ofertas: j.ofertas.map(({ formato, estado, stock, ...o }) => ({ ...o, ...(formato && formato !== "digital" ? { formato } : {}), ...(estado && estado !== "nuevo" ? { estado } : {}), ...(stock === false ? { stock } : {}) })) }));
   const salida = { region: "fr", moneda: "EUR", actualizado: new Date().toISOString(), tiendas, juegos: lista };
-  await writeFile(join(RAIZ, "precios-fr.json"), JSON.stringify(salida) + "\n");
+  guardarPartes("precios-fr.json", salida);
   console.log(`Francia: ${lista.length} productos, ${lista.reduce((n, j) => n + j.ofertas.length, 0)} ofertas · ${JSON.stringify(cuenta)}`);
 }
 

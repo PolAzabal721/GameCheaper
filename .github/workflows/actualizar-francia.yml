@@ -32,8 +32,9 @@ jobs:
             feeds/kinguin-latam.json
             feeds/kinguin-us.json
             feeds/kinguin-de.json
-          key: kinguin6-ninguna
-          restore-keys: kinguin6-
+            feeds/kinguin-fr.json
+          key: kinguin7-ninguna
+          restore-keys: kinguin7-
       - uses: actions/cache/restore@v4
         with:
           path: |
@@ -54,8 +55,9 @@ jobs:
             feeds/cjs-latam.json
             feeds/cjs-us.json
             feeds/cjs-de.json
-          key: cjs3-ninguna
-          restore-keys: cjs3-
+            feeds/cjs-fr.json
+          key: cjs4-ninguna
+          restore-keys: cjs4-
       - uses: actions/cache/restore@v4
         with:
           path: |
@@ -63,13 +65,16 @@ jobs:
             feeds/loaded-latam.json
             feeds/loaded-us.json
             feeds/loaded-de.json
-          key: loaded4-ninguna
-          restore-keys: loaded4-
+            feeds/loaded-fr.json
+          key: loaded5-ninguna
+          restore-keys: loaded5-
       - uses: actions/cache/restore@v4
         with:
-          path: feeds/gamesporium.json
-          key: gamesporium1-ninguna
-          restore-keys: gamesporium1-
+          path: |
+            feeds/gamesporium.json
+            feeds/gamesporium-usd.json
+          key: gamesporium2-ninguna
+          restore-keys: gamesporium2-
       - uses: actions/cache/restore@v4
         with:
           path: feeds/voidu.json
@@ -94,7 +99,7 @@ jobs:
       - name: Guardar Francia
         run: |
           git config user.name "pillao-bot"; git config user.email "bot@pillaojuegos.com"
-          git add precios-fr.json
+          git add -A precios-fr*.json
           git diff --cached --quiet && exit 0
           git commit -m "Precios de Francia actualizados"
           for i in 1 2 3; do
