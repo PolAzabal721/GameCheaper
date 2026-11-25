@@ -326,6 +326,11 @@ async function main() {
 
   for (const t of es.tiendas || []) if (tiendasD.has(t.id)) tiendasD.set(t.id, { ...t, busqueda: undefined });
   const tiendas = [...tiendasD.values()];
+  // Para no pasar de 100 MB: fuera las ofertas de una plataforma que cuestan más del doble que la más barata de esa plataforma
+  for (const j of juegos.values()) {
+    const min = {}; for (const o of j.ofertas) min[o.plataforma] = Math.min(min[o.plataforma] ?? Infinity, o.precio);
+    j.ofertas = j.ofertas.filter((o) => o.precio <= min[o.plataforma] * 2 + 0.5);
+  }
   const lista = [...juegos.values()].filter((j) => j.ofertas.length).sort((a, b) => a.pop - b.pop)
     .map((j) => ({ ...j, plataformas: [...j.plataformas], minimo: Math.min(...j.ofertas.map((o) => o.precio)),
       // Lo que la web ya supone por defecto no se guarda (digital, nuevo y en stock): el archivo no puede pasar de 100 MB
