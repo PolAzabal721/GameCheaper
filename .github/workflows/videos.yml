@@ -3,8 +3,7 @@ name: Vídeos de los chollos
 # Una vez al día hace vídeos verticales (TikTok y Reels) de los chollos publicados en Telegram.
 # Quedan en videos/ y se pueden descargar en https://pillaojuegos.com/videos/
 on:
-  schedule:
-    - cron: "41 8 * * *"   # 9:41 (hora de España)
+  # Ya no se hacen solos cada día: solo cuando Pol lo pide (a mano).
   workflow_dispatch:
     inputs:
       juegos:
