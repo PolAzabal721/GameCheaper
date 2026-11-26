@@ -10,6 +10,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
+import vm from "node:vm";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 // Logo de cada tienda (logos/<dominio>.png), para la lista de ofertas de cada ficha
@@ -83,6 +84,60 @@ const TIPO = { dlc: "DLC", edicion: "Edición especial", tarjeta: "Tarjeta regal
 
 // Política de seguridad (CSP): el navegador solo ejecuta los scripts de Pillao (por su huella exacta),
 // solo se conecta con la propia web y con el buscador, y no deja que otra web meta Pillao dentro ni envíe formularios fuera.
+// ---------- Páginas de cada país en su idioma (para Google) ----------
+// Se usa el mismo traductor que la web (idiomas.js): así las páginas de /de/, /fr/, /us/ y /latam/ ya salen en alemán, francés,
+// inglés y español de América en el HTML que lee Google, sin esperar a que el navegador las traduzca.
+let TRADUCIR = null;
+async function cargarTraductor() {
+  if (TRADUCIR) return TRADUCIR;
+  const ctx = { window: {}, document: { getElementById: () => ({}), readyState: "complete", addEventListener() {} }, navigator: { userAgent: "", languages: [] }, location: { pathname: "/" }, localStorage: { getItem: () => null }, WeakMap, Set, Map, console };
+  ctx.window = ctx; vm.createContext(ctx);
+  vm.runInContext(await readFile(join(RAIZ, "idiomas.js"), "utf8"), ctx);
+  const base = ctx.PILLAO_TRADUCIR;
+  // Precios en dólares («US$ 19.79»): el diccionario tiene las frases con euros; se traducen como «19,79 €» y se vuelve a poner US$
+  TRADUCIR = (t, l) => {
+    if (!/US\$\s?\d/.test(t)) return base(t, l);
+    const x = t.replace(/US\$\s?(\d+)(?:\.(\d{2}))?/g, (m, e, c) => e + (c ? "," + c : "") + " €");
+    const v = base(x, l);
+    return v === x ? t : v.replace(/€\s?(\d+)(?:[.,](\d{2}))?|(\d+)(?:[.,](\d{2}))?\s?€/g, (m, a, b, c, d) => "US$" + (a || c) + ((b || d) ? "." + (b || d) : ""));
+  };
+  return TRADUCIR;
+}
+const DESC = (t) => t.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#0?39;/g, "'");
+const ESC = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const ESCA = (t) => ESC(t).replace(/"/g, "&quot;");
+const ETIQUETA = /<(?:[^>"']|"[^"]*"|'[^']*')*>/g;
+// Lo que no se traduce: scripts, estilos, dibujos, código y los nombres de juegos y tiendas (data-no-trad)
+const SALTAR = /^<(script|style|svg|code)\b/i;
+function traducirHtml(html, lang, tr, fuera) {
+  let out = "", ult = 0, saltar = null;
+  const texto = (t) => {
+    if (saltar || !/[A-Za-zÁÉÍÓÚáéíóúñÑ]/.test(t)) return t;
+    const d = DESC(t), v = tr(d, lang);
+    if (v === d && fuera && /\b(el|la|los|las|de|del|en|con|para|por|más|precio|juegos?|tiendas?|ofertas?|ahora|ver|ir)\b/i.test(d) && d.trim().length < 200) fuera.set(d.trim(), (fuera.get(d.trim()) || 0) + 1);
+    return v === d ? t : ESC(v);
+  };
+  const etiqueta = (tag) => {
+    if (saltar) { if (new RegExp("^</" + saltar + "\\b", "i").test(tag)) saltar = null; return tag; }
+    const m = tag.match(SALTAR); if (m && !/\/>$/.test(tag)) { saltar = m[1].toLowerCase(); return tag; }
+    tag = tag.replace(/\b(title|alt|aria-label|placeholder)="([^"]*)"/g, (x, a, t) => { const d = DESC(t), v = tr(d, lang); return v === d ? x : `${a}="${ESCA(v)}"`; });
+    if (/^<meta (?:name="description"|property="og:(?:title|description)"|name="twitter:(?:title|description)")/.test(tag))
+      tag = tag.replace(/content="([^"]*)"/, (x, t) => { const d = DESC(t), v = tr(d, lang); return v === d ? x : `content="${ESCA(v)}"`; });
+    return tag;
+  };
+  for (const m of html.matchAll(ETIQUETA)) {
+    out += texto(html.slice(ult, m.index)) + etiqueta(m[0]);
+    ult = m.index + m[0].length;
+  }
+  return out + texto(html.slice(ult));
+}
+async function* htmlsDe(dir) {
+  for (const e of await readdir(dir, { withFileTypes: true })) {
+    const r = join(dir, e.name);
+    if (e.isDirectory()) yield* htmlsDe(r); else if (e.name.endsWith(".html")) yield r;
+  }
+}
+
 function proteger(html, buscador) {
   const huellas = [...html.matchAll(/<script(?![^>]*\bsrc=)(?![^>]*type="application\/(?:ld\+)?json")[^>]*>([\s\S]*?)<\/script>/g)]
     .map((m) => `'sha256-${createHash("sha256").update(m[1], "utf8").digest("base64")}'`);
@@ -598,10 +653,10 @@ async function main() {
   const tiendaPorId = Object.fromEntries(datos.tiendas.map((t) => [t.id, t]));
   // Regiones en dólares: misma web en /latam/ (Latinoamérica) y en /us/ (Estados Unidos), cada una con su archivo de precios
   const REGIONES = [
-    { id: "latam", archivo: "precios-latam.json", nombre: "Latinoamérica", lang: "es-419", marca: "PILLAO_LATAM", fichas: +(process.env.LATAM_FICHAS || 4000) },
-    { id: "us", archivo: "precios-us.json", nombre: "Estados Unidos", lang: "es-US", marca: "PILLAO_US", fichas: +(process.env.US_FICHAS || 3000) },
-    { id: "de", archivo: "precios-de.json", nombre: "Alemania", lang: "es-DE", marca: "PILLAO_DE", fichas: +(process.env.DE_FICHAS || 2500), moneda: "EUR" },
-    { id: "fr", archivo: "precios-fr.json", nombre: "Francia", lang: "es-FR", marca: "PILLAO_FR", fichas: +(process.env.FR_FICHAS || 2500), moneda: "EUR" },
+    { id: "latam", archivo: "precios-latam.json", nombre: "Latinoamérica", lang: "es-419", marca: "PILLAO_LATAM", fichas: +(process.env.LATAM_FICHAS || 8000) },
+    { id: "us", archivo: "precios-us.json", nombre: "Estados Unidos", lang: "en-US", marca: "PILLAO_US", fichas: +(process.env.US_FICHAS || 8000) },
+    { id: "de", archivo: "precios-de.json", nombre: "Alemania", lang: "de-DE", marca: "PILLAO_DE", fichas: +(process.env.DE_FICHAS || 6000), moneda: "EUR" },
+    { id: "fr", archivo: "precios-fr.json", nombre: "Francia", lang: "fr-FR", marca: "PILLAO_FR", fichas: +(process.env.FR_FICHAS || 6000), moneda: "EUR" },
   ];
   for (const r of REGIONES) { try { r.datos = completar(JSON.parse(await readFile(join(RAIZ, r.archivo), "utf8"))); } catch {} r.hay = !!(r.datos && r.datos.juegos && r.datos.juegos.length); r.fichasL = []; r.chollosL = []; }
   const marcas = "<script>" + REGIONES.filter((r) => r.hay).map((r) => `window.${r.marca}=true;`).join("") + "</script>\n</head>";
@@ -702,8 +757,8 @@ async function main() {
 
   // 3b. Google: cada página dice cuáles son sus versiones para las otras regiones (hreflang), para que en cada país
   // salga la buena (Venezuela → /latam/, EE. UU. → /us/, España → la raíz). x-default: la de España.
-  const IDIOMA_REG = { "": "es-ES", latam: "es-419", us: "es-US", de: "es-DE", fr: "es-FR" };
-  const LOCALE_REG = { "": "es_ES", latam: "es_LA", us: "es_US", de: "es_DE", fr: "es_FR" };
+  const IDIOMA_REG = { "": "es-ES", latam: "es-419", us: "en-US", de: "de-DE", fr: "fr-FR" };
+  const LOCALE_REG = { "": "es_ES", latam: "es_LA", us: "en_US", de: "de_DE", fr: "fr_FR" };
   const hayRegion = { "": true }; for (const r of REGIONES) hayRegion[r.id] = r.hay;
   const conPagina = new Map();   // ruta relativa (sin región) → regiones con esa página
   const apuntar = (ruta, reg) => { if (!conPagina.has(ruta)) conPagina.set(ruta, new Set()); conPagina.get(ruta).add(reg); };
@@ -726,6 +781,25 @@ async function main() {
     }
   }
   console.log(`Google: ${nAlt} páginas con sus versiones de cada región (hreflang)`);
+
+  // 3c. Cada país en su idioma: todas las páginas de /de/, /fr/, /us/ y /latam/ traducidas en el HTML (lo que lee Google)
+  const tr = await cargarTraductor();
+  const LANG_REG = { de: "de", fr: "fr", us: "en", latam: "es-419" };
+  for (const r of REGIONES) {
+    if (!r.hay || !LANG_REG[r.id] || !tr) continue;
+    const dir = join(SALIDA, r.id); if (!existsSync(dir)) continue;
+    let nT = 0;
+    for await (const f of htmlsDe(dir)) {
+      let html = await readFile(f, "utf8");
+      // El comparador (index con su JavaScript) se traduce solo en el navegador; aquí, solo su cabecera (título y descripción)
+      if (html.includes('id="reg-btn"')) { const k = html.indexOf("</head>"); html = traducirHtml(html.slice(0, k), LANG_REG[r.id], tr) + html.slice(k); }
+      else html = traducirHtml(html, LANG_REG[r.id], tr);
+      html = html
+        .replace(/<html lang="[^"]*">/, `<html lang="${IDIOMA_REG[r.id]}">`).replace(/<meta property="og:locale" content="[^"]*">/, `<meta property="og:locale" content="${LOCALE_REG[r.id]}">`);
+      await writeFile(f, html); nT++;
+    }
+    console.log(`Idioma: ${nT} páginas de /${r.id}/ en ${IDIOMA_REG[r.id]}`);
+  }
 
   // 4. Lista de todos los juegos y mapa del sitio
   await mkdir(join(SALIDA, "juegos"), { recursive: true });
