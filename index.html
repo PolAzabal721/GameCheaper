@@ -2921,7 +2921,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
           var nuevos = [];
           v.juegos.forEach(function (j) {
             var c = porTitulo[claveTitulo(j.titulo)];
-            if (c) unirOfertas(c, j); else { j._vivo = true; nuevos.push(j); }
+            if (c) unirOfertas(c, j); else { j._vivo = true; if (!j.img && !j.cov) { var sa = (j.ofertas || []).map(function (o) { return /store\.steampowered\.com\/app\/(\d+)/.exec(o.url || ""); }).filter(Boolean)[0]; if (sa) j.img = "s:" + sa[1]; } nuevos.push(j); }
           });
           vivo = { q: qTxt, juegos: nuevos, cargando: false, error: "" }; pintar();
         })
