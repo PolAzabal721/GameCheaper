@@ -26,7 +26,7 @@ jobs:
             const out = {};
             for (const w of webs.results || []) {
               const d = await (await fetch(`https://api.admitad.com/advcampaigns/website/${w.id}/?limit=500`, { headers: H })).json();
-              for (const c of d.results || []) if (c.gotolink) { out[c.name] = { id: c.id, web: w.name, estado: c.connection_status, url: c.gotolink }; }
+              for (const c of d.results || []) { if (c.gotolink) { out[c.name] = { id: c.id, web: w.name, estado: c.connection_status, url: c.gotolink }; } for (const f of c.feeds_info || []) { const m = String(f.csv_link || f.xml_link || "").match(/feed_id=(\d+)/); console.log("FEED", c.name, "|", f.name, "|", m ? m[1] : "?", "|", f.admitad_last_update || ""); } }
             }
             fs.writeFileSync("config/admitad-enlaces.json", JSON.stringify(out, null, 1) + "\n");
             console.log(Object.entries(out).map(([n, x]) => n + " (" + x.estado + ")").join("\n"));
