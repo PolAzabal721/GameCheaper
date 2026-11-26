@@ -4,14 +4,12 @@ jobs:
   ver:
     runs-on: ubuntu-latest
     env:
-      T: ${{ secrets.CJ_TOKEN }}
+      U: ${{ secrets.RAKUTEN_FTP_USER }}
+      P: ${{ secrets.RAKUTEN_FTP_PASS }}
     steps:
       - run: |
-          T=$(printf '%s' "$T" | tr -d '[:space:]')
-          for C in EUR USD; do
-          Q="{ products(companyId: \"8127571\", partnerIds: [\"6086371\"], partnerStatus: JOINED, keywords: [\"bully\"], currency: \"$C\", limit: 20) { totalCount resultList { title catalogName price { amount currency } link } } }"
-          echo "== $C"; curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d "$(jq -n --arg q "$Q" '{query:$q}')" https://ads.api.cj.com/query | head -c 3000; echo; done
-          Q='{ products(companyId: "8127571", partnerIds: ["6086371"], partnerStatus: JOINED, limit: 1) { totalCount } }'
-          echo "== total"; curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d "$(jq -n --arg q "$Q" '{query:$q}')" https://ads.api.cj.com/query; echo
-          Q='{ productFeeds(companyId: "8127571", advertiserIds: ["6086371"]) { totalCount resultList { adId feedName productCount currency lastUpdated } } }'
-          echo "== feeds"; curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d "$(jq -n --arg q "$Q" '{query:$q}')" https://ads.api.cj.com/query; echo
+          U=$(printf '%s' "$U" | tr -d '[:space:]'); P=$(printf '%s' "$P" | tr -d '[:space:]')
+          mkdir -p ~/.ssh && ssh-keyscan -T 20 aftp.linksynergy.com >> ~/.ssh/known_hosts 2>/dev/null
+          echo "== raiz"; curl -sS --max-time 60 -u "$U:$P" "sftp://aftp.linksynergy.com/" | awk '{print $NF}' | head -50
+          for d in GLOBAL ADDITIONAL; do echo "== $d"; curl -sS --max-time 60 -u "$U:$P" "sftp://aftp.linksynergy.com/$d/" | awk '{print $NF}' | head -60; done
+          for d in $(curl -sS --max-time 60 -u "$U:$P" "sftp://aftp.linksynergy.com/GLOBAL/" | awk '{print $NF}' | grep -v '^\.' ); do echo "== GLOBAL/$d"; curl -sS --max-time 60 -u "$U:$P" "sftp://aftp.linksynergy.com/GLOBAL/$d/" | awk '{print $NF}' | grep -v '^\.' | head -10; done
