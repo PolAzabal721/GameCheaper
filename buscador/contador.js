@@ -87,19 +87,23 @@ export async function rutasContador(req, env, ctx, url) {
     // Visitas de cada día (con metadatos, una sola lista)
     // Todo de una sola consulta a D1
     // Sin D1 todavía: se leen los recuentos antiguos del KV (leer no gasta el límite de escrituras)
-    let filas = [];
-    if (env.DB) { await tabla(env); await migrar(env); filas = (await env.DB.prepare("SELECT k, v FROM n WHERE k LIKE 'n:%'").all()).results || []; }
-    else {
-      // Sin D1: lo ya recogido en el repositorio (data/visitas.json) más los volcados del KV que la acción aún no ha sumado
-      const suma = {};
-      let git = {}; try { git = await (await fetch("https://raw.githubusercontent.com/PolAzabal721/GameCheaper/main/data/visitas.json?t=" + Date.now(), { cf: { cacheTtl: 0 } })).json(); } catch {}
-      for (const [k, n] of Object.entries(git.n || {})) suma[k] = n;
-      const leidas = new Set(git.leidas || []);
+    // Todo lo contado: lo ya recogido en el repositorio (data/visitas.json), los volcados del KV que la acción aún no ha sumado
+    // y, desde el 26 de noviembre de 2026, lo que cuenta la base D1 (antes de esa fecha D1 no contaba nada propio)
+    const suma = {};
+    let git = {}; try { git = await (await fetch("https://raw.githubusercontent.com/PolAzabal721/GameCheaper/main/data/visitas.json?t=" + Date.now(), { cf: { cacheTtl: 0 } })).json(); } catch {}
+    for (const [k, n] of Object.entries(git.n || {})) suma[k] = n;
+    const leidas = new Set(git.leidas || []);
+    try {
       let cursor; const nuevas = [];
       do { const l = await env.PILLAO.list({ prefix: "b:", cursor, limit: 1000 }); for (const k of l.keys) if (!leidas.has(k.name)) nuevas.push(k.name); cursor = l.list_complete ? null : l.cursor; } while (cursor);
       for (const nombre of nuevas.slice(0, 500)) { const b = await env.PILLAO.get(nombre, "json"); if (b) for (const [k, n] of Object.entries(b)) suma[k] = (suma[k] || 0) + n; }
-      filas = Object.entries(suma).map(([k, v]) => ({ k, v }));
+    } catch {}
+    if (env.DB) {
+      await tabla(env);
+      const d1 = (await env.DB.prepare("SELECT k, v FROM n WHERE k LIKE 'n:%'").all()).results || [];
+      for (const { k, v } of d1) { const f = (k.match(/^n:\w+:(\d{4}-\d{2}-\d{2})/) || [])[1]; if (f && f >= "2026-11-26") suma[k] = (suma[k] || 0) + v; }
     }
+    const filas = Object.entries(suma).map(([k, v]) => ({ k, v }));
     const leer = async (prefijo, conQue) => {
       const out = {};
       for (const { k, v: n } of filas) {
