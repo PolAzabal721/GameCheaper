@@ -653,8 +653,8 @@ async function main() {
       .replace("<head>", '<head>\n<base href="/">')
       .replace("</head>", `<script>window.PILLAO_REGION="${D}"</script>\n` + marcas)
       .replace('<link rel="canonical" href="https://pillaojuegos.com/">', `<link rel="canonical" href="https://pillaojuegos.com/${D}/">`)
-      .replace('<title>Pillao: comparador de precios de videojuegos</title>', `<title>Pillao: compara precios de videojuegos en ${reg.nombre} (${reg.moneda === "EUR" ? "en euros" : "en dólares"})</title>`)
-      .replace('content="Compara precios de videojuegos digitales y físicos en tiendas españolas."', `content="Compara precios de juegos, claves, DLC y tarjetas regalo para ${reg.nombre}: Steam, PlayStation, Xbox, Nintendo y más de 30 tiendas, ${reg.moneda === "EUR" ? "en euros" : "en dólares"} y actualizados cada pocas horas."`)
+      .replace('<title>Pillao (Pillaojuegos): comparador de precios de videojuegos</title>', `<title>Pillao: compara precios de videojuegos en ${reg.nombre} (${reg.moneda === "EUR" ? "en euros" : "en dólares"})</title>`)
+      .replace('content="Pillaojuegos (Pillao): compara precios de videojuegos digitales y físicos en tiendas españolas."', `content="Compara precios de juegos, claves, DLC y tarjetas regalo para ${reg.nombre}: Steam, PlayStation, Xbox, Nintendo y más de 30 tiendas, ${reg.moneda === "EUR" ? "en euros" : "en dólares"} y actualizados cada pocas horas."`)
       .replace('<meta property="og:url" content="https://pillaojuegos.com/">', `<meta property="og:url" content="https://pillaojuegos.com/${D}/">`)
       .replace('<html lang="es">', `<html lang="${reg.lang}">`);
     await writeFile(join(SALIDA, D, "index.html"), proteger(html, datos.buscador));
