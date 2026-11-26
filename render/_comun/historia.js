@@ -10,8 +10,8 @@ function durFrase(f) { const ws = f.split(" "); return Math.max(3.3, 0.7 + ws.re
 function montar() {
   const J = JUEGO, dto = J.pvp > J.precio ? Math.round((1 - J.precio / J.pvp) * 100) : 0;
   const finales = [
-    { f: `Hoy lo tienes a *${fmtE(J.precio)}* euros en *${J.tiendaNombre}*, para ${J.plat}.`, p: (lt, k) => escenaPrecio(lt, k) },
-    dto >= 10 ? { f: `Costaba *${fmtE(J.pvp)}*: es un *${dto}* por ciento menos.`, p: (lt, k) => escenaDescuento(lt, k, dto) } : null,
+    J.sinPrecio ? null : { f: `Hoy lo tienes a *${fmtE(J.precio)}* euros en *${J.tiendaNombre}*, para ${J.plat}.`, p: (lt, k) => escenaPrecio(lt, k) },
+    !J.sinPrecio && dto >= 10 ? { f: `Costaba *${fmtE(J.pvp)}*: es un *${dto}* por ciento menos.`, p: (lt, k) => escenaDescuento(lt, k, dto) } : null,
     { f: `Compara todas las tiendas en *pillaojuegos.com* y pilla el más barato.`, p: (lt, k) => fondoSuave() + cierre(lt, PALETA.acento) },
   ].filter(Boolean);
   // si hay voz grabada (voz.json), cada frase dura lo que su audio

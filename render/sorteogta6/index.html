@@ -4,7 +4,7 @@
 <script>
 // Sorteo de dos GTA 6 (PS5 o Xbox, disco o código). Caja de juego propia (escena de Miami dibujada aquí), sin portada oficial.
 const PALETA={cielo:"linear-gradient(180deg,#12082a,#3b1460 40%,#a0307e 78%,#ff7a5c)",shader:["#12082a","#3b1460","#a0307e","#ff7a5c","#0d3b4f"],acento:"#ff4fa3",suelo:"#140f28"};
-const JUEGO={titulo:"Grand Theft Auto VI",tituloCaja:"GRAND THEFT<br>AUTO VI",titCaja:.1,tiendaNombre:"CJS CD Keys",precio:64.82,pvp:76.84,plat:"PS5",clave:"Clave PSN"};
+const JUEGO={titulo:"Grand Theft Auto VI",tituloCaja:"GRAND THEFT<br>AUTO VI",titCaja:.1,tiendaNombre:"CJS CD Keys",precio:64.82,pvp:76.84,plat:"PS5",clave:"Clave PSN",sinPrecio:true};
 const num=(n,k)=>`<div style="position:absolute;left:60px;top:${430-(1-eb(cl(k)))*80}px;width:190px;height:190px;border-radius:50%;background:#d8ff1f;color:#140f28;display:grid;place-items:center;font:900 130px 'Inter Display';letter-spacing:-.06em;opacity:${cl(k*3)};box-shadow:0 0 50px #d8ff1f88">${n}</div>`;
 const fondo=(lt)=>P.edificios("#1d1533","#ffd36a",3,1)+P.palmera(100,420,Math.sin(lt*2)*4)+P.palmera(980,380,Math.sin(lt*2+1)*4)+P.suelo("#140f28")+`<div style="position:absolute;left:0;right:0;top:1500px;height:8px;background:#ff4fa3;box-shadow:0 0 30px #ff4fa3"></div>`;
 // Escena de Miami propia: atardecer, palmeras, flamencos y un cocodrilo con gafas en una colchoneta
