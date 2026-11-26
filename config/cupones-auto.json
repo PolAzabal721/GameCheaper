@@ -126,17 +126,12 @@
  {
   "t": "gamivo",
   "c": "TOP-UP-SMART",
-  "pct": 40,
+  "pct": null,
   "hasta": "2028-01-01",
   "para": [
-   "juego",
-   "edicion",
-   "dlc",
-   "software",
-   "tarjeta",
    "skins"
   ],
-  "txt": "En toda la tienda",
+  "txt": "Descuento con código",
   "nombre": "Gamivo.com_Bis zu 40 % Rabatt auf In-Game-Gegenstände für neue SMART-Nutzer Bis zu 40 % Rabatt auf In-Game-Gegenstände f"
  },
  {
@@ -145,11 +140,6 @@
   "pct": null,
   "hasta": "2028-01-01",
   "para": [
-   "juego",
-   "edicion",
-   "dlc",
-   "software",
-   "tarjeta",
    "skins"
   ],
   "txt": "Descuento con código",
@@ -161,12 +151,7 @@
   "pct": 4,
   "hasta": "2027-12-31",
   "para": [
-   "juego",
-   "edicion",
-   "dlc",
-   "software",
-   "tarjeta",
-   "skins"
+   "tarjeta"
   ],
   "txt": "En toda la tienda",
   "nombre": "Gamivo.com_4 % auf Abonnements und Geschenkkarten 4 % auf einen Warenkorb mit einem maximalen Wert von 100 € und 1 Produ"
@@ -180,9 +165,7 @@
    "juego",
    "edicion",
    "dlc",
-   "software",
-   "tarjeta",
-   "skins"
+   "software"
   ],
   "txt": "En toda la tienda",
   "nombre": "7 % Rabatt mit Code auf Spiele, DLCs und Software Schnapp dir das Angebot und spar dir den vollen Preis. Nutze den Code "
