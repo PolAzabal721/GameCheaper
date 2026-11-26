@@ -1,4 +1,4 @@
-name: Cupones de Admitad
+name: Cupones de las tiendas
 # Cada día lee los cupones de las tiendas de Admitad y los deja en config/cupones-auto.json (la web los pone solos al publicarse)
 on:
   schedule:
@@ -17,6 +17,10 @@ jobs:
         env:
           ADMITAD_CLIENT_ID: ${{ secrets.ADMITAD_CLIENT_ID }}
           ADMITAD_CLIENT_SECRET: ${{ secrets.ADMITAD_CLIENT_SECRET }}
+          CJ_TOKEN: ${{ secrets.CJ_TOKEN }}
+          AWIN_API_TOKEN: ${{ secrets.AWIN_API_TOKEN }}
+          IMPACT_ACCOUNT_SID: ${{ secrets.IMPACT_ACCOUNT_SID }}
+          IMPACT_AUTH_TOKEN: ${{ secrets.IMPACT_AUTH_TOKEN }}
       - name: Guardar
         run: |
           git config user.name "pillao-bot"; git config user.email "bot@pillaojuegos.com"
