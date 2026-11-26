@@ -12,12 +12,16 @@ for f in json.load(open(destino if False else origen)):
     u = f.get("cu") or ("https://www.dpbolvw.net/click-101929112-17269770?url=" + urllib.parse.quote(f["l"], safe="") if f.get("l") else "")
     if not n or not u or not (f.get("p") or 0) > 0: continue
     if re.search(r"\baccount\b|\bgift\b(?! ?card)", n, re.I): continue
+    # El título no siempre lo dice: el enlace sí (…-steam-account-…, …-steam-gift…)
+    if re.search(r"account|-gift(?!-?card)", f.get("l") or "", re.I): continue
     low = n.lower()
     reg = next((k for k, r in REG if re.search(r, low)), "otra")
     pl = "Xbox Series" if re.search(r"\bxbox\b", low) else "PS5" if re.search(r"\b(ps5|playstation 5)\b", low) else "PS4" if re.search(r"\b(ps4|psn|playstation 4)\b", low) else \
          "Switch" if re.search(r"\b(nintendo|switch)\b", low) else "PC"
     drm = next((d for d, r in [("Steam", r"\bsteam\b"), ("EA App", r"\b(ea app|origin)\b"), ("Epic", r"\bepic\b"), ("GOG", r"\bgog\b"), ("Ubisoft", r"\bubisoft\b"), ("Battle.net", r"battle\.net"), ("Rockstar", r"\brockstar\b"), ("Microsoft Store", r"microsoft store|windows 10")] if re.search(r, low)), "")
-    nombre = PLAT.sub("", n)
+    # Fuera los idiomas del título («EN», «EN/DE/FR/IT/ES», «Multilanguage»), que impiden juntarlo con el mismo juego de otras tiendas
+    n2 = re.sub(r"\s+(?:[A-Z]{2}(?:/[A-Z]{2})+|EN|ENG|PL|RU|Multi-?language|MULTI)(?=\s|$)", "", n)
+    nombre = PLAT.sub("", n2)
     nombre = re.sub(r"\s+(" + "|".join(r for _, r in REG) + r")(\s.*)?$", "", nombre, flags=re.I).strip(" -")
     if len(nombre) < 2: continue
     tipo = "tarjeta" if re.search(r"gift ?card|\bwallet\b|\bpoints?\b|\bcoins?\b|\bdiamonds?\b|\bv-?bucks\b|\brobux\b|\bsubscription\b|\bgame pass\b|\bmembership\b", low) else "dlc" if re.search(r"\b(dlc|season pass|expansion|soundtrack)\b", low) else ""
