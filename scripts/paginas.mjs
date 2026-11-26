@@ -572,6 +572,23 @@ function paginaChollos(datos) {
     canonica: `${SITIO}${PRE}chollos/`, raiz: PRE ? "/" : "../", inicio: PRE ? "/" + PRE : undefined, cuerpo: LAT_TXT(cuerpo) });
 }
 
+// Totales tal como los cuenta la web (mismas reglas que validar() de index.html: skins solo de mercados, precios entre 0 y 400,
+// y en Latinoamérica sin las claves «Solo» de otro país). Así el número de resultados no cambia al llegar el resto del catálogo.
+const MERC_SKINS_T = /^(dmarket|skinsmonkey|skinflow\.gg|swap\.gg|cs\.trade|shadowpay(\.com)?|qqskins|skinswap|tradeit(\.gg)?|cs\.money|skinport|waxpeer|skinbaron|lis-skins|rapidskins)\b/i;
+function totalesWeb(juegos, pais) {
+  let n = 0, of = 0; const vistos = new Set();
+  for (const j of juegos) {
+    if (!j || !j.titulo || !Array.isArray(j.ofertas) || vistos.has(j.id)) continue;
+    vistos.add(j.id);
+    if (j.tipo === "skins" && !MERC_SKINS_T.test(j.titulo)) continue;
+    const ofs = j.ofertas.filter((o) => o && o.tienda && typeof o.precio === "number" && o.precio > 0 && o.precio <= 400 && (!pais || !/\bSolo /.test(o.condicion || "") || (o.condicion || "").includes(pais)));
+    if (!ofs.length) continue;
+    n++; of += ofs.length;
+  }
+  return { juegos: n, ofertas: of };
+}
+const PAISES_LATAM = { MX: "México", AR: "Argentina", BR: "Brasil", CL: "Chile", CO: "Colombia", PE: "Perú", VE: "Venezuela", PY: "Paraguay" };
+
 async function main() {
   const datos = completar(JSON.parse(await readFile(join(RAIZ, "precios.json"), "utf8")));
   // Skins: solo mercados de compra o cambio de skins (como en la web), para que el total de juegos sea el mismo desde el principio
@@ -607,7 +624,7 @@ async function main() {
   const PRIMEROS = 800;
   const primeros = new Set([...todo.juegos].sort((a, b) => (a.pop || 99999) - (b.pop || 99999)).slice(0, PRIMEROS).map((j) => j.id));
   // Los totales los calcula la web con todo el catálogo; aquí se guardan los de la última vez para enseñarlos desde el primer momento
-  const totales = { juegos: todo.juegos.filter((j) => j.ofertas.length).length, ofertas: todo.juegos.reduce((n, j) => n + j.ofertas.length, 0) };
+  const totales = totalesWeb(todo.juegos);
   await writeFile(join(SALIDA, "precios.json"), JSON.stringify({ ...todo, totales, juegos: todo.juegos.filter((j) => primeros.has(j.id)), resto: "precios-resto.json" }) + "\n");
   await writeFile(join(SALIDA, "precios-resto.json"), JSON.stringify({ prefijos: todo.prefijos, juegos: todo.juegos.filter((j) => !primeros.has(j.id)) }) + "\n");
   await writeFile(join(SALIDA, ".nojekyll"), "");
@@ -645,7 +662,7 @@ async function main() {
     PRE = ""; MONEDA = "EUR"; RUTAS_OK = null; EN_REGION = false;
     const tl = comprimir({ ...latam, buscador: undefined });
     const primL = new Set([...tl.juegos].sort((a, b) => (a.pop || 99999) - (b.pop || 99999)).slice(0, PRIMEROS).map((j) => j.id));
-    const totL = { juegos: tl.juegos.length, ofertas: tl.juegos.reduce((n, j) => n + j.ofertas.length, 0) };
+    const totL = totalesWeb(latam.juegos); if (D === "latam") totL.paises = Object.fromEntries(Object.entries(PAISES_LATAM).map(([c, nom]) => [c, totalesWeb(latam.juegos, nom)]));
     await writeFile(join(SALIDA, D, "precios.json"), JSON.stringify({ ...tl, totales: totL, juegos: tl.juegos.filter((j) => primL.has(j.id)), resto: D + "/precios-resto.json" }) + "\n");
     await writeFile(join(SALIDA, D, "precios-resto.json"), JSON.stringify({ prefijos: tl.prefijos, juegos: tl.juegos.filter((j) => !primL.has(j.id)) }) + "\n");
     // La página es la misma que la de Europa: base en la raíz (logos, fuentes, legal…), región LATAM y su dirección propia

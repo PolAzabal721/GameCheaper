@@ -2776,12 +2776,17 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     var nombreTipo = { juego: ["juego", "juegos"], dlc: ["DLC", "DLC"], tarjeta: ["tarjeta regalo", "tarjetas regalo"], software: ["programa", "programas"], skins: ["skin", "skins"] }[f.tipo] || ["resultado", "resultados"];
     var nOf = filas.reduce(function (s, r) { return s + r.ofs.length; }, 0);
     // Mientras llega el resto del catálogo, sin búsqueda ni filtros se enseñan ya los totales (así el número no salta)
-    if (restoPendiente && datos.totales && !qTxt && !nActivos() && f.orden === "populares") { nf = datos.totales.juegos.toLocaleString("es-ES"); nOf = datos.totales.ofertas; }
+    if (restoPendiente && datos.totales && !qTxt && !nActivos()) { var tt = REGION === "latam" && PAIS !== "TODO" ? (datos.totales.paises || {})[PAIS] : datos.totales; if (tt) { nf = tt.juegos.toLocaleString("es-ES"); nOf = tt.ofertas; } }
     $("titulo-res").innerHTML = nf + " " + nombreTipo[filas.length === 1 ? 0 : 1] + ' <span>' + nOf.toLocaleString("es-ES") + " ofertas</span>";
     var estadoVivo = "";
     if (datos.buscador && q.length >= 3) {
       estadoVivo = vivo.cargando ? '<div class="busca-vivo">Buscando «' + esc(qTxt) + '» en las tiendas…</div>'
         : vivo.error && vivo.q === qTxt ? '<div class="busca-vivo err">' + esc(vivo.error) + "</div>" : "";
+    }
+    // Con búsqueda, filtros u otro orden, lo que falta del catálogo cambiaría los resultados: se espera a tenerlo todo (unos segundos)
+    if (restoPendiente && (qTxt || nActivos() || f.orden !== "populares")) {
+      $("titulo-res").innerHTML = "…";
+      poner(lista, '<div class="vacio"><b>Buscando en todo el catálogo…</b>Un momento.</div>'); return;
     }
     if (!filas.length) {
       lista.classList.toggle("cuadricula", f.vista === "cuadricula");
