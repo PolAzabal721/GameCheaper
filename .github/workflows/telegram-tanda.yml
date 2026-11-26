@@ -3,6 +3,13 @@ name: Tanda de chollos en Telegram
 # Publica ahora mismo en el canal los mejores chollos que haya (aunque no hayan bajado en la última actualización),
 # con las mismas reglas: juegos conocidos, −50 % o mínimo histórico, y sin repetir juego en 15 días.
 on:
+  # Un chollo a las 9:30, 13:30, 17:30, 20:30 y 22:30 (hora de España; GitHub va en UTC: en horario de verano, una hora más tarde)
+  schedule:
+    - cron: "30 8 * * *"
+    - cron: "30 12 * * *"
+    - cron: "30 16 * * *"
+    - cron: "30 19 * * *"
+    - cron: "30 21 * * *"
   workflow_dispatch:
     inputs:
       cantidad:
@@ -36,7 +43,7 @@ jobs:
           TELEGRAM_CANAL: ${{ secrets.TELEGRAM_CANAL }}
           TG_EJEMPLO: "1"
           TG_GUARDAR: "1"
-          TG_MAXIMO: ${{ inputs.cantidad }}
+          TG_MAXIMO: ${{ inputs.cantidad || '1' }}
       - name: Guardar lo publicado
         run: |
           git config user.name "pillao-bot"

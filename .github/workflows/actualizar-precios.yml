@@ -243,17 +243,7 @@ jobs:
           BUSCADOR_URL: ${{ vars.BUSCADOR_URL }}
       - name: Revisar que todas las tiendas dan precios
         run: node scripts/salud.mjs
-      - name: Navegador para las imágenes de Telegram
-        continue-on-error: true
-        run: |
-          npm install --no-save playwright
-          npx playwright install --with-deps chromium
-      - name: Publicar chollos en Telegram
-        continue-on-error: true
-        run: node scripts/telegram.mjs
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CANAL: ${{ secrets.TELEGRAM_CANAL }}
+      # Telegram ya no publica después de cada actualización: lo hace «Tanda de chollos en Telegram», un chollo a cada hora fija (5 al día)
       - name: Guardar cambios
         if: always()
         run: |
