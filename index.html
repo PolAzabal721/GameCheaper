@@ -3206,13 +3206,12 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   }, true);
 })();
 
-// Sorteo de dos GTA 6: banner hasta el 3 de diciembre de 2026 (hora de España). Si se cierra, no vuelve a salir en esa pestaña.
+// Sorteo de dos GTA 6: banner hasta el 3 de diciembre de 2026 (hora de España). La ✕ lo oculta solo hasta recargar.
 (function () {
   var b = document.getElementById("sorteo"); if (!b) return;
   if (Date.now() > Date.parse("2026-12-03T23:59:59+01:00")) return;
-  try { if (sessionStorage.getItem("pillao-sorteo-cerrado")) return; } catch (e) {}
   b.hidden = false;
-  document.getElementById("sorteo-x").addEventListener("click", function () { b.hidden = true; try { sessionStorage.setItem("pillao-sorteo-cerrado", "1"); } catch (e) {} });
+  document.getElementById("sorteo-x").addEventListener("click", function () { b.hidden = true; });
 })();
 </script>
 
