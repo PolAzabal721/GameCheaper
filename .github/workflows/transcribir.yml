@@ -1,0 +1,11 @@
+name: Transcribir audio (ElevenLabs)
+on: workflow_dispatch
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    env:
+      K: ${{ secrets.ELEVENLABS_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          for f in tmp-audio/*.mp3; do echo "== $f"; curl -s -X POST https://api.elevenlabs.io/v1/speech-to-text -H "xi-api-key: $K" -F model_id=scribe_v1 -F language_code=spa -F "file=@$f" | jq -r '.text // .'; done
