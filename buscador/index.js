@@ -186,9 +186,10 @@ async function buscar(q, env, ctx) {
   const juegos = res.lista();
   // Guardamos el mejor resultado para que el actualizador lo siga a partir de ahora
   // (solo si no estaba ya: las escrituras del KV gratis están limitadas a 1.000 al día)
-  if (env.PILLAO) ctx.waitUntil(Promise.all(juegos.slice(0, 1).map(async (j) => {
-    if (await env.PILLAO.get("a:" + j.id) !== null) return;
-    await env.PILLAO.put("a:" + j.id, "", { metadata: { titulo: j.titulo, plataformas: j.plataformas }, expirationTtl: 90 * 86400 });
+  // Solo en la base D1: en el KV gratis (1.000 escrituras al día) los bots que buscan sin parar lo llenaban
+  if (env.DB) ctx.waitUntil(Promise.all(juegos.slice(0, 1).map(async (j) => {
+    await env.DB.prepare("CREATE TABLE IF NOT EXISTS anadidos (id TEXT PRIMARY KEY, titulo TEXT, plataformas TEXT, t INTEGER)").run();
+    await env.DB.prepare("INSERT OR IGNORE INTO anadidos (id, titulo, plataformas, t) VALUES (?1, ?2, ?3, ?4)").bind(j.id, j.titulo, JSON.stringify(j.plataformas || []), Date.now()).run();
   })).catch(() => {}));
   return { q, actualizado: new Date().toISOString(), juegos, tiendas: Object.values(res.tiendas), avisos };
 }
@@ -231,6 +232,7 @@ export default {
       }
       if (url.pathname === "/anadidos") {
         const salida = [];
+        if (env.DB) { try { const r = await env.DB.prepare("SELECT titulo, plataformas FROM anadidos WHERE t > ?1 LIMIT 5000").bind(Date.now() - 90 * 86400000).all(); for (const x of r.results || []) salida.push({ titulo: x.titulo, plataformas: JSON.parse(x.plataformas || "[]") }); } catch {} }
         let cursor;
         do {
           const l = await env.PILLAO.list({ prefix: "a:", cursor, limit: 1000 });

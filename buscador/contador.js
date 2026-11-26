@@ -49,9 +49,8 @@ async function volcar(env) {
 async function sumarVarias(env, claves, ctx) {
   claves = claves.filter(Boolean); if (!claves.length) return;
   if (!env.DB) {
-    for (const k of claves) pend.set(k, (pend.get(k) || 0) + 1);
-    // waitUntil mantiene vivo el Worker hasta 30 s después de responder: el volcado se hace dentro de ese margen
-    if (!programado && ctx) { programado = true; ctx.waitUntil(new Promise((r) => setTimeout(r, 20000)).then(() => volcar(env))); }
+    // Sin D1 no se escribe en el KV: los volcados de cada copia del Worker agotaban las 1.000 escrituras diarias gratis
+    // y bloqueaban también los avisos de precio. Las visitas se vuelven a contar en cuanto el Worker tenga su base D1.
     return;
   }
   await tabla(env);
