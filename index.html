@@ -215,6 +215,25 @@ html { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 .msg.err { color: var(--danger); }
 
 /* Resultados */
+.sorteo { position: relative; display: flex; gap: 16px; align-items: center; margin: 0 0 18px; padding: 16px 48px 16px 16px; border-radius: 18px; background: linear-gradient(120deg,#3b1460,#a0307e 60%,#ff7a5c); color: #fff; }
+.sorteo-ico { flex: none; width: 56px; height: 56px; border-radius: 14px; background: rgba(255,255,255,.15); display: grid; place-items: center; font-size: 30px; }
+.sorteo-txt { flex: 1; min-width: 0; }
+.sorteo-t { font-weight: 800; font-size: 18px; margin-bottom: 4px; }
+.sorteo-d { font-size: 14px; line-height: 1.4; opacity: .92; }
+.sorteo-m, .sorteo-btm { display: none; }
+.sorteo-bt { flex: none; background: #ffd84d; color: #140f28; font-weight: 800; font-size: 14px; padding: 10px 16px; border-radius: 12px; text-decoration: none; white-space: nowrap; }
+.sorteo-x { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: 0; border-radius: 50%; background: rgba(0,0,0,.25); color: #fff; font-size: 16px; cursor: pointer; }
+.sorteo-bt:focus-visible, .sorteo-x:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+@media (max-width: 600px) {
+  .sorteo { gap: 10px; padding: 8px 8px 8px 10px; border-radius: 14px; margin-bottom: 14px; }
+  .sorteo-ico { width: auto; height: auto; background: none; font-size: 24px; }
+  .sorteo-t { font-size: 15px; margin-bottom: 0; }
+  .sorteo-d, .sorteo-btd { display: none; }
+  .sorteo-btm { display: inline; }
+  .sorteo-m { display: block; font-size: 12px; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sorteo-bt { font-size: 13px; padding: 8px 12px; border-radius: 10px; }
+  .sorteo-x { position: static; flex: none; width: 26px; height: 26px; font-size: 14px; }
+}
 .res-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
 .res-head h1 { flex: 1 1 auto; }
 .btn-vista { width: 38px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; padding: 0; flex-shrink: 0; }
@@ -911,6 +930,12 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     <div class="fondo" id="fondo"></div>
     <section aria-live="polite">
       <div class="destacados" id="destacados" hidden></div>
+      <div class="sorteo" id="sorteo" hidden>
+        <div class="sorteo-ico" aria-hidden="true">🎁</div>
+        <div class="sorteo-txt"><div class="sorteo-t">Sorteo: 2 GTA 6</div><div class="sorteo-d">PS5 o Xbox, en disco o código. Puede participar cualquiera, desde cualquier país: síguenos en TikTok y Telegram, dale like al vídeo del sorteo y comenta. Hasta el 3 de diciembre.</div><div class="sorteo-m">Cualquier país · hasta el 3 dic</div></div>
+        <a class="sorteo-bt" id="sorteo-bt" href="https://www.tiktok.com/@pillao_juegos" target="_blank" rel="noopener"><span class="sorteo-btd">Ver el sorteo</span><span class="sorteo-btm">Participar</span></a>
+        <button class="sorteo-x" id="sorteo-x" type="button" aria-label="Cerrar">×</button>
+      </div>
       <div class="res-head">
         <h1 id="titulo-res">Juegos</h1>
         <label class="orden">Ordenar
@@ -3179,6 +3204,15 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     var a = e.target.closest ? e.target.closest("a[data-t]") : null;
     if (a) contar("/c?t=" + encodeURIComponent(a.dataset.t) + "&j=" + encodeURIComponent(a.dataset.j || ""));
   }, true);
+})();
+
+// Sorteo de dos GTA 6: banner hasta el 3 de diciembre de 2026 (hora de España). Si se cierra, no vuelve a salir en esa pestaña.
+(function () {
+  var b = document.getElementById("sorteo"); if (!b) return;
+  if (Date.now() > Date.parse("2026-12-03T23:59:59+01:00")) return;
+  try { if (sessionStorage.getItem("pillao-sorteo-cerrado")) return; } catch (e) {}
+  b.hidden = false;
+  document.getElementById("sorteo-x").addEventListener("click", function () { b.hidden = true; try { sessionStorage.setItem("pillao-sorteo-cerrado", "1"); } catch (e) {} });
 })();
 </script>
 
