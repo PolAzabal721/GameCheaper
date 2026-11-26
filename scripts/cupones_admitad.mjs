@@ -38,8 +38,8 @@ const meter = (tienda, cod, texto, hasta, inicio) => {
   if (!tienda || !/^[A-Za-z0-9_-]{3,30}$/.test(cod)) return;
   if (hasta && hasta < hoy) return; if (inicio && inicio > hoy) return;
   const k = tienda + "|" + cod.toUpperCase(); if (vistos.has(k)) return; vistos.add(k);
-  const m = String(texto || "").match(/(\d+(?:[.,]\d+)?)\s*%/), variable = /new (smart )?users?|first order|up to|depends|hasta un/i.test(texto || "");
-  const para = /subscription|gift ?card|top-?up|prepaid|tarjeta/i.test(texto || "") ? ["tarjeta"] : ["juego", "edicion", "dlc", "software", "tarjeta", "skins"];
+  const m = String(texto || "").match(/(\d+(?:[.,]\d+)?)\s*%/), variable = /new (smart )?users?|neue|first order|up to|bis zu|jusqu|depends|hasta un/i.test(texto || "");
+  const para = /in-?game/i.test(texto || "") ? ["skins"] : /subscription|abonnement|gift ?card|geschenkkarte|top-?up|prepaid|tarjeta/i.test(texto || "") ? ["tarjeta"] : /\b(games?|spiele|dlc|software)\b/i.test(texto || "") ? ["juego", "edicion", "dlc", "software"] : ["juego", "edicion", "dlc", "software", "tarjeta", "skins"];
   out.push({ t: tienda, c: cod, pct: m && !variable ? Math.round(+m[1].replace(",", ".")) : null, hasta: hasta || null, para, txt: m && !variable ? "En toda la tienda" : "Descuento con código", nombre: String(texto || "").slice(0, 120) });
   console.log("Cupón:", tienda, cod, hasta || "sin fin", "·", String(texto || "").slice(0, 90));
 };
