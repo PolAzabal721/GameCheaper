@@ -327,29 +327,33 @@ async function main() {
   try {
     const ps = await leer("data/playstation.json", { juegos: {} });
     const conPs = populares.filter((e) => ps.juegos[e.id]?.ids?.length);
-    for (const pais of PAISES) {
-      const lista = conPs.slice(0, RAPIDO ? 5 : pais.c === "MX" ? +(process.env.LATAM_PS || 400) : +(process.env.LATAM_PS_OTROS || 200));
-      for (const e of lista) { if (!queda()) break;
-        for (const id of [...ps.juegos[e.id].ids].sort((x, y) => /^\d+$/.test(x) - /^\d+$/.test(y))) {
-          try {
-            const url = `https://store.playstation.com/${pais.ps}/${/^\d+$/.test(id) ? "concept" : "product"}/${id}`;
-            const r = await fetch(url, { headers: CABECERAS }); if (!r.ok) continue;
-            const m = (await r.text()).match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/); if (!m) continue;
-            const ld = JSON.parse(m[1]), of = [].concat(ld.offers || [])[0];
-            if (!of || !(of.price > 0)) continue;
-            if (llave(ld.name || "") !== llave(e.titulo) && !llave(ld.name || "").startsWith(llave(e.titulo) + " ")) continue;
-            if (/\b(ultimate|deluxe|gold|premium|definitive|complete|collector|bundle|upgrade)\b/i.test(ld.name) && !/\b(ultimate|deluxe|gold|premium|definitive|complete|collector|bundle|upgrade)\b/i.test(e.titulo)) continue;
-            const l = local(pais, of.priceCurrency, +of.price); if (!l) break;
-            const j = juego(e.titulo, e.tipo); if (!j) break;
-            tienda("psstore", "PlayStation Store", "oficial");
-            ofertar(j, { tienda: "psstore", plataforma: (e.plataformas || []).includes("PS5") ? "PS5" : "PS4", formato: "digital", estado: "nuevo", stock: true, precio: l.precio, condicion: l.cond, url });
-            cuenta["psstore " + pais.c] = (cuenta["psstore " + pais.c] || 0) + 1;
-            break;
-          } catch {}
-          await esperar(500);
-        }
-        await esperar(500);
+    // Varios a la vez (3 fichas en paralelo por país) para que dé tiempo a todos los países, no solo a México
+    seccion(+(process.env.LATAM_PS_MIN || 20));
+    const unaFicha = async (pais, e) => {
+      for (const id of [...ps.juegos[e.id].ids].sort((x, y) => /^\d+$/.test(x) - /^\d+$/.test(y))) {
+        try {
+          const url = `https://store.playstation.com/${pais.ps}/${/^\d+$/.test(id) ? "concept" : "product"}/${id}`;
+          const r = await fetch(url, { headers: CABECERAS }); if (!r.ok) continue;
+          const m = (await r.text()).match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/); if (!m) continue;
+          const ld = JSON.parse(m[1]), of = [].concat(ld.offers || [])[0];
+          if (!of || !(of.price > 0)) continue;
+          if (llave(ld.name || "") !== llave(e.titulo) && !llave(ld.name || "").startsWith(llave(e.titulo) + " ")) continue;
+          if (/\b(ultimate|deluxe|gold|premium|definitive|complete|collector|bundle|upgrade)\b/i.test(ld.name) && !/\b(ultimate|deluxe|gold|premium|definitive|complete|collector|bundle|upgrade)\b/i.test(e.titulo)) continue;
+          const l = local(pais, of.priceCurrency, +of.price); if (!l) return;
+          const j = juego(e.titulo, e.tipo); if (!j) return;
+          tienda("psstore", "PlayStation Store", "oficial");
+          ofertar(j, { tienda: "psstore", plataforma: (e.plataformas || []).includes("PS5") ? "PS5" : "PS4", formato: "digital", estado: "nuevo", stock: true, precio: l.precio, condicion: l.cond, url });
+          cuenta["psstore " + pais.c] = (cuenta["psstore " + pais.c] || 0) + 1;
+          return;
+        } catch {}
       }
+    };
+    const N = RAPIDO ? 5 : +(process.env.LATAM_PS || 600);
+    const lista = conPs.slice(0, N);
+    for (let i = 0; i < lista.length && queda(); i += 3) {
+      // Las mismas 3 fichas en todos los países a la vez (cada país es una web distinta de PlayStation)
+      await Promise.all(PAISES.flatMap((pais) => lista.slice(i, i + 3).map((e) => unaFicha(pais, e))));
+      await esperar(300);
     }
   } catch (e) { console.warn("LATAM PlayStation: " + e.message); }
 
