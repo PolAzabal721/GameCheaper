@@ -1,0 +1,47 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>gta6ajustes</title></head><body>
+<script src="kit.js"></script>
+<script src="historia.js"></script>
+<script>
+// GTA 6: 5 ajustes para conducir mejor. Dibujos genéricos propios (sin logos de consolas ni del juego).
+const PALETA={cielo:"linear-gradient(180deg,#0f0726,#341457 40%,#b23a7a 78%,#ff9a5c)",shader:["#0f0726","#341457","#b23a7a","#ff9a5c","#0d3b4f"],acento:"#ff4fa3",suelo:"#140f28"};
+const JUEGO={titulo:"Grand Theft Auto VI",tituloCaja:"GRAND THEFT<br>AUTO VI",titCaja:.1,tiendaNombre:"CJS CD Keys",precio:64.82,pvp:76.84,plat:"PS5",clave:"Clave PSN"};
+const rad=a=>a*Math.PI/180;
+const num=(n,k)=>`<div style="position:absolute;left:60px;top:${430-(1-eb(cl(k)))*80}px;width:190px;height:190px;border-radius:50%;background:#d8ff1f;color:#140f28;display:grid;place-items:center;font:900 130px 'Inter Display';letter-spacing:-.06em;opacity:${cl(k*3)};box-shadow:0 0 50px #d8ff1f88">${n}</div>`;
+const autopista=(lt,v=1)=>P.edificios("#1d1533","#ffd36a",4,.8)+P.palmera(90,380,Math.sin(lt*2)*4)+P.palmera(990,340,Math.sin(lt*2+1)*4)+P.carretera(lt*v,"#231c35","#ff4fa3")+`<div style="position:absolute;left:0;right:0;top:1680px;bottom:0;background:#140f28"></div>`;
+// Panel de ajustes propio
+const panel=(x,y,k,filas,sel=-1)=>`<div style="position:absolute;left:${x}px;top:${y}px;width:780px;padding:26px 30px;border-radius:26px;background:rgba(14,8,28,.92);border:4px solid #3a2f5c;box-shadow:0 30px 70px rgba(0,0,0,.5);transform:scale(${eb(cl(k))});transform-origin:0 0;opacity:${cl(k*3)}">
+ <div style="font:900 40px 'Inter Display';color:#ff4fa3;letter-spacing:.02em;margin-bottom:16px">⚙ AJUSTES · CONDUCCIÓN</div>
+ ${filas.map(([n,v],i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px;margin:8px 0;border-radius:14px;font:800 34px 'Inter';color:#fff;${i==sel?"background:#ff4fa333;outline:4px solid #ff4fa3;":"background:#221a3a;"}"><span>${n}</span><span>${v}</span></div>`).join("")}</div>`;
+const inter=(on)=>`<span style="display:inline-block;width:92px;height:50px;border-radius:25px;background:${on?"#2ad48a":"#4a4068"};position:relative;vertical-align:middle"><span style="position:absolute;top:6px;left:${on?48:6}px;width:38px;height:38px;border-radius:50%;background:#fff"></span></span>`;
+const valor=(v,col="#ff4fa3")=>`<span style="display:inline-block;min-width:70px;text-align:center;padding:4px 14px;border-radius:12px;background:${col};font:900 40px 'Inter Display'">${v}</span>`;
+// Gatillo visto de lado, con un muro a mitad de recorrido
+const gatillo=(x,y,k,muro)=>{const ang=muro?Math.min(k,.5)*40:k*40;return `<svg style="position:absolute;left:${x}px;top:${y}px;overflow:visible" width="520" height="520" viewBox="0 0 520 520">
+ <path d="M60 40 h300 q60 0 60 60 v360 h-120 v-300 q0 -30 -30 -30 h-210 z" fill="#2a2244" stroke="#4a3f70" stroke-width="8"/>
+ <g transform="rotate(${ang} 330 130)"><path d="M300 130 q90 40 70 200 q-10 40 -50 20 q-20 -120 -60 -170 z" fill="#ff4fa3" stroke="#140f28" stroke-width="6"/><text x="335" y="260" font-family="Inter Display" font-weight="900" font-size="44" fill="#140f28" transform="rotate(80 335 260)">R2</text></g>
+ ${muro?`<g transform="translate(250 170)">${[0,1,2,3,4].map(r=>[0,1].map(c=>`<rect x="${c*40+(r%2)*20}" y="${r*34}" width="38" height="32" fill="#c0563a" stroke="#6b2a18" stroke-width="3"/>`).join("")).join("")}</g>`:""}
+ <path d="M420 ${350-ang*4} q60 10 80 60" stroke="#ffd2b0" stroke-width="44" stroke-linecap="round" fill="none"/></svg>`};
+const velo=(x,y,v,k=1)=>{const a=-120+Math.min(v,240)/240*240;return `<svg style="position:absolute;left:${x}px;top:${y}px;opacity:${cl(k*3)}" width="360" height="360" viewBox="-180 -180 360 360"><circle r="160" fill="#140f28" stroke="#ff4fa3" stroke-width="10"/>${[...Array(9)].map((_,i)=>{const b=rad(-120+i*30);return `<line x1="${Math.sin(b)*130}" y1="${-Math.cos(b)*130}" x2="${Math.sin(b)*150}" y2="${-Math.cos(b)*150}" stroke="#fff" stroke-width="6"/>`}).join("")}<line x1="0" y1="0" x2="${Math.sin(rad(a))*120}" y2="${-Math.cos(rad(a))*120}" stroke="#d8ff1f" stroke-width="12" stroke-linecap="round"/><circle r="16" fill="#d8ff1f"/><text y="90" text-anchor="middle" font-family="Inter Display" font-weight="900" font-size="64" fill="#fff">${Math.round(v)}</text><text y="122" text-anchor="middle" font-family="Inter" font-weight="800" font-size="26" fill="#ff9ad0">km/h</text></svg>`};
+const camion=(x,y,s)=>`<div style="position:absolute;left:${x}px;top:${y}px;width:${300*s}px;height:${260*s}px;border-radius:${12*s}px;background:linear-gradient(#d9d4e8,#9d96b8);box-shadow:0 20px 40px rgba(0,0,0,.4)"><div style="position:absolute;left:10%;right:10%;bottom:8%;height:10%;background:#ff3a4a;border-radius:6px"></div></div>`;
+const mandoG=(x,y,k,lt,boton)=>{const on=Math.sin(lt*10)>0;return `<svg style="position:absolute;left:${x}px;top:${y}px;transform:scale(${eb(cl(k))});transform-origin:50% 50%;opacity:${cl(k*3)}" width="720" height="420" viewBox="0 0 720 420">
+ <rect x="100" y="0" width="150" height="70" rx="24" fill="${boton=="R1x"?"#ff3a4a":"#3a3458"}"/><rect x="470" y="0" width="150" height="70" rx="24" fill="${boton=="R1x"?"#ff3a4a55":"#3a3458"}"/><text x="545" y="48" text-anchor="middle" font-family="Inter Display" font-weight="900" font-size="38" fill="#fff">R1</text>
+ ${boton=="R1x"?`<path d="M490 10 l110 50 M600 10 l-110 50" stroke="#fff" stroke-width="10" stroke-linecap="round"/>`:""}
+ <path d="M150 90 h420 q90 0 120 130 q24 120 -50 140 q-60 14 -110 -70 h-280 q-50 84 -110 70 q-74 -20 -50 -140 q30 -130 110 -130z" fill="#1e1a33" stroke="#3a3458" stroke-width="8"/>
+ <circle cx="250" cy="210" r="56" fill="#120f22"/><circle cx="250" cy="210" r="40" fill="#4a4470"/>
+ ${[[540,160,""],[590,210,""],[540,260,"X"],[490,210,""]].map(([cx,cy,t])=>`<circle cx="${cx}" cy="${cy}" r="30" fill="${t&&on&&boton=="X"?"#d8ff1f":"#3a3458"}" style="filter:drop-shadow(0 0 ${t&&on?18:0}px #d8ff1f)"/>${t?`<text x="${cx}" y="${cy+13}" text-anchor="middle" font-family="Inter Display" font-weight="900" font-size="36" fill="${on?"#140f28":"#fff"}">${t}</text>`:""}`).join("")}
+ </svg>`};
+const cochePos=(lt,x=330)=>P.coche(x+Math.sin(lt*3)*20,1500,1.1,"#ff4fa3","",true);
+
+const ESCENAS=[
+{f:"¿Tu coche en *GTA 6* va como un *carrito de la compra*? No eres tú: son los *ajustes*.", p:(lt)=>autopista(lt,1.5)+P.coche(330+Math.sin(lt*5)*160,1500,1.1,"#ff4fa3")+P.texto("😵",440,700,sg(lt,.4,.8),180)+P.etiqueta("NO ERES TÚ",320,1000,sg(lt,2.2,2.6),"#d8ff1f","#140f28")},
+{f:"Cambia estos *cinco* y lo notas en la *primera curva*.", p:(lt)=>autopista(lt,3)+P.velocidad(lt)+cochePos(lt)+sello("5 AJUSTES",300,560,sg(lt,.5,.9),"#d8ff1f")},
+{f:"*Uno*, solo en *PS5*: apaga la *resistencia de los gatillos adaptativos*.", p:(lt)=>autopista(lt,.5)+num(1,sg(lt,0,.4))+panel(150,700,sg(lt,.5,.9),[["Sensibilidad de cámara","7"],["Vibración","10"],["Gatillos adaptativos",inter(lt<2.6)]],2)},
+{f:"Viene *activada*: el gatillo choca con un *muro* a mitad y el coche se queda a unos *30 por hora*.", p:(lt)=>autopista(lt,.3)+num(1,1)+gatillo(120,660,(lt%2)/1.2,true)+velo(640,700,Math.min(30,lt*25),sg(lt,.8,1.2))+P.etiqueta("MURO",250,620,sg(lt,.6,1),"#c0563a","#fff")},
+{f:"*Dos*: sube la *altura de la cámara* del coche de *2 a 3*. Verás el *tráfico* antes de comértelo.", p:(lt)=>{const h=eo(sg(lt,1.6,2.4));return autopista(lt,1.5)+num(2,sg(lt,0,.4))+panel(150,700,sg(lt,.4,.8),[["Altura de cámara",valor(h>.5?3:2)]],0)+camion(380,1180-h*140,1.2-h*.3)+cochePos(lt)}},
+{f:"*Tres*: la *cámara de choques* a *cero*. Adiós a la cámara lenta en plena huida.", p:(lt)=>autopista(lt,2.5)+P.velocidad(lt)+num(3,sg(lt,0,.4))+panel(150,700,sg(lt,.4,.8),[["Cámara de choques",valor(lt>1.6?0:3)]],0)+cochePos(lt)+P.etiqueta("✕ CÁMARA LENTA",280,1040,sg(lt,2.4,2.8),"#ff3a4a","#fff")},
+{f:"*Cuatro*: el *nitro* en *pulsar*, no en mantener. Así no se te suelta a mitad de curva.", p:(lt)=>{const n=lt>1.4;return autopista(lt,n?4:1.5)+(n?P.velocidad(lt):"")+num(4,sg(lt,0,.4))+panel(150,700,sg(lt,.4,.8),[["Nitro",`<span style="color:${n?"#888":"#fff"}">Mantener</span> · <span style="color:${n?"#d8ff1f":"#888"}">Pulsar</span>`]],0)+cochePos(lt)+(n?`<div style="position:absolute;left:400px;top:1500px;width:280px;height:${120+Math.sin(lt*30)*30}px;background:linear-gradient(#6ad8ff,transparent);filter:blur(6px);border-radius:50%"></div>`:"")}},
+{f:"*Cinco*: el *freno de mano* ya no está en *R1* como en GTA 5. Ahora es la *X*.", p:(lt)=>autopista(lt,1)+num(5,sg(lt,0,.4))+mandoG(180,680,sg(lt,.3,.8),lt,lt<2.2?"R1x":"X")+P.etiqueta("FRENO DE MANO",300,1180,sg(lt,.8,1.2),"#ff4fa3","#fff")},
+{f:"No conducías mal: conducías con un *muro en el gatillo*.", p:(lt)=>autopista(lt,4)+P.velocidad(lt)+cochePos(lt)+velo(360,640,Math.min(180,lt*80),1)},
+{f:"Mándaselo a ese amigo que se estrella en *todas las curvas*.", p:(lt)=>autopista(lt,2)+P.coche(330+Math.sin(lt*6)*200,1500,1.1,"#2ad4c8")+P.bocadillo("¿Otra vez contra la farola? 😅",180,700,sg(lt,.4,.8))},
+];
+montar(); iniciar();
+</script></body></html>
