@@ -1,22 +1,6 @@
 [
  {
   "t": "gamesporium",
-  "c": "WINTERSALE",
-  "pct": 15,
-  "hasta": "2026-12-31",
-  "para": [
-   "juego",
-   "edicion",
-   "dlc",
-   "software",
-   "tarjeta",
-   "skins"
-  ],
-  "txt": "En toda la tienda",
-  "nombre": "15% store-wide discount, will be available between December 10th and 31st"
- },
- {
-  "t": "gamesporium",
   "c": "BLACKFRIDAY",
   "pct": 18,
   "hasta": "2026-11-30",
@@ -37,11 +21,6 @@
   "pct": 5,
   "hasta": "2026-11-30",
   "para": [
-   "juego",
-   "edicion",
-   "dlc",
-   "software",
-   "tarjeta",
    "skins"
   ],
   "txt": "En toda la tienda",
@@ -50,7 +29,7 @@
  {
   "t": "gamivo",
   "c": "BASKET-SMART",
-  "pct": 1,
+  "pct": null,
   "hasta": null,
   "para": [
    "juego",
@@ -66,7 +45,7 @@
  {
   "t": "gamivo",
   "c": "ONCLOUD9",
-  "pct": 7,
+  "pct": null,
   "hasta": "2027-01-31",
   "para": [
    "juego",
@@ -82,15 +61,10 @@
  {
   "t": "godlike",
   "c": "affiliate40",
-  "pct": 40,
+  "pct": null,
   "hasta": null,
   "para": [
-   "juego",
-   "edicion",
-   "dlc",
-   "software",
-   "tarjeta",
-   "skins"
+   "software"
   ],
   "txt": "En toda la tienda",
   "nombre": "Discount on the first order from 12 GB RAM"
@@ -98,7 +72,7 @@
  {
   "t": "godlike",
   "c": "affiliate30",
-  "pct": 30,
+  "pct": null,
   "hasta": null,
   "para": [
    "juego",
@@ -117,12 +91,7 @@
   "pct": 15,
   "hasta": null,
   "para": [
-   "juego",
-   "edicion",
-   "dlc",
-   "software",
-   "tarjeta",
-   "skins"
+   "tarjeta"
   ],
   "txt": "En toda la tienda",
   "nombre": "15% Discount on \"Subscription\" category at GGPick!"
@@ -149,30 +118,9 @@
   "pct": 5,
   "hasta": null,
   "para": [
-   "juego",
-   "edicion",
-   "dlc",
-   "software",
-   "tarjeta",
    "skins"
   ],
   "txt": "En toda la tienda",
   "nombre": "Code gives 5% discount on all in-game items"
- },
- {
-  "t": "g2a",
-  "c": "НЕ НУЖЕН",
-  "pct": 10,
-  "hasta": null,
-  "para": [
-   "juego",
-   "edicion",
-   "dlc",
-   "software",
-   "tarjeta",
-   "skins"
-  ],
-  "txt": "En toda la tienda",
-  "nombre": "Zgarnij 10% kod rabatowy na kolejne zakupy!"
  }
 ]
