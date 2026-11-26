@@ -4,9 +4,11 @@
 // Así cada ficha enseña todas las tiendas que lo venden, en vez de una tienda por ficha.
 // Solo se juntan tarjetas que valen en el país de la región (o que no dicen país); las de otros países se quedan aparte.
 const PAISES = { es: /\b(spain|españa|espana|es)\b/, de: /\b(germany|deutschland|de|austria|at)\b/, fr: /\b(france|fr)\b/, us: /\b(usa|us|united states|north america|na)\b/ };
-const OTRO_PAIS = /\b(spain|españa|germany|deutschland|france|italy|italia|portugal|belgium|netherlands|austria|finland|ireland|greece|slovakia|slovenia|croatia|luxembourg|poland|uk|united kingdom|gb|usa|us|united states|canada|mexico|brazil|brasil|argentina|chile|colombia|peru|turkey|india|japan|korea|saudi|ksa|uae|kuwait|qatar|oman|bahrain|lebanon|israel|south africa|australia|nz|new zealand|sweden|norway|denmark|switzerland|czech|hungary|romania|bulgaria|russia|ukraine|hong kong|singapore|indonesia|malaysia|thailand|taiwan|china)\b/;
+const OTRO_PAIS = /\b(mena|latam|spain|españa|germany|deutschland|france|italy|italia|portugal|belgium|netherlands|austria|finland|ireland|greece|slovakia|slovenia|croatia|luxembourg|poland|uk|united kingdom|gb|usa|us|united states|canada|mexico|brazil|brasil|argentina|chile|colombia|peru|turkey|india|japan|korea|saudi|ksa|uae|kuwait|qatar|oman|bahrain|lebanon|israel|south africa|australia|nz|new zealand|sweden|norway|denmark|switzerland|czech|hungary|romania|bulgaria|russia|ukraine|hong kong|singapore|indonesia|malaysia|thailand|taiwan|china)\b/;
 const MARCAS = [["psn", /\b(psn|playstation( network| store)?)\b/], ["xbox", /\bxbox\b/], ["eshop", /\b(nintendo|eshop)\b/], ["steam", /\bsteam\b/],
-  ["googleplay", /\bgoogle play\b/], ["apple", /\b(apple|itunes)\b/], ["spotify", /\bspotify\b/], ["netflix", /\bnetflix\b/], ["roblox", /\broblox\b/]];
+  ["googleplay", /\bgoogle play\b/], ["apple", /\b(apple|itunes)\b/], ["spotify", /\bspotify\b/], ["netflix", /\bnetflix\b/], ["roblox", /\broblox\b/],
+  ["amazon", /\bamazon\b/], ["ea", /\b(ea|origin)\b/], ["riot", /\b(riot|league of legends)\b/], ["razer", /\brazer gold\b/], ["twitch", /\btwitch\b/],
+  ["uber", /\buber\b/], ["blizzard", /\b(blizzard|battle net)\b/], ["paysafecard", /\bpaysafe ?card\b/], ["disney", /\bdisney\b/], ["zalando", /\bzalando\b/], ["ikea", /\bikea\b/], ["decathlon", /\bdecathlon\b/]];
 const MONEDAS = [["minecoins", "mine ?coins?"], ["vbucks", "v-? ?bucks"], ["robux", "robux"], ["apexcoins", "apex coins"], ["valorantpoints", "valorant points"], ["overwatchcoins", "overwatch coins"]];
 const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/&#8364;|€/g, " eur ").replace(/[^a-z0-9.]+/g, " ").trim();
 function clave(j, region) {
@@ -32,10 +34,11 @@ function clave(j, region) {
   // Códigos de país en mayúsculas en el título («PSN PT Gift Card», «iTunes €10 IT Card»), salvo el de la región
   const cods = (raw.match(/\b(ES|PT|IT|HR|BE|NL|IE|GR|SK|SI|LU|PL|FI|AT|DE|FR|UK|GB|US|CY|MT|EE|LV|LT)\b/g) || []).filter((c) => c.toLowerCase() !== region);
   if (cods.length) return null;
-  const n = t.match(/\b(\d{1,4})(?:[.,]00)?\b/g);
-  if (!n) return null;
-  const valor = n.map(Number).find((x) => [5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 70, 75, 80, 90, 100, 120, 150, 200, 250].includes(x));
-  if (!valor) return null;
+  // El importe: el número pegado al símbolo o a la moneda («€25», «25 €», «EUR 25», «2,50 EUR»)
+  const mi = raw.match(/(?:€|\$|\b(?:EUR|EURO|USD)\b)\s*(\d+(?:[.,]\d{1,2})?)|(\d+(?:[.,]\d{1,2})?)\s*(?:€|\$|\b(?:EUR|EURO|EUROS|USD)\b)/i);
+  if (!mi) return null;
+  const valor = +(mi[1] || mi[2]).replace(",", ".");
+  if (!(valor > 0 && valor <= 500)) return null;
   const sinP = t.replace(PAISES[region] || /$^/, " ");
   if (OTRO_PAIS.test(sinP)) return null; // tarjeta de otro país: no vale aquí
   const ofs = (j.ofertas || []).map((o) => norm(o.condicion || "")).join(" ");
