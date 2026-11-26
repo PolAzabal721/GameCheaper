@@ -14,12 +14,18 @@ for (const w of webs) {
   for (const c of d.results || []) {
     const nombre = c.campaign?.name || "", tienda = (TIENDA.find(([re]) => re.test(nombre)) || [])[1];
     const cod = String(c.promocode || "").trim();
-    if (!tienda || !cod || /^not ?required$|^no ?code$/i.test(cod) || cod.length > 30) continue;
+    if (!tienda || !cod || !/^[A-Za-z0-9_-]{3,30}$/.test(cod)) continue;   // fuera «no hace falta código» (en cualquier idioma) y raros
+    if (c.date_start && String(c.date_start).slice(0, 10) > hoy) continue;   // aún no ha empezado: entrará el día que empiece
     const hasta = c.date_end ? String(c.date_end).slice(0, 10) : null;
     if (hasta && hasta < hoy) continue;
     const k = tienda + "|" + cod.toUpperCase(); if (vistos.has(k)) continue; vistos.add(k);
     const m = String(c.discount || "").match(/(\d+(?:[.,]\d+)?)\s*%/);
-    out.push({ t: tienda, c: cod, pct: m ? Math.round(+m[1].replace(",", ".")) : null, hasta, para: ["juego", "edicion", "dlc", "software", "tarjeta", "skins"],
+    // A qué productos vale, según lo que dice el cupón
+    const n2 = String(c.name || "") + " " + String(c.description || "");
+    const para = /subscription|gift ?card|top-?up|prepaid/i.test(n2) ? ["tarjeta"] : /in-?game|skins?\b/i.test(n2) ? ["skins"] : /ram|server|hosting/i.test(n2) ? ["software"] : ["juego", "edicion", "dlc", "software", "tarjeta", "skins"];
+    // «Para nuevos usuarios», «primer pedido», «hasta un X %»: el porcentaje no es fijo
+    const variable = /new (smart )?users?|first order|up to|depends/i.test(n2);
+    out.push({ t: tienda, c: cod, pct: m && !variable ? Math.round(+m[1].replace(",", ".")) : null, hasta, para,
       txt: m ? "En toda la tienda" : "Descuento con código", nombre: String(c.name || "").slice(0, 120) });
     console.log("Cupón:", tienda, cod, c.discount || "", hasta || "sin fin", "·", c.name);
   }
