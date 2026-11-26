@@ -58,8 +58,13 @@ async function sumarVarias(env, claves, ctx) {
   await env.DB.batch(claves.map((k) => st.bind(k)));
 }
 
+// Robots (Google, Bing, rastreadores, navegadores automáticos): no cuentan como visitas ni clics
+const ROBOT = /bot|crawl|spider|slurp|bingpreview|mediapartners|google-inspectiontool|lighthouse|headless|phantom|puppeteer|playwright|selenium|python|curl|wget|httpclient|java\/|go-http|axios|node-fetch|facebookexternalhit|embedly|preview|monitor|uptime|scan/i;
+const esRobot = (req) => { const ua = req.headers.get("user-agent") || ""; return !ua || ROBOT.test(ua) || req.cf?.verifiedBotCategory || (req.cf?.botManagement && req.cf.botManagement.verifiedBot); };
+
 export async function rutasContador(req, env, ctx, url) {
   const dia = hoy();
+  if ((url.pathname === "/v" || url.pathname === "/c") && esRobot(req)) return new Response(PIXEL, { headers: { "Content-Type": "image/gif", "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" } });
   if (url.pathname === "/v") {
     const ruta = corto(url.searchParams.get("p") || "/", 60);
     const de = corto(url.searchParams.get("r") || "", 40).toLowerCase();

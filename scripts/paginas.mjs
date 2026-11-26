@@ -195,7 +195,7 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;paddin
 // Lo de la pestaña se guarda en sessionStorage, que el navegador borra al cerrarla.
 let BUSCADOR = "";
 const contador = () => !BUSCADOR ? "" : `<script>(function(){var B=${JSON.stringify(BUSCADOR.replace(/\/$/, ""))};var px=function(r){try{new Image().src=B+r}catch(e){}};
-var ya=false;try{ya=!!sessionStorage.getItem("pillao-visita");sessionStorage.setItem("pillao-visita","1")}catch(e){}
+var ya=!!navigator.webdriver||/bot|crawl|spider|headless|lighthouse|inspectiontool|preview/i.test(navigator.userAgent||"");try{ya=ya||!!sessionStorage.getItem("pillao-visita");sessionStorage.setItem("pillao-visita","1")}catch(e){}
 if(!ya){var de="";try{de=document.referrer?new URL(document.referrer).hostname:""}catch(e){}if(de===location.hostname)de="";
 setTimeout(function(){px("/v?p="+encodeURIComponent(location.pathname.slice(0,60))+(de?"&r="+encodeURIComponent(de):""))},1500)}
 document.addEventListener("click",function(e){var a=e.target.closest?e.target.closest("a[data-t]"):null;if(a)px("/c?t="+encodeURIComponent(a.dataset.t)+"&j="+encodeURIComponent(a.dataset.j||""))},true)})();</script>`;

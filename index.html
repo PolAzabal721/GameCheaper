@@ -3197,6 +3197,8 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   }
   var contada = false;
   var contarVisita = function () {
+    // Robots que ejecutan la página (Google renderizando, navegadores automáticos): no son visitas
+    if (navigator.webdriver || /bot|crawl|spider|headless|lighthouse|inspectiontool|preview/i.test(navigator.userAgent || "")) return;
     if (contada || !datos || !datos.buscador) return;
     contada = true;
     // Una visita por pestaña: si ya se contó (recargas o ir de una página a otra), no se suma otra.
