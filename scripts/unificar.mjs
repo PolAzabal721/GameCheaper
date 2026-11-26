@@ -75,3 +75,40 @@ export function unificar(juegos, region = "es") {
   }
   return { juegos: juegos.filter((j) => !fuera.has(j)), juntadas };
 }
+
+// ---------- Juegos, DLC, ediciones y programas con el mismo nombre ----------
+// Cada tienda añade su coletilla al final («EN», «CODE», «Xbox One / Xbox Series X|S», «(EU)», «PC Steam»…).
+// Quitando SOLO esas coletillas del final (nunca del medio: «1-2-Switch» no es «1-2»), dos fichas con el mismo nombre son el mismo producto.
+const COLA = new RegExp("(?:\\s|^)(?:en|eng|multi ?language|multilang|global|worldwide|eu|europe|row|ww|key|cd ?key|code|codigo|clave|digital|steam|pc|gog|epic games|epic|ea app|origin|ubisoft connect|uplay|rockstar|microsoft store|windows 10|windows|xbox one|xbox series x ?s|xbox series|xbox|ps4|ps5|playstation 4|playstation 5|nintendo switch 2|nintendo switch|switch 2|switch|mac|linux|download|dlc)$");
+const base = (t) => {
+  let s = t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[®™©]/g, "").replace(/&amp;/g, "&").replace(/(\w)-(\w)/g, "$1$2").replace(/[^a-z0-9&]+/g, " ").trim();
+  for (let i = 0; i < 8; i++) { const n = s.replace(COLA, "").trim(); if (n === s) break; s = n; }
+  return s;
+};
+export function unificarNombres(juegos) {
+  const grupos = new Map();
+  for (const j of juegos) {
+    if (!j.titulo || j.sorpresa || !["juego", "edicion", "dlc", "software", undefined].includes(j.tipo)) continue;
+    const b = base(j.titulo);
+    if (b.length < 4) continue;
+    const k = (j.tipo || "juego") + "|" + b;
+    if (!grupos.has(k)) grupos.set(k, []);
+    grupos.get(k).push(j);
+  }
+  const fuera = new Set(); let juntadas = 0;
+  for (const lista of grupos.values()) {
+    if (lista.length < 2) continue;
+    if (process.env.UNIFICAR_VER) console.log("NOMBRE", lista.map((j) => j.titulo).join(" | "));
+    lista.sort((a, b) => (a.pop ?? 99999) - (b.pop ?? 99999) || b.ofertas.length - a.ofertas.length);
+    const [b0, ...resto] = lista;
+    for (const j of resto) {
+      const ya = new Set(b0.ofertas.map((o) => o.tienda + "|" + o.url));
+      for (const o of j.ofertas || []) if (!ya.has(o.tienda + "|" + o.url)) b0.ofertas.push(o);
+      b0.plataformas = [...new Set([...(b0.plataformas || []), ...(j.plataformas || [])])];
+      if (Array.isArray(b0.revisado) && Array.isArray(j.revisado)) b0.revisado = [...new Set([...b0.revisado, ...j.revisado])];
+      for (const c of ["img", "cov", "lanzamiento", "pvp"]) if (b0[c] == null && j[c] != null) b0[c] = j[c];
+      fuera.add(j); juntadas++;
+    }
+  }
+  return { juegos: juegos.filter((j) => !fuera.has(j)), juntadas };
+}

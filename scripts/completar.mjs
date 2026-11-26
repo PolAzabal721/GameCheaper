@@ -1,4 +1,4 @@
-import { unificar } from "./unificar.mjs";
+import { unificar, unificarNombres } from "./unificar.mjs";
 // Lectura de precios.json para todos los scripts.
 // 1. Partido en dos archivos para no pasar del límite de 100 MB de GitHub: precios.json (los más populares, con «parte2»)
 //    y precios-2.json (el resto). Aquí se juntan.
@@ -51,7 +51,8 @@ export const MAX_PARTES = 6;
 export function guardarPartes(archivo, salida) {
   // Tarjetas de saldo y packs de monedas con nombres distintos según la tienda: una sola ficha
   const reg = (archivo.match(/precios-(de|fr|us|latam)\.json/) || [])[1] || "es";
-  if (salida.juegos) { const u = unificar(salida.juegos, reg); salida = { ...salida, juegos: u.juegos }; console.log(`${archivo}: ${u.juntadas} tarjetas y packs de monedas juntados en su ficha`); }
+  if (salida.juegos) { const u = unificar(salida.juegos, reg); salida = { ...salida, juegos: u.juegos }; console.log(`${archivo}: ${u.juntadas} tarjetas y packs de monedas juntados en su ficha`);
+    const v = unificarNombres(salida.juegos); salida = { ...salida, juegos: v.juegos }; console.log(`${archivo}: ${v.juntadas} fichas repetidas (mismo juego con otra coletilla) juntadas`); }
   const base = archivo.replace(/\.json$/, "");
   const juegos = salida.juegos || [], trozos = [[]];
   let acum = JSON.stringify({ ...salida, juegos: [], partes: [] }).length + 200;
