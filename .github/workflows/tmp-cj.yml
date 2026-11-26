@@ -8,10 +8,10 @@ jobs:
     steps:
       - run: |
           T=$(printf '%s' "$T" | tr -d '[:space:]')
-          curl -s -H "Authorization: Bearer $T" "https://advertiser-lookup.api.cj.com/v2/advertiser-lookup?requestor-cid=8127571&keywords=exitlag" > a.xml
-          grep -oE '<advertiser-id>[0-9]+</advertiser-id>|<advertiser-name>[^<]*</advertiser-name>|<account-status>[^<]*</account-status>|<relationship-status>[^<]*</relationship-status>|<seven-day-epc>[^<]*</seven-day-epc>|<three-month-epc>[^<]*</three-month-epc>|<network-rank>[^<]*</network-rank>|<primary-category>.*</primary-category>|<program-url>[^<]*</program-url>|<language>[^<]*</language>|<sale-commission>[^<]*</sale-commission>|<performance-incentives>[^<]*</performance-incentives>' a.xml | head -30
-          grep -oE '<action-name>[^<]*</action-name>|<commission>[^<]*</commission>|<default>[^<]*</default>|<type>[^<]*</type>' a.xml | head -20
-          Y=$(grep -oE '<advertiser-id>[0-9]+' a.xml | head -1 | tr -cd 0-9); echo "id: $Y"; [ -n "$Y" ] || exit 0
-          for S in JOINED NOT_JOINED; do Q="{ products(companyId: \"8127571\", partnerIds: [\"$Y\"], partnerStatus: $S, limit: 5) { totalCount resultList { title price { amount currency } link } } }"
-          echo "== productos $S"; curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d "$(jq -n --arg q "$Q" '{query:$q}')" https://ads.api.cj.com/query | head -c 1500; echo; done
-          echo "== enlaces"; curl -s -H "Authorization: Bearer $T" "https://link-search.api.cj.com/v2/link-search?website-id=101929112&advertiser-ids=$Y&records-per-page=30" | grep -oE '<link-name>[^<]*</link-name>|<link-type>[^<]*</link-type>|<coupon-code>[^<]*</coupon-code>' | paste - - - | head -30
+          for C in EUR USD; do
+          Q="{ products(companyId: \"8127571\", partnerIds: [\"6086371\"], partnerStatus: JOINED, keywords: [\"bully\"], currency: \"$C\", limit: 20) { totalCount resultList { title catalogName price { amount currency } link } } }"
+          echo "== $C"; curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d "$(jq -n --arg q "$Q" '{query:$q}')" https://ads.api.cj.com/query | head -c 3000; echo; done
+          Q='{ products(companyId: "8127571", partnerIds: ["6086371"], partnerStatus: JOINED, limit: 1) { totalCount } }'
+          echo "== total"; curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d "$(jq -n --arg q "$Q" '{query:$q}')" https://ads.api.cj.com/query; echo
+          Q='{ productFeeds(companyId: "8127571", advertiserIds: ["6086371"]) { totalCount resultList { adId feedName productCount currency lastUpdated } } }'
+          echo "== feeds"; curl -s -H "Authorization: Bearer $T" -H "Content-Type: application/json" -d "$(jq -n --arg q "$Q" '{query:$q}')" https://ads.api.cj.com/query; echo
