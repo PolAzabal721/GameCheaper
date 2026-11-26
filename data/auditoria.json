@@ -1,37 +1,37 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 373,
+   "pendientes": 599,
    "ejemplos": [
-    "Arken Age",
+    "Arctic Drive",
+    "Hotel Architect - Poolside Paradise",
     "ENTITY: THE BLACK DAY",
     "Beyond the Map",
-    "Dice Gambit",
-    "KONOSUBA - God's Blessing on this Wonderful World! Love For These Clothes Of Desire!"
+    "Dice Gambit"
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 64888,
+   "pendientes": 76421,
    "ejemplos": [
+    "Super Mario Party",
     "Death Mark",
     "Lost in Harmony",
     "The Elder Scrolls V: Skyrim VR",
-    "Demon's Crystals",
-    "The MISSING: J.J. Macfield and the Island of Memories"
+    "When Chests Rain Tons of Loot"
    ]
   },
   "game (consola)": {
-   "pendientes": 32884,
+   "pendientes": 32039,
    "ejemplos": [
+    "Xenoblade Chronicles 3",
+    "ACA NEOGEO SAMURAI SHODOWN IV",
     "The End Is Nigh",
     "RIVE: Ultimate Edition",
-    "ACA NEOGEO SAMURAI SHODOWN IV",
-    "EA Sports FC 27 Ultimate Edition",
-    "Call of Duty: Modern Warfare 4 - Actualización de la Edición de Archivo"
+    "Travis Strikes Again: No More Heroes"
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 4782,
+   "pendientes": 4764,
    "ejemplos": [
     "Football Manager 27",
     "FINAL FANTASY VII REBIRTH",
@@ -41,204 +41,206 @@
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 20250,
+   "pendientes": 18441,
    "ejemplos": [
     "Transistor",
-    "Desert Child",
     "Tesla vs Lovecraft",
+    "Desert Child",
     "Gal*Gun 2",
-    "ACA NEOGEO WORLD HEROES 2 JET"
+    "Metro 2033 Redux"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 4782,
-  "sinFicha": 4241,
+  "sinPrecio": 4764,
+  "sinFicha": 4223,
   "fichasEncontradas": 1590
  },
  "fotos": {
   "juego": {
-   "total": 71939,
-   "con": 69972,
-   "porcentaje": 97
+   "total": 80273,
+   "con": 78356,
+   "porcentaje": 98
   },
   "edicion": {
-   "total": 9547,
-   "con": 9235,
+   "total": 11001,
+   "con": 10705,
    "porcentaje": 97
   },
   "dlc": {
-   "total": 16819,
-   "con": 16657,
+   "total": 19232,
+   "con": 19097,
    "porcentaje": 99
   },
   "tarjeta": {
-   "total": 8726,
+   "total": 8767,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 3810,
+   "total": 3690,
    "probadas": 12,
    "fallan": 5,
    "ejemplos": [
-    "Victoria 3: Charters of Commerce - Mechanics Pack → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3450170/header.jpg",
-    "Melted Valor → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3949190/header.jpg",
-    "Duelist: Expedición Ociosa → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4282780/header.jpg"
+    "Pill & Chill → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5012130/header.jpg",
+    "Bloom Blow → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5277080/header.jpg",
+    "Sectron → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4711570/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 1741,
+   "total": 1828,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "nintendo": {
-   "total": 9644,
+   "total": 9595,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 12043,
+   "total": 12169,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "otras": {
-   "total": 73116,
+   "total": 85364,
    "probadas": 12,
-   "fallan": 0,
-   "ejemplos": []
+   "fallan": 1,
+   "ejemplos": [
+    "Urban Flow EN → 403 https://cdn-cf.gamivo.com/image_original.jpg?f=422200&h=qqqqq1a8b5ee91b07cf1cac995d76406"
+   ]
   }
  },
  "enlaces": {
   "steam": {
-   "ofertas": 8341,
+   "ofertas": 8222,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "psstore": {
-   "ofertas": 1109,
+   "ofertas": 1107,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xbox": {
-   "ofertas": 15830,
+   "ofertas": 15888,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "k4g": {
-   "ofertas": 2602,
+   "ofertas": 2638,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "yuplay": {
-   "ofertas": 12431,
+   "ofertas": 12615,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "mediamarkt": {
-   "ofertas": 1055,
+   "ofertas": 1046,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xtralife": {
-   "ofertas": 5914,
+   "ofertas": 5883,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "kinguin": {
-   "ofertas": 60845,
+   "ofertas": 61176,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "voidu": {
-   "ofertas": 4753,
+   "ofertas": 4748,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "g2a": {
-   "ofertas": 22414,
+   "ofertas": 22488,
    "probadas": 6,
    "fallan": 6,
    "bloqueados": 0,
    "ejemplos": [
-    "Yaiba: Ninja Gaiden Z → 0",
-    "Panzer Corps 2 General Edition → 0",
-    "Adobe Acrobat | Pro for Students & Teachers (PC, Mac) → 0"
+    "Kerbal Space Program 2 → 0",
+    "Dead By Daylight the Halloween Chapter → 0",
+    "Arcade Spirits → 0"
    ]
   },
   "ggpick": {
-   "ofertas": 1268,
+   "ofertas": 1264,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "todoconsolas": {
-   "ofertas": 4648,
+   "ofertas": 4682,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "gamersgate": {
-   "ofertas": 10110,
+   "ofertas": 10153,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "ebay": {
-   "ofertas": 1071,
+   "ofertas": 1017,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "eshop": {
-   "ofertas": 18046,
+   "ofertas": 17922,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "game": {
-   "ofertas": 1664,
+   "ofertas": 1623,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "instantgaming": {
-   "ofertas": 9037,
+   "ofertas": 8539,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "driffle": {
-   "ofertas": 2736,
+   "ofertas": 2713,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -252,29 +254,43 @@
    "ejemplos": []
   },
   "loaded": {
-   "ofertas": 10833,
+   "ofertas": 10850,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
+  "gamivo": {
+   "ofertas": 17002,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "cjs": {
-   "ofertas": 43360,
+   "ofertas": 42744,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 6,
    "ejemplos": []
   },
   "gameseminuevos": {
-   "ofertas": 451,
+   "ofertas": 450,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "pcbox": {
-   "ofertas": 5,
-   "probadas": 5,
+   "ofertas": 4,
+   "probadas": 4,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "gamesporium": {
+   "ofertas": 2474,
+   "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
@@ -297,8 +313,8 @@
   ]
  },
  "actualizado": {
-  "precios": "2026-11-25T11:16:01.288Z",
-  "diasDesdeLaUltima": 0.2
+  "precios": "2026-11-26T10:31:16.700Z",
+  "diasDesdeLaUltima": 0.22
  },
  "historial": {
   "series": 90977,
@@ -307,25 +323,25 @@
   "ultimoDia": "2026-11-17"
  },
  "red": {
-  "comprobadas": 203,
+  "comprobadas": 214,
   "sinRespuesta": 6,
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 111480,
-  "ofertas": 285770,
-  "tiendas": 53,
-  "conFoto": "90 %"
+  "juegos": 123721,
+  "ofertas": 303089,
+  "tiendas": 54,
+  "conFoto": "91 %"
  },
- "fecha": "2026-11-25T16:01:21.191Z",
+ "fecha": "2026-11-26T15:41:32.490Z",
  "graves": [
-  "g2a: fallan todos los enlaces probados (Yaiba: Ninja Gaiden Z → 0)",
+  "g2a: fallan todos los enlaces probados (Kerbal Space Program 2 → 0)",
   "el historial no se escribe desde el 2026-11-17"
  ],
  "avisos": [
-  "xbox (PC o Xbox): 327 juegos populares aún sin consultar (p. ej. Death Mark, Lost in Harmony, The Elder Scrolls V: Skyrim VR)",
-  "game (consola): 1949 juegos populares aún sin consultar (p. ej. The End Is Nigh, RIVE: Ultimate Edition, ACA NEOGEO SAMURAI SHODOWN IV)",
-  "psstore (PS4 o PS5): 240 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
-  "ebay (consola, 2ª mano): 972 juegos populares aún sin consultar (p. ej. Transistor, Desert Child, Tesla vs Lovecraft)"
+  "xbox (PC o Xbox): 331 juegos populares aún sin consultar (p. ej. Super Mario Party, Death Mark, Lost in Harmony)",
+  "game (consola): 1940 juegos populares aún sin consultar (p. ej. Xenoblade Chronicles 3, ACA NEOGEO SAMURAI SHODOWN IV, The End Is Nigh)",
+  "psstore (PS4 o PS5): 244 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
+  "ebay (consola, 2ª mano): 983 juegos populares aún sin consultar (p. ej. Transistor, Tesla vs Lovecraft, Desert Child)"
  ]
 }
