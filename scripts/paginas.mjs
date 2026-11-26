@@ -659,7 +659,11 @@ async function main() {
     { id: "fr", archivo: "precios-fr.json", nombre: "Francia", lang: "fr-FR", marca: "PILLAO_FR", fichas: +(process.env.FR_FICHAS || 6000), moneda: "EUR" },
   ];
   for (const r of REGIONES) { try { r.datos = completar(JSON.parse(await readFile(join(RAIZ, r.archivo), "utf8"))); } catch {} r.hay = !!(r.datos && r.datos.juegos && r.datos.juegos.length); r.fichasL = []; r.chollosL = []; }
-  const marcas = "<script>" + REGIONES.filter((r) => r.hay).map((r) => `window.${r.marca}=true;`).join("") + "</script>\n</head>";
+  // Cupones automáticos de Admitad (config/cupones-auto.json, lo actualiza cada día «Cupones de Admitad»): van con las marcas de región
+  let cupAuto = []; try { cupAuto = JSON.parse(await readFile(join(RAIZ, "config", "cupones-auto.json"), "utf8")); } catch {}
+  const hoyC = new Date().toISOString().slice(0, 10);
+  cupAuto = cupAuto.filter((c) => !c.hasta || c.hasta >= hoyC).map(({ t, c, pct, hasta, para, txt }) => ({ t, c, pct, hasta, para, txt }));
+  const marcas = "<script>" + REGIONES.filter((r) => r.hay).map((r) => `window.${r.marca}=true;`).join("") + `window.PILLAO_CUPONES=${JSON.stringify(cupAuto).replace(/</g, "\\u003c")};` + "</script>\n</head>";
   await rm(SALIDA, { recursive: true, force: true });
   await mkdir(SALIDA, { recursive: true });
 

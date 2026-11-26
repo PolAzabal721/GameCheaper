@@ -2531,6 +2531,8 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     { t: "ggpick", c: "NEWTOPUPGG", pct: 5, hasta: null, para: ["juego", "edicion", "dlc", "software", "skins", "tarjeta"], txt: "En todo GGPick" }
   ];
   var CUPON_TIENDAS = {}; CUPONES.forEach(function (c) { CUPON_TIENDAS[c.t || "kinguin"] = 1; });
+  // Cupones automáticos (Admitad): se añaden los que no tengamos ya puestos a mano
+  (window.PILLAO_CUPONES || []).forEach(function (c) { if (c && c.c && !CUPONES.some(function (x) { return (x.t || "kinguin") === c.t && String(x.c).toUpperCase() === String(c.c).toUpperCase(); })) CUPONES.push(c); });
   function cuponVivo(c) { return !c.hasta || new Date(c.hasta + "T23:59:59") >= new Date(); }
   function cuponDe(o, j) {
     var tipo = j.tipo || "juego";
