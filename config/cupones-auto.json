@@ -122,5 +122,85 @@
   ],
   "txt": "En toda la tienda",
   "nombre": "Code gives 5% discount on all in-game items"
+ },
+ {
+  "t": "gamivo",
+  "c": "TOP-UP-SMART",
+  "pct": 40,
+  "hasta": "2028-01-01",
+  "para": [
+   "juego",
+   "edicion",
+   "dlc",
+   "software",
+   "tarjeta",
+   "skins"
+  ],
+  "txt": "En toda la tienda",
+  "nombre": "Gamivo.com_Bis zu 40 % Rabatt auf In-Game-Gegenstände für neue SMART-Nutzer Bis zu 40 % Rabatt auf In-Game-Gegenstände f"
+ },
+ {
+  "t": "gamivo",
+  "c": "TOP-UP-BONUS",
+  "pct": null,
+  "hasta": "2028-01-01",
+  "para": [
+   "juego",
+   "edicion",
+   "dlc",
+   "software",
+   "tarjeta",
+   "skins"
+  ],
+  "txt": "Descuento con código",
+  "nombre": "Gamivo.com_2% off for in-game goods 2% off for in-game goods for basket value up to 100€."
+ },
+ {
+  "t": "gamivo",
+  "c": "4GAMERGIFT4",
+  "pct": 4,
+  "hasta": "2027-12-31",
+  "para": [
+   "juego",
+   "edicion",
+   "dlc",
+   "software",
+   "tarjeta",
+   "skins"
+  ],
+  "txt": "En toda la tienda",
+  "nombre": "Gamivo.com_4 % auf Abonnements und Geschenkkarten 4 % auf einen Warenkorb mit einem maximalen Wert von 100 € und 1 Produ"
+ },
+ {
+  "t": "gamivo",
+  "c": "7GamerGlee7",
+  "pct": 7,
+  "hasta": "2028-01-01",
+  "para": [
+   "juego",
+   "edicion",
+   "dlc",
+   "software",
+   "tarjeta",
+   "skins"
+  ],
+  "txt": "En toda la tienda",
+  "nombre": "7 % Rabatt mit Code auf Spiele, DLCs und Software Schnapp dir das Angebot und spar dir den vollen Preis. Nutze den Code "
+ },
+ {
+  "t": "gamivo",
+  "c": "VICE12",
+  "pct": 12,
+  "hasta": "2026-12-13",
+  "para": [
+   "juego",
+   "edicion",
+   "dlc",
+   "software",
+   "tarjeta",
+   "skins"
+  ],
+  "txt": "En toda la tienda",
+  "nombre": "GTA VI cheaper with a discount code The code gives you a 12% discount on GTA VI when purchased with SMART. The code is v"
  }
 ]
