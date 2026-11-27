@@ -12,6 +12,15 @@
 // Envío de correos con Brevo: secretos BREVO_API_KEY y AVISOS_REMITENTE (email verificado en Brevo).
 
 const WEB = "https://pillaojuegos.com/";
+// Pillao Bloques y Pillao Cartas usan este mismo servicio de avisos (y los mismos secretos de Brevo).
+// Su web manda "web": "bloques" | "cartas"; los avisos de Pillao Juegos no llevan ese campo.
+const SITIOS = {
+  bloques: { nombre: "Pillao Bloques", web: "https://pillaobloques.com/" },
+  cartas: { nombre: "Pillao Cartas", web: "https://pillaocartas.com/" },
+};
+const sitioDe = (w) => SITIOS[w] || { nombre: "Pillao", web: WEB };
+// Mismo reparto que comun.js de las webs nuevas: el id del producto pasa a ser un nombre sin acentos ni símbolos
+const slug = (id) => String(id).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
 const SIN_CONFIRMAR_SEG = 2 * 86400;    // un aviso sin confirmar se borra a los 2 días
 const ENVIADO_SEG = 30 * 86400;          // un aviso ya enviado se guarda 30 días (para que la web enseñe «te avisamos»)
 const MAX_POR_JUEGO = 5;
@@ -30,8 +39,8 @@ const huella = async (email) => hex(await crypto.subtle.digest("SHA-256", new Te
 const aleatorio = () => hex(crypto.getRandomValues(new Uint8Array(12)));
 const limpiar = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 
-function pagina(titulo, texto, estado = 200, boton = `<a class="b" href="${WEB}">Volver a Pillao</a>`) {
-  return new Response(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(titulo)} · Pillao</title>
+function pagina(titulo, texto, estado = 200, sitio = sitioDe(), boton = `<a class="b" href="${sitio.web}">Volver a ${esc(sitio.nombre)}</a>`) {
+  return new Response(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(titulo)} · ${esc(sitio.nombre)}</title>
 <meta name="robots" content="noindex"><style>body{margin:0;font-family:system-ui,sans-serif;background:#eef0f5;color:#141a2e;display:grid;place-items:center;min-height:100vh;padding:16px;box-sizing:border-box}
 main{background:#fff;border-radius:14px;padding:28px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.08)}h1{margin:0 0 8px;font-size:22px}p{color:#5a6280;line-height:1.5}
 a.b,button.b{display:inline-block;border:0;font:inherit;cursor:pointer;margin-top:8px;background:#141a2e;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600}
@@ -51,10 +60,10 @@ async function mandarEmail(env, para, asunto, html) {
   if (!r.ok) throw new Error(`Brevo respondió ${r.status}: ${(await r.text()).slice(0, 200)}`);
 }
 
-function correo(cuerpo, borrar) {
+function correo(cuerpo, borrar, nombre = "Pillao") {
   return `<div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;color:#141a2e;line-height:1.5">
-<p style="font-size:22px;font-weight:800;margin:0 0 16px">Pillao</p>${cuerpo}
-<p style="color:#5a6280;font-size:13px;margin-top:28px;border-top:1px solid #d9dce8;padding-top:12px">Recibes este correo porque pediste un aviso de precio en Pillao.
+<p style="font-size:22px;font-weight:800;margin:0 0 16px">${esc(nombre)}</p>${cuerpo}
+<p style="color:#5a6280;font-size:13px;margin-top:28px;border-top:1px solid #d9dce8;padding-top:12px">Recibes este correo porque pediste un aviso de precio en ${esc(nombre)}.
 ${borrar ? `<a href="${borrar}" style="color:#5a6280">Eliminar este aviso</a>.` : ""}</p></div>`;
 }
 const boton = (href, texto) => `<p><a href="${href}" style="display:inline-block;background:#141a2e;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:600">${texto}</a></p>`;
@@ -69,6 +78,7 @@ async function crear(req, env, origen) {
   if (!env.BREVO_API_KEY || !env.AVISOS_REMITENTE) return json({ error: "Los avisos por email todavía no están activados. Vuelve a probar en unos días." }, 503);
   let d; try { d = await req.json(); } catch { return json({ error: "Petición no válida." }, 400); }
   const email = String(d.email || "").trim().toLowerCase(), juego = String(d.juego || ""), titulo = String(d.titulo || "").slice(0, 120);
+  const w = SITIOS[d.web] ? d.web : undefined, sitio = sitioDe(w);
   const precio = Math.round(Number(d.precio) * 100) / 100;
   if (!EMAIL_RE.test(email)) return json({ error: "Ese email no parece válido." }, 400);
   if (!/^[a-z0-9-]{1,80}$/.test(juego) || !titulo) return json({ error: "Juego no válido." }, 400);
@@ -90,7 +100,7 @@ async function crear(req, env, origen) {
   const yaConfirmado = deEsteEmail.keys.some((k) => k.metadata?.ok);
 
   const id = `${h}:${juego}:${aleatorio()}`;
-  const meta = { e: email, j: juego, t: titulo, p: precio, ok: yaConfirmado, c: new Date().toISOString().slice(0, 10) };
+  const meta = { e: email, j: juego, t: titulo, p: precio, ok: yaConfirmado, c: new Date().toISOString().slice(0, 10), ...(w ? { w } : {}) };
   await env.PILLAO.put("av:" + id, "1", { metadata: meta, ...(yaConfirmado ? {} : { expirationTtl: SIN_CONFIRMAR_SEG }) });
   await env.PILLAO.put(rl, String(altas + 1), { expirationTtl: 3700 });
 
@@ -99,7 +109,7 @@ async function crear(req, env, origen) {
     if (!yaConfirmado) {
       await mandarEmail(env, email, `Confirma tu aviso de precio de ${titulo}`, correo(
         `<p>Has pedido que te avisemos cuando <b>${esc(titulo)}</b> baje de <b>${eur(precio)}</b>.</p>${boton(`${origen}/avisos/confirmar?id=${id}`, "Confirmar aviso")}
-<p style="color:#5a6280;font-size:14px">Si no lo has pedido tú, ignora este correo: el aviso se borra solo en 48 horas.</p>`, null));
+<p style="color:#5a6280;font-size:14px">Si no lo has pedido tú, ignora este correo: el aviso se borra solo en 48 horas.</p>`, null, sitio.nombre));
     }
   } catch (e) {
     await env.PILLAO.delete("av:" + id);
@@ -155,16 +165,16 @@ export async function rutasAvisos(req, env, ctx, url) {
   if (url.pathname === "/avisos/confirmar") {
     const id = url.searchParams.get("id"), m = await leerAviso(env, id);
     if (!m) return pagina("Este aviso ya no existe", "Puede que haya caducado (los avisos sin confirmar se borran a las 48 horas). Crea uno nuevo desde la campana del juego.", 404);
-    if (req.method !== "POST" && !m.ok) return pagina("Confirma tu aviso", `Te escribiremos cuando <b>${esc(m.t)}</b> baje de <b>${eur(m.p)}</b>.`, 200, formulario("Confirmar aviso"));
+    if (req.method !== "POST" && !m.ok) return pagina("Confirma tu aviso", `Te escribiremos cuando <b>${esc(m.t)}</b> baje de <b>${eur(m.p)}</b>.`, 200, sitioDe(m.w), formulario("Confirmar aviso"));
     if (!m.ok) await env.PILLAO.put("av:" + id, "1", { metadata: { ...m, ok: true } });
-    return pagina("Aviso activado", `Te escribiremos cuando <b>${esc(m.t)}</b> baje de <b>${eur(m.p)}</b>. Puedes borrarlo cuando quieras desde la campana del juego o desde el enlace de nuestros correos.`);
+    return pagina("Aviso activado", `Te escribiremos cuando <b>${esc(m.t)}</b> baje de <b>${eur(m.p)}</b>. Puedes borrarlo cuando quieras desde la campana del juego o desde el enlace de nuestros correos.`, 200, sitioDe(m.w));
   }
   if (url.pathname === "/avisos/borrar") {
     const id = url.searchParams.get("id"), m = await leerAviso(env, id);
     if (!m) return pagina("Aviso eliminado", "Este aviso ya estaba eliminado.");
-    if (req.method !== "POST") return pagina("¿Eliminar este aviso?", `Dejaremos de vigilar <b>${esc(m.t)}</b> (por debajo de ${eur(m.p)}).`, 200, formulario("Eliminar aviso"));
+    if (req.method !== "POST") return pagina("¿Eliminar este aviso?", `Dejaremos de vigilar <b>${esc(m.t)}</b> (por debajo de ${eur(m.p)}).`, 200, sitioDe(m.w), formulario("Eliminar aviso"));
     await env.PILLAO.delete("av:" + id);
-    return pagina("Aviso eliminado", `Ya no te escribiremos sobre <b>${esc(m.t)}</b>.`);
+    return pagina("Aviso eliminado", `Ya no te escribiremos sobre <b>${esc(m.t)}</b>.`, 200, sitioDe(m.w));
   }
   if (url.pathname === "/historial") {
     const titulo = (url.searchParams.get("titulo") || "").slice(0, 120);
@@ -180,26 +190,49 @@ export async function rutasAvisos(req, env, ctx, url) {
 }
 
 // ---------- Programado: mandar los avisos que se han cumplido ----------
+// Precio actual de cada producto de una web: id -> [precio total con stock más bajo, nombre de la tienda]
+async function preciosDe(w, cache) {
+  if (cache[w]) return cache[w];
+  if (!w) {
+    const r = await fetch(WEB + "minimos.json?t=" + Date.now(), { cf: { cacheTtl: 0 } });
+    if (!r.ok) throw new Error("minimos.json: HTTP " + r.status);
+    return (cache[w] = (await r.json()).p);
+  }
+  const r = await fetch(SITIOS[w].web + "datos/productos.json?t=" + Date.now(), { cf: { cacheTtl: 0 } });
+  if (!r.ok) throw new Error(w + " productos.json: HTTP " + r.status);
+  const d = await r.json(), mapa = {};
+  for (const pr of d.productos || []) {
+    const hay = (pr.ofertas || []).filter((o) => o.stock && o.total > 0);
+    if (!hay.length) continue;
+    const mejor = hay.reduce((a, o) => (o.total < a.total ? o : a));
+    mapa[slug(pr.id)] = [mejor.total, (d.tiendas && d.tiendas[mejor.tienda] && d.tiendas[mejor.tienda].nombre) || mejor.tienda];
+  }
+  return (cache[w] = mapa);
+}
+
 export async function revisarAvisos(env, origen) {
   if (!env.BREVO_API_KEY || !env.AVISOS_REMITENTE) return;
-  const r = await fetch(WEB + "minimos.json?t=" + Date.now(), { cf: { cacheTtl: 0 } });
-  if (!r.ok) throw new Error("minimos.json: HTTP " + r.status);
-  const { p } = await r.json();
+  const precios = {}, falladas = new Set();
   let enviados = 0, cursor;
   do {
     const l = await env.PILLAO.list({ prefix: "av:", cursor, limit: 1000 });
     for (const k of l.keys) {
       const m = k.metadata;
-      if (!m || !m.ok || m.s || !p[m.j]) continue;
+      if (!m || !m.ok || m.s) continue;
+      const w = SITIOS[m.w] ? m.w : "";
+      if (falladas.has(w)) continue;
+      let p;
+      try { p = await preciosDe(w, precios); } catch (e) { falladas.add(w); console.log("Avisos: " + e.message); continue; }
+      if (!p[m.j]) continue;
       const [ahora, tienda] = p[m.j];
       if (ahora > m.p) continue;
       if (enviados >= MAX_ENVIOS_HORA) return;
-      const id = k.name.slice(3);
+      const id = k.name.slice(3), sitio = sitioDe(w);
       try {
         await mandarEmail(env, m.e, `¡${m.t} ha bajado a ${eur(ahora)}!`, correo(
           `<p><b>${esc(m.t)}</b> está a <b>${eur(ahora)}</b> en ${esc(tienda)}. Tu aviso era por debajo de ${eur(m.p)}.</p>
-${boton(`${WEB}juego/${m.j}/`, "Ver precios")}<p style="color:#5a6280;font-size:14px">Los precios cambian rápido: compruébalo en la tienda antes de comprar. Este aviso ya no volverá a escribirte; si quieres otro, créalo desde la campana del juego.</p>`,
-          `${origen}/avisos/borrar?id=${id}`));
+${boton(w ? sitio.web : `${WEB}juego/${m.j}/`, "Ver precios")}<p style="color:#5a6280;font-size:14px">Los precios cambian rápido: compruébalo en la tienda antes de comprar. Este aviso ya no volverá a escribirte; si quieres otro, créalo desde la campana del ${w ? "producto" : "juego"}.</p>`,
+          `${origen}/avisos/borrar?id=${id}`, sitio.nombre));
         await env.PILLAO.put(k.name, "1", { metadata: { ...m, s: new Date().toISOString().slice(0, 10), pe: ahora }, expirationTtl: ENVIADO_SEG });
         enviados++;
       } catch (e) { console.log("Aviso " + id + ": " + e.message); }
