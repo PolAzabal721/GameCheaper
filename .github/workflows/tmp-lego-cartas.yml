@@ -33,7 +33,7 @@ jobs:
           SELL = re.compile(r'sobre|booster|caja|elite trainer|\betb\b|mazo|baraja|deck|blister|colecci[oó]n|\btin\b|lata|display|starter|premium|bundle|cartas|card', re.I)
           def clas(nombre, cat):
             t = f"{nombre} {cat}"
-            if LEGO.search(nombre) and not JUEGO.search(t) and not re.search(r'juegos? >|videojueg', cat, re.I): return 'lego'
+            if LEGO.search(nombre) and not JUEGO.search(t) and not re.search(r'juegos? (>|&gt;)|^\s*juegos\b|videojueg|monedas|coins', cat + ' ' + nombre, re.I): return 'lego'
             if TCG.search(nombre) and SELL.search(nombre) and not JUEGO.search(t) and not re.search(r'juegos? >|videojueg|peluche|figura|camiseta|taza|mochila', t, re.I): return 'cartas'
             return None
           res = {'lego': [], 'cartas': []}
@@ -92,8 +92,4 @@ jobs:
             print('\n=====', k, len(res[k]))
             for x in res[k][:40]: print(' ', x['tienda'], '|', x['nombre'][:80], '|', x['precio'], x['moneda'], '|', x['stock'], '|', x['cat'][:50])
           PY
-      - uses: actions/upload-artifact@v4
-        with:
-          name: lego-cartas
-          path: out/
-          retention-days: 3
+      - run: for f in out/*.json; do echo "@@@INICIO $f"; python3 -c "import json,sys;[print(json.dumps(x,ensure_ascii=False)) for x in json.load(open(sys.argv[1]))]" $f; echo "@@@FIN $f"; done
