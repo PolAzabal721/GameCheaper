@@ -1,5 +1,21 @@
 [
  {
+  "t": "g2a",
+  "c": "G2ABF20",
+  "pct": 20,
+  "hasta": "2026-11-27",
+  "para": [
+   "juego",
+   "edicion",
+   "dlc",
+   "software",
+   "tarjeta",
+   "skins"
+  ],
+  "txt": "En toda la tienda",
+  "nombre": "20% sale in G2A Many GEOs"
+ },
+ {
   "t": "gamesporium",
   "c": "BLACKFRIDAY",
   "pct": 18,
