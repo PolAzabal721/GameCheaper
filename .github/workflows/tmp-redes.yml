@@ -35,7 +35,7 @@ jobs:
           print('\n########## CJ ##########')
           T = E('CJ_TOKEN')
           vistos = {}
-          for rel in ('joined', 'notjoined'):
+          for rel in ():
             for kw in ['lego','toys','juguetes','toy','pokemon','trading card','tcg','cards','board games','refurbished','reacondicionado','consoles','video games','collectibles','hobby']:
               for pg in (1, 2):
                 q = urllib.parse.urlencode({'requestor-cid':'8127571','advertiser-ids':rel,'keywords':kw,'records-per-page':'100','page-number':str(pg)})
@@ -57,14 +57,15 @@ jobs:
           if tok:
             H = {'Authorization':'Bearer ' + tok}
             s, x = get('https://api.admitad.com/websites/v2/?limit=50', H)
-            webs = json.loads(x).get('results', []) if s == 200 else []
+            dw = json.loads(x) if s == 200 else []; webs = dw if isinstance(dw, list) else dw.get('results', [])
+            if s != 200: print('webs', s, x[:300])
             print('Webs:', [(w.get('id'), w.get('name'), w.get('status')) for w in webs])
             wid = webs[0]['id'] if webs else None
             off = 0
             while wid and off < 6000:
               s, x = get(f'https://api.admitad.com/advcampaigns/website/{wid}/?limit=500&offset={off}', H)
               if s != 200: print('Admitad camp', s, x[:300]); break
-              d = json.loads(x); res = d.get('results', [])
+              d = json.loads(x); res = d if isinstance(d, list) else d.get('results', [])
               for c in res:
                 regs = ','.join(r.get('region','') for r in c.get('regions', []))[:40]
                 cats = ','.join(k.get('name','') for k in c.get('categories', []))[:50]
