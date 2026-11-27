@@ -80,11 +80,18 @@ export function unificar(juegos, region = "es") {
 // Cada tienda añade su coletilla al final («EN», «CODE», «Xbox One / Xbox Series X|S», «(EU)», «PC Steam»…).
 // Quitando SOLO esas coletillas del final (nunca del medio: «1-2-Switch» no es «1-2»), dos fichas con el mismo nombre son el mismo producto.
 const COLA = new RegExp("(?:\\s|^)(?:en|eng|multi ?language|multilang|global|worldwide|eu|europe|row|ww|key|cd ?key|code|codigo|clave|digital|steam|pc|gog|epic games|epic|ea app|origin|ubisoft connect|uplay|rockstar|microsoft store|windows 10|windows|xbox one|xbox series x ?s|xbox series|xbox|ps4|ps5|playstation 4|playstation 5|nintendo switch 2|nintendo switch|switch 2|switch|mac|linux|download|dlc)$");
+// Coletilla de idiomas al final («EN/DE/FR/IT/ES», «(EN, PL)»…): dos o más códigos seguidos
+const IDIOMAS = new RegExp("(?:\\s(?:en|eng|de|fr|it|es|pl|ru|pt|br|nl|cz|cs|sk|tr|jp|ja|ko|kr|zh|cn|sv|se|da|dk|fi|no|hu|ro|gr|el|ar|uk|ua|latam|multi)){2,}$");
+// «Edición Scholarship», «Edición de Coleccionista»… es la «Scholarship Edition», «Collectors Edition» de otras tiendas
+const EDICION = { oro: "gold", definitiva: "definitive", completa: "complete", estandar: "standard", especial: "special", coleccionista: "collectors",
+  remasterizada: "remastered", platino: "platinum", mejorada: "enhanced", aniversario: "anniversary", legendaria: "legendary", suprema: "supreme" };
 const base = (t) => {
-  let s = t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[®™©]/g, "").replace(/&amp;/g, "&").replace(/(\w)-(\w)/g, "$1$2").replace(/[^a-z0-9&]+/g, " ").trim();
-  for (let i = 0; i < 8; i++) { const n = s.replace(COLA, "").trim(); if (n === s) break; s = n; }
+  let s = t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[®™©]/g, "").replace(/&amp;/g, "&").replace(/(\w)['’]s\b/g, "$1s").replace(/(\w)-(\w)/g, "$1$2").replace(/\+/g, " plus ").replace(/[^a-z0-9&]+/g, " ").trim();
+  s = s.replace(/\bedicion (?:del? )?juego del ano\b/g, "game of the year edition").replace(/\bjuego del ano\b/g, "game of the year").replace(/\bedicion (?:de |del )?([a-z0-9]+)\b/g, (_, w) => (EDICION[w] || w) + " edition");
+  for (let i = 0; i < 8; i++) { const n = s.replace(IDIOMAS, "").replace(COLA, "").trim(); if (n === s) break; s = n; }
   return s;
 };
+export { base as baseTitulo };
 export function unificarNombres(juegos) {
   const grupos = new Map();
   for (const j of juegos) {

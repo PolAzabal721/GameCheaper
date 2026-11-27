@@ -2901,6 +2901,16 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     return '<div class="premios">' + ps.slice(0, 3).map(function (p) { return '<span class="premio-tag' + (p.g ? " oro" : "") + '">' + esc(p.t) + "</span>"; }).join("") + "</div>";
   }
 
+  // La misma clave que usa el actualizador para juntar fichas repetidas (scripts/unificar.mjs): sin idiomas, plataforma ni «Edición X» en español
+  var COLA_T = /(?:\s|^)(?:en|eng|multi ?language|multilang|global|worldwide|eu|europe|row|ww|key|cd ?key|code|codigo|clave|digital|steam|pc|gog|epic games|epic|ea app|origin|ubisoft connect|uplay|rockstar|microsoft store|windows 10|windows|xbox one|xbox series x ?s|xbox series|xbox|ps4|ps5|playstation 4|playstation 5|nintendo switch 2|nintendo switch|switch 2|switch|mac|linux|download|dlc)$/;
+  var IDIOMAS_T = /(?:\s(?:en|eng|de|fr|it|es|pl|ru|pt|br|nl|cz|cs|sk|tr|jp|ja|ko|kr|zh|cn|sv|se|da|dk|fi|no|hu|ro|gr|el|ar|uk|ua|latam|multi)){2,}$/;
+  var EDICION_T = { oro: "gold", definitiva: "definitive", completa: "complete", estandar: "standard", especial: "special", coleccionista: "collectors", remasterizada: "remastered", platino: "platinum", mejorada: "enhanced", aniversario: "anniversary", legendaria: "legendary", suprema: "supreme" };
+  function claveUnir(t) {
+    var s = norm(String(t)).replace(/[®™©]/g, "").replace(/&amp;/g, "&").replace(/(\w)['’]s\b/g, "$1s").replace(/(\w)-(\w)/g, "$1$2").replace(/\+/g, " plus ").replace(/[^a-z0-9&]+/g, " ").trim();
+    s = s.replace(/\bedicion (?:del? )?juego del ano\b/g, "game of the year edition").replace(/\bjuego del ano\b/g, "game of the year").replace(/\bedicion (?:de |del )?([a-z0-9]+)\b/g, function (_, w) { return (EDICION_T[w] || w) + " edition"; });
+    for (var i = 0; i < 8; i++) { var n = s.replace(IDIOMAS_T, "").replace(COLA_T, "").trim(); if (n === s) break; s = n; }
+    return s;
+  }
   function claveTitulo(t) { return norm(String(t).replace(/[™®©]/g, "")).replace(/[^a-z0-9]+/g, " ").trim(); }
   // Mete en una ficha del catálogo los precios recién consultados: los de la misma tienda, plataforma y estado se cambian por los nuevos
   function unirOfertas(c, j) {
@@ -2929,10 +2939,10 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
           var v = validar({ juegos: d.juegos || [], tiendas: [] });
           // Si el juego ya está en el catálogo, sus precios en vivo se suman a la ficha (no la sustituyen:
           // así no se pierden las demás tiendas ni lo que ya sabemos que cada tienda tiene o no tiene)
-          var porTitulo = {}; datos.juegos.forEach(function (c) { porTitulo[claveTitulo(c.titulo)] = c; });
+          var porTitulo = {}; datos.juegos.forEach(function (c) { porTitulo[claveUnir(c.titulo)] = c; });
           var nuevos = [];
           v.juegos.forEach(function (j) {
-            var c = porTitulo[claveTitulo(j.titulo)];
+            var c = porTitulo[claveUnir(j.titulo)];
             if (c) unirOfertas(c, j); else { j._vivo = true; if (!j.img && !j.cov) { var sa = (j.ofertas || []).map(function (o) { return /store\.steampowered\.com\/app\/(\d+)/.exec(o.url || ""); }).filter(Boolean)[0]; if (sa) j.img = "s:" + sa[1]; } nuevos.push(j); }
           });
           vivo = { q: qTxt, juegos: nuevos, cargando: false, error: "" }; pintar();
