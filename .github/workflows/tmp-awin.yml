@@ -1,0 +1,49 @@
+name: Mirar Awin (temporal)
+# Lista los feeds y programas de Awin a los que llega la cuenta, para las webs nuevas (LEGO, cartas, reacondicionados). No toca la web.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mirar:
+    runs-on: ubuntu-latest
+    env:
+      F: ${{ secrets.AWIN_TODOCONSOLAS_FEED }}
+      T: ${{ secrets.AWIN_API_TOKEN }}
+    steps:
+      - run: |
+          K=$(printf '%s' "$F" | sed -E 's#.*/apikey/([^/]+)/.*#\1#' | tr -d '[:space:]')
+          [ -n "$K" ] || { echo "Sin clave de feeds"; exit 1; }
+          curl -sL --max-time 300 -o lista.csv "https://productdata.awin.com/datafeed/list/apikey/$K"
+          T=$(printf '%s' "$T" | tr -d '[:space:]')
+          for rel in joined notjoined pending rejected; do
+            curl -s --max-time 120 -o "p_$rel.json" "https://api.awin.com/publishers/3149016/programmes?relationship=$rel&accessToken=$T" || true
+          done
+          python3 - <<'PY'
+          import csv, json, re, collections
+          csv.field_size_limit(10**9)
+          KW = re.compile(r'lego|toy|jugu|juguet|kid|eureka|imaginarium|pokemon|card|carta|tcg|magic|game|juego|refurb|reacond|rebuy|back ?market|cash ?conv|pccomp|fnac|corte|carrefour|alcampo|hipercor|miravia|worten|mediamarkt|philibert|zacatrus|smyths|abacus|drim|planet|brick|tradeinn|kidinn|cex|webuy|ovio|movistar|swappie|certideal|recommerce|grover|amazon|ebay|zavvi|galaxus|bol\.|otto', re.I)
+          rows = list(csv.DictReader(open('lista.csv', encoding='utf-8', errors='replace')))
+          print('FEEDS EN LA LISTA:', len(rows))
+          if rows: print('COLUMNAS:', list(rows[0].keys()))
+          print('Estados:', collections.Counter(r.get('Membership Status','') for r in rows))
+          print('Regiones:', collections.Counter(r.get('Primary Region','') for r in rows).most_common(20))
+          print('\n=== FEEDS QUE INTERESAN (todas las regiones de Europa) ===')
+          for r in sorted(rows, key=lambda r:(r.get('Primary Region',''), r.get('Advertiser Name',''))):
+            if KW.search(r.get('Advertiser Name','') or '') or KW.search(r.get('Feed Name','') or ''):
+              print(f"{r.get('Primary Region',''):4} | {r.get('Membership Status',''):10} | {r.get('Advertiser ID','')} | {r.get('Advertiser Name','')[:40]:40} | {r.get('Feed Name','')[:35]:35} | {r.get('No of products','')} prod | {r.get('Vertical','')}")
+          print('\n=== TODOS LOS FEEDS DE ESPAÑA ===')
+          for r in rows:
+            if r.get('Primary Region','') == 'ES':
+              print(f"{r.get('Membership Status',''):10} | {r.get('Advertiser Name','')[:45]:45} | {r.get('No of products','')} prod | {r.get('Vertical','')}")
+          for rel in ('joined','pending','rejected','notjoined'):
+            try: d = json.load(open(f'p_{rel}.json'))
+            except Exception as e: print(rel, 'error', e); continue
+            if not isinstance(d, list): print(rel, str(d)[:300]); continue
+            print(f'\n=== PROGRAMAS {rel.upper()}: {len(d)} ===')
+            for p in d:
+              reg = (p.get('primaryRegion') or {}).get('countryCode','')
+              nom = p.get('name','')
+              if rel != 'notjoined' or (reg in ('ES','FR','DE','IT','PT','NL','BE','AT','IE','GB','EU','') and KW.search(nom)):
+                print(f"{reg:3} | {p.get('id')} | {nom[:50]:50} | {p.get('displayUrl','')}")
+          PY
