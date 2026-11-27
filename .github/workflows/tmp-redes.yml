@@ -63,14 +63,14 @@ jobs:
             wid = webs[0]['id'] if webs else None
             off = 0
             while wid and off < 6000:
-              s, x = get(f'https://api.admitad.com/advcampaigns/website/{wid}/?limit=500&offset={off}', H)
+              s, x = get(f'https://api.admitad.com/advcampaigns/?limit=500&offset={off}', H)
               if s != 200: print('Admitad camp', s, x[:300]); break
               d = json.loads(x); res = d if isinstance(d, list) else d.get('results', [])
               for c in res:
                 regs = ','.join(r.get('region','') for r in c.get('regions', []))[:40]
                 cats = ','.join(k.get('name','') for k in c.get('categories', []))[:50]
                 nom = c.get('name','')
-                if ('ES' in regs.split(',') or not regs):
+                if ('ES' in regs.split(',')) and (KW.search(nom) or re.search(r'Игрушк|Детск|Электроник|Хобби|Маркетплейс|Игры', cats)):
                   print(f"{c.get('connection_status',''):10} | {c.get('id')} | {nom[:45]:45} | {regs:25} | {cats}")
               if len(res) < 500: break
               off += 500
@@ -93,8 +93,8 @@ jobs:
                 for p in items:
                   nom = p.get('name') or p.get('programName') or ''
                   txt = json.dumps(p)
-                  if KW.search(nom) or KW.search(p.get('category','') if isinstance(p.get('category'), str) else ''):
-                    print(f"  {str(p.get('statusId') or p.get('status') or p.get('connectionStatus') or ''):12} | {p.get('id') or p.get('programId')} | {nom[:45]:45} | {str(p.get('countryCode') or p.get('market') or '')[:10]} | {str(p.get('categories') or p.get('category') or '')[:60]}")
+                  if True:
+                    print(f"  {str(p.get('statusId') or p.get('status') or p.get('connectionStatus') or p.get('applicationStatus') or ''):12} | {p.get('id') or p.get('programId')} | {nom[:45]:45} | {str(p.get('countryCode') or p.get('market') or '')[:10]} | {str(p.get('categories') or p.get('category') or '')[:60]}")
                 total += len(items)
                 if len(items) < 100: break
                 o += 100
@@ -107,15 +107,17 @@ jobs:
           except Exception: print('Rakuten token', s, x[:200]); rt = None
           if rt:
             H = {'Authorization':'Bearer ' + rt, 'Accept':'application/json'}
-            for u in ['https://api.linksynergy.com/v2/advertisers?limit=200&page=%d' % i for i in range(1, 15)]:
-              s, x = get(u, H); print(u, s, len(x))
-              if s != 200: print(x[:300]); continue
-              nombres = re.findall(r'"name"\s*:\s*"([^"]+)"|<advertiserName>(.*?)</advertiserName>|"advertiser_name"\s*:\s*"([^"]+)"', x)
-              ns = sorted({a or b or c for a, b, c in nombres})
-              print('  total nombres', len(ns))
-              for n in ns:
-                if KW.search(n): print('  ', n)
-              
+            for i in range(1, 10):
+              s, x = get('https://api.linksynergy.com/v2/advertisers?limit=200&page=%d' % i, H)
+              if s != 200: break
+              d = json.loads(x)
+              for a in d.get('advertisers', []):
+                n = a.get('name', '')
+                if re.search(r'lego|refurb|back ?market|rebuy|toy|jugu|pok|card ?market|game', n, re.I) and not re.search(r'credit|cardone|cardoso|cardwell', n, re.I):
+                  s2, x2 = get('https://api.linksynergy.com/v2/advertisers/%s' % a.get('id'), H)
+                  try: dd = json.loads(x2).get('advertiser', json.loads(x2))
+                  except Exception: dd = {}
+                  print('  ', a.get('id'), '|', n, '|', json.dumps({k: dd.get(k) for k in ('url','status','categories','policies','features','contact')}, ensure_ascii=False)[:500])
           # ---------- Impact ----------
           print('\n########## IMPACT ##########')
           sid = E('IMPACT_ACCOUNT_SID')
