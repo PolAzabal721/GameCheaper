@@ -1865,7 +1865,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
           (n > 1 ? '<button type="button" class="desp" data-grupo="' + esc(clave) + '" aria-expanded="' + !!abierto + '">' + (abierto ? "▴ " : "▾ ") + (g.claves ? n + " ofertas de " + g.nTiendas + " tiendas" : g.id === "ebay" ? n + " anuncios" : n + (plats.length === n ? " plataformas" : " opciones")) + "</button>" : "") + "</div>" +
           '<div class="of-d">' + detalle + "</div>" +
           '<div class="of-p"><b>' + pMes(j, eur.format(total(o))) + "</b><small>" + antes(o, j) + (dif > 0.004 ? "+" + eur.format(dif) : "el más barato") + "</small></div>" +
-          (url ? '<a class="ir" href="' + esc(url) + '" target="_blank" rel="nofollow sponsored noopener noreferrer" data-t="' + esc(o.tienda) + '" data-j="' + esc(j.id) + '">' + (o.url ? '<span class="ir-l">Ver oferta</span><span class="ir-c">Ir</span>' : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
+          (url ? '<a class="ir" href="' + esc(url) + '" target="_blank" rel="nofollow sponsored noopener" data-t="' + esc(o.tienda) + '" data-j="' + esc(j.id) + '">' + (o.url ? '<span class="ir-l">Ver oferta</span><span class="ir-c">Ir</span>' : "Buscar") + " ↗</a>" : "<span></span>") + "</li>";
         fila += cuponHTML(o, j);
         if (n > 1 && abierto) fila += g.ofs.map(function (x) {
           var u = enlace(x, j);
@@ -1876,14 +1876,14 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
             '<div class="of-d"><span>' + (g.claves || esEb ? esc(x.plataforma || "—") : (x.formato === "fisico" ? "En disco" : "Digital")) + "</span>" + (resto ? "<span>·</span><span>" + esc(resto) + "</span>" : "") +
             (x.envio ? "<span>·</span><span>+ " + eur.format(x.envio) + " envío</span>" : "") + (x.stock ? "" : '<span class="agotado">· Agotado</span>') + "</div>" +
             '<div class="of-p"><b>' + eur.format(total(x)) + "</b>" + (antes(x, j) ? "<small>" + antes(x, j).replace(/ · $/, "") + "</small>" : "") + "</div>" +
-            (u ? '<a class="ir" href="' + esc(u) + '" target="_blank" rel="nofollow sponsored noopener noreferrer" data-t="' + esc(x.tienda) + '" data-j="' + esc(j.id) + '">' + (x.url ? "Ver" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>" + (x !== o ? cuponHTML(x, j) : "");
+            (u ? '<a class="ir" href="' + esc(u) + '" target="_blank" rel="nofollow sponsored noopener" data-t="' + esc(x.tienda) + '" data-j="' + esc(j.id) + '">' + (x.url ? "Ver" : "Buscar") + " ↗</a>" : "<span></span>") + "</li>" + (x !== o ? cuponHTML(x, j) : "");
         }).join("");
         return fila;
       }).join("") + "</ol>" +
       (grupos.length > VISIBLES ? '<button type="button" class="mas" data-mas="' + esc(j.id) + '">' + (todas ? "Ver menos" : "Ver las " + grupos.length + " tiendas") + "</button>" : "") +
       // «Búscalo en»: tres tiendas a la vista y el resto en un desplegable
       (otras.length ? '<div class="otras"><span>Sin precio automático. Búscalo en:</span>' + otras.map(function (t, i) {
-        return '<a href="' + esc(t.busqueda.replace("{q}", encodeURIComponent(j.titulo))) + '" target="_blank" rel="nofollow sponsored noopener noreferrer" data-t="' + esc(t.id) + '" data-j="' + esc(j.id) + '"' + (i >= 3 && !otrasAbiertas[j.id] ? " hidden" : "") + ">" + esc(t.nombre) + " ↗</a>";
+        return '<a href="' + esc(t.busqueda.replace("{q}", encodeURIComponent(j.titulo))) + '" target="_blank" rel="nofollow sponsored noopener" data-t="' + esc(t.id) + '" data-j="' + esc(j.id) + '"' + (i >= 3 && !otrasAbiertas[j.id] ? " hidden" : "") + ">" + esc(t.nombre) + " ↗</a>";
       }).join("") + (otras.length > 3 ? '<button type="button" class="otras-mas" data-otras="' + esc(j.id) + '" aria-expanded="' + !!otrasAbiertas[j.id] + '">' + (otrasAbiertas[j.id] ? "Ver menos ▴" : "+" + (otras.length - 3) + " tiendas ▾") + "</button>" : "") + "</div>" : "") +
       "</article>";
   }
@@ -2592,7 +2592,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
       (ya ? "" : '<div class="gta-cuenta" aria-label="Tiempo hasta el lanzamiento"><div><b data-gta="d">' + d + '</b><small>días</small></div><div><b data-gta="h">' + String(h).padStart(2, "0") + '</b><small>horas</small></div><div><b data-gta="m">' + String(m).padStart(2, "0") + "</b><small>min</small></div></div>") +
       '<ul class="gta-ofs">' + lista.map(function (o, i) {
         var t = tiendaPorId[o.tienda] || { nombre: o.tienda };
-        return '<li class="' + (i ? "" : "gta-mejor") + '"><a href="' + esc(enlace(o, j) || "#") + '" target="_blank" rel="noopener noreferrer">' + (logoT(o.tienda) || "<span></span>") +
+        return '<li class="' + (i ? "" : "gta-mejor") + '"><a href="' + esc(enlace(o, j) || "#") + '" target="_blank" rel="nofollow sponsored noopener">' + (logoT(o.tienda) || "<span></span>") +
           '<span><span class="t">' + esc(t.nombre) + '</span><br><span class="d">' + esc(o.plataforma) + " · " + (o.formato === "fisico" ? "En disco" : "Digital") + "</span></span>" +
           '<span class="pr">' + (i ? "" : "<small>Mejor precio</small>") + eur.format(total(o)) + '</span><span class="ir2" aria-hidden="true">↗</span></a></li>';
       }).join("") + "</ul>" +
