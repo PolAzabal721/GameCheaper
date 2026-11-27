@@ -1,27 +1,27 @@
 {
  "cobertura": {
   "instantgaming (clave digital)": {
-   "pendientes": 599,
+   "pendientes": 256,
    "ejemplos": [
     "Arctic Drive",
     "Hotel Architect - Poolside Paradise",
-    "ENTITY: THE BLACK DAY",
-    "Beyond the Map",
-    "Dice Gambit"
+    "Grave Mistakes",
+    "Appulse",
+    "PAYDAY: Aces High"
    ]
   },
   "xbox (PC o Xbox)": {
-   "pendientes": 76421,
+   "pendientes": 62834,
    "ejemplos": [
-    "Super Mario Party",
-    "Death Mark",
-    "Lost in Harmony",
-    "The Elder Scrolls V: Skyrim VR",
-    "When Chests Rain Tons of Loot"
+    "Pokémon Pokopia",
+    "The Legend of Zelda: Breath of the Wild",
+    "Luigi's Mansion 2 HD",
+    "Splatoon 3",
+    "Rage in Peace"
    ]
   },
   "game (consola)": {
-   "pendientes": 32039,
+   "pendientes": 31166,
    "ejemplos": [
     "Xenoblade Chronicles 3",
     "ACA NEOGEO SAMURAI SHODOWN IV",
@@ -31,7 +31,7 @@
    ]
   },
   "psstore (PS4 o PS5)": {
-   "pendientes": 4764,
+   "pendientes": 4600,
    "ejemplos": [
     "Football Manager 27",
     "FINAL FANTASY VII REBIRTH",
@@ -41,206 +41,227 @@
    ]
   },
   "ebay (consola, 2ª mano)": {
-   "pendientes": 18441,
+   "pendientes": 17578,
    "ejemplos": [
     "Transistor",
-    "Tesla vs Lovecraft",
     "Desert Child",
+    "Tesla vs Lovecraft",
     "Gal*Gun 2",
-    "Metro 2033 Redux"
+    "ACA NEOGEO WORLD HEROES 2 JET"
    ]
   }
  },
  "playstation": {
-  "sinPrecio": 4764,
-  "sinFicha": 4223,
+  "sinPrecio": 4600,
+  "sinFicha": 4084,
   "fichasEncontradas": 1590
  },
  "fotos": {
   "juego": {
-   "total": 80273,
-   "con": 78356,
+   "total": 72374,
+   "con": 70570,
    "porcentaje": 98
   },
   "edicion": {
-   "total": 11001,
-   "con": 10705,
+   "total": 9676,
+   "con": 9390,
    "porcentaje": 97
   },
   "dlc": {
-   "total": 19232,
-   "con": 19097,
+   "total": 14948,
+   "con": 14816,
    "porcentaje": 99
   },
   "tarjeta": {
-   "total": 8767,
+   "total": 8483,
    "nota": "las tarjetas llevan un dibujo hecho por la web"
   }
  },
  "fotosComprobadas": {
   "steam (antiguas)": {
-   "total": 3690,
+   "total": 4094,
    "probadas": 12,
-   "fallan": 5,
+   "fallan": 7,
    "ejemplos": [
-    "Pill & Chill → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5012130/header.jpg",
-    "Bloom Blow → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5277080/header.jpg",
-    "Sectron → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4711570/header.jpg"
+    "Hero Siege - Bard (Class) → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3305660/header.jpg",
+    "Zad Archery - Arrowfall Supporter Pack → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5053390/header.jpg",
+    "PAYDIRT → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5074300/header.jpg"
    ]
   },
   "steam (nuevas)": {
-   "total": 1828,
+   "total": 2230,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "nintendo": {
-   "total": 9595,
+   "total": 9531,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "microsoft": {
-   "total": 12169,
+   "total": 11870,
    "probadas": 12,
    "fallan": 0,
    "ejemplos": []
   },
   "otras": {
-   "total": 85364,
+   "total": 71509,
    "probadas": 12,
    "fallan": 1,
    "ejemplos": [
-    "Urban Flow EN → 403 https://cdn-cf.gamivo.com/image_original.jpg?f=422200&h=qqqqq1a8b5ee91b07cf1cac995d76406"
+    "F1 2018 EN → 403 https://cdn-cf.gamivo.com/image_original.jpg?f=27098&h=0030e510cc39223f9757d97a213d96a8"
    ]
   }
  },
  "enlaces": {
   "steam": {
-   "ofertas": 8222,
+   "ofertas": 8832,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "psstore": {
-   "ofertas": 1107,
+   "ofertas": 1103,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "xbox": {
-   "ofertas": 15888,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "k4g": {
-   "ofertas": 2638,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "yuplay": {
-   "ofertas": 12615,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "mediamarkt": {
-   "ofertas": 1046,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "xtralife": {
-   "ofertas": 5883,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "kinguin": {
-   "ofertas": 61176,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "voidu": {
-   "ofertas": 4748,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "g2a": {
-   "ofertas": 22488,
-   "probadas": 6,
-   "fallan": 6,
-   "bloqueados": 0,
-   "ejemplos": [
-    "Kerbal Space Program 2 → 0",
-    "Dead By Daylight the Halloween Chapter → 0",
-    "Arcade Spirits → 0"
-   ]
-  },
-  "ggpick": {
-   "ofertas": 1264,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "todoconsolas": {
-   "ofertas": 4682,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 6,
-   "ejemplos": []
-  },
-  "gamersgate": {
-   "ofertas": 10153,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "ebay": {
-   "ofertas": 1017,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 6,
-   "ejemplos": []
-  },
-  "eshop": {
-   "ofertas": 17922,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "game": {
-   "ofertas": 1623,
+   "ofertas": 15947,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "instantgaming": {
-   "ofertas": 8539,
+   "ofertas": 8661,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "k4g": {
+   "ofertas": 2659,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "driffle": {
-   "ofertas": 2713,
+   "ofertas": 2657,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "mediamarkt": {
+   "ofertas": 1043,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "kinguin": {
+   "ofertas": 61650,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "gamivo": {
+   "ofertas": 24125,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
+  "g2a": {
+   "ofertas": 22583,
+   "probadas": 6,
+   "fallan": 6,
+   "bloqueados": 0,
+   "ejemplos": [
+    "Super Kickers League Ultimate Edition → 0",
+    "Tom Clancy's The Division Definitive Edition → 0",
+    "Tiny Witch → 0"
+   ]
+  },
+  "cjs": {
+   "ofertas": 43037,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
+  "loaded": {
+   "ofertas": 10973,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
+  "yuplay": {
+   "ofertas": 12790,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "xtralife": {
+   "ofertas": 5779,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "voidu": {
+   "ofertas": 4739,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "ggpick": {
+   "ofertas": 1265,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "todoconsolas": {
+   "ofertas": 4735,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
+  "gamersgate": {
+   "ofertas": 10149,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "ebay": {
+   "ofertas": 1005,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 6,
+   "ejemplos": []
+  },
+  "eshop": {
+   "ofertas": 17899,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "game": {
+   "ofertas": 1620,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
@@ -253,44 +274,23 @@
    "bloqueados": 0,
    "ejemplos": []
   },
-  "loaded": {
-   "ofertas": 10850,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 6,
-   "ejemplos": []
-  },
-  "gamivo": {
-   "ofertas": 17002,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 6,
-   "ejemplos": []
-  },
-  "cjs": {
-   "ofertas": 42744,
-   "probadas": 6,
-   "fallan": 0,
-   "bloqueados": 6,
-   "ejemplos": []
-  },
   "gameseminuevos": {
-   "ofertas": 450,
+   "ofertas": 444,
+   "probadas": 6,
+   "fallan": 0,
+   "bloqueados": 0,
+   "ejemplos": []
+  },
+  "gamesporium": {
+   "ofertas": 2521,
    "probadas": 6,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
   },
   "pcbox": {
-   "ofertas": 4,
-   "probadas": 4,
-   "fallan": 0,
-   "bloqueados": 0,
-   "ejemplos": []
-  },
-  "gamesporium": {
-   "ofertas": 2474,
-   "probadas": 6,
+   "ofertas": 3,
+   "probadas": 3,
    "fallan": 0,
    "bloqueados": 0,
    "ejemplos": []
@@ -307,14 +307,20 @@
   "instantGamingSinCodigo": 0
  },
  "preciosRaros": {
-  "total": 1,
+  "total": 7,
   "ejemplos": [
-   "MechWarrior 5: Mercenaries: kinguin con región que no vale en España (Clave Steam · United States)"
+   "MechWarrior 5: Mercenaries: kinguin con región que no vale en España (Clave Steam · United States)",
+   "Tarjeta regalo Xbox 5 €: cjs 6.84 € para una tarjeta de 5 €",
+   "Tarjeta regalo Xbox 80 €: kinguin 114.05 € para una tarjeta de 80 €",
+   "Tarjeta regalo Netflix 55 €: kinguin 82.89 € para una tarjeta de 55 €",
+   "Tarjeta regalo Netflix 90 €: kinguin 135.53 € para una tarjeta de 90 €",
+   "Tarjeta regalo Netflix 80 €: kinguin 120.48 € para una tarjeta de 80 €",
+   "Tarjeta regalo Netflix 65 €: kinguin 97 € para una tarjeta de 65 €"
   ]
  },
  "actualizado": {
-  "precios": "2026-11-26T10:31:16.700Z",
-  "diasDesdeLaUltima": 0.22
+  "precios": "2026-11-27T11:02:10.157Z",
+  "diasDesdeLaUltima": 0.19
  },
  "historial": {
   "series": 90977,
@@ -323,25 +329,26 @@
   "ultimoDia": "2026-11-17"
  },
  "red": {
-  "comprobadas": 214,
+  "comprobadas": 213,
   "sinRespuesta": 6,
   "sinConexion": false
  },
  "resumen": {
-  "juegos": 123721,
-  "ofertas": 303089,
+  "juegos": 109882,
+  "ofertas": 312415,
   "tiendas": 54,
-  "conFoto": "91 %"
+  "conFoto": "90 %"
  },
- "fecha": "2026-11-26T15:41:32.490Z",
+ "fecha": "2026-11-27T15:34:18.780Z",
  "graves": [
-  "g2a: fallan todos los enlaces probados (Kerbal Space Program 2 → 0)",
+  "fotos de steam (antiguas): fallan 7 de 12 (Hero Siege - Bard (Class) → 404 https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3305660/header.jpg)",
+  "g2a: fallan todos los enlaces probados (Super Kickers League Ultimate Edition → 0)",
   "el historial no se escribe desde el 2026-11-17"
  ],
  "avisos": [
-  "xbox (PC o Xbox): 331 juegos populares aún sin consultar (p. ej. Super Mario Party, Death Mark, Lost in Harmony)",
-  "game (consola): 1940 juegos populares aún sin consultar (p. ej. Xenoblade Chronicles 3, ACA NEOGEO SAMURAI SHODOWN IV, The End Is Nigh)",
-  "psstore (PS4 o PS5): 244 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
-  "ebay (consola, 2ª mano): 983 juegos populares aún sin consultar (p. ej. Transistor, Tesla vs Lovecraft, Desert Child)"
+  "xbox (PC o Xbox): 346 juegos populares aún sin consultar (p. ej. Pokémon Pokopia, The Legend of Zelda: Breath of the Wild, Luigi's Mansion 2 HD)",
+  "game (consola): 1934 juegos populares aún sin consultar (p. ej. Xenoblade Chronicles 3, ACA NEOGEO SAMURAI SHODOWN IV, The End Is Nigh)",
+  "psstore (PS4 o PS5): 245 juegos populares aún sin consultar (p. ej. Football Manager 27, FINAL FANTASY VII REBIRTH, EA Sports FC 27 Ultimate Edition)",
+  "ebay (consola, 2ª mano): 987 juegos populares aún sin consultar (p. ej. Transistor, Desert Child, Tesla vs Lovecraft)"
  ]
 }
