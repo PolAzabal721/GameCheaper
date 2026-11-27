@@ -1,95 +1,21 @@
-name: Mirar LEGO y cartas en los feeds (temporal)
-# Busca productos de LEGO y de cartas coleccionables en los catálogos a los que ya hay acceso (MediaMarkt, xtralife, PCbox, Todo Consolas, eBay)
-# y los deja como artefacto para montar los prototipos de pillaoLegos y pillaoCartas. No toca la web.
+name: Probar los scripts de pillaoLegos y pillaoCartas (temporal)
 on:
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  mirar:
+  probar:
     runs-on: ubuntu-latest
     env:
-      TD: ${{ secrets.TRADEDOUBLER_TOKEN }}
-      TC: ${{ secrets.AWIN_TODOCONSOLAS_FEED }}
+      AWIN_TODOCONSOLAS_FEED: ${{ secrets.AWIN_TODOCONSOLAS_FEED }}
+      TRADEDOUBLER_TOKEN: ${{ secrets.TRADEDOUBLER_TOKEN }}
       EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
       EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
     steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: tmp }
       - run: |
-          mkdir -p out
-          T=$(printf '%s' "$TD" | tr -d '[:space:]')
-          for f in 24915:mediamarkt 106116:xtralife 50247:pcbox; do
-            id=${f%%:*}; n=${f##*:}
-            curl -sSL --max-time 600 -o "$n.zip" "https://api.tradedoubler.com/1.0/productsUnlimited.json;compress=zip;fid=$id?token=$T" || true
-            (unzip -p "$n.zip" > "$n.json" 2>/dev/null || cp "$n.zip" "$n.json"); ls -la "$n.json"
-          done
-          U=$(printf '%s' "$TC" | tr -d '[:space:]'); curl -sSL --max-time 300 -o tc.zip "$U" || true
-          (unzip -p tc.zip > tc.csv 2>/dev/null || (gunzip -c tc.zip > tc.csv 2>/dev/null) || cp tc.zip tc.csv); ls -la tc.csv; head -c 600 tc.csv; echo
-          python3 - <<'PY'
-          import json, csv, re, sys, io, base64, urllib.request, urllib.parse, os
-          csv.field_size_limit(10**9)
-          LEGO = re.compile(r'\blego\b', re.I)
-          JUEGO = re.compile(r'\b(ps5|ps4|playstation|switch|xbox|nintendo|pc\b|videojuego|juego para)\b', re.I)
-          TCG = re.compile(r'pok[eé]mon|one piece|lorcana|magic:? the gathering|yu-?gi-?oh|dragon ball super|digimon|star wars unlimited|flesh and blood', re.I)
-          SELL = re.compile(r'sobre|booster|caja|elite trainer|\betb\b|mazo|baraja|deck|blister|colecci[oó]n|\btin\b|lata|display|starter|premium|bundle|cartas|card', re.I)
-          def clas(nombre, cat):
-            t = f"{nombre} {cat}"
-            if LEGO.search(nombre) and not JUEGO.search(t) and not re.search(r'juegos? (>|&gt;)|^\s*juegos\b|videojueg|monedas|coins', cat + ' ' + nombre, re.I): return 'lego'
-            if TCG.search(nombre) and SELL.search(nombre) and not JUEGO.search(t) and not re.search(r'juegos? >|videojueg|peluche|figura|camiseta|taza|mochila', t, re.I): return 'cartas'
-            return None
-          res = {'lego': [], 'cartas': []}
-          for tienda in ('mediamarkt', 'xtralife', 'pcbox'):
-            try: d = json.load(open(f'{tienda}.json'))
-            except Exception as e: print(tienda, 'no se pudo leer', e, open(f'{tienda}.json', 'rb').read(200)); continue
-            prods = d.get('products', d if isinstance(d, list) else [])
-            n = {'lego': 0, 'cartas': 0}
-            for p in prods:
-              nombre = p.get('name', '')
-              cats = ' / '.join(c.get('name', '') for c in p.get('categories', []) or [])
-              campos = {f.get('name'): f.get('value') for f in p.get('fields', []) or []}
-              cat = cats + ' ' + str(campos.get('productType', ''))
-              k = clas(nombre, cat)
-              if not k: continue
-              of = (p.get('offers') or [{}])[0]
-              ph = (of.get('priceHistory') or [{}])[0].get('price', {})
-              res[k].append({'tienda': tienda, 'nombre': nombre, 'precio': ph.get('value'), 'moneda': ph.get('currency'), 'url': of.get('productUrl'),
-                             'img': (p.get('productImage') or {}).get('url'), 'ean': (p.get('identifiers') or {}).get('ean'), 'stock': of.get('availability'), 'cat': cat[:120]})
-              n[k] += 1
-            print(tienda, 'productos', len(prods), n)
-          # Todo Consolas (Awin, CSV)
-          try:
-            txt = open('tc.csv', encoding='utf-8', errors='replace').read()
-            dl = ',' if txt[:2000].count(',') > txt[:2000].count('|') else '|'
-            rows = list(csv.DictReader(io.StringIO(txt), delimiter=dl))
-            print('todoconsolas filas', len(rows), 'columnas', list(rows[0].keys())[:40] if rows else None)
-            n = {'lego': 0, 'cartas': 0}
-            for r in rows:
-              nombre = r.get('product_name', ''); cat = (r.get('merchant_category', '') or '') + ' ' + (r.get('category_name', '') or '')
-              k = clas(nombre, cat)
-              if not k: continue
-              res[k].append({'tienda': 'todoconsolas', 'nombre': nombre, 'precio': r.get('search_price'), 'moneda': r.get('currency'), 'url': r.get('aw_deep_link'),
-                             'img': r.get('merchant_image_url') or r.get('aw_image_url'), 'ean': r.get('ean'), 'stock': r.get('in_stock') or r.get('stock_status'), 'cat': cat[:120]})
-              n[k] += 1
-            print('todoconsolas', n)
-          except Exception as e: print('todoconsolas error', e)
-          # eBay (API Browse, España): unas búsquedas de muestra
-          try:
-            cid, sec = os.environ['EBAY_CLIENT_ID'].strip(), os.environ['EBAY_CLIENT_SECRET'].strip()
-            req = urllib.request.Request('https://api.ebay.com/identity/v1/oauth2/token', data=('grant_type=client_credentials&scope=' + urllib.parse.quote('https://api.ebay.com/oauth/api_scope')).encode(),
-                  headers={'Authorization': 'Basic ' + base64.b64encode(f'{cid}:{sec}'.encode()).decode(), 'Content-Type': 'application/x-www-form-urlencoded'})
-            tok = json.load(urllib.request.urlopen(req, timeout=60))['access_token']
-            for k, qs in (('lego', ['lego 10316', 'lego 42143', 'lego 75313', 'lego 10311', 'lego icons', 'lego technic']), ('cartas', ['pokemon caja sobres', 'pokemon elite trainer box', 'one piece booster box', 'lorcana booster box'])):
-              for q in qs:
-                u = 'https://api.ebay.com/buy/browse/v1/item_summary/search?' + urllib.parse.urlencode({'q': q, 'limit': '20', 'filter': 'conditions:{NEW},deliveryCountry:ES,buyingOptions:{FIXED_PRICE}'})
-                r = json.load(urllib.request.urlopen(urllib.request.Request(u, headers={'Authorization': 'Bearer ' + tok, 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_ES'}), timeout=60))
-                for it in r.get('itemSummaries', []):
-                  res[k].append({'tienda': 'ebay', 'nombre': it.get('title'), 'precio': (it.get('price') or {}).get('value'), 'moneda': (it.get('price') or {}).get('currency'),
-                                 'url': it.get('itemWebUrl'), 'img': (it.get('image') or {}).get('imageUrl'), 'ean': None, 'stock': 'InStock', 'cat': 'ebay: ' + q,
-                                 'envio': ((it.get('shippingOptions') or [{}])[0].get('shippingCost') or {}).get('value'), 'vendedor': (it.get('seller') or {}).get('username')})
-                print('ebay', q, len(r.get('itemSummaries', [])))
-          except Exception as e: print('ebay error', e)
-          for k in res:
-            json.dump(res[k], open(f'out/{k}.json', 'w'), ensure_ascii=False)
-            print('\n=====', k, len(res[k]))
-            for x in res[k][:40]: print(' ', x['tienda'], '|', x['nombre'][:80], '|', x['precio'], x['moneda'], '|', x['stock'], '|', x['cat'][:50])
-          PY
-      - run: for f in out/*.json; do echo "@@@INICIO $f"; python3 -c "import json,sys;[print(json.dumps(x,ensure_ascii=False)) for x in json.load(open(sys.argv[1]))]" $f; echo "@@@FIN $f"; done
+          mkdir -p l/scripts c/scripts; cp tmp/legos.py l/scripts/actualizar.py; cp tmp/cartas.py c/scripts/actualizar.py
+          python3 l/scripts/actualizar.py; python3 c/scripts/actualizar.py
+          echo "@@@LEGOS"; cat l/datos/productos.json | python3 -c "import json,sys;print(json.dumps(json.load(sys.stdin),ensure_ascii=False))"; echo "@@@FIN"
+          echo "@@@CARTAS"; cat c/datos/productos.json | python3 -c "import json,sys;print(json.dumps(json.load(sys.stdin),ensure_ascii=False))"; echo "@@@FIN"
