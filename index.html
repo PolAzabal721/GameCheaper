@@ -1039,7 +1039,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   // Precio que pagas de verdad: producto + envío
   function total(o) { return o.precio + (o.envio || 0); }
   // Tiendas con las que Pillao es afiliado: manda siempre el precio, pero en un empate salen primero
-  var AFILIADAS = { nuuvem: 1, instantgaming: 1, yuplay: 1, g2a: 1, ggpick: 1, cjs: 1, todoconsolas: 1, gamivo: 1, kinguin: 1, gamersgate: 1, loaded: 1, mediamarkt: 1, xtralife: 1, pcbox: 1 };
+  var AFILIADAS = { nuuvem: 1, instantgaming: 1, yuplay: 1, g2a: 1, ggpick: 1, cjs: 1, todoconsolas: 1, gamivo: 1, kinguin: 1, gamersgate: 1, loaded: 1, mediamarkt: 1, xtralife: 1, pcbox: 1, voidu: 1, "itad-playsum": 1 };
   function porPrecio(a, b) { return (b.stock - a.stock) || (Math.round(total(a) * 100) - Math.round(total(b) * 100)) || ((AFILIADAS[b.tienda] || 0) - (AFILIADAS[a.tienda] || 0)); }
   // Tipo de clave de una oferta de revendedor ("Steam", "EA App"…), si lo sabemos
   function subtipo(o) {
