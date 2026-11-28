@@ -1,0 +1,26 @@
+name: Prueba GameBillet
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ver:
+    runs-on: [self-hosted, ip-fija]
+    timeout-minutes: 10
+    steps:
+      - run: |
+          echo "IP: $(curl -s https://api.ipify.org)"
+          for s in eu us; do
+            curl -sSL --max-time 300 -o /tmp/gb-$s.json "https://www.gamebillet.com/Product/JsonFeed?store=$s&guid=CAA6E250-1BEE-48FA-ACE4-7DCF3579C41C"
+            ls -la /tmp/gb-$s.json; head -c 300 /tmp/gb-$s.json; echo
+            python3 - "$s" <<'P'
+          import json,sys
+          d=json.load(open(f"/tmp/gb-{sys.argv[1]}.json"))
+          L=d if isinstance(d,list) else next(v for v in d.values() if isinstance(v,list))
+          print(type(d).__name__, list(d)[:10] if isinstance(d,dict) else "", len(L))
+          for x in L[:3]: print(json.dumps(x,ensure_ascii=False)[:1500])
+          from collections import Counter
+          for k in ("Platform","platform","DRM","Drm","Region","region","Category","InStock","Currency"):
+            if k in L[0]: print(k, Counter(str(x.get(k)) for x in L).most_common(12))
+          P
+          done
