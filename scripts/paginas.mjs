@@ -184,6 +184,7 @@ main.wrap{padding:24px 16px 56px;display:flex;flex-direction:column;gap:18px}.mi
 .poster .plat,.poster .tipo{background:rgba(10,12,24,.6);border-color:transparent;color:#fff;backdrop-filter:blur(6px)}
 .poster .resumen{color:#cfd5ea}.poster .resumen b{color:#fff}
 .poster .etiqueta{position:relative;transform:rotate(-2deg);box-shadow:0 10px 30px rgba(0,0,0,.35);text-align:left}
+.precio-fila{display:flex;align-items:center;gap:14px;flex-wrap:nowrap}.campana{flex:none;display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;backdrop-filter:blur(6px);transition:background .15s,transform .15s}.campana:hover{background:rgba(255,255,255,.24)}.campana:active{transform:scale(.94)}.campana svg{width:24px;height:24px}
 .poster-dto{position:absolute;top:-12px;right:-12px;font-style:normal;background:#4fd18b;color:#06301c;font-weight:800;font-size:13px;padding:3px 8px;border-radius:7px;transform:rotate(4deg)}
 @media(max-width:600px){.poster{min-height:420px}.poster h1{font-size:30px}.poster-in{padding:18px}}
 .barra{flex:1 1 100%;display:grid;gap:7px;margin-top:4px}
@@ -368,8 +369,7 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado, pre = "") {
 <div class="plats">${plats.map((p) => `<span class="plat">${esc(p)}</span>`).join("")}</div>
 <p class="resumen">Comparamos <b>${ofs.length} oferta${ofs.length === 1 ? "" : "s"}</b> de <b>${nTiendas} tienda${nTiendas === 1 ? "" : "s"}</b>` +
     (minimo ? ` · Mínimo histórico <b>${eur(minimo)}</b>` : "") + (j.pvp && j.pvp > total(mejor) ? ` · Precio normal <b>${eur(j.pvp)}</b>` : "") + ` · Actualizado el ${fecha}</p></div>
-<div class="etiqueta"><small>Mejor precio</small><b>${eur(total(mejor))}</b><span>${esc(tm)} · ${esc(mejor.plataforma || "")}</span>${dtoPoster >= 5 ? `<i class="poster-dto">−${dtoPoster}%</i>` : ""}</div>${termometro}</div></section>
-<div class="cta"><a class="boton" rel="nofollow" href="${INI}?q=${encodeURIComponent(j.titulo)}">Ver historial y crear aviso de precio</a><a class="boton sec" href="${INI}">Comparar otros juegos</a></div>
+<div class="precio-fila"><div class="etiqueta"><small>Mejor precio</small><b>${eur(total(mejor))}</b><span>${esc(tm)} · ${esc(mejor.plataforma || "")}</span>${dtoPoster >= 5 ? `<i class="poster-dto">−${dtoPoster}%</i>` : ""}</div><a class="campana" rel="nofollow" href="${INI}?aviso=${encodeURIComponent(j.id)}" aria-label="Ver historial y crear aviso de precio" title="Ver historial y crear aviso de precio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></a></div>${termometro}</div></section>
 <div class="lista-of"><ul>${filas}</ul>${resto ? `<details><summary><span class="c">Ver las ${todas40.length} ofertas</span><span class="a">Ver menos</span></summary><ul>${resto}</ul></details>` : ""}</div>
 ${relacionados.length ? `<h2>Otros juegos</h2><ul class="mas">${relacionados.map((r) => `<li><a href="../${r.id}/">${esc(r.titulo)}</a></li>`).join("")}</ul>` : ""}`;
   return plantilla({ titulo, descripcion, canonica, raiz: R, cuerpo, jsonld, imagen: imgPoster, inicio: INI });

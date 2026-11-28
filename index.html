@@ -1055,6 +1055,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   }
   // Región: Europa (raíz, euros) o Latinoamérica (/latam/, dólares). Misma web; cada una carga su archivo de precios.
   // Estados Unidos (/us/, dólares) funciona igual que Latinoamérica, sin elegir país
+  var VIENE_AVISO = /[?&]aviso=/.test(location.search);   // llega desde la campana de la página de un juego
   var REGION = /^(latam|us|de|fr|pt|it|be)$/.test(window.PILLAO_REGION || "") ? window.PILLAO_REGION : "es";
   var DOLAR = REGION === "latam" || REGION === "us";   // regiones en dólares
   var DIGITAL = REGION !== "es";   // todas menos España: solo claves digitales, sin disco ni segunda mano (Alemania, en euros)
@@ -1300,6 +1301,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     tiendaPorId = {};
     datos.tiendas.forEach(function (t) { tiendaPorId[t.id] = t; });
     aplicarTiendaDeLaUrl();
+    aplicarAvisoDeLaUrl();
     $("aviso").hidden = !datos.ejemplo;
     $("json-reset").hidden = de !== "propio";
     pintarControles();
@@ -1328,6 +1330,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
       traerResto(archivo).then(function (r) {
         libre(function () {
           unirResto(r); restoPendiente = false;
+          aplicarAvisoDeLaUrl();
           suave = true; try { pintarControles(); pintar(); } finally { suave = false; }
         }, { timeout: 2000 });
       }).catch(function () { restoPendiente = false; pintar(); /* sin el resto se sigue viendo lo más popular */ });
@@ -2582,7 +2585,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   // Antes del 19 de noviembre: cuenta atrás y reservas; después: «¿Aún no lo tienes?». Las ofertas son las del catálogo.
   function ventanaGTA() {
     if (window._gta) return; window._gta = 1;
-    if (new Date() > new Date("2026-12-31T23:59:59+01:00") || location.search || location.hash) return;
+    if (new Date() > new Date("2026-12-31T23:59:59+01:00") || location.search || location.hash || VIENE_AVISO) return;
     try { if (sessionStorage.getItem("pillao-gta")) return; sessionStorage.setItem("pillao-gta", "1"); } catch (e) {}
     var j = datos.juegos.find(function (x) { return x.id === "grand-theft-auto-vi"; }); if (!j) return;
     var sale = new Date("2026-11-19T00:00:00+01:00"), ya = new Date() >= sale;
@@ -3151,7 +3154,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
   var desdePillao = false;
   try { desdePillao = !!document.referrer && new URL(document.referrer).host === location.host; } catch (e) {}
   var paramsUrl = new URLSearchParams(location.search);
-  if (/[?&](q|tienda|plat)=/.test(location.search)) {
+  if (/[?&](q|tienda|plat|aviso)=/.test(location.search)) {
     try { var mr = document.createElement("meta"); mr.name = "robots"; mr.content = "noindex, follow"; document.head.appendChild(mr); } catch (e) {}
     if (desdePillao) filtrosDeLaUrl = true;
   }
@@ -3173,6 +3176,17 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
     if (t.tipo === "marketplace") f.mkt = true;
     if (t.tipo === "particulares") f.part = true;
     f.fueraSub = [];
+  }
+
+  // ?aviso=id-del-juego: llega desde la campana de la página de un juego; abre su historial y el aviso de precio (una vez)
+  var avisoUrl = (paramsUrl.get("aviso") || "").slice(0, 90);
+  if (paramsUrl.has("aviso")) quitarDeLaUrl("aviso");
+  function aplicarAvisoDeLaUrl() {
+    if (!avisoUrl || !datos) return;
+    var j = datos.juegos.filter(function (x) { return x.id === avisoUrl; })[0];
+    if (!j) { if (!restoPendiente) avisoUrl = ""; return; }
+    avisoUrl = "";
+    setTimeout(function () { abrirAviso(j, "ficha"); }, 60);
   }
 
   // ?plat=PC (o PS5,PS4) en la dirección: llega desde las páginas de chollos; se aplica una vez y se quita
