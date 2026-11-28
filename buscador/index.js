@@ -219,6 +219,20 @@ export default {
         const d = new URL(final); d.searchParams.set("plysm_ref_id", "O6L0gWtFqJ4lCUmnFvQH8K9CY0HXE0N2");
         return new Response(null, { status: 302, headers: { Location: d.href, "Cache-Control": "no-store" } });
       }
+      // IndieGala: igual que Playsum, el enlace de ITAD se sigue hasta la tienda y se le pone nuestro código (ref)
+      if (url.pathname === "/ir/indiegala") {
+        let u = url.searchParams.get("u") || "", final = "https://www.indiegala.com/";
+        try {
+          const IG = /^https:\/\/(www\.)?indiegala\.com\//;
+          if (/^https:\/\/itad\.link\//.test(u)) for (let i = 0; i < 4 && !IG.test(u); i++) {
+            const r = await fetch(u, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)" } });
+            const loc = r.headers.get("location"); if (!loc) break; u = new URL(loc, u).href;
+          }
+          if (IG.test(u)) final = u;
+        } catch {}
+        const d = new URL(final); d.searchParams.set("ref", "nme2ytj");
+        return new Response(null, { status: 302, headers: { Location: d.href, "Cache-Control": "no-store" } });
+      }
       if (url.pathname === "/buscar") {
         const q = (url.searchParams.get("q") || "").replace(/\s+/g, " ").trim().slice(0, 80);
         if (limpiar(q).length < 3) return json({ error: "Escribe al menos 3 letras." }, 400);

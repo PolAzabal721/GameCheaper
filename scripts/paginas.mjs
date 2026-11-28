@@ -185,6 +185,19 @@ main.wrap{padding:24px 16px 56px;display:flex;flex-direction:column;gap:18px}.mi
 .poster .resumen{color:#cfd5ea}.poster .resumen b{color:#fff}
 .poster .etiqueta{position:relative;transform:rotate(-2deg);box-shadow:0 10px 30px rgba(0,0,0,.35);text-align:left}
 .precio-fila{display:flex;align-items:center;gap:14px;flex-wrap:nowrap}.campana{flex:none;display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;backdrop-filter:blur(6px);transition:background .15s,transform .15s}.campana:hover{background:rgba(255,255,255,.24)}.campana:active{transform:scale(.94)}.campana svg{width:24px;height:24px}
+.av-fondo{position:fixed;inset:0;z-index:50;background:rgba(10,12,24,.55);display:flex;align-items:flex-end;justify-content:center}.av-fondo[hidden]{display:none}
+.av-caja{position:relative;background:var(--surface);color:var(--ink);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:20px 18px 24px;box-shadow:0 -10px 40px rgba(0,0,0,.3)}
+@media(min-width:700px){.av-fondo{align-items:center}.av-caja{border-radius:18px;padding:24px 26px}}
+.av-caja h2{margin:0 40px 2px 0;font-size:22px}.av-sub{margin:0 0 14px;color:var(--muted);font-size:14px}
+.av-x{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-size:22px;cursor:pointer}
+.av-datos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.av-datos div{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.av-datos small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}.av-datos b{font-size:20px}
+.av-rangos{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}.av-rangos button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;font:inherit;font-size:13px}.av-rangos button[aria-pressed=true]{background:var(--ink);color:var(--surface)}
+.av-graf svg{width:100%;height:auto;display:block}.av-graf text{fill:var(--muted);font-size:11px}.av-rej{stroke:var(--line)}.av-graf path{fill:none;stroke-width:2}.av-min{stroke:#11a35a}.av-med{stroke:#2741d6;stroke-dasharray:4 3}.av-max{stroke:#e0582a}
+.av-ley{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:4px}.av-ley span:before{content:"";display:inline-block;width:12px;height:3px;margin-right:5px;vertical-align:middle;border-radius:2px}.l-min:before{background:#11a35a}.l-med:before{background:#2741d6}.l-max:before{background:#e0582a}
+.av-nota{color:var(--muted);font-size:13px;margin:8px 0 0}
+.av-form{border-top:1px solid var(--line);margin-top:16px;padding-top:14px}.av-form h3{margin:0 0 10px;font-size:16px}.av-fila{display:grid;grid-template-columns:1fr 2fr;gap:10px}.av-form label{font-size:13px;color:var(--muted)}.av-form input[name=precio],.av-form input[type=email]{display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:11px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--ink);font:inherit;font-size:16px}
+.av-ok{display:block;margin:12px 0}.av-env{background:var(--ink);color:var(--surface);border:0;border-radius:9px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer}.av-env:disabled{opacity:.6}
+.av-msg{font-size:14px;margin:10px 0 0}.av-msg.ok{color:var(--good)}.av-msg.mal{color:#d33}.campana.con{background:var(--tag);color:var(--tag-ink);border-color:var(--tag)}
 .poster-dto{position:absolute;top:-12px;right:-12px;font-style:normal;background:#4fd18b;color:#06301c;font-weight:800;font-size:13px;padding:3px 8px;border-radius:7px;transform:rotate(4deg)}
 @media(max-width:600px){.poster{min-height:420px}.poster h1{font-size:30px}.poster-in{padding:18px}}
 .barra{flex:1 1 100%;display:grid;gap:7px;margin-top:4px}
@@ -282,7 +295,7 @@ function plantilla({ titulo, descripcion, canonica, raiz, cuerpo, jsonld, imagen
 <link rel="icon" href="${raiz}favicon.svg" type="image/svg+xml"><link rel="alternate icon" href="${raiz}favicon.ico" sizes="any"><link rel="icon" href="${raiz}icono-192.png" type="image/png" sizes="192x192"><link rel="apple-touch-icon" href="${raiz}icono-180.png">
 <link rel="stylesheet" href="${raiz}fonts/fuentes.css"><link rel="stylesheet" href="${raiz}paginas.css">
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>` : ""}
-<script src="/idiomas.js" defer></script>
+<script src="/idiomas.js" defer></script><script src="/aviso-ficha.js" defer></script>
 </head><body><header><div class="wrap"><a class="logo" href="${inicio || raiz}">Pillao<span>${MONEDA === "EUR" ? "€" : "$"}</span></a><a class="ir-app" href="${inicio || raiz}">Ir al comparador →</a></div></header>
 <main class="wrap">${cuerpo}</main>
 <footer><div class="wrap">Pillao compara precios de videojuegos y no vende productos. Los precios son orientativos: el válido es siempre el de cada tienda. Algunos enlaces son de afiliado: si compras tras pulsarlos, la tienda puede pagarnos una comisión, sin coste para ti.
@@ -293,6 +306,8 @@ ${contador()}
 }
 
 function enlaceOferta(o, j, tiendaPorId) {
+  const IR = { "itad-playsum": "playsum", "itad-indiegalastore": "indiegala" }[o.tienda];
+  if (IR && BUSCADOR && /^https:\/\/itad\.link\//.test(o.url || "")) return BUSCADOR.replace(/\/$/, "") + "/ir/" + IR + "?u=" + encodeURIComponent(o.url);   // con nuestro código
   if (o.url) return o.url;
   const t = tiendaPorId[o.tienda];
   return t?.busqueda ? t.busqueda.replace("{q}", encodeURIComponent(j.titulo)) : null;
@@ -369,7 +384,7 @@ function paginaJuego(j, tiendaPorId, relacionados, actualizado, pre = "") {
 <div class="plats">${plats.map((p) => `<span class="plat">${esc(p)}</span>`).join("")}</div>
 <p class="resumen">Comparamos <b>${ofs.length} oferta${ofs.length === 1 ? "" : "s"}</b> de <b>${nTiendas} tienda${nTiendas === 1 ? "" : "s"}</b>` +
     (minimo ? ` · Mínimo histórico <b>${eur(minimo)}</b>` : "") + (j.pvp && j.pvp > total(mejor) ? ` · Precio normal <b>${eur(j.pvp)}</b>` : "") + ` · Actualizado el ${fecha}</p></div>
-<div class="precio-fila"><div class="etiqueta"><small>Mejor precio</small><b>${eur(total(mejor))}</b><span>${esc(tm)} · ${esc(mejor.plataforma || "")}</span>${dtoPoster >= 5 ? `<i class="poster-dto">−${dtoPoster}%</i>` : ""}</div><a class="campana" rel="nofollow" href="${INI}?aviso=${encodeURIComponent(j.id)}" aria-label="Ver historial y crear aviso de precio" title="Ver historial y crear aviso de precio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></a></div>${termometro}</div></section>
+<div class="precio-fila"><div class="etiqueta"><small>Mejor precio</small><b>${eur(total(mejor))}</b><span>${esc(tm)} · ${esc(mejor.plataforma || "")}</span>${dtoPoster >= 5 ? `<i class="poster-dto">−${dtoPoster}%</i>` : ""}</div><a class="campana" rel="nofollow" href="${INI}?aviso=${encodeURIComponent(j.id)}" data-id="${esc(j.id)}" data-titulo="${esc(j.titulo)}" data-ahora="${total(mejor).toFixed(2)}"${minimo ? ` data-min="${(+minimo).toFixed(2)}"` : ""} data-moneda="${MONEDA}" data-api="${esc(BUSCADOR)}"${EN_REGION ? "" : ' data-hist="1"'} aria-label="Ver historial y crear aviso de precio" title="Ver historial y crear aviso de precio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></a></div>${termometro}</div></section>
 <div class="lista-of"><ul>${filas}</ul>${resto ? `<details><summary><span class="c">Ver las ${todas40.length} ofertas</span><span class="a">Ver menos</span></summary><ul>${resto}</ul></details>` : ""}</div>
 ${relacionados.length ? `<h2>Otros juegos</h2><ul class="mas">${relacionados.map((r) => `<li><a href="../${r.id}/">${esc(r.titulo)}</a></li>`).join("")}</ul>` : ""}`;
   return plantilla({ titulo, descripcion, canonica, raiz: R, cuerpo, jsonld, imagen: imgPoster, inicio: INI });
@@ -710,7 +725,7 @@ async function main() {
       if (f === "index.html" && REGIONES.some((r) => r.hay)) html = html.replace("</head>", marcas);
       await writeFile(join(SALIDA, f), proteger(html, datos.buscador));
     }
-    else if (/\.(html|txt|svg|png|ico)$/.test(f) || f === "minimos.json" || f === "idiomas.js") await cp(join(RAIZ, f), join(SALIDA, f));
+    else if (/\.(html|txt|svg|png|ico)$/.test(f) || f === "minimos.json" || f === "idiomas.js" || f === "aviso-ficha.js") await cp(join(RAIZ, f), join(SALIDA, f));
   }
   for (const d of ["fonts", "data/historial", "logos"]) if (existsSync(join(RAIZ, d))) await cp(join(RAIZ, d), join(SALIDA, d), { recursive: true });
   // El catálogo en dos partes: los juegos más populares (y las tiendas y packs) llegan primero y se ven al momento;
