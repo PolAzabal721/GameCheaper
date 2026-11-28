@@ -1280,7 +1280,7 @@ body.latam [data-dest="packs"], body.latam label.switch:has(#part), body.latam l
       });
       j.ofertas.forEach(function (o) { if (o.plataforma && j.plataformas.indexOf(o.plataforma) < 0) j.plataformas.push(o.plataforma); });
       // Playsum: el enlace pasa por nuestro servidor, que le pone el código de partner
-      j.ofertas.forEach(function (o) { if (o.tienda === "itad-playsum" && /^https:\/\/itad\.link\//.test(o.url || "")) o.url = "https://pillao-buscador.pillao-bb5842.workers.dev/ir/playsum?u=" + encodeURIComponent(o.url); else if (o.tienda === "itad-indiegalastore" && /^https:\/\/itad\.link\//.test(o.url || "")) o.url = "https://pillao-buscador.pillao-bb5842.workers.dev/ir/indiegala?u=" + encodeURIComponent(o.url); });
+      j.ofertas.forEach(function (o) { if (o.tienda === "itad-playsum" && /^https:\/\/itad\.link\//.test(o.url || "")) o.url = "https://pillao-buscador.pillao-bb5842.workers.dev/ir/playsum?u=" + encodeURIComponent(o.url); else if (o.tienda === "itad-nuuvem" && /^https:\/\/itad\.link\//.test(o.url || "")) o.url = "https://pillao-buscador.pillao-bb5842.workers.dev/ir/nuuvem?u=" + encodeURIComponent(o.url); else if (o.tienda === "itad-indiegalastore" && /^https:\/\/itad\.link\//.test(o.url || "")) o.url = "https://pillao-buscador.pillao-bb5842.workers.dev/ir/indiegala?u=" + encodeURIComponent(o.url); });
       return true;
     });
     var conocidas = {};

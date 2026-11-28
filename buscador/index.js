@@ -233,6 +233,20 @@ export default {
         const d = new URL(final); d.searchParams.set("ref", "nme2ytj");
         return new Response(null, { status: 302, headers: { Location: d.href, "Cache-Control": "no-store" } });
       }
+      // Nuuvem: el enlace de ITAD se sigue hasta Nuuvem y se convierte en enlace de Rakuten (nuestro id)
+      if (url.pathname === "/ir/nuuvem") {
+        let u = url.searchParams.get("u") || "", final = "https://www.nuuvem.com/";
+        try {
+          const NV = /^https:\/\/(www\.)?nuuvem\.com\//;
+          if (/^https:\/\/itad\.link\//.test(u)) for (let i = 0; i < 4 && !NV.test(u); i++) {
+            const r = await fetch(u, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)" } });
+            const loc = r.headers.get("location"); if (!loc) break; u = new URL(loc, u).href;
+          }
+          if (NV.test(u)) { const d = new URL(u); for (const k of [...d.searchParams.keys()]) if (/^(utm_|ranMID|ranEAID|ranSiteID|siteID)/i.test(k)) d.searchParams.delete(k); final = d.href; }
+        } catch {}
+        const rk = "https://click.linksynergy.com/deeplink?id=t94HwvQCoBs&mid=46796&murl=" + encodeURIComponent(final);
+        return new Response(null, { status: 302, headers: { Location: rk, "Cache-Control": "no-store" } });
+      }
       if (url.pathname === "/buscar") {
         const q = (url.searchParams.get("q") || "").replace(/\s+/g, " ").trim().slice(0, 80);
         if (limpiar(q).length < 3) return json({ error: "Escribe al menos 3 letras." }, 400);

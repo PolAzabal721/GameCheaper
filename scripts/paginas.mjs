@@ -306,7 +306,7 @@ ${contador()}
 }
 
 function enlaceOferta(o, j, tiendaPorId) {
-  const IR = { "itad-playsum": "playsum", "itad-indiegalastore": "indiegala" }[o.tienda];
+  const IR = { "itad-playsum": "playsum", "itad-indiegalastore": "indiegala", "itad-nuuvem": "nuuvem" }[o.tienda];
   if (IR && BUSCADOR && /^https:\/\/itad\.link\//.test(o.url || "")) return BUSCADOR.replace(/\/$/, "") + "/ir/" + IR + "?u=" + encodeURIComponent(o.url);   // con nuestro código
   if (o.url) return o.url;
   const t = tiendaPorId[o.tienda];
