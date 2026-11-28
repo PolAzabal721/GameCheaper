@@ -4,7 +4,7 @@
 # El enlace se guarda con nuestro código de afiliado.
 import html, json, re, sys
 
-AFILIADO = "CAA6E250-1BEE-48FA-ACE4-7DCF3579C41C"
+AFILIADO = "18e597b9-17a3-449b-a8c4-26c16cc039ec"
 origen, destino = sys.argv[1], sys.argv[2]
 d = json.load(open(origen, encoding="utf-8"))
 productos = d.get("product") or []
