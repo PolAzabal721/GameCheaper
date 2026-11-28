@@ -21,6 +21,15 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20
+      - name: Catálogo de GameBillet (lo descarga el servidor de IP fija, workflow «Catálogo de GameBillet»)
+        uses: actions/cache/restore@v4
+        continue-on-error: true
+        with:
+          path: |
+            feeds/gamebillet.json
+            feeds/gamebillet-usd.json
+          key: gamebillet-ultimo
+          restore-keys: gamebillet-
       - name: Fecha de hoy
         id: hoy
         run: echo "d=$(date -u +%F)" >> "$GITHUB_OUTPUT"

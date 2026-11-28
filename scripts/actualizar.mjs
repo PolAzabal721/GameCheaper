@@ -1396,6 +1396,29 @@ async function gamesporiumFeed(juegos) {
   return n;
 }
 
+// ---------- GameBillet, catálogo propio (JSON en euros; solo se descarga desde la IP fija del servidor; con nuestro enlace) ----------
+let GB_DIRECTO = false;
+async function gamebilletFeed(juegos) {
+  let filas; try { filas = JSON.parse(await readFile(join(RAIZ, "feeds", "gamebillet.json"), "utf8")); } catch { return 0; }
+  if (!filas.length) return 0;
+  const porLlave = new Map();
+  for (const j of juegos.values()) { const k = llave(j.titulo); if (!porLlave.has(k)) porLlave.set(k, j); }
+  let n = 0, nuevos = 0;
+  for (const f of filas) {
+    const nombre = html2txt(f.n).replace(/[™®©]/g, "").replace(/\s+/g, " ").trim();
+    if (!nombre || NO_PRODUCTO.test(limpiar(nombre))) continue;
+    const tipo = f.t || (DLC_RE.test(limpiar(nombre)) ? "dlc" : null);
+    let j = porLlave.get(llave(nombre));
+    if (!j) { j = juego(nombre, { pop: 99999, tipo: tipo || tipoDe(nombre) }); if (!j) continue; porLlave.set(llave(nombre), j); nuevos++; }
+    ofertar(j, { tienda: "gamebillet", plataforma: f.pl, precio: f.p, regular: f.r > f.p ? f.r : undefined, stock: true, drm: f.d || undefined,
+      condicion: `Clave ${f.d || f.pl} · Europa`, url: f.u, fuente: "gamebillet" });
+    j.revisado.add("gamebillet"); visitar("gamebillet", j); n++;
+  }
+  GB_DIRECTO = n > 0; // con el feed propio sobra GameBillet a través de ITAD (sin afiliación)
+  console.log(`GameBillet: ${n} precios de su catálogo (${nuevos} productos nuevos en el catálogo)`);
+  return n;
+}
+
 // ---------- Voidu, catálogo de Daisycon (JSON, en euros y con el enlace de afiliado) ----------
 let VOIDU_DIRECTO = false;
 const VOIDU_ES = /^(|eu|europe|global|ww|worldwide|world|es|spain)$/i;
@@ -2098,6 +2121,7 @@ async function main() {
   try { cuenta.gamivo = await gamivoFeed(juegos); } catch (e) { avisos.push("gamivo: " + e.message); caidas.add("gamivo"); }
   try { cuenta.gamesporium = await gamesporiumFeed(juegos); } catch (e) { avisos.push("gamesporium: " + e.message); caidas.add("gamesporium"); }
   try { cuenta.voidu = await voiduFeed(juegos); } catch (e) { avisos.push("voidu: " + e.message); caidas.add("voidu"); }
+  try { cuenta.gamebillet = await gamebilletFeed(juegos); } catch (e) { avisos.push("gamebillet: " + e.message); caidas.add("gamebillet"); }
   try { cuenta.g2a = await g2aFeed(juegos); } catch (e) { avisos.push("g2a: " + e.message); caidas.add("g2a"); }
   try { cuenta.ggpick = await ggpickFeed(juegos); } catch (e) { avisos.push("ggpick: " + e.message); caidas.add("ggpick"); }
   try { cuenta.cjs = await cjsFeed(juegos); } catch (e) { avisos.push("cjs: " + e.message); caidas.add("cjs"); }
@@ -2247,6 +2271,7 @@ async function main() {
   // «otros» era un tipo provisional de Kinguin (skins, servidores, claves sorpresa, «Other»): ya no se usa
   if (GG_DIRECTO) for (const j of juegos.values()) j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-gamersgate");
   if (VOIDU_DIRECTO) for (const j of juegos.values()) j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-voidu");
+  if (GB_DIRECTO) for (const j of juegos.values()) j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-gamebillet");
   if (GSP_DIRECTO) for (const j of juegos.values()) j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-gamesporium");
   // Repaso final:
   // 1. «Tarjetas» que en realidad son juegos («Card Cultivation», «GTA V Enhanced & Great White Shark Card»): pasan a juegos
@@ -2288,7 +2313,7 @@ async function main() {
   // igual (como revendedor de claves digitales), para que la web no la tome por una tienda física sin nombre
   // Ofertas conservadas de vueltas anteriores: Yuplay con el enlace de CJ (antes iba con su código propio) y fuera la GamersGate de ITAD (duplicada)
   for (const j of lista) {
-    j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-gamersgate" && !(VOIDU_DIRECTO && o.tienda === "itad-voidu") && !(GSP_DIRECTO && o.tienda === "itad-gamesporium"));
+    j.ofertas = j.ofertas.filter((o) => o.tienda !== "itad-gamersgate" && !(VOIDU_DIRECTO && o.tienda === "itad-voidu") && !(GB_DIRECTO && o.tienda === "itad-gamebillet") && !(GSP_DIRECTO && o.tienda === "itad-gamesporium"));
     for (const o of j.ofertas) if (o.tienda === "yuplay" && /^https:\/\/www\.yuplay\.com\//.test(o.url || "")) o.url = enlaceYuplay(o.url.replace(YUPLAY, ""));
   }
   // Accesorios que se cuelan en las tiendas físicas (GAME, MediaMarkt…): auriculares, discos SSD, fundas, cables… Fuera: aquí solo hay juegos

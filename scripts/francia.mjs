@@ -197,6 +197,15 @@ async function main() {
       condicion: `Clave ${f.d || f.pl} · ${/^(de|germany|dach)$/i.test(f.reg) ? "Alemania" : /^(eu|europe)$/i.test(f.reg) ? "Europa" : "Global"}`, url: f.u });
     suma("voidu"); voiduN++;
   }
+  // GameBillet: su catálogo en euros (feed propio, solo desde la IP fija; con nuestro enlace de afiliado)
+  let gbN = 0;
+  for (const f of await leer("feeds/gamebillet.json", [])) {
+    const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
+    tienda("gamebillet", "GameBillet", "oficial");
+    ofertar(j, { tienda: "gamebillet", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: f.p, regular: f.r > f.p ? f.r : undefined,
+      condicion: `Clave ${f.d || f.pl} · Europa`, url: f.u });
+    suma("gamebillet"); gbN++;
+  }
   // GamersGate: su feed de Francia (en euros, con nuestro enlace de CJ)
   for (const f of await leer("feeds/gamersgate-fr.json", [])) {
     const j = juego(html2txt(f.n), f.t === "dlc" ? "dlc" : undefined); if (!j) continue;
@@ -236,7 +245,7 @@ async function main() {
           for (const x of g.deals || []) {
             if (!(x.price?.amount > 0) || x.price.currency !== "EUR") continue;
             const nombre = x.shop?.name || String(x.shop?.id), id0 = /^steam$/i.test(nombre) ? "steam" : "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
-            if (id0 === "itad-gamersgate" || (id0 === "itad-voidu" && voiduN) || (id0 === "itad-gamesporium" && gspN)) continue;   // ya viene de su feed, con nuestro enlace
+            if (id0 === "itad-gamersgate" || (id0 === "itad-voidu" && voiduN) || (id0 === "itad-gamebillet" && gbN) || (id0 === "itad-gamesporium" && gspN)) continue;   // ya viene de su feed, con nuestro enlace
             const id = { "itad-microsoftstore": "xbox" }[id0] || id0;
             const oficial = OFICIALES_PC.test(nombre);
             const j = juego(e.titulo, e.tipo); if (!j) continue;

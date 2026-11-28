@@ -227,6 +227,15 @@ async function main() {
       condicion: `Clave ${f.d || f.pl} · ${/^latam$/i.test(f.reg) ? "Latam" : "Global"}`, url: f.u });
     cuenta.voidu = (cuenta.voidu || 0) + 1; voiduN++;
   }
+  // GameBillet: su catálogo en dólares (feed propio, solo desde la IP fija; con nuestro enlace de afiliado)
+  let gbN = 0;
+  for (const f of await leer("feeds/gamebillet-usd.json", [])) {
+    const j = juego(html2txt(f.n), f.t || undefined); if (!j) continue;
+    tienda("gamebillet", "GameBillet", "oficial");
+    ofertar(j, { tienda: "gamebillet", plataforma: f.pl, formato: "digital", estado: "nuevo", stock: true, precio: f.p, regular: f.r > f.p ? f.r : undefined,
+      condicion: `Clave ${f.d || f.pl}`, url: f.u });
+    cuenta.gamebillet = (cuenta.gamebillet || 0) + 1; gbN++;
+  }
   // Nuuvem (Rakuten): tienda de Brasil, precios en reales → dólares; sus claves son para Brasil («Solo Brasil»)
   for (const f of await leer("feeds/nuuvem.json", [])) {
     if (!(f.p > 0) || !tasas.BRL) continue;
@@ -265,7 +274,7 @@ async function main() {
               if (!(x.price?.amount > 0)) continue;
               const nombre = x.shop?.name || String(x.shop?.id), id0 = /^steam$/i.test(nombre) ? "steam" : "itad-" + nombre.toLowerCase().replace(/[^a-z0-9]+/g, "");
               // Microsoft Store y GamersGate ya tienen tienda propia: van con ella, no repetidas
-              if ((id0 === "itad-voidu" && voiduN) || (id0 === "itad-gamesporium" && gspUSD.length)) continue;
+              if ((id0 === "itad-voidu" && voiduN) || (id0 === "itad-gamebillet" && gbN) || (id0 === "itad-gamesporium" && gspUSD.length)) continue;
             const id = { "itad-microsoftstore": "xbox", "itad-gamersgate": "gamersgate" }[id0] || id0;
               const oficial = OFICIALES_PC.test(nombre);
               if (!general && !oficial) continue;

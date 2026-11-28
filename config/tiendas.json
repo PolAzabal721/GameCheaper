@@ -69,6 +69,14 @@
   ]
  },
  {
+  "id": "gamebillet",
+  "nombre": "GameBillet",
+  "tipo": "oficial",
+  "formatos": [
+   "digital"
+  ]
+ },
+ {
   "id": "voidu",
   "nombre": "Voidu",
   "tipo": "oficial",

@@ -1,0 +1,34 @@
+name: Catálogo de GameBillet
+# GameBillet solo deja descargar su catálogo desde la IP fija del servidor propio (VPS de OVH).
+# Se descarga aquí y se guarda en la caché de Actions; los workflows de precios lo recogen de ahí.
+on:
+  schedule:
+    - cron: "3 */6 * * *"   # un poco antes que los de precios
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+jobs:
+  descargar:
+    runs-on: [self-hosted, ip-fija]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          sparse-checkout: scripts
+      - name: Descargar el catálogo en euros y en dólares
+        run: |
+          mkdir -p feeds
+          for par in "eu feeds/gamebillet.json" "us feeds/gamebillet-usd.json"; do
+            set -- $par
+            curl -sSL --retry 2 --max-time 300 -o feeds/gb-$1.json "https://www.gamebillet.com/Product/JsonFeed?store=$1&guid=CAA6E250-1BEE-48FA-ACE4-7DCF3579C41C"
+            python3 scripts/gamebillet_feed.py feeds/gb-$1.json $2
+            rm -f feeds/gb-$1.json
+          done
+          test -s feeds/gamebillet.json
+      - uses: actions/cache/save@v4
+        with:
+          path: |
+            feeds/gamebillet.json
+            feeds/gamebillet-usd.json
+          key: gamebillet-${{ github.run_id }}
