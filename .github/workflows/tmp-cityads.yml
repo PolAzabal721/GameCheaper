@@ -1,0 +1,20 @@
+name: Prueba CityAds
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ver:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CI: ${{ secrets.CITYADS_CLIENT_ID }}
+      CS: ${{ secrets.CITYADS_CLIENT_SECRET }}
+    steps:
+      - run: |
+          T=$(curl -sS -X POST -H "Content-Type: application/json" -d "{\"client_id\":\"$CI\",\"client_secret\":\"$CS\",\"grant_type\":\"client_credentials\"}" https://auth2.cityads.com/oauth/access_token)
+          echo "$T" | python3 -c "import json,sys;d=json.load(sys.stdin);print({k:(v if k!='access_token' else 'OK') for k,v in d.items()})"
+          A=$(echo "$T" | python3 -c "import json,sys;print(json.load(sys.stdin).get('access_token',''))")
+          for u in "https://cityads.com/api/rest/webmaster/json/offers/web?user_has_offer=true&limit=100" "https://cityads.com/api/rest/webmaster/v2/offers?limit=100" "https://cityads.com/api/rest/webmaster/json/goods?keyword=elden&limit=5" "https://cityads.com/api/rest/webmaster/v2/feeds"; do
+            echo "== $u"; curl -sS -H "X-Access-Token: $A" "$u" | head -c 3000; echo
+          done
