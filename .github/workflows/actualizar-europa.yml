@@ -1,0 +1,117 @@
+name: Actualizar precios de Portugal, Italia y Bélgica
+
+# pillaojuegos.com/pt/, /it/ y /be/ (Portugal, Italia y Bélgica, dentro de Europa): precios en euros y solo digital.
+# Va aparte de «Actualizar precios» para no alargarlo: usa los catálogos que esa ejecución deja guardados (los de Alemania valen
+# quitando las claves solo de Alemania), más el feed de GamersGate de cada país y las tiendas oficiales de cada país.
+on:
+  schedule:
+    - cron: "47 5,11,17,23 * * *"   # unas 5 horas después de cada «Actualizar precios»
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  europa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    concurrency:
+      group: precios-europa-${{ matrix.pais }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { pais: pt, gg: PRT }
+          - { pais: it, gg: ITA }
+          - { pais: be, gg: BEL }
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+      - name: Catálogos guardados por «Actualizar precios» (el más reciente de cada uno)
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            feeds/kinguin.json
+            feeds/kinguin-latam.json
+            feeds/kinguin-us.json
+            feeds/kinguin-de.json
+            feeds/kinguin-fr.json
+          key: kinguin7-ninguna
+          restore-keys: kinguin7-
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            feeds/g2a.json
+            feeds/g2a-latam.json
+            feeds/g2a-de.json
+          key: g2a2-ninguna
+          restore-keys: g2a2-
+      - uses: actions/cache/restore@v4
+        with:
+          path: feeds/ggpick.json
+          key: ggpick-ninguna
+          restore-keys: ggpick-
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            feeds/cjs.json
+            feeds/cjs-latam.json
+            feeds/cjs-us.json
+            feeds/cjs-de.json
+            feeds/cjs-fr.json
+          key: cjs4-ninguna
+          restore-keys: cjs4-
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            feeds/loaded.json
+            feeds/loaded-latam.json
+            feeds/loaded-us.json
+            feeds/loaded-de.json
+            feeds/loaded-fr.json
+          key: loaded5-ninguna
+          restore-keys: loaded5-
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            feeds/gamesporium.json
+            feeds/gamesporium-usd.json
+          key: gamesporium2-ninguna
+          restore-keys: gamesporium2-
+      - uses: actions/cache/restore@v4
+        with:
+          path: feeds/voidu.json
+          key: voidu1-ninguna
+          restore-keys: voidu1-
+      - name: Feed de GamersGate del país (con nuestro enlace)
+        continue-on-error: true
+        run: |
+          mkdir -p feeds; ls -la feeds
+          curl -sSL --max-time 300 -A "Mozilla/5.0 (compatible; Pillao-comparador/2.0; +https://pillaojuegos.com)" -o feeds/gamersgate-${{ matrix.pais }}.xml "https://feeds.gamersgate.com/feeds/products?country=${{ matrix.gg }}&aff=15600f04623a9a73fa267b81bfec59911a3e5263" && python3 scripts/gamersgate_feed.py feeds/gamersgate-${{ matrix.pais }}.xml feeds/gamersgate-${{ matrix.pais }}.json || true
+          rm -f feeds/gamersgate-${{ matrix.pais }}.xml
+      - name: Catálogo de Gamivo por CJ
+        continue-on-error: true
+        env:
+          CJ_TOKEN: ${{ secrets.CJ_TOKEN }}
+        run: python3 scripts/cj_catalogo.py 6086371 feeds/gamivo-cj.json && python3 scripts/gamivo_feed.py feeds/gamivo-cj.json feeds/gamivo.json
+      - name: Catálogo del país (precios-${{ matrix.pais }}.json)
+        timeout-minutes: 45
+        run: node scripts/europa.mjs
+        env:
+          PAIS: ${{ matrix.pais }}
+          ITAD_KEY: ${{ secrets.ITAD_KEY }}
+      - name: Guardar el país
+        run: |
+          git config user.name "pillao-bot"; git config user.email "bot@pillaojuegos.com"
+          git add -A precios-${{ matrix.pais }}*.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Precios de ${{ matrix.pais }} actualizados"
+          for i in 1 2 3; do
+            git pull --rebase -X theirs origin main && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep 10
+          done
+          exit 1

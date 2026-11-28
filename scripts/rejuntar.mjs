@@ -5,7 +5,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { guardarPartes } from "./completar.mjs";
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
-for (const archivo of ["precios.json", "precios-de.json", "precios-fr.json", "precios-us.json", "precios-latam.json"]) {
+for (const archivo of ["precios.json", "precios-de.json", "precios-fr.json", "precios-pt.json", "precios-it.json", "precios-be.json", "precios-us.json", "precios-latam.json"]) {
   const ruta = join(RAIZ, archivo);
   if (!existsSync(ruta)) continue;
   const principal = JSON.parse(readFileSync(ruta, "utf8"));
