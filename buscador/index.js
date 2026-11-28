@@ -242,7 +242,7 @@ export default {
             const r = await fetch(u, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (compatible; Pillao/2.0; +https://pillaojuegos.com)" } });
             const loc = r.headers.get("location"); if (!loc) break; u = new URL(loc, u).href;
           }
-          if (NV.test(u)) { const d = new URL(u); for (const k of [...d.searchParams.keys()]) if (/^(utm_|ranMID|ranEAID|ranSiteID|siteID)/i.test(k)) d.searchParams.delete(k); final = d.href; }
+          if (NV.test(u)) { let d = new URL(u); if (/\/api\/v2\/rakuten/.test(d.pathname) && d.searchParams.get("url")) d = new URL(d.searchParams.get("url")); for (const k of [...d.searchParams.keys()]) if (/^(utm_|ranMID|ranEAID|ranSiteID|siteID)/i.test(k)) d.searchParams.delete(k); final = d.href; }
         } catch {}
         const rk = "https://click.linksynergy.com/deeplink?id=t94HwvQCoBs&mid=46796&murl=" + encodeURIComponent(final);
         return new Response(null, { status: 302, headers: { Location: rk, "Cache-Control": "no-store" } });
